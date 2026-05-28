@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="200" viewBox="0 0 2000 200" role="img" aria-label="Personal Archive of Literature">
+  <rect width="2000" height="200" fill="#eeeeee"/>
+  <g opacity="0.18" font-family="Georgia, Times New Roman, serif" font-size="68" fill="#000000">
+    <text x="660" y="81">Literature</text>
+    <text x="1040" y="140">Archive</text>
+  </g>
+  <g stroke="#ff0000" stroke-width="1" opacity="0.9">
+    <path d="M0 128 H2000"/>
+    <path d="M0 132 H2000" opacity="0.35"/>
+  </g>
+  <g opacity="0.2" stroke="#000000" stroke-width="1">
+    <path d="M440 0 V128"/>
+    <path d="M444 0 V128"/>
+    <path d="M1530 0 V128"/>
+    <path d="M1534 0 V128"/>
+  </g>
+</svg>

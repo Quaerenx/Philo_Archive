@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "storage": "data/notes/nietzsche_notes.jsonl",
+  "record": {
+    "id": "hex uuid",
+    "created_at": "local ISO timestamp",
+    "author": "nietzsche",
+    "work_id": "M",
+    "target_id": "sec-1 or p-0001",
+    "target_label": "visible heading or paragraph label",
+    "quote": "optional selected text",
+    "note": "personal note text",
+    "tags": ["comma-separated UI tags"],
+    "url": "/work/nietzsche/M#sec-1"
+  }
+}

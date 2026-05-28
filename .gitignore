@@ -1,0 +1,31 @@
+# Local source corpora are intentionally not versioned.
+니체_원서수집/
+비트겐슈타인_원서수집/
+성경_원서수집/
+키르케고르_원서수집/
+
+# Large generated research/search artifacts. Regenerate from local corpora.
+reader_site/data/*_segments.jsonl
+reader_site/data/search_index.jsonl
+reader_site/data/search_index.sqlite
+reader_site/data/search_index.sqlite-*
+
+# Personal notes and local-only state.
+reader_site/data/notes/*.jsonl
+reader_site/local_paths.json
+.env
+.env.*
+
+# Python/runtime caches.
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# OS/editor noise.
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

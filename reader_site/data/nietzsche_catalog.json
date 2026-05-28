@@ -1,0 +1,197 @@
+{
+  "sections": [
+    {
+      "id": "major_published_books",
+      "title": "주요 발간 저작",
+      "meta": "책 단위로 읽기 좋은 핵심 저작입니다. 차라투스트라는 원본 파일 구조에 맞춰 4부로 표시합니다.",
+      "works": [
+        {
+          "file": "GT.md",
+          "label": "Die Geburt der Tragödie",
+          "meta": "1872 · 비극의 탄생"
+        },
+        {
+          "file": "MA-I.md",
+          "label": "Menschliches, Allzumenschliches I",
+          "meta": "1878 · 인간적인, 너무나 인간적인 I"
+        },
+        {
+          "file": "MA-II.md",
+          "label": "Menschliches, Allzumenschliches II",
+          "meta": "1879-1880 · 인간적인, 너무나 인간적인 II"
+        },
+        {
+          "file": "M.md",
+          "label": "Morgenröthe",
+          "meta": "1881 · 아침놀"
+        },
+        {
+          "file": "FW.md",
+          "label": "Die fröhliche Wissenschaft",
+          "meta": "1882/1887 · 즐거운 학문"
+        },
+        {
+          "file": "Za-I.md",
+          "label": "Also sprach Zarathustra I",
+          "meta": "1883 · 차라투스트라는 이렇게 말했다 I"
+        },
+        {
+          "file": "Za-II.md",
+          "label": "Also sprach Zarathustra II",
+          "meta": "1883 · 차라투스트라는 이렇게 말했다 II"
+        },
+        {
+          "file": "Za-III.md",
+          "label": "Also sprach Zarathustra III",
+          "meta": "1884 · 차라투스트라는 이렇게 말했다 III"
+        },
+        {
+          "file": "Za-IV.md",
+          "label": "Also sprach Zarathustra IV",
+          "meta": "1885 · 차라투스트라는 이렇게 말했다 IV"
+        },
+        {
+          "file": "JGB.md",
+          "label": "Jenseits von Gut und Böse",
+          "meta": "1886 · 선악의 저편"
+        },
+        {
+          "file": "GM.md",
+          "label": "Zur Genealogie der Moral",
+          "meta": "1887 · 도덕의 계보"
+        },
+        {
+          "file": "WA.md",
+          "label": "Der Fall Wagner",
+          "meta": "1888 · 바그너의 경우"
+        },
+        {
+          "file": "GD.md",
+          "label": "Götzen-Dämmerung",
+          "meta": "1889 · 우상의 황혼"
+        }
+      ]
+    },
+    {
+      "id": "untimely_meditations",
+      "title": "시대착오적 고찰",
+      "meta": "Unzeitgemässe Betrachtungen 네 편을 따로 묶었습니다.",
+      "works": [
+        {
+          "file": "DS.md",
+          "label": "David Strauss, der Bekenner und der Schriftsteller",
+          "meta": "1873 · 시대착오적 고찰 I"
+        },
+        {
+          "file": "HL.md",
+          "label": "Vom Nutzen und Nachtheil der Historie für das Leben",
+          "meta": "1874 · 시대착오적 고찰 II"
+        },
+        {
+          "file": "SE.md",
+          "label": "Schopenhauer als Erzieher",
+          "meta": "1874 · 시대착오적 고찰 III"
+        },
+        {
+          "file": "WB.md",
+          "label": "Richard Wagner in Bayreuth",
+          "meta": "1876 · 시대착오적 고찰 IV"
+        }
+      ]
+    },
+    {
+      "id": "late_posthumous_books",
+      "title": "후기 원고와 사후 간행 저작",
+      "meta": "1888년 전후의 후기 원고와 사후 간행 성격이 강한 저작입니다.",
+      "works": [
+        {
+          "file": "AC.md",
+          "label": "Der Antichrist",
+          "meta": "1888 · 안티크리스트"
+        },
+        {
+          "file": "EH.md",
+          "label": "Ecce homo",
+          "meta": "1888 · 이 사람을 보라"
+        },
+        {
+          "file": "DD.md",
+          "label": "Dionysos-Dithyramben",
+          "meta": "1888 · 디오니소스 송가"
+        },
+        {
+          "file": "NW.md",
+          "label": "Nietzsche contra Wagner",
+          "meta": "1888 · 니체 대 바그너"
+        }
+      ]
+    },
+    {
+      "id": "lectures_essays_fragments",
+      "title": "강연·논문·단편 텍스트",
+      "meta": "책으로 읽기보다는 연구 보조 텍스트로 분리해두는 편이 좋습니다.",
+      "works": [
+        {
+          "file": "BA.md",
+          "label": "Über die Zukunft unserer Bildungsanstalten",
+          "meta": "1872 · 교육기관의 미래에 대하여"
+        },
+        {
+          "file": "CV.md",
+          "label": "Fünf Vorreden zu fünf ungeschriebenen Büchern",
+          "meta": "1872 · 쓰이지 않은 다섯 책의 다섯 서문"
+        },
+        {
+          "file": "DW.md",
+          "label": "Die dionysische Weltanschauung",
+          "meta": "1870 · 디오니소스적 세계관"
+        },
+        {
+          "file": "GG.md",
+          "label": "Die Geburt des tragischen Gedankens",
+          "meta": "초기 텍스트"
+        },
+        {
+          "file": "GMD.md",
+          "label": "Das griechische Musikdrama",
+          "meta": "1870 · 그리스 음악극"
+        },
+        {
+          "file": "IM.md",
+          "label": "Idyllen aus Messina",
+          "meta": "1882 · 메시나 전원시"
+        },
+        {
+          "file": "MD.md",
+          "label": "Mahnruf an die Deutschen",
+          "meta": "단편 텍스트"
+        },
+        {
+          "file": "NJ.md",
+          "label": "Ein Neujahrswort",
+          "meta": "1874 · 신년사"
+        },
+        {
+          "file": "PHG.md",
+          "label": "Die Philosophie im tragischen Zeitalter der Griechen",
+          "meta": "1873 · 그리스 비극 시대의 철학"
+        },
+        {
+          "file": "SGT.md",
+          "label": "Sokrates und die griechische Tragödie",
+          "meta": "초기 강연"
+        },
+        {
+          "file": "ST.md",
+          "label": "Sokrates und die Tragödie",
+          "meta": "초기 텍스트"
+        },
+        {
+          "file": "WL.md",
+          "label": "Über Wahrheit und Lüge im aussermoralischen Sinne",
+          "meta": "1873 · 도덕 외적 의미의 진리와 거짓"
+        }
+      ]
+    }
+  ]
+}

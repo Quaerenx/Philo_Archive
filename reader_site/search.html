@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Research Search / Personal Archive of Literature</title>
+  <link rel="stylesheet" href="/assets/search.css?v=phase3">
+</head>
+<body>
+  <div class="page">
+    <div class="spacer"></div>
+    <main class="reader">
+      <header class="reader-header">
+        <h1>Research Search</h1>
+        <div class="meta-line">Personal Archive of Literature / segment index</div>
+        <nav class="toolbar" aria-label="Search navigation">
+          <a href="/">Archive index</a>
+        </nav>
+      </header>
+
+      <form id="searchForm" class="search-form">
+        <label class="query-label">
+          Query
+          <input id="queryInput" name="q" autocomplete="off" autofocus>
+        </label>
+        <label>
+          Corpus
+          <select id="corpusSelect" name="corpus_id">
+            <option value="">All</option>
+            <option value="nietzsche">Nietzsche</option>
+            <option value="bible">Bible</option>
+            <option value="kierkegaard">Kierkegaard</option>
+            <option value="wittgenstein">Wittgenstein</option>
+          </select>
+        </label>
+        <button type="submit">Search</button>
+      </form>
+
+      <div id="searchStatus" class="search-status"></div>
+      <section id="results" class="results" aria-live="polite"></section>
+    </main>
+  </div>
+  <script src="/assets/search.js?v=phase3"></script>
+</body>
+</html>

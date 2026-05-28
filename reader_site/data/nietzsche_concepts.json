@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "concepts": [
+    {
+      "id": "dionysian_apollonian",
+      "label": "Dionysian / Apollonian",
+      "german": "dionysisch / apollinisch",
+      "description": "Greek tragedy, art, form, intoxication, and life-affirming tension.",
+      "works": ["GT", "DW", "GMD", "ST", "SGT"]
+    },
+    {
+      "id": "genealogy",
+      "label": "Genealogy",
+      "german": "Genealogie",
+      "description": "Historical diagnosis of moral concepts, values, guilt, and ascetic ideals.",
+      "works": ["GM", "JGB", "M"]
+    },
+    {
+      "id": "ressentiment",
+      "label": "Ressentiment",
+      "german": "Ressentiment",
+      "description": "Reactive valuation, moral reversal, and the psychology of revenge.",
+      "works": ["GM", "JGB", "AC"]
+    },
+    {
+      "id": "free_spirit",
+      "label": "Free Spirit",
+      "german": "freier Geist",
+      "description": "Experiment, distance, skepticism, and emancipation from inherited values.",
+      "works": ["MA-I", "MA-II", "M", "FW", "JGB"]
+    },
+    {
+      "id": "eternal_recurrence",
+      "label": "Eternal Recurrence",
+      "german": "ewige Wiederkunft",
+      "description": "The test of affirming life as repeatable without remainder.",
+      "works": ["FW", "Za-I", "Za-II", "Za-III", "Za-IV"]
+    },
+    {
+      "id": "will_to_power",
+      "label": "Will to Power",
+      "german": "Wille zur Macht",
+      "description": "Drive, interpretation, overcoming, and the dynamic grammar of life.",
+      "works": ["JGB", "GM", "Za-I", "Za-II", "Za-III", "Za-IV"]
+    },
+    {
+      "id": "overman",
+      "label": "Overman",
+      "german": "Übermensch",
+      "description": "A figure of self-overcoming and value creation.",
+      "works": ["Za-I", "Za-II", "Za-III", "Za-IV"]
+    },
+    {
+      "id": "nihilism",
+      "label": "Nihilism",
+      "german": "Nihilismus",
+      "description": "The crisis of value after the collapse of inherited metaphysical guarantees.",
+      "works": ["FW", "Za-I", "Za-II", "Za-III", "Za-IV", "GD", "AC"]
+    },
+    {
+      "id": "critique_of_christianity",
+      "label": "Critique of Christianity",
+      "german": "Christenthum",
+      "description": "Diagnosis of Christian morality, ressentiment, pity, and life-denial.",
+      "works": ["AC", "GM", "GD", "JGB"]
+    },
+    {
+      "id": "wagner",
+      "label": "Wagner",
+      "german": "Wagner",
+      "description": "Art, decadence, music, culture, and Nietzsche's break with Wagner.",
+      "works": ["GT", "WB", "WA", "NW"]
+    }
+  ]
+}

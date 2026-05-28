@@ -1,0 +1,191 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: #d9d9d9;
+  color: #000;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  letter-spacing: 0;
+}
+
+a {
+  color: #ff0000;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.page {
+  position: relative;
+  width: 100%;
+  max-width: 1000px;
+  min-height: calc(100vh - 48px);
+  margin: 24px auto;
+  padding: 0;
+  overflow: hidden;
+  background-image: url("/assets/header-strip.svg?v=nietzsche-portrait");
+  background-repeat: repeat-x;
+  background-color: #eeeeee;
+  border: 1px solid #bdbdbd;
+  box-shadow: 0 2px 18px rgba(0, 0, 0, 0.12);
+}
+
+.page::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 440px;
+  height: 128px;
+  pointer-events: none;
+  background-image: url("/assets/nietzsche-header-left.png?v=1882");
+  background-repeat: no-repeat;
+  background-position: left top;
+  background-size: 440px 128px;
+}
+
+.page > * {
+  position: relative;
+  z-index: 1;
+}
+
+.spacer {
+  height: 160px;
+}
+
+.reader {
+  width: 764px;
+  min-height: 420px;
+  margin: 0 auto 32px;
+  padding: 28px 36px 40px;
+  background: #ffffff;
+  border: 1px solid #d4d4d4;
+}
+
+.reader-header {
+  margin-bottom: 22px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #d4d4d4;
+}
+
+h1 {
+  margin: 0 0 6px;
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+.meta-line,
+.search-status {
+  color: #555;
+  line-height: 1.45;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.search-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 150px auto;
+  gap: 10px;
+  align-items: end;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #d4d4d4;
+}
+
+.search-form label {
+  display: grid;
+  gap: 4px;
+  color: #555;
+  line-height: 1.35;
+}
+
+.search-form input,
+.search-form select,
+.search-form button {
+  min-height: 28px;
+  color: #000;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  background: #fff;
+  border: 1px solid #bdbdbd;
+}
+
+.search-form input,
+.search-form select {
+  width: 100%;
+  padding: 4px 6px;
+}
+
+.search-form button {
+  padding: 4px 12px;
+  cursor: pointer;
+}
+
+.results {
+  display: grid;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.result {
+  padding-top: 12px;
+  border-top: 1px solid #d4d4d4;
+}
+
+.result:first-child {
+  border-top: 0;
+}
+
+.result-title {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: baseline;
+  margin-bottom: 4px;
+  line-height: 1.35;
+}
+
+.result-meta {
+  color: #555;
+}
+
+.snippet {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+mark {
+  padding: 0 1px;
+  background: #fff3a3;
+}
+
+@media (max-width: 860px) {
+  .page {
+    margin: 0 auto;
+    border-right: 0;
+    border-left: 0;
+  }
+
+  .reader {
+    width: auto;
+    margin: 0 10px 24px;
+    padding: 22px 18px 30px;
+  }
+
+  .search-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

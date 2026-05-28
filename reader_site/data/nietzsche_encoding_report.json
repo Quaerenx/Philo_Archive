@@ -1,0 +1,26 @@
+{
+  "generated_at": "2026-05-28",
+  "scope": "Nietzsche Markdown exports under works, nachlass, briefe",
+  "files_checked": 91,
+  "folders": {
+    "works": 33,
+    "nachlass": 20,
+    "briefe": 38
+  },
+  "method": "Read every Markdown file as UTF-8 with replacement-error detection and count U+FFFD replacement characters.",
+  "replacement_characters": 0,
+  "files_with_replacement_characters": [],
+  "sample_checks": [
+    {
+      "file": "works/M.md",
+      "expected": "Morgenröthe",
+      "status": "present"
+    },
+    {
+      "file": "works/FW.md",
+      "expected": "fröhliche Wissenschaft",
+      "status": "present"
+    }
+  ],
+  "conclusion": "The collected Nietzsche Markdown files are valid UTF-8 for the checked corpus. Earlier mojibake-like output was a console/display issue, not corruption in the Markdown files."
+}

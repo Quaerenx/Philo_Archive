@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{TITLE}} / {{CORPUS_TITLE}}</title>
+  <link rel="stylesheet" href="/assets/reader-work.css?v=common2">
+</head>
+<body class="{{BODY_CLASS}}">
+  <div class="page">
+    <div class="spacer"></div>
+    <main class="reader">
+      <header class="reader-header">
+        <h1>{{TITLE}}</h1>
+        <div class="meta-line">{{CORPUS_TITLE}} / {{WORK_ID}} / {{SECTION}} / {{META}}</div>
+        <div class="path">{{SOURCE_PATH}}</div>
+        <nav class="toolbar" aria-label="Reader navigation">
+          <a href="/">Archive index</a>
+          <a href="{{CATEGORY_HREF}}">{{CORPUS_TITLE}}</a>
+          <a href="{{SOURCE_HREF}}">Source mode</a>
+        </nav>
+      </header>
+      {{VARIANT_TABS}}
+      {{TOC}}
+      <section class="research-grid" aria-label="Research tools">
+        <section class="research-card">
+          <h2>Citation</h2>
+          <div id="citationPreview" class="citation-preview"></div>
+          <button type="button" id="copyCitation">Copy citation</button>
+          <button type="button" id="copyUrl">Copy URL</button>
+        </section>
+        <section class="research-card">
+          <h2>Notes</h2>
+          <form id="noteForm">
+            <label>Tags<input id="noteTags" name="tags" autocomplete="off"></label>
+            <label>Note<textarea id="noteText" name="note" required></textarea></label>
+            <button type="submit">Save note</button>
+          </form>
+          <div id="noteStatus" class="note-status"></div>
+          <div id="notesList" class="notes-list"></div>
+        </section>
+        {{CONCEPTS}}
+      </section>
+      <article class="reading-body" dir="{{TEXT_DIRECTION}}" data-headings="{{HEADING_COUNT}}" data-segments="{{SEGMENT_COUNT}}">{{CONTENT}}</article>
+    </main>
+  </div>
+  <script id="researchData" type="application/json">{{RESEARCH_JSON}}</script>
+  <script src="/assets/reader-work.js?v=common2"></script>
+</body>
+</html>
