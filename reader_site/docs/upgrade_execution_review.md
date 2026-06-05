@@ -348,6 +348,35 @@ GitHub upload preparation now has a staging review manifest.
 
 Current result: 70 changed paths are classified as `stage`, with 0 `review` and 0 `block`. No staging, commit, or push was performed.
 
+## 2026-06-05 headless browser layout QA
+
+The in-app browser runtime was unavailable, so the visual pass used local headless Edge screenshots against the running server at `http://127.0.0.1:8787`.
+
+Screenshots checked:
+
+- home desktop;
+- home mobile;
+- Nietzsche work page desktop;
+- Nietzsche work page mobile;
+- search desktop with `ressentiment`;
+- notes desktop.
+
+Findings:
+
+- The 1000px page frame remains visually distinct from the gray background.
+- The 764px white reader column is centered on desktop and folds inside the page frame on mobile.
+- Search and notes pages render inside the same frame vocabulary.
+- Mobile work-page QA found toolbar/citation overflow at the right edge.
+
+Fix:
+
+- `assets/reader-work.css`
+  - Strengthened citation wrapping.
+  - Added mobile toolbar grid wrapping.
+  - Added mobile reader/card overflow protection.
+
+Follow-up screenshot confirmed the work-page mobile toolbar no longer clips `Source mode`, and citation URLs remain visible.
+
 ## 2026-06-05 deuterocanonical search aliases
 
 Bible search now handles more LXX/deuterocanonical aliases without changing generated metadata.

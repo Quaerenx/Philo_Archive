@@ -181,7 +181,7 @@ Current server size: 291 lines.
 
 ### Visual Identity And Page-Frame QA
 
-Status: partial.
+Status: representative headless-browser QA complete; interactive in-app browser QA unavailable.
 
 The layout vocabulary is centralized in `assets/design-tokens.css`, including:
 
@@ -190,7 +190,16 @@ The layout vocabulary is centralized in `assets/design-tokens.css`, including:
 
 `scripts/check_layout_contracts.py` now verifies that the main entrypoints and shared reader pages use the same page-frame and reader-column tokens. The home index also folds the 764px reader column to the page frame on smaller screens.
 
-This is still partial because the latest architecture changes have not been followed by a full browser screenshot audit across desktop/mobile. The local server responds successfully, but the in-app browser connection was unavailable in this session, so the current evidence is limited to static layout contracts and route-level HTTP checks. Browser screenshot QA should remain the next product-facing pass.
+The in-app browser connection was unavailable in this session, but representative headless Edge screenshots were captured for:
+
+- `/` desktop and mobile;
+- `/work/nietzsche/M` desktop and mobile;
+- `/search?q=ressentiment&corpus_id=nietzsche` desktop;
+- `/notes` desktop.
+
+The screenshot pass verified page-frame/background separation, white reader-column separation, centered desktop layout, mobile reader folding, search result readability, and notes layout. It also caught and fixed a mobile work-page toolbar/citation overflow in `assets/reader-work.css`.
+
+Remaining visual work should be treated as product polish rather than an unverified structural layout blocker.
 
 ### AI/Gemma Interpretation
 
