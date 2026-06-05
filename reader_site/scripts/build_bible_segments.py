@@ -62,8 +62,11 @@ def parse_segments(path: Path, work: dict) -> list[dict]:
                 "verse": verse,
                 "order": order,
                 "label": segment_label(work, current_id),
+                "title": work.get("display_title") or work.get("title") or work["work_id"],
+                "source_path": work.get("source_path", ""),
                 "text_raw": text,
                 "text_preview": text[:160],
+                "url": f"{work.get('work_url') or ('/work/bible/' + work['work_id'])}#{current_id}",
             }
         )
         current_id = ""

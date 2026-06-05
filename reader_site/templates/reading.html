@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{TITLE}}</title>
+  <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
+  <link rel="stylesheet" href="/assets/static-reader.css?v=static1">
+</head>
+<body>
+  <div class="page">
+    <div class="spacer"></div>
+    <main class="reader reading-mode">
+      <header class="reader-header">
+        <h1>{{TITLE}}</h1>
+        <div class="path">{{SOURCE_PATH}}</div>
+        <nav class="toolbar" aria-label="Reader navigation">
+          <a href="/">Archive index</a>
+          <a href="{{SOURCE_HREF}}">Source mode</a>
+        </nav>
+      </header>
+      <article class="reading-body">{{CONTENT}}</article>
+    </main>
+  </div>
+</body>
+</html>

@@ -5,15 +5,15 @@
 body {
   margin: 0;
   padding: 0;
-  background: #d9d9d9;
+  background: var(--page-background, #d9d9d9);
   color: #000;
-  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-family: var(--archive-font, Verdana, Arial, Helvetica, sans-serif);
   font-size: 10px;
   letter-spacing: 0;
 }
 
 a {
-  color: #ff0000;
+  color: var(--archive-link-color, #ff0000);
   text-decoration: none;
 }
 
@@ -24,16 +24,16 @@ a:hover {
 .page {
   position: relative;
   width: 100%;
-  max-width: 1000px;
+  max-width: var(--page-frame-width, 1000px);
   min-height: calc(100vh - 48px);
-  margin: 24px auto;
+  margin: var(--page-frame-margin, 24px auto);
   padding: 0;
   overflow: hidden;
-  background-image: url("/assets/header-strip.svg?v=nietzsche-portrait");
+  background-image: var(--header-strip-image, url("/assets/header-strip.svg?v=nietzsche-portrait"));
   background-repeat: repeat-x;
-  background-color: #eeeeee;
-  border: 1px solid #bdbdbd;
-  box-shadow: 0 2px 18px rgba(0, 0, 0, 0.12);
+  background-color: var(--page-frame-background, #eeeeee);
+  border: 1px solid var(--page-frame-border, #bdbdbd);
+  box-shadow: var(--page-frame-shadow, 0 2px 18px rgba(0, 0, 0, 0.12));
 }
 
 .page::before {
@@ -41,13 +41,13 @@ a:hover {
   position: absolute;
   top: 0;
   left: 0;
-  width: 440px;
-  height: 128px;
+  width: var(--header-portrait-width, 440px);
+  height: var(--header-portrait-height, 128px);
   pointer-events: none;
-  background-image: url("/assets/nietzsche-header-left.png?v=1882");
+  background-image: var(--header-portrait-image, url("/assets/nietzsche-header-left.png?v=1882"));
   background-repeat: no-repeat;
   background-position: left top;
-  background-size: 440px 128px;
+  background-size: var(--header-portrait-width, 440px) var(--header-portrait-height, 128px);
 }
 
 .page > * {
@@ -56,16 +56,16 @@ a:hover {
 }
 
 .spacer {
-  height: 160px;
+  height: var(--header-spacer-height, 160px);
 }
 
 .reader {
-  width: 764px;
+  width: var(--reader-column-width, 764px);
   min-height: 420px;
   margin: 0 auto 32px;
   padding: 28px 36px 40px;
-  background: #ffffff;
-  border: 1px solid #d4d4d4;
+  background: var(--reader-background, #ffffff);
+  border: 1px solid var(--reader-border, #d4d4d4);
 }
 
 .reader-header {
@@ -95,7 +95,7 @@ h1 {
 
 .search-form {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 150px auto;
+  grid-template-columns: minmax(0, 1fr) 130px 150px 130px auto;
   gap: 10px;
   align-items: end;
   margin-bottom: 16px;
@@ -134,8 +134,22 @@ h1 {
 
 .results {
   display: grid;
-  gap: 14px;
+  gap: 24px;
   margin-top: 14px;
+}
+
+.result-group {
+  display: grid;
+  gap: 14px;
+}
+
+.result-group h2 {
+  margin: 0;
+  padding-bottom: 6px;
+  color: #555;
+  font-size: 11px;
+  font-weight: normal;
+  border-bottom: 1px solid #d4d4d4;
 }
 
 .result {
@@ -145,6 +159,18 @@ h1 {
 
 .result:first-child {
   border-top: 0;
+}
+
+.result-group h2 + .result {
+  border-top: 0;
+}
+
+.note-result {
+  background: #fffdf6;
+}
+
+.work-result {
+  background: #f8fbff;
 }
 
 .result-title {
@@ -160,11 +186,33 @@ h1 {
   color: #555;
 }
 
+.result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 6px;
+  line-height: 1.35;
+}
+
 .snippet {
   margin: 0;
   font-family: Georgia, "Times New Roman", serif;
   font-size: 14px;
   line-height: 1.55;
+}
+
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.tag {
+  padding: 1px 5px;
+  color: #555;
+  background: #f1f1f1;
+  border: 1px solid #d4d4d4;
 }
 
 mark {

@@ -50,6 +50,18 @@ def build_database() -> int:
             )
             """
         )
+        connection.execute(
+            """
+            CREATE VIRTUAL TABLE search_segments_fts USING fts5(
+              title,
+              label,
+              search_text,
+              content='search_segments',
+              content_rowid='id',
+              tokenize='unicode61'
+            )
+            """
+        )
         rows = []
         count = 0
         for record in iter_records():
@@ -99,6 +111,12 @@ def build_database() -> int:
         connection.execute("CREATE INDEX idx_search_corpus ON search_segments(corpus_id)")
         connection.execute("CREATE INDEX idx_search_work ON search_segments(corpus_id, work_id)")
         connection.execute("CREATE INDEX idx_search_variant ON search_segments(corpus_id, work_id, variant_id)")
+        connection.execute(
+            """
+            INSERT INTO search_segments_fts(rowid, title, label, search_text)
+            SELECT id, title, label, search_text FROM search_segments
+            """
+        )
         connection.commit()
         return count
     finally:
@@ -115,9 +133,14 @@ def main() -> None:
         connection = sqlite3.connect(OUTPUT)
         try:
             count = connection.execute("SELECT COUNT(*) FROM search_segments").fetchone()[0]
+            has_fts = bool(
+                connection.execute(
+                    "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'search_segments_fts'"
+                ).fetchone()
+            )
         finally:
             connection.close()
-        print(f"search sqlite db exists ({count} records)")
+        print(f"search sqlite db exists ({count} records, fts5={has_fts})")
         return
     count = build_database()
     print(f"wrote {OUTPUT} ({count} records)")

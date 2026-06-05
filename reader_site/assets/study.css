@@ -1,0 +1,279 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--page-background, #d9d9d9);
+  color: #000;
+  font-family: var(--archive-font, Verdana, Arial, Helvetica, sans-serif);
+  font-size: 10px;
+  letter-spacing: 0;
+}
+
+a {
+  color: var(--archive-link-color, #ff0000);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.page {
+  position: relative;
+  width: 100%;
+  max-width: var(--page-frame-width, 1000px);
+  min-height: calc(100vh - 48px);
+  margin: var(--page-frame-margin, 24px auto);
+  padding: 0;
+  overflow: hidden;
+  background-image: var(--header-strip-image, url("/assets/header-strip.svg?v=nietzsche-portrait"));
+  background-repeat: repeat-x;
+  background-color: var(--page-frame-background, #eeeeee);
+  border: 1px solid var(--page-frame-border, #bdbdbd);
+  box-shadow: var(--page-frame-shadow, 0 2px 18px rgba(0, 0, 0, 0.12));
+}
+
+.page::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--header-portrait-width, 440px);
+  height: var(--header-portrait-height, 128px);
+  pointer-events: none;
+  background-image: var(--header-portrait-image, url("/assets/nietzsche-header-left.png?v=1882"));
+  background-repeat: no-repeat;
+  background-position: left top;
+  background-size: var(--header-portrait-width, 440px) var(--header-portrait-height, 128px);
+}
+
+.page > * {
+  position: relative;
+  z-index: 1;
+}
+
+.spacer {
+  height: var(--header-spacer-height, 160px);
+}
+
+.reader {
+  width: var(--reader-column-width, 764px);
+  min-height: 420px;
+  margin: 0 auto 32px;
+  padding: 28px 36px 40px;
+  background: var(--reader-background, #ffffff);
+  border: 1px solid var(--reader-border, #d4d4d4);
+}
+
+.reader-header {
+  margin-bottom: 22px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #d4d4d4;
+}
+
+h1 {
+  margin: 0 0 6px;
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+.meta-line,
+.study-status,
+.group-meta,
+.group-range,
+.note-meta,
+.note-tags,
+.note-quote,
+.empty {
+  color: #555;
+  line-height: 1.45;
+}
+
+.toolbar,
+.export-row,
+.group-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.toolbar {
+  margin-top: 10px;
+}
+
+.study-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 130px 120px 110px auto;
+  gap: 10px;
+  align-items: end;
+  margin-bottom: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #d4d4d4;
+}
+
+.study-form label {
+  display: grid;
+  gap: 4px;
+  color: #555;
+  line-height: 1.35;
+}
+
+.study-form input,
+.study-form select,
+.study-form button {
+  min-height: 28px;
+  color: #000;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  background: #fff;
+  border: 1px solid #bdbdbd;
+}
+
+.study-form input,
+.study-form select {
+  width: 100%;
+  padding: 4px 6px;
+}
+
+.study-form button {
+  padding: 4px 12px;
+  cursor: pointer;
+}
+
+.export-row {
+  margin: 0 0 14px;
+}
+
+.study-results {
+  display: grid;
+  gap: 22px;
+  margin-top: 14px;
+}
+
+.study-group {
+  padding-top: 14px;
+  border-top: 1px solid #d4d4d4;
+}
+
+.study-group:first-child {
+  border-top: 0;
+}
+
+.study-group h2 {
+  margin: 0 0 5px;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.group-actions {
+  margin: 6px 0 12px;
+}
+
+.group-range {
+  margin-top: 3px;
+}
+
+.study-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.study-tag {
+  padding: 1px 5px;
+  color: #555;
+  border: 1px solid #d4d4d4;
+  background: #f7f7f7;
+}
+
+.study-note {
+  margin-top: 14px;
+}
+
+.study-note:first-of-type {
+  margin-top: 8px;
+}
+
+.note-title {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: baseline;
+  line-height: 1.35;
+}
+
+.note-text {
+  margin: 6px 0 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 15px;
+  line-height: 1.62;
+}
+
+.note-quote {
+  margin: 7px 0 0;
+  padding-left: 12px;
+  border-left: 2px solid #d4d4d4;
+}
+
+@media (max-width: 860px) {
+  .page {
+    margin: 0 auto;
+    border-right: 0;
+    border-left: 0;
+  }
+
+  .reader {
+    width: auto;
+    margin: 0 10px 24px;
+    padding: 22px 18px 30px;
+  }
+
+  .study-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media print {
+  body {
+    background: #fff;
+  }
+
+  .page {
+    width: auto;
+    max-width: none;
+    min-height: 0;
+    margin: 0;
+    border: 0;
+    box-shadow: none;
+    background: #fff;
+  }
+
+  .page::before,
+  .spacer,
+  .toolbar,
+  .study-form,
+  .export-row,
+  .group-actions {
+    display: none;
+  }
+
+  .reader {
+    width: auto;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .reader-header,
+  .study-group {
+    break-inside: avoid;
+  }
+
+  .study-note {
+    break-inside: avoid;
+  }
+}

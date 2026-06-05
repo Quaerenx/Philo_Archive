@@ -134,6 +134,7 @@ def build_metadata() -> dict:
             "work_url": f"/work/kierkegaard/{work_id}",
             "segment_scheme": "sks_extract",
             "variant_ids": [variant["variant_id"] for variant in variants],
+            "concept_ids": [],
             "variants": variants,
             "license": copyright_note,
             "volume": volume,

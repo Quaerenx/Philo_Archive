@@ -1,0 +1,122 @@
+from __future__ import annotations
+
+from pathlib import Path
+
+
+SITE = Path(__file__).resolve().parents[1]
+
+TOKEN_FILE = "assets/design-tokens.css"
+HTML_ENTRYPOINTS = [
+    "index.html",
+    "search.html",
+    "notes.html",
+    "study.html",
+    "templates/work.html",
+    "templates/reading.html",
+    "templates/source.html",
+]
+READER_CSS_FILES = [
+    "assets/reader-work.css",
+    "assets/static-reader.css",
+    "assets/notes.css",
+    "assets/study.css",
+]
+
+
+def require(condition: bool, message: str) -> None:
+    if not condition:
+        raise AssertionError(message)
+
+
+def read_site_file(relative_path: str) -> str:
+    return (SITE / relative_path).read_text(encoding="utf-8")
+
+
+def require_contains(text: str, needle: str, label: str) -> None:
+    require(needle in text, f"{label} missing {needle!r}")
+
+
+def check_tokens() -> None:
+    tokens = read_site_file(TOKEN_FILE)
+    expected_tokens = {
+        "--page-background": "#d9d9d9",
+        "--page-frame-background": "#eeeeee",
+        "--page-frame-width": "1000px",
+        "--reader-column-width": "764px",
+        "--reader-background": "#ffffff",
+    }
+    for name, value in expected_tokens.items():
+        require_contains(tokens, f"{name}: {value};", TOKEN_FILE)
+
+
+def check_html_entrypoints() -> None:
+    for relative_path in HTML_ENTRYPOINTS:
+        html = read_site_file(relative_path)
+        require_contains(html, "/assets/design-tokens.css", relative_path)
+        require_contains(html, 'class="page"', relative_path)
+
+
+def check_page_frame_css(relative_path: str, css: str) -> None:
+    for needle in [
+        ".page {",
+        "max-width: var(--page-frame-width",
+        "background-color: var(--page-frame-background",
+        "border: 1px solid var(--page-frame-border",
+        "box-shadow: var(--page-frame-shadow",
+    ]:
+        require_contains(css, needle, relative_path)
+
+
+def check_reader_css(relative_path: str, css: str) -> None:
+    for needle in [
+        ".reader {",
+        "width: var(--reader-column-width",
+        "background: var(--reader-background",
+        "border: 1px solid var(--reader-border",
+        "@media (max-width: 860px)",
+        "width: auto;",
+        "margin: 0 10px 24px;",
+    ]:
+        require_contains(css, needle, relative_path)
+
+
+def check_home_css() -> None:
+    relative_path = "styles.css"
+    css = read_site_file(relative_path)
+    check_page_frame_css(relative_path, css)
+    for needle in [
+        ".nav-column {",
+        "flex: 0 0 var(--reader-column-width",
+        "background: var(--reader-background",
+        "border: 1px solid var(--reader-border",
+        "@media (max-width: 860px)",
+    ]:
+        require_contains(css, needle, relative_path)
+
+    responsive = css.split("@media (max-width: 860px)", maxsplit=1)[1]
+    for needle in [
+        ".nav-column {",
+        "flex: 0 1 auto;",
+        "width: 100%;",
+        "padding: 0 10px 24px;",
+    ]:
+        require_contains(responsive, needle, f"{relative_path} responsive block")
+
+
+def check_reader_pages_css() -> None:
+    for relative_path in READER_CSS_FILES:
+        css = read_site_file(relative_path)
+        check_page_frame_css(relative_path, css)
+        check_reader_css(relative_path, css)
+
+
+def main() -> None:
+    check_tokens()
+    check_html_entrypoints()
+    check_home_css()
+    check_reader_pages_css()
+    print("layout contracts ok")
+
+
+if __name__ == "__main__":
+    main()

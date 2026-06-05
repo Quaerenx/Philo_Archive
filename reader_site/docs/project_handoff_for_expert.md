@@ -29,10 +29,22 @@ C:\Users\PP\PROJECT\0.philosophy\philosophy_crawl\reader_site
 
 | corpus_id | 표시명 | 현재 상태 |
 |---|---|---|
-| `nietzsche` | 니체 | Phase 1, Phase 2, Phase 2.5 적용. 기준 모델 역할 |
-| `bible` | 성경 | 소스별 Markdown 목록 수준. 책/장/절 work page는 미적용 |
-| `kierkegaard` | 키르케고르 | SKS JSON 원본 구조 노출 수준. 저작 단위 통합 미적용 |
-| `wittgenstein` | 비트겐슈타인 | WAB export 종류별 목록 수준. 원고/variant 모델 미적용 |
+| `nietzsche` | 니체 | Phase 1, Phase 2, Phase 2.5 적용 후 공통 work page 모델에 편입 |
+| `bible` | 성경 | OSHB/SBLGNT/LXX 책 단위 work page와 절 앵커 적용 |
+| `kierkegaard` | 키르케고르 | SKS 저작 단위 work page와 Text/Commentary/Textual Account variant 적용 |
+| `wittgenstein` | 비트겐슈타인 | siglum 단위 work page와 source/IDP variant 적용 |
+
+2026-06-04 현재 추가로 적용된 공통 기반:
+
+- `/work/<corpus_id>/<work_id>` 공통 route가 네 코퍼스에 적용되어 있다.
+- `/api/search`는 SQLite FTS5를 우선 사용하고, 성경 직접 참조 검색(`Gen 1:1`, `John 3:16`, `창 1:1`, `요 3:16`, `요일 5:7`, `lxx Gen 1:1`)을 지원한다.
+- `/api/notes`는 `corpus_id` 중심의 조회/생성/수정/삭제를 지원한다.
+- `/notes`는 전체 코퍼스의 개인 주석을 모아보고 직접 수정/삭제/검토 완료 처리할 수 있는 index page이다.
+- `/api/study`는 reviewed notes를 corpus/work별 bundle로 묶어 반환한다.
+- `/api/study/export`는 reviewed note bundle을 Markdown 또는 JSON으로 내보낸다.
+- `/study`는 reviewed note bundle을 조용히 읽는 study-note view이다.
+- `/api/notes/export`는 notes를 JSON, JSONL, Markdown으로 export한다.
+- `/search`는 corpus/work/variant 필터를 제공하고, 검색 결과에서 work/target notes 페이지로 이동할 수 있다.
 
 ## 2. 현재 작업 단계 요약
 
@@ -149,9 +161,9 @@ python .\server.py --port 8787
 - 정적 파일 제공
 - `/source?path=...` raw source viewer 제공
 - `/read?path=...` 기본 Markdown reading viewer 제공
-- `/work/nietzsche/<work_id>` 니체 작품 페이지 제공
-- 니체 metadata/concepts API 제공
-- notes JSONL 저장/조회 API 제공
+- `/work/<corpus_id>/<work_id>` 공통 작품 페이지 제공
+- corpus별 metadata API 제공
+- search, notes, health, artifact API 제공
 
 현재 라우트:
 
@@ -159,19 +171,28 @@ python .\server.py --port 8787
 |---|---|
 | `/` | 루트 카테고리 목록 |
 | `/category/<corpus_id>` | 코퍼스별 섹션/링크 목록 |
-| `/work/nietzsche/<work_id>` | 니체 작품 페이지 |
+| `/work/<corpus_id>/<work_id>` | 공통 작품 페이지 |
+| `/search` | 전체 코퍼스 검색 페이지 |
+| `/notes` | 전체 코퍼스 주석 index/export 페이지 |
+| `/study` | reviewed notes 읽기 화면 |
 | `/read?path=<path>` | Markdown 읽기 화면 |
 | `/source?path=<path>` | raw source 확인 화면 |
 | `/api/archive` | 전체 archive 구조 |
-| `/api/nietzsche/metadata` | 니체 metadata |
-| `/api/nietzsche/concepts` | 니체 개념 사전 |
-| `/api/notes?author=nietzsche&work_id=M` | 니체 notes 조회 |
-| `POST /api/notes` | 니체 notes 저장 |
+| `/api/health` | 로컬 원천/산출물/search readiness 진단 |
+| `/api/artifacts` | 생성 산출물 manifest payload |
+| `/api/search?q=<query>` | cross-corpus segment 검색 |
+| `/api/notes?corpus_id=nietzsche&work_id=M` | corpus별 notes 조회 |
+| `POST /api/notes` | notes 저장 |
+| `PUT /api/notes/<note_id>` | notes 수정 |
+| `DELETE /api/notes/<note_id>` | notes 삭제 |
+| `/api/notes/export?format=markdown` | notes export |
+| `/api/study` | reviewed notes bundle |
+| `/api/study/export?format=markdown` | reviewed notes bundle export |
 
 중요한 제한:
 
-- notes API는 아직 `author=nietzsche` 중심이다.
-- 확장 전에는 `corpus_id` 중심으로 일반화하는 것이 좋다.
+- legacy `author=nietzsche` 형태는 호환용으로만 남아 있다.
+- 새 코드와 새 문서는 `corpus_id` 중심으로 작성해야 한다.
 
 ## 5. 현재 코퍼스 상태
 
@@ -468,28 +489,31 @@ reader container: 764px, 흰색
 - `styles.css`
 - `app.js`
 
-니체 작품 페이지:
+공통 작품 페이지:
 
-- `templates/nietzsche_work.html`
-- `assets/work-page.css`
-- `assets/work-page.js`
+- `templates/work.html`
+- `assets/reader-work.css`
+- `assets/reader-work.js`
 
 주의:
 
-- 현재 `work-page.css/js`는 이름은 공통처럼 보이지만 실제로는 니체 work page에서만 사용 중이다.
-- 다른 코퍼스로 확장하기 전에 `templates/work.html`, `assets/reader-work.css`, `assets/reader-work.js` 같은 이름으로 일반화하는 것이 좋다.
+- `templates/nietzsche_work.html`, `assets/work-page.css`, `assets/work-page.js`는 과거 Phase 2.5 산출물이었으나 현재 제거되었다.
+- 현재 공통 route는 `templates/work.html`과 `assets/reader-work.*`를 사용한다.
 
 ## 8. 현재 표준화가 필요한 지점
 
 ### 8.1 라우트 표준화
 
-현재:
+완료된 기준:
 
 ```text
 /work/nietzsche/<work_id>
+/work/bible/<work_id>
+/work/kierkegaard/<work_id>
+/work/wittgenstein/<work_id>
 /api/nietzsche/metadata
 /api/nietzsche/concepts
-/api/notes?author=nietzsche&work_id=M
+/api/notes?corpus_id=nietzsche&work_id=M
 ```
 
 권장:
@@ -661,15 +685,7 @@ Ludwig Wittgenstein, MS/TS item, normalized transcription. Personal Archive of L
 
 ### Step 1. 공통 work page 모델 일반화
 
-현재:
-
-```text
-templates/nietzsche_work.html
-assets/work-page.css
-assets/work-page.js
-```
-
-권장:
+완료:
 
 ```text
 templates/work.html
@@ -677,29 +693,21 @@ assets/reader-work.css
 assets/reader-work.js
 ```
 
-그리고 서버에서 다음 형태의 공통 renderer를 만든다.
-
-```python
-send_work_viewer(corpus_id, work_id, model)
-```
+서버는 corpus별 model builder를 거쳐 공통 renderer로 보낸다.
 
 ### Step 2. notes API 일반화
 
-현재:
-
-```text
-GET /api/notes?author=nietzsche&work_id=M
-POST /api/notes
-```
-
-권장:
+완료:
 
 ```text
 GET /api/notes?corpus_id=nietzsche&work_id=M
 POST /api/notes
+PUT /api/notes/<note_id>
+DELETE /api/notes/<note_id>
+GET /api/notes/export?format=markdown
 ```
 
-POST payload도 `corpus_id`, `variant_id`, `target_type`을 받게 한다.
+POST payload는 `corpus_id`, `variant_id`, `target_type`을 받는다.
 
 ### Step 3. 성경 metadata builder 작성
 
@@ -861,3 +869,94 @@ reader_site/
 ## 13. 한 줄 요약
 
 현재 프로젝트는 니체를 기준 모델로 Phase 2.5까지 구현되어 있다. 다음 전문 작업은 니체 전용 구조를 공통 work page/metadata/notes 모델로 일반화한 뒤, 성경의 책/장/절 구조에 먼저 적용하는 것이다.
+
+## 14. 2026-06-04 현재 구현 업데이트
+
+이 문서 작성 이후 공통화 작업이 더 진행되었다. 현재 코드는 니체 전용 구조에서 벗어나 네 개 코퍼스 모두에 공통 work page route를 제공한다.
+
+현재 확인된 대표 route:
+
+```text
+/work/nietzsche/M
+/work/bible/oshb.Gen
+/work/kierkegaard/aas
+/work/wittgenstein/Ms-101
+```
+
+현재 주요 모듈:
+
+```text
+reader_site/
+  server.py
+  runtime_status.py
+  corpora/
+    archive.py
+    catalogs.py
+    work_models.py
+  rendering/
+    documents.py
+    static_pages.py
+    work_markup.py
+  services/
+    notes.py
+    search.py
+    sources.py
+```
+
+역할:
+
+- `server.py`: HTTP route, note/search API glue, static file response, work response, read/source error mapping을 담당한다.
+- `corpora/archive.py`: `/api/archive` root/category index를 구성한다.
+- `corpora/catalogs.py`: metadata loading, work validation, Bible segment lookup을 담당한다.
+- `corpora/work_models.py`: corpus별 work page model을 만든다.
+- `rendering/documents.py`: Markdown, Bible verse, Kierkegaard JSON, generic segment를 HTML reading body로 변환한다.
+- `rendering/work_markup.py`: 공통 work page template 치환, TOC, concepts, variant tabs, source notice를 담당한다.
+- `services/search.py`: SQLite FTS5, LIKE fallback, JSONL fallback 검색을 담당한다.
+- `services/notes.py`: corpus별 notes JSONL 읽기/쓰기/필터/수정/삭제를 담당한다.
+- `services/sources.py`: source path validation과 `/read`, `/source` HTML assembly를 담당한다.
+- `docs/api_reference.md`: `/api/archive`, `/api/health`, `/api/artifacts` 응답 구조를 문서화한다.
+- `scripts/check_api_contracts.py`: runtime API payload의 필수 schema를 검사한다.
+- `scripts/check_search_contracts.py`: search filter와 Bible direct lookup 동작을 검사한다.
+- `scripts/check_notes_contracts.py`: notes 저장, 필터, 수정, 삭제 동작을 검사한다.
+
+현재 검증 수치:
+
+```text
+nietzsche      6 archive sections, 91 links, 91 files
+bible          3 archive sections, 121 links, 122 files
+kierkegaard    1 archive section, 211 links, 630 source files
+wittgenstein   2 archive sections, 202 links, 1228 source files
+search         225,442 records, SQLite FTS5 enabled
+```
+
+현재 남은 우선 과제:
+
+1. deuterocanon/alternative title alias, notes search, corpus별 ranking 등 검색 품질을 개선한다.
+2. reviewed notes 기반 요약/인쇄용 출력 bundle을 개선한다.
+3. search regression check를 더 넓힌다.
+4. 공통 page frame과 corpus별 visual identity를 분리한다.
+5. route table이 더 커질 경우 static file serving과 API dispatch를 별도 route module로 분리한다.
+
+## 2026-06-05 Reproducibility Addendum
+
+The project now has a single local rebuild command:
+
+```powershell
+cd C:\Users\PP\PROJECT\0.philosophy\philosophy_crawl\reader_site
+python .\scripts\rebuild_all.py
+```
+
+This command runs the metadata builders, segment builders, search index/database builders, artifact manifest builder, and contract checks in order. For lighter runs, use:
+
+```powershell
+python .\scripts\rebuild_all.py --skip-search-db
+python .\scripts\rebuild_all.py --skip-manifest --no-checks
+```
+
+Additional contract gate:
+
+```powershell
+python .\scripts\check_static_routes.py
+```
+
+That route test boots a temporary local HTTP server and checks the archive page, category page, search, notes, study, a representative work page, `/api/health`, and `/api/study`.

@@ -9,9 +9,14 @@ reader_site/data/*_segments.jsonl
 reader_site/data/search_index.jsonl
 reader_site/data/search_index.sqlite
 reader_site/data/search_index.sqlite-*
+reader_site/data/artifact_manifest.local.json
+reader_site/data/release_stage_manifest.local.json
 
 # Personal notes and local-only state.
 reader_site/data/notes/*.jsonl
+reader_site/data/ai/*.jsonl
+reader_site/data/ai/*.sqlite
+reader_site/data/ai/*.sqlite-*
 reader_site/local_paths.json
 .env
 .env.*

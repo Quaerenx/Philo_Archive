@@ -2,6 +2,13 @@
 
 작성일: 2026-05-28
 
+2026-06-04 현재 상태:
+
+- 이 문서의 권장 방향 중 공통 route, 공통 work page, `reader-work.css/js`, `corpus_id` 중심 notes API는 이미 적용되었다.
+- 현재 공통 route는 `/work/<corpus_id>/<work_id>`이고, notes API는 `/api/notes?corpus_id=<corpus_id>&work_id=<work_id>`이다.
+- `templates/nietzsche_work.html`, `assets/work-page.css`, `assets/work-page.js` 언급은 Phase 2.5 당시의 과거 기준으로 읽어야 한다. 현재 파일은 공통 `templates/work.html`, `assets/reader-work.css`, `assets/reader-work.js`로 대체되었다.
+- 다음 표준화 과제는 legacy 파일 정리, notes dashboard 직접 편집, 검색 ranking/alias 확장, corpus별 visual identity 분리이다.
+
 ## 결론
 
 니체에서 만든 구조는 좋은 기준 모델이지만, 그대로 성경·키르케고르·비트겐슈타인에 복사하면 안 된다.
@@ -59,7 +66,7 @@
 
 현재 니체는 `/work/nietzsche/M`를 쓰고 있으므로 이 방향과 맞는다.
 
-단, 현재 notes API는 `author=nietzsche` 중심이므로, 나중에는 `corpus_id=nietzsche` 중심으로 일반화하는 편이 좋다.
+작성 당시 notes API는 `author=nietzsche` 중심이었다. 현재는 `corpus_id=nietzsche` 중심으로 일반화되어 있다.
 
 ### 2. 공통 work metadata
 
@@ -284,7 +291,7 @@ segment_id: source page/block id
 - `templates/nietzsche_work.html` -> `templates/work.html`
 - `assets/work-page.css` 유지 또는 `reader-work.css`로 변경
 - `assets/work-page.js`를 `corpus_id` 기반으로 수정
-- `/api/notes?author=nietzsche` -> `/api/notes?corpus_id=nietzsche`
+- 완료: `/api/notes?author=nietzsche` 호환 형태에서 `/api/notes?corpus_id=nietzsche` 중심으로 이동
 
 ### Step 2. metadata builder 패턴 고정
 
