@@ -98,6 +98,7 @@ Key validation commands:
 ```powershell
 cd .\reader_site
 python .\scripts\build_release_stage_manifest.py --check
+python .\scripts\check_clean_clone_contracts.py
 python .\scripts\check_encoding_contracts.py
 python .\scripts\check_release_contracts.py
 python .\scripts\check_layout_contracts.py
@@ -112,4 +113,4 @@ python .\scripts\check_ai_records_contracts.py
 python .\scripts\check_static_routes.py
 ```
 
-Before pushing to GitHub, read `reader_site/docs/release_handoff.md`, run `python .\scripts\build_release_stage_manifest.py --check`, `python .\scripts\check_encoding_contracts.py`, and `python .\scripts\check_release_contracts.py` to verify that local source corpora, large generated artifacts, personal notes, generated AI interpretations, and Korean path names are handled correctly.
+Before pushing to GitHub, read `reader_site/docs/release_handoff.md`, run `python .\scripts\build_release_stage_manifest.py --check`, `python .\scripts\check_clean_clone_contracts.py`, `python .\scripts\check_encoding_contracts.py`, and `python .\scripts\check_release_contracts.py` to verify that local source corpora, large generated artifacts, personal notes, generated AI interpretations, clean-clone restore paths, and Korean path names are handled correctly.

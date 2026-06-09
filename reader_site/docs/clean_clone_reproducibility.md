@@ -1,0 +1,68 @@
+# Clean Clone Reproducibility
+
+The public repository is intentionally source-light.
+
+A clean clone should contain:
+
+- reader-site application code;
+- scripts, templates, CSS, and docs;
+- small metadata/catalog files;
+- validation contracts.
+
+A clean clone should not contain:
+
+- the four local source-corpus folders;
+- generated `*_segments.jsonl` files;
+- generated search indexes or SQLite databases;
+- personal notes;
+- generated AI interpretations;
+- local visual QA screenshots.
+
+## Source-Light Checks
+
+These checks should pass in a clean clone before source corpora are restored:
+
+```powershell
+cd .\reader_site
+python .\scripts\check_clean_clone_contracts.py
+python .\scripts\check_encoding_contracts.py
+python .\scripts\check_release_contracts.py
+python .\scripts\check_layout_contracts.py
+python .\scripts\check_server_boundary.py
+python .\scripts\check_provenance_contracts.py
+python .\scripts\check_ai_records_contracts.py
+```
+
+`check_clean_clone_contracts.py --run-source-light-checks` runs the source-light command set from one entrypoint.
+
+## Local Clone Smoke
+
+After committing local changes, run a real local clone smoke test:
+
+```powershell
+cd .\reader_site
+python .\scripts\check_clean_clone_contracts.py --clone-smoke --clone-parent C:\Users\PP\Documents\crawl
+```
+
+The script clones the current Git branch into an ignored temporary folder, points `PHILOSOPHY_CRAWL_ROOT` at an empty directory, and verifies that source-light checks still pass without local corpora.
+
+## Full Restore
+
+To restore full reading/search behavior on another machine:
+
+```powershell
+git clone https://github.com/Quaerenx/Philo_Archive.git
+cd .\Philo_Archive\reader_site
+$env:PHILOSOPHY_CRAWL_ROOT="D:\archives\philosophy_crawl"
+python .\scripts\rebuild_all.py
+python .\server.py --port 8787
+```
+
+`PHILOSOPHY_CRAWL_ROOT` must contain these source folders:
+
+- `니체_원서수집`
+- `비트겐슈타인_원서수집`
+- `성경_원서수집`
+- `키르케고르_원서수집`
+
+Without those folders, the source-light checks still prove that the clone is structurally valid, but full corpus routes, generated segments, and search indexes cannot be regenerated.
