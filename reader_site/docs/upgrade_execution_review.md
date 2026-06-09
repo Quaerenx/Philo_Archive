@@ -605,3 +605,16 @@ Implemented:
   - release stage, release, source-publication, clean-clone, encoding, and path checks.
 
 This reduces the number of places where a future source-folder move can silently drift.
+
+## 2026-06-09 path drift guard
+
+The path contract now also guards against regressions after centralization.
+
+Implemented:
+
+- `scripts/check_path_contracts.py`
+  - Scans tracked Python files and fails if a module other than `path_config.py` directly reads `PHILOSOPHY_CRAWL_ROOT`.
+  - Fails if a module other than `path_config.py` directly redefines one of the four Korean source-root names.
+  - Keeps source-light compatibility because the scan checks code structure only and does not require local corpora.
+
+This makes `path_config.py` the enforced source of truth rather than only a convention.

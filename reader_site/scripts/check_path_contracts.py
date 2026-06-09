@@ -24,6 +24,16 @@ from services import sources  # noqa: E402
 
 
 EXPECTED_SOURCE_ROOTS = set(SOURCE_ROOT_NAMES)
+CENTRAL_PATH_CONFIG = SITE / "path_config.py"
+PATH_CONTRACT = Path(__file__).resolve()
+FORBIDDEN_DIRECT_ENV_SNIPPETS = (
+    'os.environ.get("PHILOSOPHY_CRAWL_ROOT"',
+    "os.environ.get('PHILOSOPHY_CRAWL_ROOT'",
+    'os.getenv("PHILOSOPHY_CRAWL_ROOT"',
+    "os.getenv('PHILOSOPHY_CRAWL_ROOT'",
+    'Path(os.environ.get("PHILOSOPHY_CRAWL_ROOT"',
+    "Path(os.environ.get('PHILOSOPHY_CRAWL_ROOT'",
+)
 
 EXPECTED_PRIMARY_OUTPUTS = {
     "nietzsche": catalogs.NIETZSCHE_OUTPUT,
@@ -86,10 +96,43 @@ def check_primary_outputs() -> None:
         )
 
 
+def python_files() -> list[Path]:
+    return sorted(
+        path
+        for path in SITE.rglob("*.py")
+        if "__pycache__" not in path.parts and ".pytest_tmp" not in path.parts
+    )
+
+
+def check_no_direct_path_redefinitions() -> None:
+    direct_root_failures: list[str] = []
+    direct_env_failures: list[str] = []
+    for path in python_files():
+        if path.resolve() in {CENTRAL_PATH_CONFIG.resolve(), PATH_CONTRACT}:
+            continue
+        relative = path.relative_to(SITE).as_posix()
+        source = path.read_text(encoding="utf-8")
+        for root_name in SOURCE_ROOT_NAMES:
+            if f'"{root_name}"' in source or f"'{root_name}'" in source:
+                direct_root_failures.append(f"{relative}: {root_name}")
+        for snippet in FORBIDDEN_DIRECT_ENV_SNIPPETS:
+            if snippet in source:
+                direct_env_failures.append(f"{relative}: {snippet}")
+    require(
+        not direct_root_failures,
+        "source root names must be imported from path_config.py: " + ", ".join(direct_root_failures),
+    )
+    require(
+        not direct_env_failures,
+        "PHILOSOPHY_CRAWL_ROOT must be read through path_config.py: " + ", ".join(direct_env_failures),
+    )
+
+
 def main() -> None:
     check_source_root_vocabularies()
     check_runtime_roots()
     check_primary_outputs()
+    check_no_direct_path_redefinitions()
     print("path contracts ok")
 
 
