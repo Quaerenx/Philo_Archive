@@ -196,7 +196,10 @@ Check notes storage, filtering, update, delete, and export behavior with:
 
 ```powershell
 python .\scripts\check_notes_contracts.py
+python .\scripts\check_note_target_integrity.py
 ```
+
+`check_note_target_integrity.py` scans local personal note JSONL files after restore. Work targets must still resolve, and paragraph/verse/segment notes must point to generated segment records with matching canonical work URLs.
 
 Check local AI interpretation JSONL files before enabling or importing generated interpretation records:
 

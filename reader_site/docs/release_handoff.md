@@ -101,6 +101,7 @@ python .\scripts\check_search_contracts.py
 python .\scripts\check_search_relevance.py
 python .\scripts\check_search_artifact_integrity.py
 python .\scripts\check_notes_contracts.py
+python .\scripts\check_note_target_integrity.py
 python .\scripts\check_ai_records_contracts.py
 python .\scripts\check_static_routes.py
 python .\scripts\build_search_db.py --check
@@ -117,6 +118,8 @@ git status --short
 `check_restore_readiness.py` verifies the local full-restore side of the same handoff: source roots, primary output folders, metadata, segment artifacts, portable search index, SQLite search database, and corpus coverage in search records.
 
 `check_search_artifact_integrity.py` verifies that generated segment JSONL files, the portable search index, the SQLite search table, and the SQLite FTS table agree on target keys, URLs, text previews, and corpus record counts.
+
+`check_note_target_integrity.py` verifies that local personal notes still resolve to existing works, and that paragraph/verse/segment notes point to generated segment records with canonical note target URLs.
 
 `check_encoding_contracts.py` verifies UTF-8 tracked text, Korean source-root names, and common mojibake fragments. If Windows PowerShell displays Korean paths incorrectly, use `Get-Content -Encoding UTF8`; see `docs/encoding_policy.md`.
 

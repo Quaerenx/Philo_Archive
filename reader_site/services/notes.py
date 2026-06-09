@@ -8,6 +8,7 @@ from urllib.parse import quote
 from uuid import uuid4
 
 from corpora.catalogs import validate_work_target
+from services.source_targets import resolve_segment_target
 from services.sources import work_href
 
 
@@ -15,6 +16,7 @@ SITE = Path(__file__).resolve().parents[1]
 NOTES_DIR = SITE / "data" / "notes"
 DEFAULT_CORPUS_IDS = ("nietzsche", "bible", "kierkegaard", "wittgenstein")
 VALID_REVIEW_STATES = {"raw", "reviewed"}
+SEGMENT_NOTE_TARGET_TYPES = {"segment", "paragraph", "verse"}
 
 
 def safe_note_slug(value: str) -> str:
@@ -43,6 +45,23 @@ def normalize_tags(value) -> list[str]:
 def normalize_review_state(value: str) -> str:
     value = str(value or "").strip().lower()
     return value if value in VALID_REVIEW_STATES else "raw"
+
+
+def note_target_url(corpus_id: str, work_id: str, variant_id: str = "", target_id: str = "") -> str:
+    href = work_href(corpus_id, work_id)
+    if variant_id:
+        href += "?variant=" + quote(variant_id, safe="")
+    if target_id and target_id != "work":
+        href += "#" + quote(target_id, safe="")
+    return href
+
+
+def validate_note_target(corpus_id: str, work_id: str, variant_id: str, target_id: str, target_type: str) -> None:
+    validate_work_target(corpus_id, work_id)
+    if not target_id or target_id == "work":
+        return
+    if target_type in SEGMENT_NOTE_TARGET_TYPES:
+        resolve_segment_target(corpus_id, work_id, target_id, variant_id)
 
 
 def note_storage_path(corpus_id: str) -> Path:
@@ -418,7 +437,7 @@ def create_note_from_payload(payload: dict) -> dict:
     tags = normalize_tags(payload.get("tags", []))
     if not corpus_id or not note_text:
         raise ValueError("missing required note fields")
-    validate_work_target(corpus_id, work_id)
+    validate_note_target(corpus_id, work_id, variant_id, target_id, target_type)
     record = {
         "id": uuid4().hex,
         "created_at": datetime.now().isoformat(timespec="seconds"),
@@ -433,7 +452,7 @@ def create_note_from_payload(payload: dict) -> dict:
         "tags": [str(tag)[:80] for tag in tags[:12]],
         "review_state": "raw",
         "reviewed_at": "",
-        "url": f"{work_href(corpus_id, work_id)}#{quote(target_id, safe='')}",
+        "url": note_target_url(corpus_id, work_id, variant_id[:120], target_id[:120]),
     }
     if corpus_id == "nietzsche":
         record["author"] = "nietzsche"

@@ -1,14 +1,17 @@
 from __future__ import annotations
 
 import sys
+import tempfile
 from pathlib import Path
 
 
 SITE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SITE))
 
+import services.notes as notes_service  # noqa: E402
 from services.notes import (  # noqa: E402
     append_note,
+    create_note_from_payload,
     delete_note,
     export_notes_jsonl,
     export_notes_markdown,
@@ -41,7 +44,7 @@ def cleanup() -> None:
         path.unlink()
 
 
-def main() -> None:
+def run_contracts() -> None:
     cleanup()
     try:
         append_note(
@@ -89,6 +92,47 @@ def main() -> None:
         require(len(read_all_notes([CORPUS_ID], target_id="sec-1")) == 1, "read all notes target filter failed")
         require("note-1" in export_notes_jsonl(read_all_notes([CORPUS_ID])), "jsonl export failed")
         require("# Personal Archive Notes" in export_notes_markdown(read_all_notes([CORPUS_ID])), "markdown export failed")
+
+        created = create_note_from_payload(
+            {
+                "corpus_id": "wittgenstein",
+                "work_id": "Ms-101",
+                "variant_id": "source_transcription_normalized.full",
+                "target_id": "p-0001",
+                "target_type": "paragraph",
+                "target_label": "Paragraph 1",
+                "quote": "sample quote",
+                "note": "variant target note",
+                "tags": ["variant"],
+            },
+        )
+        require(created["corpus_id"] == "wittgenstein", "create note corpus failed")
+        require(created["work_id"] == "Ms-101", "create note work failed")
+        require(created["target_id"] == "p-0001", "create note target failed")
+        require(
+            created["url"] == "/work/wittgenstein/Ms-101?variant=source_transcription_normalized.full#p-0001",
+            "create note variant target URL failed",
+        )
+        require(
+            len(read_notes("wittgenstein", work_id="Ms-101", target_id="p-0001")) == 1,
+            "created note target filter failed",
+        )
+        try:
+            create_note_from_payload(
+                {
+                    "corpus_id": "wittgenstein",
+                    "work_id": "Ms-101",
+                    "variant_id": "source_transcription_normalized.full",
+                    "target_id": "missing-segment",
+                    "target_type": "paragraph",
+                    "target_label": "Missing segment",
+                    "note": "bad target note",
+                },
+            )
+        except FileNotFoundError:
+            pass
+        else:
+            raise AssertionError("invalid segment note target should fail")
 
         updated = update_note(
             CORPUS_ID,
@@ -155,6 +199,16 @@ def main() -> None:
         print("notes contracts ok")
     finally:
         cleanup()
+
+
+def main() -> None:
+    original_notes_dir = notes_service.NOTES_DIR
+    with tempfile.TemporaryDirectory(prefix="philo_notes_contract_") as temp_dir:
+        notes_service.NOTES_DIR = Path(temp_dir)
+        try:
+            run_contracts()
+        finally:
+            notes_service.NOTES_DIR = original_notes_dir
 
 
 if __name__ == "__main__":

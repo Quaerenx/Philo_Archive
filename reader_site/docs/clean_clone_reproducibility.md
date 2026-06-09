@@ -98,9 +98,10 @@ After a full local restore, also run:
 ```powershell
 python .\scripts\check_restore_readiness.py
 python .\scripts\check_source_target_contracts.py
+python .\scripts\check_note_target_integrity.py
 ```
 
-These checks intentionally are not part of the source-light CI subset because they require restored source folders and regenerated local artifacts. `check_restore_readiness.py` verifies source roots, primary output folders, metadata, segment artifacts, and search records. `check_source_target_contracts.py` proves that selected reading targets can be resolved back to exact `text_raw` records and stable SHA-256 source-text checksums.
+These checks intentionally are not part of the source-light CI subset because they require restored source folders and regenerated local artifacts. `check_restore_readiness.py` verifies source roots, primary output folders, metadata, segment artifacts, and search records. `check_source_target_contracts.py` proves that selected reading targets can be resolved back to exact `text_raw` records and stable SHA-256 source-text checksums. `check_note_target_integrity.py` verifies that local personal notes still point to existing works and generated segment targets.
 
 The workflow shape is checked by:
 

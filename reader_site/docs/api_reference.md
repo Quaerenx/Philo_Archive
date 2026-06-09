@@ -395,7 +395,9 @@ Response:
 
 ## `POST /api/notes`
 
-Creates a note. The target work must exist.
+Creates a note. The target work must exist. For `target_type=segment`, `target_type=paragraph`, and `target_type=verse`, the target must also resolve to a generated segment record. Section, chapter, and whole-work notes are allowed as work-level reading anchors.
+
+When `variant_id` is present, the saved note URL preserves it as a `?variant=...` query before the target hash.
 
 Request body:
 

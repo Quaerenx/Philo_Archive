@@ -657,3 +657,29 @@ Boundary:
 
 - This remains a source-light contract. It validates handoff structure and command boundaries without requiring local source corpora.
 - Full corpus availability and generated artifact synchronization remain covered by `check_restore_readiness.py`, `check_source_target_contracts.py`, and `check_search_artifact_integrity.py` after local restore.
+
+## 2026-06-09 note target integrity gate
+
+The next pass tightened the study workflow. Personal notes are useful only if they keep pointing back to the exact work and segment the reader selected, especially once the archive grows across Nietzsche, Bible, Kierkegaard, and Wittgenstein variants.
+
+Implemented:
+
+- `services/notes.py`
+  - Adds canonical note target URL generation.
+  - Preserves `variant_id` in saved note URLs.
+  - Validates `segment`, `paragraph`, and `verse` note targets against generated segment JSONL records before creating a note.
+  - Continues to allow `section`, `chapter`, and whole-work notes as reading anchors.
+- `scripts/check_notes_contracts.py`
+  - Runs note storage tests inside a temporary notes directory so user note files are never modified.
+  - Verifies variant-aware note URLs and rejects missing segment targets.
+- `scripts/check_note_target_integrity.py`
+  - Scans local personal note JSONL files.
+  - Verifies supported-corpus notes resolve to existing works.
+  - Verifies paragraph/verse/segment notes resolve to generated segment records and match canonical note target URLs.
+- `scripts/rebuild_all.py`
+  - Runs note target integrity after the notes behavior contract.
+
+Boundary:
+
+- `check_note_target_integrity.py` is a full local restore check, not a source-light CI check, because segment target verification depends on ignored generated segment artifacts.
+- The check is read-only against personal note files.
