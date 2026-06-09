@@ -46,16 +46,20 @@ ALLOWED_LOCAL_STATE_KEEPERS = {
 REQUIRED_FILES = [
     ".gitattributes",
     ".gitignore",
+    ".github/workflows/reader-site-source-light.yml",
     "README.md",
     "reader_site/README.md",
     "reader_site/server.py",
     "reader_site/scripts/rebuild_all.py",
     "reader_site/scripts/check_clean_clone_contracts.py",
+    "reader_site/scripts/check_ci_contracts.py",
     "reader_site/scripts/check_encoding_contracts.py",
     "reader_site/scripts/check_release_contracts.py",
+    "reader_site/scripts/check_source_publication_contracts.py",
     "reader_site/docs/clean_clone_reproducibility.md",
     "reader_site/docs/encoding_policy.md",
     "reader_site/docs/release_handoff.md",
+    "reader_site/docs/source_publication_policy.md",
 ]
 
 REQUIRED_DOC_SNIPPETS = {
@@ -63,18 +67,29 @@ REQUIRED_DOC_SNIPPETS = {
         "PHILOSOPHY_CRAWL_ROOT",
         "python .\\scripts\\rebuild_all.py",
         "python .\\scripts\\check_clean_clone_contracts.py",
+        "python .\\scripts\\check_ci_contracts.py",
+        "python .\\scripts\\check_source_publication_contracts.py",
+        ".github/workflows/reader-site-source-light.yml",
     ],
     "reader_site/README.md": [
         "docs/clean_clone_reproducibility.md",
         "python .\\scripts\\check_clean_clone_contracts.py",
+        "python .\\scripts\\check_ci_contracts.py",
+        "python .\\scripts\\check_source_publication_contracts.py",
+        ".github/workflows/reader-site-source-light.yml",
     ],
     "reader_site/docs/release_handoff.md": [
         "python .\\scripts\\check_clean_clone_contracts.py",
+        "python .\\scripts\\check_ci_contracts.py",
+        "python .\\scripts\\check_source_publication_contracts.py",
         "docs/clean_clone_reproducibility.md",
+        "docs/source_publication_policy.md",
+        ".github/workflows/reader-site-source-light.yml",
     ],
     "reader_site/docs/clean_clone_reproducibility.md": [
         "PHILOSOPHY_CRAWL_ROOT",
         "--clone-smoke",
+        ".github/workflows/reader-site-source-light.yml",
         "Source-Light Checks",
         "Full Restore",
     ],
@@ -82,7 +97,9 @@ REQUIRED_DOC_SNIPPETS = {
 
 SOURCE_LIGHT_COMMANDS = [
     [sys.executable, "-m", "compileall", "-q", "server.py", "runtime_status.py", "corpora", "rendering", "services", "scripts"],
+    [sys.executable, "scripts/check_ci_contracts.py"],
     [sys.executable, "scripts/check_encoding_contracts.py"],
+    [sys.executable, "scripts/check_source_publication_contracts.py"],
     [sys.executable, "scripts/check_release_contracts.py"],
     [sys.executable, "scripts/check_layout_contracts.py"],
     [sys.executable, "scripts/check_server_boundary.py"],

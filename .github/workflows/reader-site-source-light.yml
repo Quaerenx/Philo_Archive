@@ -1,0 +1,46 @@
+name: Reader Site Source-Light Checks
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/reader-site-source-light.yml"
+      - "README.md"
+      - "reader_site/**"
+      - ".gitattributes"
+      - ".gitignore"
+  push:
+    branches:
+      - main
+      - "codex/**"
+    paths:
+      - ".github/workflows/reader-site-source-light.yml"
+      - "README.md"
+      - "reader_site/**"
+      - ".gitattributes"
+      - ".gitignore"
+
+permissions:
+  contents: read
+
+jobs:
+  source-light:
+    name: Source-light reader contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Run source-light clean clone checks
+        working-directory: reader_site
+        env:
+          PHILOSOPHY_CRAWL_ROOT: ${{ runner.temp }}/empty-philosophy-crawl-root
+        run: |
+          mkdir -p "$PHILOSOPHY_CRAWL_ROOT"
+          python scripts/check_clean_clone_contracts.py --run-source-light-checks

@@ -33,7 +33,9 @@ BUILD_STEPS = [
 CHECK_STEPS = [
     Step("Server boundary contracts", "check_server_boundary.py"),
     Step("Clean clone contracts", "check_clean_clone_contracts.py"),
+    Step("CI contracts", "check_ci_contracts.py"),
     Step("Encoding contracts", "check_encoding_contracts.py"),
+    Step("Source publication contracts", "check_source_publication_contracts.py"),
     Step("Layout contracts", "check_layout_contracts.py"),
     Step("AI provenance contracts", "check_provenance_contracts.py"),
     Step("Corpus schema contracts", "check_corpus_schema.py"),

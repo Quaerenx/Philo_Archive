@@ -44,7 +44,9 @@ REQUIRED_DOC_SNIPPETS = {
         "python .\\scripts\\rebuild_all.py",
         "python .\\scripts\\build_release_stage_manifest.py --check",
         "python .\\scripts\\check_clean_clone_contracts.py",
+        "python .\\scripts\\check_ci_contracts.py",
         "python .\\scripts\\check_encoding_contracts.py",
+        "python .\\scripts\\check_source_publication_contracts.py",
         "Large generated files are ignored by Git",
     ],
     "reader_site/README.md": [
@@ -52,7 +54,9 @@ REQUIRED_DOC_SNIPPETS = {
         "python .\\scripts\\rebuild_all.py",
         "python .\\scripts\\build_release_stage_manifest.py --check",
         "python .\\scripts\\check_clean_clone_contracts.py",
+        "python .\\scripts\\check_ci_contracts.py",
         "python .\\scripts\\check_encoding_contracts.py",
+        "python .\\scripts\\check_source_publication_contracts.py",
         "Layout vocabulary is centralized",
     ],
 }

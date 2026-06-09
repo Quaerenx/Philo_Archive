@@ -499,3 +499,28 @@ The post-review hardening pass added concrete gates for the remaining review ite
   - Disables argparse abbreviation and adds an explicit non-writing `--check` mode.
 - `runtime_status.py`
   - Updates recommended next work so visual QA is treated as an automated smoke workflow plus targeted product review, not as an unresolved foundational blocker.
+
+## 2026-06-09 source-light CI and publication boundary
+
+The next hardening pass prioritized repo reproducibility and public-source boundaries over adding reader features.
+
+Rationale:
+
+- Clean-clone reproducibility and source-publication boundaries are prerequisites for a safe public repository.
+- Search, notes, schema, and layout already have local deterministic contracts.
+- Full corpus rebuilds cannot run in public CI because source corpora and generated segment/search artifacts are intentionally excluded.
+- Reader UX and AI/Gemma features should build on the source-light contracts rather than widening the release surface first.
+
+Implemented:
+
+- `.github/workflows/reader-site-source-light.yml`
+  - Runs the source-light clean clone checks on pull requests and pushes.
+  - Uses `actions/checkout@v6`, `actions/setup-python@v6`, `ubuntu-latest`, and Python 3.13.
+  - Points `PHILOSOPHY_CRAWL_ROOT` at an empty temporary directory so CI proves the public clone shape, not local corpus availability.
+- `scripts/check_ci_contracts.py`
+  - Verifies the workflow stays source-light and does not invoke source-heavy rebuild/search/static route checks.
+- `docs/source_publication_policy.md`
+- `scripts/check_source_publication_contracts.py`
+  - Makes the publication boundary explicit: tracked metadata may contain source paths, URLs, labels, and license notes, but must not contain full source text, generated segments, personal notes, or generated AI output.
+- `scripts/check_clean_clone_contracts.py`
+  - Includes CI and source-publication checks in the source-light command set.

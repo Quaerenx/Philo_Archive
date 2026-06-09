@@ -8,6 +8,7 @@ A clean clone should contain:
 - scripts, templates, CSS, and docs;
 - small metadata/catalog files;
 - validation contracts.
+- the source-light GitHub Actions workflow.
 
 A clean clone should not contain:
 
@@ -25,7 +26,9 @@ These checks should pass in a clean clone before source corpora are restored:
 ```powershell
 cd .\reader_site
 python .\scripts\check_clean_clone_contracts.py
+python .\scripts\check_ci_contracts.py
 python .\scripts\check_encoding_contracts.py
+python .\scripts\check_source_publication_contracts.py
 python .\scripts\check_release_contracts.py
 python .\scripts\check_layout_contracts.py
 python .\scripts\check_server_boundary.py
@@ -66,3 +69,25 @@ python .\server.py --port 8787
 - `키르케고르_원서수집`
 
 Without those folders, the source-light checks still prove that the clone is structurally valid, but full corpus routes, generated segments, and search indexes cannot be regenerated.
+
+## GitHub Actions
+
+Pull requests run the source-light subset through:
+
+```text
+.github/workflows/reader-site-source-light.yml
+```
+
+The workflow uses the official checkout and setup-python actions, points `PHILOSOPHY_CRAWL_ROOT` at an empty temporary directory, and runs:
+
+```powershell
+python scripts/check_clean_clone_contracts.py --run-source-light-checks
+```
+
+Full corpus rebuild checks remain local because the public repository intentionally excludes the source corpora and generated search/segment artifacts.
+
+The workflow shape is checked by:
+
+```powershell
+python .\scripts\check_ci_contracts.py
+```

@@ -84,7 +84,9 @@ Run these before staging or pushing a release branch:
 cd .\reader_site
 python .\scripts\build_release_stage_manifest.py --check
 python .\scripts\check_clean_clone_contracts.py
+python .\scripts\check_ci_contracts.py
 python .\scripts\check_encoding_contracts.py
+python .\scripts\check_source_publication_contracts.py
 python .\scripts\check_release_contracts.py
 python .\scripts\check_layout_contracts.py
 python .\scripts\check_server_boundary.py
@@ -108,6 +110,10 @@ git status --short
 `check_clean_clone_contracts.py` verifies that a source-light clone contains restore documentation, validation scripts, and no forbidden source/generated artifacts. Use `--clone-smoke` after committing to create a real temporary clean clone; see `docs/clean_clone_reproducibility.md`.
 
 `check_encoding_contracts.py` verifies UTF-8 tracked text, Korean source-root names, and common mojibake fragments. If Windows PowerShell displays Korean paths incorrectly, use `Get-Content -Encoding UTF8`; see `docs/encoding_policy.md`.
+
+GitHub pull requests run `.github/workflows/reader-site-source-light.yml`, which executes the source-light clean clone checks without local corpora.
+
+`check_ci_contracts.py` verifies that the workflow remains source-light. `check_source_publication_contracts.py` verifies that tracked metadata and docs respect the publication boundary in `docs/source_publication_policy.md`.
 
 For layout-facing changes, also run:
 
