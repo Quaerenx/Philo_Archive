@@ -189,6 +189,7 @@ Check search behavior and Bible direct lookup with:
 ```powershell
 python .\scripts\check_search_contracts.py
 python .\scripts\check_search_relevance.py
+python .\scripts\check_search_artifact_integrity.py
 ```
 
 Check notes storage, filtering, update, delete, and export behavior with:

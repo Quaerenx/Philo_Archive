@@ -49,6 +49,7 @@ REQUIRED_DOC_SNIPPETS = {
         "python .\\scripts\\check_source_publication_contracts.py",
         "python .\\scripts\\check_restore_readiness.py",
         "python .\\scripts\\check_source_target_contracts.py",
+        "python .\\scripts\\check_search_artifact_integrity.py",
         "Large generated files are ignored by Git",
     ],
     "reader_site/README.md": [
@@ -62,6 +63,7 @@ REQUIRED_DOC_SNIPPETS = {
         "python .\\scripts\\check_source_publication_contracts.py",
         "python .\\scripts\\check_restore_readiness.py",
         "python .\\scripts\\check_source_target_contracts.py",
+        "python .\\scripts\\check_search_artifact_integrity.py",
         "Layout vocabulary is centralized",
     ],
 }

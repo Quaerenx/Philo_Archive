@@ -58,6 +58,7 @@ REQUIRED_FILES = [
     "reader_site/scripts/check_source_publication_contracts.py",
     "reader_site/scripts/check_source_target_contracts.py",
     "reader_site/scripts/check_restore_readiness.py",
+    "reader_site/scripts/check_search_artifact_integrity.py",
     "reader_site/services/source_targets.py",
     "reader_site/docs/clean_clone_reproducibility.md",
     "reader_site/docs/encoding_policy.md",

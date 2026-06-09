@@ -618,3 +618,22 @@ Implemented:
   - Keeps source-light compatibility because the scan checks code structure only and does not require local corpora.
 
 This makes `path_config.py` the enforced source of truth rather than only a convention.
+
+## 2026-06-09 search artifact integrity gate
+
+The next hardening pass added a generated-artifact consistency check for local full-restore environments.
+
+Implemented:
+
+- `scripts/check_search_artifact_integrity.py`
+  - Parses all four generated segment JSONL files.
+  - Parses `data/search_index.jsonl`.
+  - Reads `data/search_index.sqlite`.
+  - Fails if segment counts, portable search index counts, SQLite table counts, or SQLite FTS counts diverge by corpus.
+- `scripts/rebuild_all.py`
+  - Runs the check after search behavior and search relevance checks.
+
+Boundary:
+
+- This is not a source-light CI check because the public clone intentionally excludes generated segment/search artifacts.
+- It proves that a restored local clone has a synchronized search pipeline, not merely present files.

@@ -45,6 +45,7 @@ CHECK_STEPS = [
     Step("Runtime API contracts", "check_api_contracts.py"),
     Step("Search contracts", "check_search_contracts.py"),
     Step("Search relevance contracts", "check_search_relevance.py"),
+    Step("Search artifact integrity", "check_search_artifact_integrity.py"),
     Step("Notes contracts", "check_notes_contracts.py"),
     Step("AI record contracts", "check_ai_records_contracts.py"),
     Step("Static route contracts", "check_static_routes.py"),
