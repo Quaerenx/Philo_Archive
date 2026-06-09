@@ -4,6 +4,7 @@ import argparse
 import fnmatch
 import os
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
@@ -167,16 +168,23 @@ def run_source_light_checks(site: Path, empty_corpus_root: Path | None = None) -
         run(command, cwd=site, env=env)
 
 
+def remove_tree(path: Path) -> None:
+    def clear_readonly(func, target, exc_info) -> None:
+        os.chmod(target, stat.S_IWRITE)
+        func(target)
+
+    if path.exists():
+        shutil.rmtree(path, onexc=clear_readonly)
+
+
 def clone_smoke(parent: Path, keep_clone: bool) -> None:
     require(is_worktree_clean(REPO), "commit or stash local changes before --clone-smoke")
     branch = current_branch(REPO)
     parent.mkdir(parents=True, exist_ok=True)
     target = parent / "philo_archive_clean_clone_smoke"
     empty_root = parent / "philo_archive_empty_corpus_root"
-    if target.exists():
-        shutil.rmtree(target)
-    if empty_root.exists():
-        shutil.rmtree(empty_root)
+    remove_tree(target)
+    remove_tree(empty_root)
 
     try:
         run(["git", "clone", "--local", str(REPO), str(target)], cwd=parent)
@@ -187,10 +195,8 @@ def clone_smoke(parent: Path, keep_clone: bool) -> None:
         run_source_light_checks(target / "reader_site", empty_root)
     finally:
         if not keep_clone:
-            if target.exists():
-                shutil.rmtree(target)
-            if empty_root.exists():
-                shutil.rmtree(empty_root)
+            remove_tree(target)
+            remove_tree(empty_root)
 
 
 def main() -> None:
