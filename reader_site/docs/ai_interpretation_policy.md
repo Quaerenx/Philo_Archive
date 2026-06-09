@@ -161,7 +161,7 @@ Before implementing an AI endpoint or UI control, complete these gates:
 2. Implement source target resolution from existing segment/work data.
 3. Compute `source_text_sha256` before model invocation.
 4. Store generated output in `reader_site/data/ai/`, not in corpus metadata or source folders.
-5. Add a validation script for AI JSONL records.
+5. Run `python .\scripts\check_ai_records_contracts.py` against generated AI JSONL records.
 6. Add visible UI labels that distinguish original source, personal notes, and generated interpretation.
 7. Verify release checks still exclude generated AI output.
 

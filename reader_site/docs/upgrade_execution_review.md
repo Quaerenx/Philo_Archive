@@ -482,4 +482,20 @@ The current upgrade state is summarized in `docs/upgrade_completion_audit.md`.
 
 - It records proven completed areas, partially complete areas, and remaining decisions.
 - It uses contract checks, corpus counts, search DB readiness, and server-boundary checks as evidence.
-- It explicitly keeps the broad goal open until visual identity QA, release handoff, and any AI/Gemma interpretation policy are addressed.
+- It now treats the foundational upgrade goal as complete after visual QA fallback, release handoff, GitHub PR creation, and AI/Gemma provenance policy work were verified.
+
+## 2026-06-09 follow-up hardening
+
+The post-review hardening pass added concrete gates for the remaining review items.
+
+- `scripts/check_ai_records_contracts.py`
+  - Validates local AI interpretation JSONL records against the documented schema before any generated interpretation UI is enabled.
+- `data/search_eval_queries.json`
+- `scripts/check_search_relevance.py`
+  - Adds a small representative search relevance query set for cross-corpus regression checks.
+- `scripts/check_visual_smoke.py`
+  - Starts the local reader on a temporary port and captures desktop/mobile browser screenshots for key routes.
+- `scripts/build_artifact_manifest.py`
+  - Disables argparse abbreviation and adds an explicit non-writing `--check` mode.
+- `runtime_status.py`
+  - Updates recommended next work so visual QA is treated as an automated smoke workflow plus targeted product review, not as an unresolved foundational blocker.

@@ -148,6 +148,7 @@ python .\scripts\build_artifact_manifest.py
 ```
 
 The default manifest output is `data/artifact_manifest.local.json`, which is intentionally ignored by Git because it records local machine state. Add `--checksums` when you need SHA-256 hashes for large generated artifacts.
+Use `--check` when you only want to validate manifest generation and any existing local manifest JSON without writing.
 
 Check the release/Git handoff policy with:
 
@@ -170,6 +171,7 @@ Check search behavior and Bible direct lookup with:
 
 ```powershell
 python .\scripts\check_search_contracts.py
+python .\scripts\check_search_relevance.py
 ```
 
 Check notes storage, filtering, update, delete, and export behavior with:
@@ -177,6 +179,20 @@ Check notes storage, filtering, update, delete, and export behavior with:
 ```powershell
 python .\scripts\check_notes_contracts.py
 ```
+
+Check local AI interpretation JSONL files before enabling or importing generated interpretation records:
+
+```powershell
+python .\scripts\check_ai_records_contracts.py
+```
+
+Capture local browser screenshots for visual smoke QA:
+
+```powershell
+python .\scripts\check_visual_smoke.py
+```
+
+The visual smoke script writes ignored PNG artifacts under `data/visual_qa.local/` and requires a local Edge, Chrome, or Chromium install.
 
 Check the static pages, representative work page, `/api/health`, and `/api/study` through a temporary local HTTP server with:
 

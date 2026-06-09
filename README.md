@@ -105,7 +105,9 @@ python .\scripts\check_provenance_contracts.py
 python .\scripts\check_corpus_schema.py
 python .\scripts\check_api_contracts.py
 python .\scripts\check_search_contracts.py
+python .\scripts\check_search_relevance.py
 python .\scripts\check_notes_contracts.py
+python .\scripts\check_ai_records_contracts.py
 python .\scripts\check_static_routes.py
 ```
 

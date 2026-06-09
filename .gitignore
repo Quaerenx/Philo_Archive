@@ -11,6 +11,8 @@ reader_site/data/search_index.sqlite
 reader_site/data/search_index.sqlite-*
 reader_site/data/artifact_manifest.local.json
 reader_site/data/release_stage_manifest.local.json
+reader_site/data/visual_qa.local/
+reader_site/data/visual_qa.local/*
 
 # Personal notes and local-only state.
 reader_site/data/notes/*.jsonl

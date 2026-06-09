@@ -29,6 +29,8 @@ FORBIDDEN_PATTERNS = [
     "reader_site/data/search_index.sqlite-*",
     "reader_site/data/artifact_manifest.local.json",
     "reader_site/data/release_stage_manifest.local.json",
+    "reader_site/data/visual_qa.local/",
+    "reader_site/data/visual_qa.local/*",
     "reader_site/data/notes/*.jsonl",
     "reader_site/data/ai/*.jsonl",
     "reader_site/data/ai/*.sqlite",
@@ -74,6 +76,7 @@ ALLOWED_DATA_PATTERNS = [
     "reader_site/data/nietzsche_concepts.json",
     "reader_site/data/nietzsche_encoding_report.json",
     "reader_site/data/nietzsche_notes_schema.json",
+    "reader_site/data/search_eval_queries.json",
 ]
 
 

@@ -20,6 +20,7 @@ Git should not store:
 - generated `*_segments.jsonl` files;
 - generated search indexes and SQLite databases;
 - local artifact manifests;
+- local visual QA screenshots;
 - personal note JSONL files;
 - generated AI interpretation JSONL/SQLite files;
 - `.env` or machine-specific local path files.
@@ -39,6 +40,8 @@ The enforced generated-artifact exclusions are:
 - `reader_site/data/search_index.sqlite-*`
 - `reader_site/data/artifact_manifest.local.json`
 - `reader_site/data/release_stage_manifest.local.json`
+- `reader_site/data/visual_qa.local/`
+- `reader_site/data/visual_qa.local/*`
 - `reader_site/data/notes/*.jsonl`
 - `reader_site/data/ai/*.jsonl`
 - `reader_site/data/ai/*.sqlite`
@@ -87,7 +90,9 @@ python .\scripts\check_provenance_contracts.py
 python .\scripts\check_corpus_schema.py
 python .\scripts\check_api_contracts.py
 python .\scripts\check_search_contracts.py
+python .\scripts\check_search_relevance.py
 python .\scripts\check_notes_contracts.py
+python .\scripts\check_ai_records_contracts.py
 python .\scripts\check_static_routes.py
 python .\scripts\build_search_db.py --check
 git diff --check
@@ -97,6 +102,14 @@ git status --short
 `check_release_contracts.py` verifies that large corpus/generated files are not tracked, relevant existing local artifacts are ignored, no tracked file exceeds the release-size threshold, and README handoff instructions remain present.
 
 `build_release_stage_manifest.py --check` classifies current Git changes as `stage`, `review`, or `block`. Use `--write` when you want a local JSON manifest at `data/release_stage_manifest.local.json`; that file is intentionally ignored by Git.
+
+For layout-facing changes, also run:
+
+```powershell
+python .\scripts\check_visual_smoke.py
+```
+
+This starts the local reader on a temporary port and writes ignored desktop/mobile PNG screenshots to `data/visual_qa.local/`.
 
 ## Public Release Notes
 

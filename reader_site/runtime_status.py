@@ -236,7 +236,7 @@ def build_runtime_health() -> dict[str, Any]:
         issues.append("search database is LIKE-based; FTS5 upgrade is still pending")
 
     next_upgrades = [
-        "Polish corpus-specific visual identity and page-frame consistency with browser QA.",
+        "Use the automated visual smoke script plus targeted browser review for future layout changes.",
         "Prototype AI/Gemma interpretation only after implementing the documented provenance gates.",
         "Split route dispatch into a dedicated route module only if the HTTP handler grows again.",
     ]

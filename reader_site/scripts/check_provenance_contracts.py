@@ -9,6 +9,7 @@ REPO = SITE.parent
 POLICY = SITE / "docs" / "ai_interpretation_policy.md"
 GITIGNORE = REPO / ".gitignore"
 SERVER = SITE / "server.py"
+AI_RECORD_VALIDATOR = SITE / "scripts" / "check_ai_records_contracts.py"
 
 REQUIRED_POLICY_SECTIONS = [
     "## Non-Replacement Rule",
@@ -112,10 +113,18 @@ def check_no_active_ai_routes() -> None:
     require(not suspicious_imports, "server imports AI runtime before policy implementation: " + ", ".join(suspicious_imports))
 
 
+def check_record_validator() -> None:
+    require(AI_RECORD_VALIDATOR.exists(), "missing AI JSONL record validator")
+    source = AI_RECORD_VALIDATOR.read_text(encoding="utf-8")
+    for field in REQUIRED_SCHEMA_FIELDS:
+        require(f'"{field}"' in source, f"AI record validator missing schema field {field}")
+
+
 def main() -> None:
     check_policy_document()
     check_gitignore()
     check_no_active_ai_routes()
+    check_record_validator()
     print("provenance contracts ok")
 
 

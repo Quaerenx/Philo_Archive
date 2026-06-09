@@ -1,23 +1,25 @@
 # Upgrade Completion Audit
 
-Date: 2026-06-05
+Date: 2026-06-09
 
 This audit records the current evidence for the reader-site upgrade goal:
 review the proposed enhancement order, apply the parts judged sound, and keep the project moving toward a stable research archive rather than a one-off crawler output.
 
 ## Current Verdict
 
-The stabilization and standardization phase is substantially complete.
+The stabilization and standardization phase is complete for the current non-AI research-reader scope.
 
 The project now has:
 
 - a common four-corpus reader route model;
 - cross-corpus metadata and segment contracts;
 - search, notes, study, artifact, and route checks;
+- search relevance and AI JSONL record checks;
+- local browser visual smoke QA automation;
 - a thin HTTP server guarded by an explicit boundary check;
 - documented rebuild and validation commands.
 
-The broader archive goal should remain open because visual identity polish, browser-based layout QA, the actual GitHub publish step, and any future AI/Gemma interpretation layer are separate product decisions still not completed.
+The branch has been pushed and GitHub PR #1 has been opened. Remaining work should be treated as post-merge product iteration: visual taste polish, real-query search calibration, and an optional AI/Gemma runtime only after the documented provenance gates remain satisfied.
 
 ## Evidence Snapshot
 
@@ -33,7 +35,9 @@ python -m compileall -q .\server.py .\runtime_status.py .\corpora .\rendering .\
 python .\scripts\check_api_contracts.py
 python .\scripts\check_static_routes.py
 python .\scripts\check_search_contracts.py
+python .\scripts\check_search_relevance.py
 python .\scripts\check_notes_contracts.py
+python .\scripts\check_ai_records_contracts.py
 python .\scripts\check_corpus_schema.py
 python .\scripts\build_search_db.py --check
 git diff --check
@@ -201,6 +205,8 @@ The screenshot pass verified page-frame/background separation, white reader-colu
 
 Remaining visual work should be treated as product polish rather than an unverified structural layout blocker.
 
+`scripts/check_visual_smoke.py` now makes this local screenshot pass repeatable for `/`, `/category/nietzsche`, `/work/nietzsche/GM`, `/read`, `/source`, `/search`, `/notes`, and `/study` across desktop and mobile viewports.
+
 ### AI/Gemma Interpretation
 
 Status: policy complete; runtime feature intentionally deferred.
@@ -209,6 +215,7 @@ Evidence:
 
 - `docs/ai_interpretation_policy.md`
 - `scripts/check_provenance_contracts.py`
+- `scripts/check_ai_records_contracts.py`
 - `.gitignore`
 - `data/ai/.gitkeep`
 - `docs/release_handoff.md`
@@ -224,7 +231,7 @@ The policy now defines:
 - privacy boundaries for selected source text and notes;
 - pre-implementation gates before adding any AI endpoint or UI.
 
-The provenance contract verifies that the policy remains present, generated AI output is ignored by Git, and no active `/api/ai`, `/api/gemma`, or `/api/interpret` route has been exposed before those gates are implemented.
+The provenance contract verifies that the policy remains present, generated AI output is ignored by Git, an AI JSONL record validator exists, and no active `/api/ai`, `/api/gemma`, or `/api/interpret` route has been exposed before those gates are implemented.
 
 ### Route Dispatch Module
 
@@ -234,7 +241,7 @@ Status: not currently necessary.
 
 ### Release And Git Handoff
 
-Status: release gate complete; actual GitHub publish not performed by this audit.
+Status: release gate complete; branch pushed and GitHub PR #1 opened.
 
 Evidence:
 
@@ -242,6 +249,9 @@ Evidence:
 - `docs/release_handoff.md`
 - `scripts/build_release_stage_manifest.py`
 - `scripts/check_release_contracts.py`
+- `scripts/check_search_relevance.py`
+- `scripts/check_ai_records_contracts.py`
+- `scripts/check_visual_smoke.py`
 - root `README.md`
 - `reader_site/README.md`
 
@@ -249,31 +259,31 @@ The release contract verifies:
 
 - source corpus folders are ignored;
 - generated segment/search/artifact files are ignored;
-- personal note JSONL files and local path/env files are ignored;
+- visual QA screenshots, personal note JSONL files, and local path/env files are ignored;
 - forbidden large generated files are not tracked;
 - tracked files stay below the release-size threshold;
 - clone/rebuild instructions remain present in the READMEs.
 
 The stage manifest classifies the current Git change set before commit/push and currently reports no blocked or review-required paths.
 
-The audit does not prove that a branch has been staged, committed, pushed, or accepted on GitHub.
+The audit proves branch push and PR creation, but not merge to `main`.
 
 ## Recommended Next Phase
 
-1. Visual identity and page-frame QA.
-   Verify `/`, `/category/...`, `/work/...`, `/read`, `/source`, `/search`, `/notes`, and `/study` in the browser. Polish corpus-specific headers and reader-frame consistency.
+1. Merge and post-merge smoke pass.
+   Merge PR #1 when ready, then rerun the release, corpus, search, note, route, AI-record, and visual smoke checks on the target branch.
 
 2. Search relevance calibration.
-   Collect real study queries from use and tune work/segment/note result ordering from that evidence.
+   Expand `data/search_eval_queries.json` with real study queries from use and tune work/segment/note result ordering from that evidence.
 
-3. GitHub publish pass.
-   Stage the intended code/docs only, confirm the diff, commit, and push after the user chooses the target branch.
+3. Visual identity polish.
+   Use `scripts/check_visual_smoke.py` plus targeted browser review for corpus-specific headers, page-frame tone, and reader-frame consistency.
 
 4. AI interpretation prototype.
-   Implement Gemma/AI only after the documented provenance gates are satisfied in code and UI.
+   Implement Gemma/AI only after `scripts/check_ai_records_contracts.py` and the documented provenance gates remain satisfied in code and UI.
 
 ## Completion Position
 
-Do not mark the broad archive-upgrade goal complete yet.
+The broad archive-upgrade foundation is complete for the current non-AI reader scope.
 
-The foundational engineering work is in good shape and verified, but the user-facing identity/browser QA, actual GitHub publish action, and optional AI interpretation runtime remain outside the evidence currently proven by tests.
+The remaining work is product iteration: merge/post-merge verification, larger real-query calibration, visual taste refinement, and an optional AI interpretation runtime.
