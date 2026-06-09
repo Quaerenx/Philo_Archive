@@ -1,5 +1,14 @@
 * text=auto eol=lf
 
+# Repository text is expected to be UTF-8. The encoding contract is enforced by
+# reader_site/scripts/check_encoding_contracts.py.
+*.css text eol=lf
+*.html text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.py text eol=lf
+
 *.png binary
 *.jpg binary
 *.jpeg binary

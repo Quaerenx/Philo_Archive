@@ -154,8 +154,11 @@ Check the release/Git handoff policy with:
 
 ```powershell
 python .\scripts\build_release_stage_manifest.py --check
+python .\scripts\check_encoding_contracts.py
 python .\scripts\check_release_contracts.py
 ```
+
+The encoding contract verifies that tracked text files are UTF-8 and that Korean source-root names remain uncorrupted. See `docs/encoding_policy.md`.
 
 Check the documented runtime and layout contracts with:
 

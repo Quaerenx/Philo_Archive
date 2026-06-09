@@ -83,6 +83,7 @@ Run these before staging or pushing a release branch:
 ```powershell
 cd .\reader_site
 python .\scripts\build_release_stage_manifest.py --check
+python .\scripts\check_encoding_contracts.py
 python .\scripts\check_release_contracts.py
 python .\scripts\check_layout_contracts.py
 python .\scripts\check_server_boundary.py
@@ -102,6 +103,8 @@ git status --short
 `check_release_contracts.py` verifies that large corpus/generated files are not tracked, relevant existing local artifacts are ignored, no tracked file exceeds the release-size threshold, and README handoff instructions remain present.
 
 `build_release_stage_manifest.py --check` classifies current Git changes as `stage`, `review`, or `block`. Use `--write` when you want a local JSON manifest at `data/release_stage_manifest.local.json`; that file is intentionally ignored by Git.
+
+`check_encoding_contracts.py` verifies UTF-8 tracked text, Korean source-root names, and common mojibake fragments. If Windows PowerShell displays Korean paths incorrectly, use `Get-Content -Encoding UTF8`; see `docs/encoding_policy.md`.
 
 For layout-facing changes, also run:
 

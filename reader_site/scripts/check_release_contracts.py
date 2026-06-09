@@ -43,12 +43,14 @@ REQUIRED_DOC_SNIPPETS = {
         "PHILOSOPHY_CRAWL_ROOT",
         "python .\\scripts\\rebuild_all.py",
         "python .\\scripts\\build_release_stage_manifest.py --check",
+        "python .\\scripts\\check_encoding_contracts.py",
         "Large generated files are ignored by Git",
     ],
     "reader_site/README.md": [
         "PHILOSOPHY_CRAWL_ROOT",
         "python .\\scripts\\rebuild_all.py",
         "python .\\scripts\\build_release_stage_manifest.py --check",
+        "python .\\scripts\\check_encoding_contracts.py",
         "Layout vocabulary is centralized",
     ],
 }
