@@ -157,7 +157,7 @@ Check the release/Git handoff policy with:
 
 ```powershell
 python .\scripts\build_release_stage_manifest.py --check
-python .\scripts\check_clean_clone_contracts.py
+python .\scripts\check_clean_clone_contracts.py --run-source-light-checks
 python .\scripts\check_ci_contracts.py
 python .\scripts\check_encoding_contracts.py
 python .\scripts\check_path_contracts.py
@@ -165,7 +165,7 @@ python .\scripts\check_source_publication_contracts.py
 python .\scripts\check_release_contracts.py
 ```
 
-The clean clone contract verifies that a source-light Git clone contains the code, docs, and validation gates needed to restore the archive elsewhere. See `docs/clean_clone_reproducibility.md`.
+The clean clone contract verifies that a source-light Git clone contains the tracked code, docs, and validation gates needed to restore the archive elsewhere. `--run-source-light-checks` runs against an empty temporary corpus root so it cannot pass by accidentally using local source folders. See `docs/clean_clone_reproducibility.md`.
 
 The CI contract verifies that the GitHub Actions workflow runs only source-light checks. The source publication contract verifies that the repository remains a reader scaffold, not a public mirror of primary-source corpora. See `docs/source_publication_policy.md`.
 

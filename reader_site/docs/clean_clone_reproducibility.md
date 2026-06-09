@@ -21,11 +21,19 @@ A clean clone should not contain:
 
 ## Source-Light Checks
 
-These checks should pass in a clean clone before source corpora are restored:
+Run this immediately after cloning, before source corpora are restored:
 
 ```powershell
 cd .\reader_site
-python .\scripts\check_clean_clone_contracts.py
+python .\scripts\check_clean_clone_contracts.py --run-source-light-checks
+```
+
+`--run-source-light-checks` points `PHILOSOPHY_CRAWL_ROOT` at an empty temporary folder so the check cannot accidentally depend on source folders that happen to exist on the current machine.
+
+The exact source-light command set is:
+
+```powershell
+python -m compileall -q .\server.py .\runtime_status.py .\corpora .\rendering .\services .\scripts
 python .\scripts\check_ci_contracts.py
 python .\scripts\check_encoding_contracts.py
 python .\scripts\check_path_contracts.py
@@ -35,13 +43,14 @@ python .\scripts\check_layout_contracts.py
 python .\scripts\check_server_boundary.py
 python .\scripts\check_provenance_contracts.py
 python .\scripts\check_ai_records_contracts.py
+python .\scripts\build_release_stage_manifest.py --check
 ```
-
-`check_clean_clone_contracts.py --run-source-light-checks` runs the source-light command set from one entrypoint.
 
 The contract also guards against documentation drift:
 
+- required restore files must be present and tracked by Git;
 - README rebuild command lists must match the actual `scripts/rebuild_all.py` order;
+- the source-light command block above must match the actual command set in `check_clean_clone_contracts.py`;
 - source-root names in restore docs must match `path_config.py`;
 - source-light checks must not call source-heavy rebuild, search, notes, static route, or full-restore checks.
 

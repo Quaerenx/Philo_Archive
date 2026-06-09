@@ -84,7 +84,7 @@ Run these before staging or pushing a release branch:
 ```powershell
 cd .\reader_site
 python .\scripts\build_release_stage_manifest.py --check
-python .\scripts\check_clean_clone_contracts.py
+python .\scripts\check_clean_clone_contracts.py --run-source-light-checks
 python .\scripts\check_ci_contracts.py
 python .\scripts\check_encoding_contracts.py
 python .\scripts\check_path_contracts.py
@@ -113,7 +113,7 @@ git status --short
 
 `build_release_stage_manifest.py --check` classifies current Git changes as `stage`, `review`, or `block`. Use `--write` when you want a local JSON manifest at `data/release_stage_manifest.local.json`; that file is intentionally ignored by Git.
 
-`check_clean_clone_contracts.py` verifies that a source-light clone contains restore documentation, validation scripts, and no forbidden source/generated artifacts. Use `--clone-smoke` after committing to create a real temporary clean clone; see `docs/clean_clone_reproducibility.md`.
+`check_clean_clone_contracts.py --run-source-light-checks` verifies that a source-light clone contains tracked restore documentation, validation scripts, and no forbidden source/generated artifacts while using an empty temporary corpus root. Use `--clone-smoke` after committing to create a real temporary clean clone; see `docs/clean_clone_reproducibility.md`.
 
 `check_restore_readiness.py` verifies the local full-restore side of the same handoff: source roots, primary output folders, metadata, segment artifacts, portable search index, SQLite search database, and corpus coverage in search records.
 

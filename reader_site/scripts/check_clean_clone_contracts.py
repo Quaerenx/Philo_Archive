@@ -75,6 +75,7 @@ REQUIRED_DOC_SNIPPETS = {
         "PHILOSOPHY_CRAWL_ROOT",
         "python .\\scripts\\rebuild_all.py",
         "python .\\scripts\\check_clean_clone_contracts.py",
+        "--run-source-light-checks",
         "python .\\scripts\\check_ci_contracts.py",
         "python .\\scripts\\check_source_publication_contracts.py",
         ".github/workflows/reader-site-source-light.yml",
@@ -82,6 +83,7 @@ REQUIRED_DOC_SNIPPETS = {
     "reader_site/README.md": [
         "docs/clean_clone_reproducibility.md",
         "python .\\scripts\\check_clean_clone_contracts.py",
+        "--run-source-light-checks",
         "python .\\scripts\\check_ci_contracts.py",
         "python .\\scripts\\check_source_publication_contracts.py",
         ".github/workflows/reader-site-source-light.yml",
@@ -101,6 +103,10 @@ REQUIRED_DOC_SNIPPETS = {
         "Source-Light Checks",
         "Full Restore",
     ],
+}
+
+SOURCE_LIGHT_COMMAND_DOCS = {
+    "reader_site/docs/clean_clone_reproducibility.md": "The exact source-light command set is:",
 }
 
 REBUILD_SEQUENCE_DOCS = {
@@ -187,8 +193,10 @@ def is_forbidden_path(path: str) -> bool:
 
 
 def check_required_files(repo: Path = REPO) -> None:
+    tracked = set(tracked_paths(repo))
     for relative_path in REQUIRED_FILES:
         require((repo / relative_path).exists(), f"clean clone missing required file: {relative_path}")
+        require(relative_path in tracked, f"clean clone required file is not tracked: {relative_path}")
 
 
 def check_no_forbidden_tracked_files(repo: Path = REPO) -> None:
@@ -238,6 +246,37 @@ def check_rebuild_sequence_docs(repo: Path = REPO) -> None:
         )
 
 
+def source_light_command_doc_lines() -> list[str]:
+    lines: list[str] = []
+    for command in SOURCE_LIGHT_COMMANDS:
+        display_parts = ["python"]
+        for part in command[1:]:
+            if part.startswith("scripts/"):
+                display_parts.append(".\\" + part.replace("/", "\\"))
+            elif part in {"server.py", "runtime_status.py", "corpora", "rendering", "services", "scripts"}:
+                display_parts.append(".\\" + part)
+            else:
+                display_parts.append(part.replace("/", "\\"))
+        lines.append(" ".join(display_parts))
+    return lines
+
+
+def check_source_light_command_docs(repo: Path = REPO) -> None:
+    expected = source_light_command_doc_lines()
+    for relative_path, marker in SOURCE_LIGHT_COMMAND_DOCS.items():
+        text = (repo / relative_path).read_text(encoding="utf-8")
+        block = extract_powershell_block_after(text, marker, relative_path)
+        actual = [
+            line.strip()
+            for line in block.splitlines()
+            if line.strip().startswith("python")
+        ]
+        require(
+            actual == expected,
+            f"{relative_path} source-light command set differs from check_clean_clone_contracts.py",
+        )
+
+
 def check_source_root_docs(repo: Path = REPO) -> None:
     for relative_path, formatter in SOURCE_ROOT_DOC_REFERENCES.items():
         text = (repo / relative_path).read_text(encoding="utf-8")
@@ -267,6 +306,7 @@ def check_clean_clone_contracts(repo: Path = REPO) -> None:
     check_docs(repo)
     check_source_root_docs(repo)
     check_rebuild_sequence_docs(repo)
+    check_source_light_command_docs(repo)
     check_source_light_commands()
 
 
@@ -275,11 +315,18 @@ def run_source_light_checks(site: Path, empty_corpus_root: Path | None = None) -
     pycache_root = Path(tempfile.gettempdir()) / "philo_archive_clean_clone_pycache"
     pycache_root.mkdir(parents=True, exist_ok=True)
     env["PYTHONPYCACHEPREFIX"] = str(pycache_root)
-    if empty_corpus_root is not None:
-        empty_corpus_root.mkdir(parents=True, exist_ok=True)
-        env["PHILOSOPHY_CRAWL_ROOT"] = str(empty_corpus_root)
-    for command in SOURCE_LIGHT_COMMANDS:
-        run(command, cwd=site, env=env)
+    cleanup_root: Path | None = None
+    if empty_corpus_root is None:
+        cleanup_root = Path(tempfile.mkdtemp(prefix="philo_archive_empty_corpus_root_"))
+        empty_corpus_root = cleanup_root
+    empty_corpus_root.mkdir(parents=True, exist_ok=True)
+    env["PHILOSOPHY_CRAWL_ROOT"] = str(empty_corpus_root)
+    try:
+        for command in SOURCE_LIGHT_COMMANDS:
+            run(command, cwd=site, env=env)
+    finally:
+        if cleanup_root is not None:
+            remove_tree(cleanup_root)
 
 
 def remove_tree(path: Path) -> None:
