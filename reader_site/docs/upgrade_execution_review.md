@@ -732,3 +732,23 @@ Boundary:
 - This is not an AI interpretation endpoint.
 - `/api/ai`, `/api/gemma`, and `/api/interpret` remain absent.
 - Generated AI output still remains local-only under `data/ai/` and excluded from Git.
+
+## 2026-06-09 work page source bundle action
+
+The follow-up pass connected the source target bundle API to the reader UI without enabling AI generation.
+
+Implemented:
+
+- `templates/work.html`
+  - Adds a `Copy source bundle` action to the Citation panel.
+- `assets/reader-work.js`
+  - Builds a local `/api/source-target` URL from the current paragraph or verse anchor.
+  - Copies that URL for downstream local interpretation tooling.
+  - Refuses work, section, and chapter anchors with a clear status message because those are not generated segment targets.
+- `scripts/check_layout_contracts.py`
+  - Guards the work-page source bundle action in the source-light layout contract.
+
+Boundary:
+
+- The button copies a local source-target URL only.
+- It does not call a model, store generated output, or alter source/notes data.

@@ -347,6 +347,8 @@ Response:
 
 Missing required fields or unknown corpus ids return `400`. Unknown work, variant, or segment targets return `404`.
 
+Work pages expose this boundary through the Citation panel's `Copy source bundle` action. The button copies the local `/api/source-target` URL for the current paragraph or verse anchor.
+
 Bible direct lookup:
 
 LXX/deuterocanonical references accept shorthand such as `Tob 1:1`, `Wis 1:1`, `Sir 1:1`, `EpJer 1:1`, and `Psalm 151:1`. Single-chapter materials stored with chapter `0` can be entered with chapter `1`.

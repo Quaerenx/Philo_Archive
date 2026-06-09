@@ -4,6 +4,8 @@ const noteForm = document.getElementById("noteForm");
 const noteStatus = document.getElementById("noteStatus");
 const notesList = document.getElementById("notesList");
 const noteFilter = document.getElementById("noteFilter");
+const copySourceBundleButton = document.getElementById("copySourceBundle");
+const sourceBundleTargetTypes = new Set(["segment", "paragraph", "verse"]);
 
 function cleanText(value) {
   return String(value || "").replace(/[#¶]/g, "").replace(/\s+/g, " ").trim();
@@ -39,6 +41,22 @@ function citationText() {
   const position = target.id === "work" ? "" : `, ${target.label}`;
   const author = researchData.author || researchData.corpus_title || researchData.corpus_id;
   return `${author}, ${researchData.title} (${researchData.work_id})${position}. Personal Archive of Literature. ${target.url}`;
+}
+
+function sourceBundleUrl() {
+  const target = currentTarget();
+  if (!sourceBundleTargetTypes.has(target.type) || !target.id || target.id === "work") {
+    return "";
+  }
+  const params = new URLSearchParams({
+    corpus_id: researchData.corpus_id || researchData.author_id || "",
+    work_id: researchData.work_id || "",
+    target_id: target.id
+  });
+  if (researchData.variant_id) {
+    params.set("variant_id", researchData.variant_id);
+  }
+  return `${location.origin}/api/source-target?${params}`;
 }
 
 function updateCitationPreview() {
@@ -117,6 +135,16 @@ document.getElementById("copyCitation").addEventListener("click", async () => {
 document.getElementById("copyUrl").addEventListener("click", async () => {
   await copyText(currentTarget().url);
   noteStatus.textContent = "URL copied.";
+});
+
+copySourceBundleButton.addEventListener("click", async () => {
+  const bundleUrl = sourceBundleUrl();
+  if (!bundleUrl) {
+    noteStatus.textContent = "Source bundle requires a paragraph or verse target.";
+    return;
+  }
+  await copyText(bundleUrl);
+  noteStatus.textContent = "Source bundle URL copied.";
 });
 
 noteForm.addEventListener("submit", async (event) => {

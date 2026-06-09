@@ -131,12 +131,31 @@ def check_study_target_ui() -> None:
         require_contains(css, needle, "assets/study.css")
 
 
+def check_work_source_bundle_ui() -> None:
+    template = read_site_file("templates/work.html")
+    for needle in [
+        'id="copySourceBundle"',
+        "Copy source bundle",
+    ]:
+        require_contains(template, needle, "templates/work.html")
+
+    script = read_site_file("assets/reader-work.js")
+    for needle in [
+        "function sourceBundleUrl",
+        "/api/source-target",
+        "Source bundle requires a paragraph or verse target.",
+        "Source bundle URL copied.",
+    ]:
+        require_contains(script, needle, "assets/reader-work.js")
+
+
 def main() -> None:
     check_tokens()
     check_html_entrypoints()
     check_home_css()
     check_reader_pages_css()
     check_study_target_ui()
+    check_work_source_bundle_ui()
     print("layout contracts ok")
 
 
