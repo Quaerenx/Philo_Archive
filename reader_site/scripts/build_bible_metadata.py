@@ -4,16 +4,18 @@ import argparse
 import csv
 import hashlib
 import json
-import os
 import re
+import sys
 from datetime import datetime
 from pathlib import Path
 from urllib.parse import quote
 
 
 SITE = Path(__file__).resolve().parents[1]
-ROOT = Path(os.environ.get("PHILOSOPHY_CRAWL_ROOT", Path(__file__).resolve().parents[2])).resolve()
-BIBLE_OUTPUT = ROOT / "성경_원서수집" / "bible" / "bible" / "output"
+sys.path.insert(0, str(SITE))
+
+from path_config import BIBLE_OUTPUT, ROOT  # noqa: E402
+
 OUTPUT = SITE / "data" / "bible_metadata.json"
 
 SOURCE_SPECS = [

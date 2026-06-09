@@ -1,0 +1,251 @@
+const form = document.getElementById("notesForm");
+const queryInput = document.getElementById("notesQuery");
+const corpusSelect = document.getElementById("notesCorpus");
+const workInput = document.getElementById("notesWork");
+const tagInput = document.getElementById("notesTag");
+const reviewSelect = document.getElementById("notesReview");
+const statusEl = document.getElementById("notesStatus");
+const resultsEl = document.getElementById("notesResults");
+const exportJson = document.getElementById("exportJson");
+const exportJsonl = document.getElementById("exportJsonl");
+const exportMarkdown = document.getElementById("exportMarkdown");
+let lastNotes = [];
+let requestedCorpusId = "";
+let requestedTargetId = "";
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
+function cleanText(value) {
+  return String(value || "").replace(/\s+/g, " ").trim();
+}
+
+function splitTags(value) {
+  return String(value || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function currentParams(format = "json") {
+  const params = new URLSearchParams({ format });
+  const query = queryInput.value.trim();
+  const corpusId = corpusSelect.value;
+  const workId = workInput.value.trim();
+  const tag = tagInput.value.trim().replace(/^#/, "");
+  const reviewState = reviewSelect.value;
+  if (query) params.set("q", query);
+  if (corpusId) params.set("corpus_id", corpusId);
+  if (workId) params.set("work_id", workId);
+  if (requestedTargetId) params.set("target_id", requestedTargetId);
+  if (tag) params.set("tag", tag);
+  if (reviewState) params.set("review_state", reviewState);
+  return params;
+}
+
+function updateExportLinks() {
+  exportJson.href = `/api/notes/export?${currentParams("json")}`;
+  exportJsonl.href = `/api/notes/export?${currentParams("jsonl")}`;
+  exportMarkdown.href = `/api/notes/export?${currentParams("markdown")}`;
+}
+
+function updateUrl() {
+  const params = currentParams("json");
+  params.delete("format");
+  history.replaceState(null, "", params.toString() ? `/notes?${params}` : "/notes");
+}
+
+function renderNotes(notes) {
+  lastNotes = notes;
+  statusEl.textContent = notes.length
+    ? `${notes.length.toLocaleString()} notes`
+    : "No notes found.";
+  resultsEl.innerHTML = notes.length
+    ? notes.map((note) => {
+      const titleParts = [note.corpus_id, note.work_id, note.target_label || note.target_id].filter(Boolean);
+      const title = titleParts.join(" / ");
+      const tags = (note.tags || []).join(", ");
+      const date = note.updated_at || note.created_at || "";
+      const reviewState = note.review_state || "raw";
+      const reviewLabel = reviewState === "reviewed" ? "Reviewed" : "Raw";
+      const reviewAction = reviewState === "reviewed" ? "mark-raw" : "mark-reviewed";
+      const reviewActionLabel = reviewState === "reviewed" ? "Mark raw" : "Mark reviewed";
+      const quote = note.quote ? `<blockquote class="note-quote">${escapeHtml(cleanText(note.quote))}</blockquote>` : "";
+      const href = note.url ? `<a href="${escapeHtml(note.url)}">${escapeHtml(title || "Open note target")}</a>` : escapeHtml(title || "Untitled note");
+      return `<article class="note-card" data-note-id="${escapeHtml(note.id)}" data-corpus-id="${escapeHtml(note.corpus_id)}" data-review-state="${escapeHtml(reviewState)}">
+        <div class="note-title">
+          ${href}
+          <span class="note-meta">${escapeHtml(cleanText(date))}</span>
+          <span class="review-badge ${escapeHtml(reviewState)}">${escapeHtml(reviewLabel)}</span>
+        </div>
+        ${tags ? `<div class="note-tags">${escapeHtml(tags)}</div>` : ""}
+        <p class="note-text">${escapeHtml(cleanText(note.note))}</p>
+        ${quote}
+        <div class="note-actions">
+          <button type="button" data-action="${escapeHtml(reviewAction)}">${escapeHtml(reviewActionLabel)}</button>
+          <button type="button" data-action="edit">Edit</button>
+          <button type="button" data-action="delete">Delete</button>
+        </div>
+        <form class="note-edit-form" hidden>
+          <label>Tags<input name="tags" value="${escapeHtml(tags)}" autocomplete="off"></label>
+          <label>Note<textarea name="note" required>${escapeHtml(note.note)}</textarea></label>
+          <div class="note-edit-actions">
+            <button type="submit">Save</button>
+            <button type="button" data-action="cancel">Cancel</button>
+          </div>
+        </form>
+      </article>`;
+    }).join("")
+    : `<div class="empty">Create notes from a work page, then return here to review and export them.</div>`;
+}
+
+function noteById(noteId) {
+  return lastNotes.find((note) => note.id === noteId);
+}
+
+function toggleEditor(card, forceOpen = null) {
+  const formEl = card.querySelector(".note-edit-form");
+  const actionsEl = card.querySelector(".note-actions");
+  const nextOpen = forceOpen === null ? formEl.hidden : forceOpen;
+  formEl.hidden = !nextOpen;
+  actionsEl.hidden = nextOpen;
+}
+
+async function updateNote(noteId, corpusId, noteText, tags) {
+  const response = await fetch(`/api/notes/${encodeURIComponent(noteId)}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      corpus_id: corpusId,
+      note: noteText,
+      tags
+    })
+  });
+  return response.ok;
+}
+
+async function updateReviewState(noteId, corpusId, reviewState) {
+  const response = await fetch(`/api/notes/${encodeURIComponent(noteId)}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      corpus_id: corpusId,
+      review_state: reviewState
+    })
+  });
+  return response.ok;
+}
+
+async function deleteNote(noteId, corpusId) {
+  const response = await fetch(`/api/notes/${encodeURIComponent(noteId)}?corpus_id=${encodeURIComponent(corpusId)}`, {
+    method: "DELETE"
+  });
+  return response.ok;
+}
+
+async function loadCorpora() {
+  try {
+    const response = await fetch("/api/archive");
+    if (!response.ok) return;
+    const payload = await response.json();
+    const current = corpusSelect.value || requestedCorpusId;
+    corpusSelect.innerHTML = `<option value="">All</option>` + (payload.corpora || [])
+      .map((corpus) => `<option value="${escapeHtml(corpus.id)}">${escapeHtml(corpus.title)}</option>`)
+      .join("");
+    corpusSelect.value = current;
+  } catch {
+    // The hard-coded All option is enough when archive metadata is unavailable.
+  }
+}
+
+async function loadNotes() {
+  updateUrl();
+  updateExportLinks();
+  statusEl.textContent = "Loading notes...";
+  resultsEl.innerHTML = "";
+  const response = await fetch(`/api/notes/export?${currentParams("json")}`);
+  if (!response.ok) {
+    statusEl.textContent = "Could not load notes.";
+    return;
+  }
+  const payload = await response.json();
+  renderNotes(payload.notes || []);
+}
+
+form.addEventListener("submit", (event) => {
+  event.preventDefault();
+  loadNotes();
+});
+
+resultsEl.addEventListener("click", async (event) => {
+  const button = event.target.closest("button[data-action]");
+  if (!button) return;
+  const card = button.closest(".note-card");
+  if (!card) return;
+  const noteId = card.dataset.noteId || "";
+  const corpusId = card.dataset.corpusId || "";
+  if (button.dataset.action === "edit") {
+    toggleEditor(card, true);
+    return;
+  }
+  if (button.dataset.action === "mark-reviewed" || button.dataset.action === "mark-raw") {
+    const nextState = button.dataset.action === "mark-reviewed" ? "reviewed" : "raw";
+    const ok = await updateReviewState(noteId, corpusId, nextState);
+    statusEl.textContent = ok ? "Review state updated." : "Could not update review state.";
+    await loadNotes();
+    return;
+  }
+  if (button.dataset.action === "cancel") {
+    const note = noteById(noteId);
+    const formEl = card.querySelector(".note-edit-form");
+    if (note && formEl) {
+      formEl.elements.note.value = note.note || "";
+      formEl.elements.tags.value = (note.tags || []).join(", ");
+    }
+    toggleEditor(card, false);
+    return;
+  }
+  if (button.dataset.action === "delete") {
+    if (!window.confirm("Delete this note?")) return;
+    const ok = await deleteNote(noteId, corpusId);
+    statusEl.textContent = ok ? "Note deleted." : "Could not delete note.";
+    await loadNotes();
+  }
+});
+
+resultsEl.addEventListener("submit", async (event) => {
+  const editForm = event.target.closest(".note-edit-form");
+  if (!editForm) return;
+  event.preventDefault();
+  const card = editForm.closest(".note-card");
+  const noteId = card.dataset.noteId || "";
+  const corpusId = card.dataset.corpusId || "";
+  const noteText = editForm.elements.note.value.trim();
+  if (!noteText) {
+    statusEl.textContent = "Note text is required.";
+    return;
+  }
+  const ok = await updateNote(noteId, corpusId, noteText, splitTags(editForm.elements.tags.value));
+  statusEl.textContent = ok ? "Note updated." : "Could not update note.";
+  await loadNotes();
+});
+
+for (const field of [queryInput, corpusSelect, workInput, tagInput, reviewSelect]) {
+  field.addEventListener("change", loadNotes);
+}
+
+const initialParams = new URLSearchParams(location.search);
+queryInput.value = initialParams.get("q") || "";
+workInput.value = initialParams.get("work_id") || "";
+tagInput.value = initialParams.get("tag") || "";
+reviewSelect.value = initialParams.get("review_state") || "";
+requestedCorpusId = initialParams.get("corpus_id") || "";
+requestedTargetId = initialParams.get("target_id") || "";
+corpusSelect.value = requestedCorpusId;
+
+loadCorpora().then(loadNotes);

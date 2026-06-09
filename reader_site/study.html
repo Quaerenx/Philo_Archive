@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Study Notes / Personal Archive of Literature</title>
+  <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
+  <link rel="stylesheet" href="/assets/study.css?v=study4">
+</head>
+<body>
+  <div class="page">
+    <div class="spacer"></div>
+    <main class="reader">
+      <header class="reader-header">
+        <h1>Study Notes</h1>
+        <div class="meta-line">Personal Archive of Literature / reviewed annotations</div>
+        <nav class="toolbar" aria-label="Study navigation">
+          <a href="/">Archive index</a>
+          <a href="/search">Research search</a>
+          <a href="/notes">Research notes</a>
+        </nav>
+      </header>
+
+      <form id="studyForm" class="study-form">
+        <label class="query-label">
+          Query
+          <input id="studyQuery" name="q" autocomplete="off">
+        </label>
+        <label>
+          Corpus
+          <select id="studyCorpus" name="corpus_id">
+            <option value="">All</option>
+          </select>
+        </label>
+        <label>
+          Work
+          <input id="studyWork" name="work_id" autocomplete="off">
+        </label>
+        <label>
+          Tag
+          <input id="studyTag" name="tag" autocomplete="off">
+        </label>
+        <button type="submit">Filter</button>
+      </form>
+
+      <div class="export-row" aria-label="Export reviewed notes">
+        <a id="studyExportMarkdown" href="/api/study/export?format=markdown">Markdown</a>
+        <a id="studyManageLink" href="/notes?review_state=reviewed">Manage reviewed</a>
+      </div>
+
+      <div id="studyStatus" class="study-status"></div>
+      <section id="studyResults" class="study-results" aria-live="polite"></section>
+    </main>
+  </div>
+  <script src="/assets/study.js?v=study4"></script>
+</body>
+</html>

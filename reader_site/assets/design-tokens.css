@@ -1,0 +1,19 @@
+:root {
+  --page-background: #d9d9d9;
+  --page-frame-background: #eeeeee;
+  --page-frame-width: 1000px;
+  --page-frame-margin: 24px auto;
+  --page-frame-border: #bdbdbd;
+  --page-frame-shadow: 0 2px 18px rgba(0, 0, 0, 0.12);
+  --reader-column-width: 764px;
+  --reader-background: #ffffff;
+  --reader-border: #d4d4d4;
+  --archive-link-color: #ff0000;
+  --archive-muted-color: #555555;
+  --archive-font: Verdana, Arial, Helvetica, sans-serif;
+  --header-strip-image: url("/assets/header-strip.svg?v=nietzsche-portrait");
+  --header-portrait-image: url("/assets/nietzsche-header-left.png?v=1882");
+  --header-portrait-width: 440px;
+  --header-portrait-height: 128px;
+  --header-spacer-height: 160px;
+}

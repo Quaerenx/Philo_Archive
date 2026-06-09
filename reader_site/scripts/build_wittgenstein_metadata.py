@@ -3,8 +3,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import os
 import re
+import sys
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
@@ -12,8 +12,10 @@ from urllib.parse import quote
 
 
 SITE = Path(__file__).resolve().parents[1]
-ROOT = Path(os.environ.get("PHILOSOPHY_CRAWL_ROOT", Path(__file__).resolve().parents[2])).resolve()
-WITTGENSTEIN_OUTPUT = ROOT / "비트겐슈타인_원서수집" / "wittgenstein" / "wittgenstein" / "output"
+sys.path.insert(0, str(SITE))
+
+from path_config import ROOT, WITTGENSTEIN_OUTPUT  # noqa: E402
+
 MANIFEST = WITTGENSTEIN_OUTPUT / "_manifest.json"
 OUTPUT = SITE / "data" / "wittgenstein_metadata.json"
 
@@ -99,6 +101,7 @@ def build_metadata() -> dict:
     for siglum, records in grouped.items():
         work_id = work_ids[siglum]
         variants = []
+        used_variant_ids: set[str] = set()
         for record in sorted(records, key=lambda item: (KIND_ORDER.get(item.get("kind", ""), 999), item.get("variant", ""))):
             output_name = record.get("output_md") or record.get("output_html")
             path = WITTGENSTEIN_OUTPUT / output_name
@@ -107,6 +110,14 @@ def build_metadata() -> dict:
             variant_id = kind
             if variant_name and not kind.endswith(variant_name):
                 variant_id = f"{kind}.{safe_work_id(variant_name)}"
+            if variant_id in used_variant_ids:
+                suffix = safe_work_id(Path(output_name).stem)
+                candidate = f"{variant_id}.{suffix}"
+                if candidate in used_variant_ids:
+                    short = hashlib.sha1(str(output_name).encode("utf-8")).hexdigest()[:8]
+                    candidate = f"{variant_id}.{short}"
+                variant_id = candidate
+            used_variant_ids.add(variant_id)
             label = KIND_LABELS.get(kind, kind)
             if variant_name and variant_name.lower() not in label.lower():
                 label = f"{label} ({variant_name})"
@@ -137,6 +148,7 @@ def build_metadata() -> dict:
             "work_url": f"/work/wittgenstein/{work_id}",
             "segment_scheme": "transcription_block",
             "variant_ids": [variant["variant_id"] for variant in variants],
+            "concept_ids": [],
             "variants": variants,
             "license": variants[0].get("license", "") if variants else "",
             "rights_note": variants[0].get("rights_note", "") if variants else "",

@@ -3,6 +3,9 @@ const citationPreview = document.getElementById("citationPreview");
 const noteForm = document.getElementById("noteForm");
 const noteStatus = document.getElementById("noteStatus");
 const notesList = document.getElementById("notesList");
+const noteFilter = document.getElementById("noteFilter");
+const copySourceBundleButton = document.getElementById("copySourceBundle");
+const sourceBundleTargetTypes = new Set(["segment", "section", "paragraph", "verse"]);
 
 function cleanText(value) {
   return String(value || "").replace(/[#¶]/g, "").replace(/\s+/g, " ").trim();
@@ -40,6 +43,22 @@ function citationText() {
   return `${author}, ${researchData.title} (${researchData.work_id})${position}. Personal Archive of Literature. ${target.url}`;
 }
 
+function sourceBundleUrl() {
+  const target = currentTarget();
+  if (!sourceBundleTargetTypes.has(target.type) || !target.id || target.id === "work") {
+    return "";
+  }
+  const params = new URLSearchParams({
+    corpus_id: researchData.corpus_id || researchData.author_id || "",
+    work_id: researchData.work_id || "",
+    target_id: target.id
+  });
+  if (researchData.variant_id) {
+    params.set("variant_id", researchData.variant_id);
+  }
+  return `${location.origin}/api/source-target?${params}`;
+}
+
 function updateCitationPreview() {
   citationPreview.textContent = citationText();
 }
@@ -58,14 +77,54 @@ async function copyText(value) {
 }
 
 async function loadNotes() {
-  const corpusId = encodeURIComponent(researchData.corpus_id || researchData.author_id || "");
-  const workId = encodeURIComponent(researchData.work_id || "");
-  const response = await fetch(`/api/notes?corpus_id=${corpusId}&work_id=${workId}`);
+  const corpusId = researchData.corpus_id || researchData.author_id || "";
+  const workId = researchData.work_id || "";
+  const params = new URLSearchParams({ corpus_id: corpusId, work_id: workId });
+  const filter = noteFilter ? noteFilter.value.trim() : "";
+  if (filter.startsWith("#") && filter.length > 1) {
+    params.set("tag", filter.slice(1));
+  } else if (filter) {
+    params.set("q", filter);
+  }
+  const response = await fetch(`/api/notes?${params}`);
   if (!response.ok) return;
   const payload = await response.json();
   notesList.innerHTML = payload.notes.length
-    ? payload.notes.map((note) => `<div class="note-item"><strong>${escapeHtml(cleanText(note.target_label))}</strong><br>${escapeHtml(cleanText(note.note))}<br><small>${escapeHtml(cleanText((note.tags || []).join(", ")))}</small></div>`).join("")
+    ? payload.notes.map((note) => {
+      const tags = (note.tags || []).join(", ");
+      const updated = note.updated_at ? ` · edited ${cleanText(note.updated_at)}` : "";
+      return `<div class="note-item" data-note-id="${escapeHtml(note.id)}" data-note-tags="${escapeHtml(tags)}">
+        <strong>${escapeHtml(cleanText(note.target_label))}</strong><br>
+        <div class="note-text">${escapeHtml(cleanText(note.note))}</div>
+        <small>${escapeHtml(cleanText(tags))}${escapeHtml(updated)}</small>
+        <div class="note-actions">
+          <button type="button" data-action="edit-note" data-note-id="${escapeHtml(note.id)}">Edit</button>
+          <button type="button" data-action="delete-note" data-note-id="${escapeHtml(note.id)}">Delete</button>
+        </div>
+      </div>`;
+    }).join("")
     : "";
+}
+
+async function updateNote(noteId, note, tags) {
+  const response = await fetch(`/api/notes/${encodeURIComponent(noteId)}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      corpus_id: researchData.corpus_id || researchData.author_id,
+      note,
+      tags
+    })
+  });
+  return response.ok;
+}
+
+async function deleteNote(noteId) {
+  const corpusId = encodeURIComponent(researchData.corpus_id || researchData.author_id || "");
+  const response = await fetch(`/api/notes/${encodeURIComponent(noteId)}?corpus_id=${corpusId}`, {
+    method: "DELETE"
+  });
+  return response.ok;
 }
 
 document.getElementById("copyCitation").addEventListener("click", async () => {
@@ -76,6 +135,16 @@ document.getElementById("copyCitation").addEventListener("click", async () => {
 document.getElementById("copyUrl").addEventListener("click", async () => {
   await copyText(currentTarget().url);
   noteStatus.textContent = "URL copied.";
+});
+
+copySourceBundleButton.addEventListener("click", async () => {
+  const bundleUrl = sourceBundleUrl();
+  if (!bundleUrl) {
+    noteStatus.textContent = "Source bundle requires a section, paragraph, or verse target.";
+    return;
+  }
+  await copyText(bundleUrl);
+  noteStatus.textContent = "Source bundle URL copied.";
 });
 
 noteForm.addEventListener("submit", async (event) => {
@@ -105,6 +174,36 @@ noteForm.addEventListener("submit", async (event) => {
     await loadNotes();
   } else {
     noteStatus.textContent = "Could not save note.";
+  }
+});
+
+if (noteFilter) {
+  noteFilter.addEventListener("input", () => {
+    window.clearTimeout(noteFilter._timer);
+    noteFilter._timer = window.setTimeout(loadNotes, 180);
+  });
+}
+
+notesList.addEventListener("click", async (event) => {
+  const button = event.target.closest("button[data-action]");
+  if (!button) return;
+  const noteId = button.dataset.noteId;
+  const item = button.closest(".note-item");
+  const currentText = item ? cleanText(item.querySelector(".note-text")?.textContent || "") : "";
+  const currentTags = item ? cleanText(item.dataset.noteTags || "") : "";
+  if (button.dataset.action === "edit-note") {
+    const nextNote = window.prompt("Edit note", currentText);
+    if (nextNote === null) return;
+    const nextTags = window.prompt("Tags", currentTags) || "";
+    const ok = await updateNote(noteId, nextNote.trim(), nextTags.split(",").map((value) => value.trim()).filter(Boolean));
+    noteStatus.textContent = ok ? "Note updated." : "Could not update note.";
+    await loadNotes();
+  }
+  if (button.dataset.action === "delete-note") {
+    if (!window.confirm("Delete this note?")) return;
+    const ok = await deleteNote(noteId);
+    noteStatus.textContent = ok ? "Note deleted." : "Could not delete note.";
+    await loadNotes();
   }
 });
 

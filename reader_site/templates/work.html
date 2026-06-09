@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{TITLE}} / {{CORPUS_TITLE}}</title>
+  <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
   <link rel="stylesheet" href="/assets/reader-work.css?v=common2">
 </head>
 <body class="{{BODY_CLASS}}">
@@ -17,6 +18,8 @@
         <nav class="toolbar" aria-label="Reader navigation">
           <a href="/">Archive index</a>
           <a href="{{CATEGORY_HREF}}">{{CORPUS_TITLE}}</a>
+          <a href="/notes">Research notes</a>
+          <a href="/study">Study notes</a>
           <a href="{{SOURCE_HREF}}">Source mode</a>
         </nav>
       </header>
@@ -28,6 +31,7 @@
           <div id="citationPreview" class="citation-preview"></div>
           <button type="button" id="copyCitation">Copy citation</button>
           <button type="button" id="copyUrl">Copy URL</button>
+          <button type="button" id="copySourceBundle">Copy source bundle</button>
         </section>
         <section class="research-card">
           <h2>Notes</h2>
@@ -37,6 +41,7 @@
             <button type="submit">Save note</button>
           </form>
           <div id="noteStatus" class="note-status"></div>
+          <label>Filter<input id="noteFilter" name="note_filter" autocomplete="off"></label>
           <div id="notesList" class="notes-list"></div>
         </section>
         {{CONCEPTS}}
@@ -45,6 +50,6 @@
     </main>
   </div>
   <script id="researchData" type="application/json">{{RESEARCH_JSON}}</script>
-  <script src="/assets/reader-work.js?v=common2"></script>
+  <script src="/assets/reader-work.js?v=common3"></script>
 </body>
 </html>

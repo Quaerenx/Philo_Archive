@@ -1,0 +1,213 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--page-background, #d9d9d9);
+  color: #000;
+  font-family: var(--archive-font, Verdana, Arial, Helvetica, sans-serif);
+  font-size: 10px;
+  letter-spacing: 0;
+}
+
+a {
+  color: var(--archive-link-color, #ff0000);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.page {
+  position: relative;
+  width: 100%;
+  max-width: var(--page-frame-width, 1000px);
+  min-height: calc(100vh - 48px);
+  margin: var(--page-frame-margin, 24px auto);
+  padding: 0;
+  overflow: hidden;
+  background-image: var(--header-strip-image, url("/assets/header-strip.svg?v=nietzsche-portrait"));
+  background-repeat: repeat-x;
+  background-color: var(--page-frame-background, #eeeeee);
+  border: 1px solid var(--page-frame-border, #bdbdbd);
+  box-shadow: var(--page-frame-shadow, 0 2px 18px rgba(0, 0, 0, 0.12));
+}
+
+.page::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--header-portrait-width, 440px);
+  height: var(--header-portrait-height, 128px);
+  pointer-events: none;
+  background-image: var(--header-portrait-image, url("/assets/nietzsche-header-left.png?v=1882"));
+  background-repeat: no-repeat;
+  background-position: left top;
+  background-size: var(--header-portrait-width, 440px) var(--header-portrait-height, 128px);
+}
+
+.page > * {
+  position: relative;
+  z-index: 1;
+}
+
+.spacer {
+  height: var(--header-spacer-height, 160px);
+}
+
+.reader {
+  width: var(--reader-column-width, 764px);
+  margin: 0 auto 32px;
+  background: var(--reader-background, #ffffff);
+  border: 1px solid var(--reader-border, #d4d4d4);
+  min-height: 420px;
+}
+
+.reader.reading-mode {
+  padding: 28px 36px 40px;
+}
+
+.reader.source-mode {
+  padding: 24px 28px 32px;
+}
+
+.reader-header {
+  margin-bottom: 26px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--reader-border, #d4d4d4);
+}
+
+h1 {
+  margin: 0 0 6px;
+  font-family: var(--archive-font, Verdana, Arial, Helvetica, sans-serif);
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+.source-mode h1 {
+  margin-bottom: 4px;
+  font-size: 12px;
+}
+
+.path {
+  color: var(--archive-muted-color, #555555);
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.source-mode .path {
+  margin-bottom: 24px;
+}
+
+.toolbar {
+  margin-top: 10px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.reading-body {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 16px;
+  line-height: 1.72;
+}
+
+.reading-body h1,
+.reading-body h2,
+.reading-body h3,
+.reading-body h4 {
+  position: relative;
+  margin: 28px 0 10px;
+  font-family: var(--archive-font, Verdana, Arial, Helvetica, sans-serif);
+  line-height: 1.35;
+}
+
+.reading-body h1 {
+  font-size: 18px;
+}
+
+.reading-body h2 {
+  font-size: 16px;
+}
+
+.reading-body h3,
+.reading-body h4 {
+  font-size: 13px;
+}
+
+.reading-body p {
+  position: relative;
+  margin: 0 0 1em;
+}
+
+.segment-anchor {
+  position: absolute;
+  margin-left: -22px;
+  width: 18px;
+  color: #999;
+  opacity: 0;
+  text-align: right;
+}
+
+.reading-body :hover > .segment-anchor,
+.segment-anchor:focus {
+  opacity: 0.7;
+}
+
+.reading-body blockquote {
+  margin: 0 0 1em 18px;
+  padding-left: 14px;
+  border-left: 2px solid var(--reader-border, #d4d4d4);
+  color: #333;
+}
+
+.reading-body hr {
+  margin: 28px 0;
+  border: 0;
+  border-top: 1px solid var(--reader-border, #d4d4d4);
+}
+
+pre {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+@media (max-width: 860px) {
+  .page {
+    margin: 0 auto;
+    border-left: 0;
+    border-right: 0;
+  }
+
+  .reader {
+    width: auto;
+    margin: 0 10px 24px;
+  }
+
+  .reader.reading-mode {
+    padding: 22px 18px 30px;
+  }
+
+  .reader.source-mode {
+    padding: 18px 16px 24px;
+  }
+
+  .reading-body {
+    font-size: 15px;
+  }
+
+  .segment-anchor {
+    position: static;
+    margin-left: 0;
+    margin-right: 6px;
+    opacity: 0.35;
+  }
+}

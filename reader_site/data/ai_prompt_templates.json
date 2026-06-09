@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "templates": [
+    {
+      "prompt_template_id": "segment_interpretation_v1",
+      "record_type": "ai_prompt_template",
+      "description": "Source-bounded interpretation prompt for one selected reader segment.",
+      "default_temperature": 0.2,
+      "required_placeholders": [
+        "prompt_template_id",
+        "corpus_id",
+        "work_id",
+        "variant_id",
+        "target_id",
+        "target_url",
+        "label",
+        "source_text_sha256",
+        "source_text_chars",
+        "source_text"
+      ],
+      "template": "Prompt template: {prompt_template_id}\n\nYou are preparing a generated interpretation for a private study archive. Explain only the selected source target. Do not replace, rewrite, or silently correct the original source text. Do not use filesystem paths, hidden local files, personal notes, or prior generated output.\n\nRequired output sections:\n1. Generated interpretation\n2. Key terms or structure\n3. Cautions and uncertainty\n4. Study questions\n\nSource target:\n- corpus_id: {corpus_id}\n- work_id: {work_id}\n- variant_id: {variant_id}\n- target_id: {target_id}\n- target_url: {target_url}\n- label: {label}\n- source_text_sha256: {source_text_sha256}\n- source_text_chars: {source_text_chars}\n\nOriginal source:\n{source_text}\n"
+    }
+  ]
+}

@@ -2,14 +2,17 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
+import sys
 from pathlib import Path
 
 from segment_utils import chunk_text, text_preview
 
 
 SITE = Path(__file__).resolve().parents[1]
-ROOT = Path(os.environ.get("PHILOSOPHY_CRAWL_ROOT", Path(__file__).resolve().parents[2])).resolve()
+sys.path.insert(0, str(SITE))
+
+from path_config import ROOT  # noqa: E402
+
 METADATA = SITE / "data" / "kierkegaard_metadata.json"
 OUTPUT = SITE / "data" / "kierkegaard_segments.jsonl"
 

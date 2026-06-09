@@ -3,24 +3,17 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import os
+import sys
 from datetime import datetime
 from pathlib import Path
 from urllib.parse import quote
 
 
 SITE = Path(__file__).resolve().parents[1]
-ROOT = Path(os.environ.get("PHILOSOPHY_CRAWL_ROOT", Path(__file__).resolve().parents[2])).resolve()
-KIERKEGAARD_TEXTS = (
-    ROOT
-    / "키르케고르_원서수집"
-    / "kierkegaard"
-    / "kierkegaard"
-    / "data"
-    / "kierkegaard"
-    / "raw"
-    / "texts"
-)
+sys.path.insert(0, str(SITE))
+
+from path_config import KIERKEGAARD_TEXTS, ROOT  # noqa: E402
+
 OUTPUT = SITE / "data" / "kierkegaard_metadata.json"
 
 VARIANTS = [
@@ -134,6 +127,7 @@ def build_metadata() -> dict:
             "work_url": f"/work/kierkegaard/{work_id}",
             "segment_scheme": "sks_extract",
             "variant_ids": [variant["variant_id"] for variant in variants],
+            "concept_ids": [],
             "variants": variants,
             "license": copyright_note,
             "volume": volume,
