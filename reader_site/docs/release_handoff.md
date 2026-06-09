@@ -116,7 +116,7 @@ git status --short
 
 `check_restore_readiness.py` verifies the local full-restore side of the same handoff: source roots, primary output folders, metadata, segment artifacts, portable search index, SQLite search database, and corpus coverage in search records.
 
-`check_search_artifact_integrity.py` verifies that generated segment JSONL files, the portable search index, the SQLite search table, and the SQLite FTS table all contain matching corpus record counts.
+`check_search_artifact_integrity.py` verifies that generated segment JSONL files, the portable search index, the SQLite search table, and the SQLite FTS table agree on target keys, URLs, text previews, and corpus record counts.
 
 `check_encoding_contracts.py` verifies UTF-8 tracked text, Korean source-root names, and common mojibake fragments. If Windows PowerShell displays Korean paths incorrectly, use `Get-Content -Encoding UTF8`; see `docs/encoding_policy.md`.
 

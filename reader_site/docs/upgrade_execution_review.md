@@ -629,11 +629,11 @@ Implemented:
   - Parses all four generated segment JSONL files.
   - Parses `data/search_index.jsonl`.
   - Reads `data/search_index.sqlite`.
-  - Fails if segment counts, portable search index counts, SQLite table counts, or SQLite FTS counts diverge by corpus.
+  - Fails if target keys, segment URLs, search text, SQLite snippets, corpus counts, or SQLite FTS counts diverge.
 - `scripts/rebuild_all.py`
   - Runs the check after search behavior and search relevance checks.
 
 Boundary:
 
 - This is not a source-light CI check because the public clone intentionally excludes generated segment/search artifacts.
-- It proves that a restored local clone has a synchronized search pipeline, not merely present files.
+- It proves that a restored local clone has a synchronized search-to-reader target pipeline, not merely present files.
