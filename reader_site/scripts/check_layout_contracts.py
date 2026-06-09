@@ -110,11 +110,33 @@ def check_reader_pages_css() -> None:
         check_reader_css(relative_path, css)
 
 
+def check_study_target_ui() -> None:
+    script = read_site_file("assets/study.js")
+    for needle in [
+        "function noteTargetMeta",
+        "variant / ${variantId}",
+        "Target URL missing",
+        "Open target",
+        "Manage note",
+    ]:
+        require_contains(script, needle, "assets/study.js")
+
+    css = read_site_file("assets/study.css")
+    for needle in [
+        ".target-meta",
+        "overflow-wrap: anywhere;",
+        ".target-warning",
+        ".note-actions",
+    ]:
+        require_contains(css, needle, "assets/study.css")
+
+
 def main() -> None:
     check_tokens()
     check_html_entrypoints()
     check_home_css()
     check_reader_pages_css()
+    check_study_target_ui()
     print("layout contracts ok")
 
 

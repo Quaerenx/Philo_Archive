@@ -683,3 +683,26 @@ Boundary:
 
 - `check_note_target_integrity.py` is a full local restore check, not a source-light CI check, because segment target verification depends on ignored generated segment artifacts.
 - The check is read-only against personal note files.
+
+## 2026-06-09 study target UX
+
+The follow-up pass surfaced the note target integrity work in the actual study page.
+
+Implemented:
+
+- `assets/study.js`
+  - Shows each reviewed note's target type, target id, and variant id when available.
+  - Adds per-note source-target and note-management links.
+  - Shows a small warning badge when an imported or legacy note has no target URL.
+- `assets/study.css`
+  - Adds compact wrapping target metadata pills so long variant ids do not stretch the reader column.
+  - Keeps note actions out of print output.
+- `scripts/check_layout_contracts.py`
+  - Guards the study target metadata UI in the source-light layout contract.
+- `docs/api_reference.md`
+  - Documents the note fields consumed by the `/study` page.
+
+Boundary:
+
+- This change does not make `/api/study` perform expensive segment validation on every request.
+- Broken local note targets remain enforced by the read-only `check_note_target_integrity.py` restore gate.

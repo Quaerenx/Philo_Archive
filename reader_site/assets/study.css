@@ -94,7 +94,8 @@ h1 {
 
 .toolbar,
 .export-row,
-.group-actions {
+.group-actions,
+.note-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
@@ -172,6 +173,10 @@ h1 {
   margin: 6px 0 12px;
 }
 
+.note-actions {
+  margin-top: 7px;
+}
+
 .group-range {
   margin-top: 3px;
 }
@@ -204,6 +209,29 @@ h1 {
   gap: 8px;
   align-items: baseline;
   line-height: 1.35;
+}
+
+.target-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 4px;
+  color: #666;
+  line-height: 1.45;
+}
+
+.target-meta span {
+  max-width: 100%;
+  padding: 1px 5px;
+  overflow-wrap: anywhere;
+  border: 1px solid #d4d4d4;
+  background: #fafafa;
+}
+
+.target-meta .target-warning {
+  color: #8a2d00;
+  border-color: #d8a37f;
+  background: #fff6ef;
 }
 
 .note-text {
@@ -257,7 +285,8 @@ h1 {
   .toolbar,
   .study-form,
   .export-row,
-  .group-actions {
+  .group-actions,
+  .note-actions {
     display: none;
   }
 

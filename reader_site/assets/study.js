@@ -49,6 +49,28 @@ function updateUrl() {
   history.replaceState(null, "", params.toString() ? `/study?${params}` : "/study");
 }
 
+function noteManageHref(note) {
+  const params = new URLSearchParams({ review_state: "reviewed" });
+  if (note.corpus_id) params.set("corpus_id", note.corpus_id);
+  if (note.work_id) params.set("work_id", note.work_id);
+  if (note.target_id) params.set("target_id", note.target_id);
+  return `/notes?${params}`;
+}
+
+function noteTargetMeta(note) {
+  const parts = [];
+  const targetType = cleanText(note.target_type || "");
+  const targetId = cleanText(note.target_id || "");
+  const variantId = cleanText(note.variant_id || "");
+  if (targetType || targetId) {
+    parts.push([targetType, targetId].filter(Boolean).join(" / "));
+  }
+  if (variantId) {
+    parts.push(`variant / ${variantId}`);
+  }
+  return parts;
+}
+
 function renderNote(note) {
   const target = note.target_label || note.target_id || "Target";
   const date = note.reviewed_at || note.updated_at || note.created_at || "";
@@ -57,14 +79,25 @@ function renderNote(note) {
   const targetLink = note.url
     ? `<a href="${escapeHtml(note.url)}">${escapeHtml(target)}</a>`
     : escapeHtml(target);
+  const targetMeta = noteTargetMeta(note)
+    .map((item) => `<span>${escapeHtml(item)}</span>`)
+    .join("");
+  const missingTarget = note.url ? "" : `<span class="target-warning">Target URL missing</span>`;
+  const openTarget = note.url ? `<a href="${escapeHtml(note.url)}">Open target</a>` : "";
+  const manageHref = noteManageHref(note);
   return `<article class="study-note">
     <div class="note-title">
       ${targetLink}
       <span class="note-meta">${escapeHtml(cleanText(date))}</span>
     </div>
+    ${targetMeta || missingTarget ? `<div class="target-meta">${targetMeta}${missingTarget}</div>` : ""}
     ${tags ? `<div class="note-tags">${escapeHtml(tags)}</div>` : ""}
     <p class="note-text">${escapeHtml(cleanText(note.note))}</p>
     ${quote}
+    <div class="note-actions">
+      ${openTarget}
+      <a href="${escapeHtml(manageHref)}">Manage note</a>
+    </div>
   </article>`;
 }
 

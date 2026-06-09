@@ -536,11 +536,29 @@ Response:
         "start": "2026-06-04T12:02:00",
         "end": "2026-06-05T09:30:00"
       },
-      "notes": []
+      "notes": [
+        {
+          "id": "hex uuid",
+          "corpus_id": "nietzsche",
+          "work_id": "M",
+          "variant_id": "",
+          "target_id": "p-0001",
+          "target_type": "paragraph",
+          "target_label": "Paragraph 1",
+          "url": "/work/nietzsche/M#p-0001",
+          "note": "reviewed study note",
+          "quote": "",
+          "tags": ["dawn"],
+          "review_state": "reviewed",
+          "reviewed_at": "2026-06-04T12:02:00"
+        }
+      ]
     }
   ]
 }
 ```
+
+The `/study` page uses each note's `url`, `target_type`, `target_id`, and `variant_id` to show a direct source-target link and compact target metadata.
 
 ## `GET /api/study/export`
 
