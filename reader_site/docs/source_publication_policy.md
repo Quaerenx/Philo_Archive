@@ -52,6 +52,8 @@ python .\scripts\rebuild_all.py
 
 After local segment files are regenerated, `services/source_targets.py` may compute source-text checksums for bounded reading targets. Those checksums are validation/provenance metadata; the generated segment JSONL files and full source text still stay out of Git.
 
+Run `python .\scripts\check_restore_readiness.py` after restore to confirm that local source folders and generated artifacts are available without publishing them.
+
 The public repository should remain useful without those corpora through source-light checks, documentation, and small metadata files.
 
 ## Verification

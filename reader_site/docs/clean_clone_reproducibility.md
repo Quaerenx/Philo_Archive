@@ -89,10 +89,11 @@ Full corpus rebuild checks remain local because the public repository intentiona
 After a full local restore, also run:
 
 ```powershell
+python .\scripts\check_restore_readiness.py
 python .\scripts\check_source_target_contracts.py
 ```
 
-This check intentionally is not part of the source-light CI subset because it requires regenerated segment JSONL files. It proves that selected reading targets can be resolved back to exact `text_raw` records and stable SHA-256 source-text checksums.
+These checks intentionally are not part of the source-light CI subset because they require restored source folders and regenerated local artifacts. `check_restore_readiness.py` verifies source roots, primary output folders, metadata, segment artifacts, and search records. `check_source_target_contracts.py` proves that selected reading targets can be resolved back to exact `text_raw` records and stable SHA-256 source-text checksums.
 
 The workflow shape is checked by:
 

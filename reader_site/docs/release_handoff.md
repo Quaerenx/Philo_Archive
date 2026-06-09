@@ -92,6 +92,7 @@ python .\scripts\check_layout_contracts.py
 python .\scripts\check_server_boundary.py
 python .\scripts\check_provenance_contracts.py
 python .\scripts\check_corpus_schema.py
+python .\scripts\check_restore_readiness.py
 python .\scripts\check_source_target_contracts.py
 python .\scripts\check_api_contracts.py
 python .\scripts\check_search_contracts.py
@@ -109,6 +110,8 @@ git status --short
 `build_release_stage_manifest.py --check` classifies current Git changes as `stage`, `review`, or `block`. Use `--write` when you want a local JSON manifest at `data/release_stage_manifest.local.json`; that file is intentionally ignored by Git.
 
 `check_clean_clone_contracts.py` verifies that a source-light clone contains restore documentation, validation scripts, and no forbidden source/generated artifacts. Use `--clone-smoke` after committing to create a real temporary clean clone; see `docs/clean_clone_reproducibility.md`.
+
+`check_restore_readiness.py` verifies the local full-restore side of the same handoff: source roots, primary output folders, metadata, segment artifacts, portable search index, SQLite search database, and corpus coverage in search records.
 
 `check_encoding_contracts.py` verifies UTF-8 tracked text, Korean source-root names, and common mojibake fragments. If Windows PowerShell displays Korean paths incorrectly, use `Get-Content -Encoding UTF8`; see `docs/encoding_policy.md`.
 

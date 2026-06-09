@@ -546,3 +546,25 @@ Boundary:
 
 - This check is intentionally not part of source-light CI because it requires regenerated local segment JSONL files.
 - Clean clones still prove structure, docs, GitHub Actions, publication boundaries, encoding, layout, server boundaries, and AI record contracts without local corpora.
+
+## 2026-06-09 restore readiness gate
+
+The next pass added a command-line check for the other side of clean-clone reproducibility: after a public clone is connected to local source corpora, the project should be able to prove that the restored local environment is actually usable.
+
+Implemented:
+
+- `scripts/check_restore_readiness.py`
+  - Verifies all four source roots.
+  - Verifies the primary output folder expected by each corpus builder.
+  - Verifies metadata and segment artifacts exist and are non-empty.
+  - Verifies the portable search index and SQLite search database exist.
+  - Verifies search records cover Nietzsche, Bible, Kierkegaard, and Wittgenstein.
+  - Requires FTS5 by default, with `--allow-degraded-search` for environments that intentionally accept LIKE fallback.
+- `scripts/rebuild_all.py`
+  - Runs restore readiness as part of the full local rebuild check sequence.
+  - Skips it when `--skip-search-db` is used, because that option deliberately permits a lighter rebuild.
+
+Boundary:
+
+- `check_restore_readiness.py` is a local full-restore gate, not a source-light CI gate.
+- `check_clean_clone_contracts.py --run-source-light-checks` remains the public clone gate for environments without source corpora.

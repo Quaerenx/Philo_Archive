@@ -40,6 +40,7 @@ CHECK_STEPS = [
     Step("AI provenance contracts", "check_provenance_contracts.py"),
     Step("Corpus schema contracts", "check_corpus_schema.py"),
     Step("Source target contracts", "check_source_target_contracts.py"),
+    Step("Restore readiness contracts", "check_restore_readiness.py"),
     Step("Runtime API contracts", "check_api_contracts.py"),
     Step("Search contracts", "check_search_contracts.py"),
     Step("Search relevance contracts", "check_search_relevance.py"),
@@ -80,6 +81,9 @@ def main() -> None:
 
     if not args.no_checks:
         for step in CHECK_STEPS:
+            if args.skip_search_db and step.script == "check_restore_readiness.py":
+                print(f"\n==> {step.label} skipped")
+                continue
             run_step(step)
 
     print("\nrebuild complete")
