@@ -7,7 +7,7 @@ review the proposed enhancement order, apply the parts judged sound, and keep th
 
 ## Current Verdict
 
-The stabilization and standardization phase is complete for the current non-AI research-reader scope.
+The stabilization and standardization phase is complete for the current source-first research-reader scope.
 
 The project now has:
 
@@ -15,11 +15,14 @@ The project now has:
 - cross-corpus metadata and segment contracts;
 - search, notes, study, artifact, and route checks;
 - search relevance and AI JSONL record checks;
+- source-light clean-clone and GitHub Actions checks;
+- local full-restore readiness, source-target, note-target, and search-artifact integrity checks;
+- source-target and deterministic prompt provenance contracts for a future AI/Gemma layer;
 - local browser visual smoke QA automation;
 - a thin HTTP server guarded by an explicit boundary check;
 - documented rebuild and validation commands.
 
-The branch has been pushed and GitHub PR #1 has been opened. Remaining work should be treated as post-merge product iteration: visual taste polish, real-query search calibration, and an optional AI/Gemma runtime only after the documented provenance gates remain satisfied.
+The branch has been pushed and GitHub PR #1 has been opened. Remaining work should be treated as post-merge product iteration: visual taste polish, real-query search calibration, and an optional AI/Gemma runtime only after the source-target, prompt, storage, and UI provenance gates remain satisfied.
 
 ## Evidence Snapshot
 
@@ -31,6 +34,13 @@ python .\scripts\check_layout_contracts.py
 python .\scripts\build_release_stage_manifest.py --check
 python .\scripts\check_release_contracts.py
 python .\scripts\check_provenance_contracts.py
+python .\scripts\check_clean_clone_contracts.py --run-source-light-checks
+python .\scripts\check_clean_clone_contracts.py --clone-smoke --clone-parent C:\Users\PP\Documents\crawl
+python .\scripts\check_restore_readiness.py
+python .\scripts\check_source_target_contracts.py
+python .\scripts\check_prompt_template_contracts.py --with-source-targets
+python .\scripts\check_search_artifact_integrity.py
+python .\scripts\check_note_target_integrity.py
 python -m compileall -q .\server.py .\runtime_status.py .\corpora .\rendering .\services .\scripts
 python .\scripts\check_api_contracts.py
 python .\scripts\check_static_routes.py
@@ -50,6 +60,13 @@ Observed results:
 - `release stage manifest` with `block: 0`, `review: 0`, and current changes classified as stage candidates
 - `release contracts ok`
 - `provenance contracts ok`
+- `clean clone contracts ok`
+- real clean clone smoke passed with an empty corpus root
+- `restore readiness ok`
+- `source target contracts ok`
+- `prompt template contracts ok`
+- `search artifact integrity ok`
+- `note target integrity ok`
 - `api contracts ok`
 - `static routes ok`
 - `search contracts ok`
@@ -209,13 +226,18 @@ Remaining visual work should be treated as product polish rather than an unverif
 
 ### AI/Gemma Interpretation
 
-Status: policy complete; runtime feature intentionally deferred.
+Status: pre-runtime provenance foundation complete; model runtime intentionally deferred.
 
 Evidence:
 
 - `docs/ai_interpretation_policy.md`
 - `scripts/check_provenance_contracts.py`
 - `scripts/check_ai_records_contracts.py`
+- `services/source_targets.py`
+- `scripts/check_source_target_contracts.py`
+- `data/ai_prompt_templates.json`
+- `services/interpretation_prompts.py`
+- `scripts/check_prompt_template_contracts.py`
 - `.gitignore`
 - `data/ai/.gitkeep`
 - `docs/release_handoff.md`
@@ -231,7 +253,18 @@ The policy now defines:
 - privacy boundaries for selected source text and notes;
 - pre-implementation gates before adding any AI endpoint or UI.
 
-The provenance contract verifies that the policy remains present, generated AI output is ignored by Git, an AI JSONL record validator exists, and no active `/api/ai`, `/api/gemma`, or `/api/interpret` route has been exposed before those gates are implemented.
+The provenance contracts now verify:
+
+- no active `/api/ai`, `/api/gemma`, or `/api/interpret` route has been exposed;
+- generated AI output is ignored by Git;
+- local AI records must use the documented JSONL schema;
+- `prompt_template_id` must reference a tracked prompt template;
+- `/api/source-target` returns a bounded local source bundle for one selected segment;
+- source bundles include exact source text and `source_text_sha256` without local filesystem path keys;
+- `segment_interpretation_v1` renders deterministically into an `interpretation_prompt_bundle`;
+- prompt bundles include `prompt_sha256`, `source_text_sha256`, visible "Original source" and "Generated interpretation" labels, and no model call.
+
+This proves the pre-AI boundary. It does not claim that Gemma runtime generation is implemented.
 
 ### Route Dispatch Module
 
@@ -280,10 +313,10 @@ The audit proves branch push and PR creation, but not merge to `main`.
    Use `scripts/check_visual_smoke.py` plus targeted browser review for corpus-specific headers, page-frame tone, and reader-frame consistency.
 
 4. AI interpretation prototype.
-   Implement Gemma/AI only after `scripts/check_ai_records_contracts.py` and the documented provenance gates remain satisfied in code and UI.
+   Implement Gemma/AI only after `scripts/check_source_target_contracts.py`, `scripts/check_prompt_template_contracts.py --with-source-targets`, `scripts/check_ai_records_contracts.py`, and the documented UI/storage provenance gates remain satisfied.
 
 ## Completion Position
 
-The broad archive-upgrade foundation is complete for the current non-AI reader scope.
+The broad archive-upgrade foundation is complete for the current source-first reader scope.
 
 The remaining work is product iteration: merge/post-merge verification, larger real-query calibration, visual taste refinement, and an optional AI interpretation runtime.
