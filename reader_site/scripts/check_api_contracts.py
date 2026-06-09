@@ -14,6 +14,31 @@ from runtime_status import build_artifact_manifest, build_runtime_health  # noqa
 from services.source_targets import sha256_text, source_target_payload_from_query  # noqa: E402
 
 
+SOURCE_TARGET_BUNDLE_KEYS = {
+    "schema_version",
+    "record_type",
+    "corpus_id",
+    "work_id",
+    "variant_id",
+    "target_id",
+    "target_url",
+    "segment_type",
+    "label",
+    "source_text",
+    "source_text_preview",
+    "source_text_chars",
+    "source_text_sha256",
+}
+
+FORBIDDEN_SOURCE_TARGET_KEYS = {
+    "path",
+    "source_path",
+    "source_root",
+    "local_path",
+    "metadata_path",
+}
+
+
 def require(condition: bool, message: str) -> None:
     if not condition:
         raise AssertionError(message)
@@ -154,25 +179,9 @@ def check_source_target_payload() -> None:
         payload = source_target_payload_from_query(query)
         require_keys(payload, {"target"}, "source target payload")
         target = payload["target"]
-        require_keys(
-            target,
-            {
-                "schema_version",
-                "record_type",
-                "corpus_id",
-                "work_id",
-                "variant_id",
-                "target_id",
-                "target_url",
-                "segment_type",
-                "label",
-                "source_text",
-                "source_text_preview",
-                "source_text_chars",
-                "source_text_sha256",
-            },
-            "source target",
-        )
+        require(set(target) == SOURCE_TARGET_BUNDLE_KEYS, "source target bundle schema drift")
+        unexpected_path_keys = sorted(FORBIDDEN_SOURCE_TARGET_KEYS & set(target))
+        require(not unexpected_path_keys, "source target bundle exposes local path keys: " + ", ".join(unexpected_path_keys))
         require(target["schema_version"] == 1, "source target schema_version must be 1")
         require(target["record_type"] == "source_target_bundle", "source target record_type mismatch")
         require(target["corpus_id"] == query["corpus_id"][0], "source target corpus_id mismatch")
@@ -181,6 +190,7 @@ def check_source_target_payload() -> None:
         if "expected_segment_type" in query:
             require(target["segment_type"] == query["expected_segment_type"][0], "source target segment_type mismatch")
         require(target["target_url"].startswith(f"/work/{target['corpus_id']}/"), "source target URL invalid")
+        require("://" not in target["target_url"], "source target URL must be site-relative")
         require(target["source_text"].strip(), "source target source_text is empty")
         require(target["source_text_chars"] == len(target["source_text"]), "source target chars mismatch")
         require(

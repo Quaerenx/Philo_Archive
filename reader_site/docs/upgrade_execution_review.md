@@ -752,3 +752,21 @@ Boundary:
 
 - The button copies a local source-target URL only.
 - It does not call a model, store generated output, or alter source/notes data.
+
+## 2026-06-09 source bundle publication boundary
+
+The next pass tightened the source target bundle schema so the runtime endpoint remains useful for local interpretation without exposing local archive paths.
+
+Implemented:
+
+- `scripts/check_api_contracts.py`
+  - Requires `/api/source-target` bundle records to match an exact public schema.
+  - Fails if path-like keys such as `source_path`, `source_root`, `local_path`, or `metadata_path` appear in the bundle.
+  - Requires `target_url` to remain site-relative.
+- `docs/source_publication_policy.md`
+  - Documents that `/api/source-target` may return exact source text for one selected local segment but must not expose local filesystem paths.
+
+Boundary:
+
+- The public repository still does not track generated segment files or full source text.
+- The local API is for restored local environments only.
