@@ -1,13 +1,11 @@
 from __future__ import annotations
 
 import json
-import os
 import re
 from pathlib import Path
 
+from path_config import NIETZSCHE_OUTPUT, ROOT, SITE
 
-SITE = Path(__file__).resolve().parents[1]
-ROOT = Path(os.environ.get("PHILOSOPHY_CRAWL_ROOT", SITE.parents[0])).resolve()
 DATA = SITE / "data"
 
 NIETZSCHE_CATALOG = DATA / "nietzsche_catalog.json"
@@ -17,8 +15,6 @@ BIBLE_METADATA = DATA / "bible_metadata.json"
 BIBLE_SEGMENTS = DATA / "bible_segments.jsonl"
 KIERKEGAARD_METADATA = DATA / "kierkegaard_metadata.json"
 WITTGENSTEIN_METADATA = DATA / "wittgenstein_metadata.json"
-
-NIETZSCHE_OUTPUT = ROOT / "니체_원서수집" / "nietzsche" / "nietzsche" / "output"
 
 BIBLE_SEGMENTS_CACHE: tuple[float, list[dict]] | None = None
 

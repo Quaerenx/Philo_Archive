@@ -2,31 +2,21 @@ from __future__ import annotations
 
 import csv
 import json
-import os
 from datetime import datetime
 from pathlib import Path
 from urllib.parse import quote
 
 from corpora.catalogs import load_bible_metadata, load_kierkegaard_metadata, load_nietzsche_catalog, load_wittgenstein_metadata
+from path_config import (
+    BIBLE_OUTPUT,
+    KIERKEGAARD_TEXTS,
+    NIETZSCHE_OUTPUT,
+    ROOT,
+    SITE,
+    WITTGENSTEIN_OUTPUT,
+)
 from rendering.documents import title_from_markdown
 
-
-SITE = Path(__file__).resolve().parents[1]
-ROOT = Path(os.environ.get("PHILOSOPHY_CRAWL_ROOT", SITE.parents[0])).resolve()
-
-NIETZSCHE_OUTPUT = ROOT / "니체_원서수집" / "nietzsche" / "nietzsche" / "output"
-WITTGENSTEIN_OUTPUT = ROOT / "비트겐슈타인_원서수집" / "wittgenstein" / "wittgenstein" / "output"
-BIBLE_OUTPUT = ROOT / "성경_원서수집" / "bible" / "bible" / "output"
-KIERKEGAARD_TEXTS = (
-    ROOT
-    / "키르케고르_원서수집"
-    / "kierkegaard"
-    / "kierkegaard"
-    / "data"
-    / "kierkegaard"
-    / "raw"
-    / "texts"
-)
 
 ARCHIVE_CACHE: dict | None = None
 

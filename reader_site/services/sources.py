@@ -1,23 +1,14 @@
 from __future__ import annotations
 
-import os
 from pathlib import Path
 from urllib.parse import quote, unquote
 
+from path_config import CORPUS_ROOTS, ROOT, SITE
 from rendering.documents import markdown_to_reading_html, title_from_markdown
 from rendering.static_pages import render_reading_page_html, render_source_page_html
 
 
-SITE = Path(__file__).resolve().parents[1]
-ROOT = Path(os.environ.get("PHILOSOPHY_CRAWL_ROOT", SITE.parents[0])).resolve()
 TEMPLATES = SITE / "templates"
-
-CORPUS_ROOTS = [
-    ROOT / "니체_원서수집",
-    ROOT / "비트겐슈타인_원서수집",
-    ROOT / "성경_원서수집",
-    ROOT / "키르케고르_원서수집",
-]
 
 SOURCE_SUFFIXES = {".md", ".html", ".json", ".pdf", ".txt", ".csv"}
 

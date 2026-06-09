@@ -4,6 +4,7 @@ import fnmatch
 import json
 import re
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -12,13 +13,11 @@ SITE = Path(__file__).resolve().parents[1]
 REPO = SITE.parent
 POLICY = SITE / "docs" / "source_publication_policy.md"
 GITIGNORE = REPO / ".gitignore"
+sys.path.insert(0, str(SITE))
 
-SOURCE_DIRS = [
-    "니체_원서수집",
-    "비트겐슈타인_원서수집",
-    "성경_원서수집",
-    "키르케고르_원서수집",
-]
+from path_config import SOURCE_ROOT_NAMES  # noqa: E402
+
+SOURCE_DIRS = list(SOURCE_ROOT_NAMES)
 
 FORBIDDEN_TRACKED_PATTERNS = [
     "reader_site/data/*_segments.jsonl",

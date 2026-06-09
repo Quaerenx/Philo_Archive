@@ -1,18 +1,17 @@
 from __future__ import annotations
 
 import subprocess
+import sys
 from pathlib import Path
 
 
 SITE = Path(__file__).resolve().parents[1]
 REPO = SITE.parent
+sys.path.insert(0, str(SITE))
 
-KOREAN_SOURCE_ROOTS = [
-    "니체_원서수집",
-    "비트겐슈타인_원서수집",
-    "성경_원서수집",
-    "키르케고르_원서수집",
-]
+from path_config import SOURCE_ROOT_NAMES  # noqa: E402
+
+KOREAN_SOURCE_ROOTS = list(SOURCE_ROOT_NAMES)
 
 BINARY_SUFFIXES = {
     ".bmp",
@@ -32,12 +31,7 @@ REQUIRED_ROOT_REFERENCES = {
     "README.md": [f"{root}/" for root in KOREAN_SOURCE_ROOTS],
     "reader_site/docs/release_handoff.md": [f"`{root}/`" for root in KOREAN_SOURCE_ROOTS],
     "reader_site/docs/encoding_policy.md": [f"`{root}`" for root in KOREAN_SOURCE_ROOTS],
-    "reader_site/runtime_status.py": KOREAN_SOURCE_ROOTS,
-    "reader_site/services/sources.py": KOREAN_SOURCE_ROOTS,
-    "reader_site/corpora/archive.py": KOREAN_SOURCE_ROOTS,
-    "reader_site/corpora/work_models.py": KOREAN_SOURCE_ROOTS,
-    "reader_site/scripts/check_release_contracts.py": KOREAN_SOURCE_ROOTS,
-    "reader_site/scripts/build_release_stage_manifest.py": KOREAN_SOURCE_ROOTS,
+    "reader_site/path_config.py": KOREAN_SOURCE_ROOTS,
 }
 
 MOJIBAKE_NEEDLES = [

@@ -18,16 +18,12 @@ import check_encoding_contracts  # noqa: E402
 import check_release_contracts  # noqa: E402
 import check_source_publication_contracts  # noqa: E402
 from corpora import catalogs  # noqa: E402
+from path_config import PRIMARY_OUTPUTS, SOURCE_ROOT_NAMES  # noqa: E402
 from runtime_status import CORPORA, ROOT  # noqa: E402
 from services import sources  # noqa: E402
 
 
-EXPECTED_SOURCE_ROOTS = {
-    "니체_원서수집",
-    "비트겐슈타인_원서수집",
-    "성경_원서수집",
-    "키르케고르_원서수집",
-}
+EXPECTED_SOURCE_ROOTS = set(SOURCE_ROOT_NAMES)
 
 EXPECTED_PRIMARY_OUTPUTS = {
     "nietzsche": catalogs.NIETZSCHE_OUTPUT,
@@ -80,6 +76,10 @@ def check_primary_outputs() -> None:
     for corpus_id, builder_path in EXPECTED_PRIMARY_OUTPUTS.items():
         runtime_path = runtime_by_id.get(corpus_id)
         require(runtime_path is not None, f"{corpus_id}: missing runtime primary output")
+        require(
+            resolved(PRIMARY_OUTPUTS[corpus_id]) == resolved(builder_path),
+            f"{corpus_id}: centralized primary output differs from builder path",
+        )
         require(
             resolved(runtime_path) == resolved(builder_path),
             f"{corpus_id}: runtime primary output differs from builder path",

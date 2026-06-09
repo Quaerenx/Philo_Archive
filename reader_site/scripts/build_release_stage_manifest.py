@@ -4,6 +4,7 @@ import argparse
 import fnmatch
 import json
 import subprocess
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -12,15 +13,13 @@ from typing import Any
 SITE = Path(__file__).resolve().parents[1]
 REPO = SITE.parent
 OUTPUT = SITE / "data" / "release_stage_manifest.local.json"
+sys.path.insert(0, str(SITE))
+
+from path_config import SOURCE_ROOT_NAMES  # noqa: E402
 
 MAX_STAGE_FILE_BYTES = 20 * 1024 * 1024
 
-SOURCE_DIRS = [
-    "니체_원서수집",
-    "비트겐슈타인_원서수집",
-    "성경_원서수집",
-    "키르케고르_원서수집",
-]
+SOURCE_DIRS = list(SOURCE_ROOT_NAMES)
 
 FORBIDDEN_PATTERNS = [
     "reader_site/data/*_segments.jsonl",
@@ -64,6 +63,7 @@ ALLOWED_TOP_LEVEL_FILES = {
     "reader_site/app.js",
     "reader_site/index.html",
     "reader_site/notes.html",
+    "reader_site/path_config.py",
     "reader_site/runtime_status.py",
     "reader_site/search.html",
     "reader_site/server.py",

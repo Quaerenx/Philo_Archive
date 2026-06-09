@@ -583,3 +583,25 @@ Implemented:
   - Runs path contracts with the other local checks.
 
 This gives a stable guard before any future central path-configuration refactor.
+
+## 2026-06-09 path configuration centralization
+
+The follow-up pass used the path contract as a safety net and introduced the first central path configuration module.
+
+Implemented:
+
+- `path_config.py`
+  - Defines `PHILOSOPHY_CRAWL_ROOT`, the four Korean source-root names, source-root paths, and primary output paths.
+  - Exposes `CORPUS_ROOTS` and `PRIMARY_OUTPUTS` for runtime and validation modules.
+- Runtime modules now import shared path constants:
+  - `runtime_status.py`
+  - `services/sources.py`
+  - `corpora/archive.py`
+  - `corpora/catalogs.py`
+  - `corpora/work_models.py`
+- Builder and validation scripts now import the same baseline:
+  - metadata builders;
+  - segment builders;
+  - release stage, release, source-publication, clean-clone, encoding, and path checks.
+
+This reduces the number of places where a future source-folder move can silently drift.

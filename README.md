@@ -7,6 +7,7 @@ The Git repository stores the reader application, metadata builders, templates, 
 The reader app is split by responsibility:
 
 - `reader_site/server.py`: local HTTP routes and static/source/read responses.
+- `reader_site/path_config.py`: shared source-root and primary-output path configuration.
 - `reader_site/corpora/archive.py`: `/api/archive` root and category index construction.
 - `reader_site/corpora/catalogs.py`: metadata loading, work resolution, and Bible segment lookup.
 - `reader_site/corpora/work_models.py`: corpus-specific work-page model builders.

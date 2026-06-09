@@ -9,6 +9,7 @@ This document defines how to publish or move the Personal Archive of Literature 
 Git should store:
 
 - reader-site application code;
+- shared local path configuration in `reader_site/path_config.py`;
 - templates, CSS, JavaScript, and static UI assets;
 - metadata builders and validation scripts;
 - small catalog/metadata JSON files;
@@ -116,7 +117,7 @@ git status --short
 
 `check_encoding_contracts.py` verifies UTF-8 tracked text, Korean source-root names, and common mojibake fragments. If Windows PowerShell displays Korean paths incorrectly, use `Get-Content -Encoding UTF8`; see `docs/encoding_policy.md`.
 
-`check_path_contracts.py` verifies that runtime diagnostics, source serving, builders, release checks, and source-light checks agree on the same four source-root names and primary output folders.
+`check_path_contracts.py` verifies that `reader_site/path_config.py`, runtime diagnostics, source serving, builders, release checks, and source-light checks agree on the same four source-root names and primary output folders.
 
 GitHub pull requests run `.github/workflows/reader-site-source-light.yml`, which executes the source-light clean clone checks without local corpora.
 

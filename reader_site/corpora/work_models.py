@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from pathlib import Path
 from urllib.parse import quote
 
@@ -13,6 +12,7 @@ from corpora.catalogs import (
     resolve_metadata_work,
     resolve_nietzsche_work,
 )
+from path_config import CORPUS_ROOTS, ROOT, SITE
 from rendering.documents import (
     kierkegaard_extract_texts,
     readable_markdown_text,
@@ -22,16 +22,6 @@ from rendering.documents import (
     title_from_markdown,
 )
 from rendering.work_markup import concept_markup, source_notice_markup, toc_markup, variant_tabs_for_work, variant_tabs_markup
-
-
-SITE = Path(__file__).resolve().parents[1]
-ROOT = Path(os.environ.get("PHILOSOPHY_CRAWL_ROOT", SITE.parents[0])).resolve()
-CORPUS_ROOTS = [
-    ROOT / "니체_원서수집",
-    ROOT / "비트겐슈타인_원서수집",
-    ROOT / "성경_원서수집",
-    ROOT / "키르케고르_원서수집",
-]
 
 
 def is_inside(path: Path, root: Path) -> bool:

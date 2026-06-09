@@ -3,8 +3,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import os
 import re
+import sys
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
@@ -12,8 +12,10 @@ from urllib.parse import quote
 
 
 SITE = Path(__file__).resolve().parents[1]
-ROOT = Path(os.environ.get("PHILOSOPHY_CRAWL_ROOT", Path(__file__).resolve().parents[2])).resolve()
-WITTGENSTEIN_OUTPUT = ROOT / "비트겐슈타인_원서수집" / "wittgenstein" / "wittgenstein" / "output"
+sys.path.insert(0, str(SITE))
+
+from path_config import ROOT, WITTGENSTEIN_OUTPUT  # noqa: E402
+
 MANIFEST = WITTGENSTEIN_OUTPUT / "_manifest.json"
 OUTPUT = SITE / "data" / "wittgenstein_metadata.json"
 

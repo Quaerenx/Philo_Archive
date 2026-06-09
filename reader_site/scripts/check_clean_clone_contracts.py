@@ -13,13 +13,11 @@ from pathlib import Path
 
 SITE = Path(__file__).resolve().parents[1]
 REPO = SITE.parent
+sys.path.insert(0, str(SITE))
 
-SOURCE_ROOTS = [
-    "니체_원서수집",
-    "비트겐슈타인_원서수집",
-    "성경_원서수집",
-    "키르케고르_원서수집",
-]
+from path_config import SOURCE_ROOT_NAMES  # noqa: E402
+
+SOURCE_ROOTS = list(SOURCE_ROOT_NAMES)
 
 FORBIDDEN_CLEAN_CLONE_PATTERNS = [
     "reader_site/data/*_segments.jsonl",
@@ -49,6 +47,7 @@ REQUIRED_FILES = [
     ".github/workflows/reader-site-source-light.yml",
     "README.md",
     "reader_site/README.md",
+    "reader_site/path_config.py",
     "reader_site/server.py",
     "reader_site/scripts/rebuild_all.py",
     "reader_site/scripts/check_clean_clone_contracts.py",

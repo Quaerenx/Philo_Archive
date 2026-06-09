@@ -8,9 +8,20 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from path_config import (
+    BIBLE_OUTPUT,
+    BIBLE_SOURCE_ROOT,
+    CORPUS_ROOT_ENV,
+    KIERKEGAARD_SOURCE_ROOT,
+    KIERKEGAARD_TEXTS,
+    NIETZSCHE_OUTPUT,
+    NIETZSCHE_SOURCE_ROOT,
+    ROOT,
+    SITE,
+    WITTGENSTEIN_OUTPUT,
+    WITTGENSTEIN_SOURCE_ROOT,
+)
 
-SITE = Path(__file__).resolve().parent
-ROOT = Path(os.environ.get("PHILOSOPHY_CRAWL_ROOT", SITE.parents[0])).resolve()
 DATA = SITE / "data"
 
 SEARCH_INDEX = DATA / "search_index.jsonl"
@@ -20,8 +31,8 @@ CORPORA = [
     {
         "corpus_id": "nietzsche",
         "title": "Nietzsche",
-        "source_root": ROOT / "니체_원서수집",
-        "primary_output": ROOT / "니체_원서수집" / "nietzsche" / "nietzsche" / "output",
+        "source_root": NIETZSCHE_SOURCE_ROOT,
+        "primary_output": NIETZSCHE_OUTPUT,
         "metadata": DATA / "nietzsche_metadata.json",
         "segments": DATA / "nietzsche_segments.jsonl",
         "notes": DATA / "notes" / "nietzsche_notes.jsonl",
@@ -29,8 +40,8 @@ CORPORA = [
     {
         "corpus_id": "bible",
         "title": "Bible",
-        "source_root": ROOT / "성경_원서수집",
-        "primary_output": ROOT / "성경_원서수집" / "bible" / "bible" / "output",
+        "source_root": BIBLE_SOURCE_ROOT,
+        "primary_output": BIBLE_OUTPUT,
         "metadata": DATA / "bible_metadata.json",
         "segments": DATA / "bible_segments.jsonl",
         "notes": DATA / "notes" / "bible_notes.jsonl",
@@ -38,17 +49,8 @@ CORPORA = [
     {
         "corpus_id": "kierkegaard",
         "title": "Kierkegaard",
-        "source_root": ROOT / "키르케고르_원서수집",
-        "primary_output": (
-            ROOT
-            / "키르케고르_원서수집"
-            / "kierkegaard"
-            / "kierkegaard"
-            / "data"
-            / "kierkegaard"
-            / "raw"
-            / "texts"
-        ),
+        "source_root": KIERKEGAARD_SOURCE_ROOT,
+        "primary_output": KIERKEGAARD_TEXTS,
         "metadata": DATA / "kierkegaard_metadata.json",
         "segments": DATA / "kierkegaard_segments.jsonl",
         "notes": DATA / "notes" / "kierkegaard_notes.jsonl",
@@ -56,8 +58,8 @@ CORPORA = [
     {
         "corpus_id": "wittgenstein",
         "title": "Wittgenstein",
-        "source_root": ROOT / "비트겐슈타인_원서수집",
-        "primary_output": ROOT / "비트겐슈타인_원서수집" / "wittgenstein" / "wittgenstein" / "output",
+        "source_root": WITTGENSTEIN_SOURCE_ROOT,
+        "primary_output": WITTGENSTEIN_OUTPUT,
         "metadata": DATA / "wittgenstein_metadata.json",
         "segments": DATA / "wittgenstein_segments.jsonl",
         "notes": DATA / "notes" / "wittgenstein_notes.jsonl",
@@ -197,7 +199,7 @@ def build_artifact_manifest(include_checksums: bool = False) -> dict[str, Any]:
         "generated_at": utc_now(),
         "site_root": str(SITE),
         "corpus_root": str(ROOT),
-        "uses_env_corpus_root": "PHILOSOPHY_CRAWL_ROOT" in os.environ,
+        "uses_env_corpus_root": CORPUS_ROOT_ENV in os.environ,
         "corpora": [corpus_status(config) for config in CORPORA],
         "artifacts": artifacts,
         "search": search_database_summary(),
