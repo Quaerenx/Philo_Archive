@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ast
+import json
 from pathlib import Path
 
 
@@ -10,6 +11,9 @@ POLICY = SITE / "docs" / "ai_interpretation_policy.md"
 GITIGNORE = REPO / ".gitignore"
 SERVER = SITE / "server.py"
 AI_RECORD_VALIDATOR = SITE / "scripts" / "check_ai_records_contracts.py"
+PROMPT_TEMPLATES = SITE / "data" / "ai_prompt_templates.json"
+PROMPT_BUILDER = SITE / "services" / "interpretation_prompts.py"
+PROMPT_VALIDATOR = SITE / "scripts" / "check_prompt_template_contracts.py"
 SOURCE_TARGETS = SITE / "services" / "source_targets.py"
 SOURCE_TARGET_VALIDATOR = SITE / "scripts" / "check_source_target_contracts.py"
 
@@ -93,6 +97,9 @@ def check_policy_document() -> None:
         "Personal note",
         "source_text_sha256",
         "prompt_sha256",
+        "data/ai_prompt_templates.json",
+        "services/interpretation_prompts.py",
+        "check_prompt_template_contracts.py",
         "services/source_targets.py",
         "check_source_target_contracts.py",
         "GET /api/source-target",
@@ -124,6 +131,41 @@ def check_record_validator() -> None:
     source = AI_RECORD_VALIDATOR.read_text(encoding="utf-8")
     for field in REQUIRED_SCHEMA_FIELDS:
         require(f'"{field}"' in source, f"AI record validator missing schema field {field}")
+    require("prompt_template_ids" in source, "AI record validator does not check prompt_template_id against tracked templates")
+
+
+def check_prompt_template_builder() -> None:
+    require(PROMPT_TEMPLATES.exists(), "missing tracked AI prompt templates")
+    payload = json.loads(PROMPT_TEMPLATES.read_text(encoding="utf-8"))
+    require(payload.get("schema_version") == 1, "prompt template payload schema_version must be 1")
+    templates = payload.get("templates")
+    require(isinstance(templates, list) and templates, "prompt template payload must include templates")
+    template_ids = {record.get("prompt_template_id") for record in templates if isinstance(record, dict)}
+    require("segment_interpretation_v1" in template_ids, "missing segment_interpretation_v1 prompt template")
+
+    require(PROMPT_BUILDER.exists(), "missing deterministic prompt builder")
+    source = PROMPT_BUILDER.read_text(encoding="utf-8")
+    for phrase in [
+        "DEFAULT_PROMPT_TEMPLATE_ID",
+        "build_interpretation_prompt_bundle",
+        "build_interpretation_prompt_bundle_from_source",
+        "prompt_sha256",
+        "source_text_sha256",
+        "source_target_bundle",
+        "does not match source_text",
+    ]:
+        require(phrase in source, f"prompt builder missing {phrase}")
+
+    require(PROMPT_VALIDATOR.exists(), "missing prompt template contract check")
+    validator = PROMPT_VALIDATOR.read_text(encoding="utf-8")
+    for phrase in [
+        "--with-source-targets",
+        "Generated interpretation",
+        "Original source",
+        "prompt_sha256 mismatch",
+        "source_text_sha256 mismatch",
+    ]:
+        require(phrase in validator, f"prompt template validator missing {phrase}")
 
 
 def check_source_target_resolver() -> None:
@@ -154,6 +196,7 @@ def main() -> None:
     check_gitignore()
     check_no_active_ai_routes()
     check_record_validator()
+    check_prompt_template_builder()
     check_source_target_resolver()
     print("provenance contracts ok")
 

@@ -42,6 +42,7 @@ python .\scripts\check_release_contracts.py
 python .\scripts\check_layout_contracts.py
 python .\scripts\check_server_boundary.py
 python .\scripts\check_provenance_contracts.py
+python .\scripts\check_prompt_template_contracts.py
 python .\scripts\check_ai_records_contracts.py
 python .\scripts\build_release_stage_manifest.py --check
 ```

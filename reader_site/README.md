@@ -139,6 +139,7 @@ Common work-page markup and template rendering live in `rendering/work_markup.py
 Reading/source page rendering lives in `rendering/static_pages.py`, backed by `templates/reading.html`, `templates/source.html`, and `assets/static-reader.css`.
 Source target resolution for future AI/Gemma interpretation lives in `services/source_targets.py`; it resolves selected segment URLs and computes `source_text_sha256` from local `text_raw` segment records.
 The local `/api/source-target?corpus_id=...&work_id=...&target_id=...` endpoint returns a bounded source target bundle for one generated segment. It is a pre-AI input boundary only: it returns exact source text plus checksum, but it does not call Gemma or save generated interpretations.
+Prompt template preparation for future AI/Gemma interpretation lives in `data/ai_prompt_templates.json` and `services/interpretation_prompts.py`. It renders a selected source target into a deterministic prompt bundle with `prompt_template_id`, `prompt_sha256`, and `source_text_sha256`, but it still does not call a model or save generated interpretations.
 
 Runtime diagnostics:
 
@@ -162,6 +163,7 @@ python .\scripts\check_ci_contracts.py
 python .\scripts\check_encoding_contracts.py
 python .\scripts\check_path_contracts.py
 python .\scripts\check_source_publication_contracts.py
+python .\scripts\check_prompt_template_contracts.py
 python .\scripts\check_release_contracts.py
 ```
 
@@ -179,6 +181,7 @@ Check the documented runtime and layout contracts with:
 python .\scripts\check_server_boundary.py
 python .\scripts\check_layout_contracts.py
 python .\scripts\check_provenance_contracts.py
+python .\scripts\check_prompt_template_contracts.py --with-source-targets
 python .\scripts\check_corpus_schema.py
 python .\scripts\check_restore_readiness.py
 python .\scripts\check_source_target_contracts.py

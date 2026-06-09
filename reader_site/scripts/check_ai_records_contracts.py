@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -10,8 +11,13 @@ from typing import Any
 
 SITE = Path(__file__).resolve().parents[1]
 AI_DIR = SITE / "data" / "ai"
+sys.path.insert(0, str(SITE))
+
+from services.interpretation_prompts import prompt_template_ids  # noqa: E402
+
 HEX_SHA256 = re.compile(r"^[0-9a-f]{64}$")
 ALLOWED_REVIEW_STATES = {"generated", "reviewed", "rejected"}
+KNOWN_PROMPT_TEMPLATE_IDS = prompt_template_ids()
 REQUIRED_FIELDS = [
     "schema_version",
     "record_type",
@@ -108,6 +114,7 @@ def validate_record(record: Any, path: Path, line_number: int) -> None:
     )
     require(HEX_SHA256.fullmatch(record["source_text_sha256"]) is not None, context(path, line_number, "source_text_sha256 must be a SHA-256 hex digest"))
     require(HEX_SHA256.fullmatch(record["prompt_sha256"]) is not None, context(path, line_number, "prompt_sha256 must be a SHA-256 hex digest"))
+    require(record["prompt_template_id"] in KNOWN_PROMPT_TEMPLATE_IDS, context(path, line_number, "prompt_template_id must reference a tracked prompt template"))
     require_iso_timestamp(record["created_at"], path, line_number, "created_at")
     require_iso_timestamp(record["generated_at"], path, line_number, "generated_at")
 

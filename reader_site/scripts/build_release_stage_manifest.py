@@ -78,6 +78,7 @@ ALLOWED_DATA_PATTERNS = [
     "reader_site/data/nietzsche_encoding_report.json",
     "reader_site/data/nietzsche_notes_schema.json",
     "reader_site/data/search_eval_queries.json",
+    "reader_site/data/ai_prompt_templates.json",
 ]
 
 

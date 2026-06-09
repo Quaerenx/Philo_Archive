@@ -93,6 +93,7 @@ python .\scripts\check_release_contracts.py
 python .\scripts\check_layout_contracts.py
 python .\scripts\check_server_boundary.py
 python .\scripts\check_provenance_contracts.py
+python .\scripts\check_prompt_template_contracts.py --with-source-targets
 python .\scripts\check_corpus_schema.py
 python .\scripts\check_restore_readiness.py
 python .\scripts\check_source_target_contracts.py
@@ -124,6 +125,8 @@ git status --short
 `check_encoding_contracts.py` verifies UTF-8 tracked text, Korean source-root names, and common mojibake fragments. If Windows PowerShell displays Korean paths incorrectly, use `Get-Content -Encoding UTF8`; see `docs/encoding_policy.md`.
 
 `check_path_contracts.py` verifies that `reader_site/path_config.py`, runtime diagnostics, source serving, builders, release checks, and source-light checks agree on the same four source-root names and primary output folders.
+
+`check_prompt_template_contracts.py --with-source-targets` verifies that tracked AI prompt templates render deterministic prompt bundles from restored source targets, including `prompt_template_id`, `prompt_sha256`, `source_text_sha256`, and visible "Original source" / "Generated interpretation" labels. It does not call a model.
 
 GitHub pull requests run `.github/workflows/reader-site-source-light.yml`, which executes the source-light clean clone checks without local corpora.
 

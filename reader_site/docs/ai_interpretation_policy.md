@@ -138,6 +138,19 @@ Every saved AI record must preserve:
 
 If local Gemma is used, `model_version` should include the model tag and, when available, the local model file hash or runtime identifier.
 
+The tracked prompt template registry lives in `reader_site/data/ai_prompt_templates.json`. The current default template is `segment_interpretation_v1`.
+
+Prompt rendering is deterministic and model-free in `reader_site/services/interpretation_prompts.py`: a selected `source_target_bundle` is rendered into an `interpretation_prompt_bundle` with `prompt_template_id`, `prompt_sha256`, `source_text_sha256`, `target_url`, and the full prompt text. This builder does not call Gemma, does not store generated output, and does not expose an interpretation API route.
+
+Validate the prompt boundary with:
+
+```powershell
+python .\scripts\check_prompt_template_contracts.py
+python .\scripts\check_prompt_template_contracts.py --with-source-targets
+```
+
+The first command is source-light and should pass in a clean clone. The second command uses restored segment artifacts to prove that real selected source text renders into reproducible prompt checksums.
+
 ## Privacy Boundary
 
 By default, an AI interpretation request may use:
@@ -168,4 +181,4 @@ Before implementing an AI endpoint or UI control, complete these gates:
 7. Add visible UI labels that distinguish original source, personal notes, and generated interpretation.
 8. Verify release checks still exclude generated AI output.
 
-Until these gates are complete, the site should keep AI/Gemma interpretation as a documented future layer, not an active reader feature.
+Gates 1-3 now have pre-AI code-level contracts through `data/ai_prompt_templates.json`, `services/source_targets.py`, `services/interpretation_prompts.py`, `check_source_target_contracts.py`, and `check_prompt_template_contracts.py`. Until storage, UI labels, review/export behavior, and model-runtime checks are complete, the site should keep AI/Gemma interpretation as a documented future layer, not an active reader feature.
