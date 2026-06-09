@@ -142,11 +142,13 @@ def check_work_source_bundle_ui() -> None:
     script = read_site_file("assets/reader-work.js")
     for needle in [
         "function sourceBundleUrl",
+        'new Set(["segment", "section", "paragraph", "verse"])',
         "/api/source-target",
-        "Source bundle requires a paragraph or verse target.",
+        "Source bundle requires a section, paragraph, or verse target.",
         "Source bundle URL copied.",
     ]:
         require_contains(script, needle, "assets/reader-work.js")
+    require_contains(template, "/assets/reader-work.js?v=common3", "templates/work.html")
 
 
 def main() -> None:

@@ -347,7 +347,7 @@ Response:
 
 Missing required fields or unknown corpus ids return `400`. Unknown work, variant, or segment targets return `404`.
 
-Work pages expose this boundary through the Citation panel's `Copy source bundle` action. The button copies the local `/api/source-target` URL for the current paragraph or verse anchor.
+Work pages expose this boundary through the Citation panel's `Copy source bundle` action. The button copies the local `/api/source-target` URL for the current section, paragraph, or verse anchor.
 
 Bible direct lookup:
 

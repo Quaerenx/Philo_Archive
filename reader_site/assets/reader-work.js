@@ -5,7 +5,7 @@ const noteStatus = document.getElementById("noteStatus");
 const notesList = document.getElementById("notesList");
 const noteFilter = document.getElementById("noteFilter");
 const copySourceBundleButton = document.getElementById("copySourceBundle");
-const sourceBundleTargetTypes = new Set(["segment", "paragraph", "verse"]);
+const sourceBundleTargetTypes = new Set(["segment", "section", "paragraph", "verse"]);
 
 function cleanText(value) {
   return String(value || "").replace(/[#¶]/g, "").replace(/\s+/g, " ").trim();
@@ -140,7 +140,7 @@ document.getElementById("copyUrl").addEventListener("click", async () => {
 copySourceBundleButton.addEventListener("click", async () => {
   const bundleUrl = sourceBundleUrl();
   if (!bundleUrl) {
-    noteStatus.textContent = "Source bundle requires a paragraph or verse target.";
+    noteStatus.textContent = "Source bundle requires a section, paragraph, or verse target.";
     return;
   }
   await copyText(bundleUrl);

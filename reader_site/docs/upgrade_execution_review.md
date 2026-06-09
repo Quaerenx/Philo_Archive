@@ -742,9 +742,9 @@ Implemented:
 - `templates/work.html`
   - Adds a `Copy source bundle` action to the Citation panel.
 - `assets/reader-work.js`
-  - Builds a local `/api/source-target` URL from the current paragraph or verse anchor.
+  - Builds a local `/api/source-target` URL from the current section, paragraph, or verse anchor.
   - Copies that URL for downstream local interpretation tooling.
-  - Refuses work, section, and chapter anchors with a clear status message because those are not generated segment targets.
+  - Refuses work and chapter anchors with a clear status message because those are not generated segment targets.
 - `scripts/check_layout_contracts.py`
   - Guards the work-page source bundle action in the source-light layout contract.
 

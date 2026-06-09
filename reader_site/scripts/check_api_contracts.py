@@ -134,6 +134,7 @@ def check_bible_segments_payload() -> None:
 
 def check_source_target_payload() -> None:
     cases = [
+        {"corpus_id": ["nietzsche"], "work_id": ["AC"], "target_id": ["sec-1"], "expected_segment_type": ["section"]},
         {"corpus_id": ["nietzsche"], "work_id": ["GM"], "target_id": ["p-0023"]},
         {"corpus_id": ["bible"], "work_id": ["sblgnt.John"], "target_id": ["John.3.16"]},
         {
@@ -177,6 +178,8 @@ def check_source_target_payload() -> None:
         require(target["corpus_id"] == query["corpus_id"][0], "source target corpus_id mismatch")
         require(target["work_id"] == query["work_id"][0], "source target work_id mismatch")
         require(target["target_id"] == query["target_id"][0], "source target target_id mismatch")
+        if "expected_segment_type" in query:
+            require(target["segment_type"] == query["expected_segment_type"][0], "source target segment_type mismatch")
         require(target["target_url"].startswith(f"/work/{target['corpus_id']}/"), "source target URL invalid")
         require(target["source_text"].strip(), "source target source_text is empty")
         require(target["source_text_chars"] == len(target["source_text"]), "source target chars mismatch")
