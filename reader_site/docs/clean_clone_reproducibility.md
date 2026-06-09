@@ -39,6 +39,12 @@ python .\scripts\check_ai_records_contracts.py
 
 `check_clean_clone_contracts.py --run-source-light-checks` runs the source-light command set from one entrypoint.
 
+The contract also guards against documentation drift:
+
+- README rebuild command lists must match the actual `scripts/rebuild_all.py` order;
+- source-root names in restore docs must match `path_config.py`;
+- source-light checks must not call source-heavy rebuild, search, notes, static route, or full-restore checks.
+
 ## Local Clone Smoke
 
 After committing local changes, run a real local clone smoke test:

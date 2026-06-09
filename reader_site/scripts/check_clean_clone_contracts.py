@@ -13,9 +13,12 @@ from pathlib import Path
 
 SITE = Path(__file__).resolve().parents[1]
 REPO = SITE.parent
+SCRIPTS = SITE / "scripts"
 sys.path.insert(0, str(SITE))
+sys.path.insert(0, str(SCRIPTS))
 
 from path_config import SOURCE_ROOT_NAMES  # noqa: E402
+import rebuild_all  # noqa: E402
 
 SOURCE_ROOTS = list(SOURCE_ROOT_NAMES)
 
@@ -99,6 +102,33 @@ REQUIRED_DOC_SNIPPETS = {
     ],
 }
 
+REBUILD_SEQUENCE_DOCS = {
+    "README.md": "The explicit rebuild sequence is:",
+    "reader_site/README.md": "The explicit command sequence is:",
+}
+
+SOURCE_ROOT_DOC_REFERENCES = {
+    "README.md": lambda root: f"{root}/",
+    "reader_site/docs/clean_clone_reproducibility.md": lambda root: f"`{root}`",
+    "reader_site/docs/release_handoff.md": lambda root: f"`{root}/`",
+}
+
+FORBIDDEN_SOURCE_LIGHT_SCRIPTS = {
+    step.script for step in rebuild_all.BUILD_STEPS
+} | {
+    "build_search_db.py",
+    "check_api_contracts.py",
+    "check_corpus_schema.py",
+    "check_notes_contracts.py",
+    "check_restore_readiness.py",
+    "check_search_artifact_integrity.py",
+    "check_search_contracts.py",
+    "check_search_relevance.py",
+    "check_source_target_contracts.py",
+    "check_static_routes.py",
+    "check_visual_smoke.py",
+}
+
 SOURCE_LIGHT_COMMANDS = [
     [sys.executable, "-m", "compileall", "-q", "server.py", "runtime_status.py", "corpora", "rendering", "services", "scripts"],
     [sys.executable, "scripts/check_ci_contracts.py"],
@@ -171,11 +201,71 @@ def check_docs(repo: Path = REPO) -> None:
             require(snippet in text, f"{relative_path} missing clean clone snippet {snippet!r}")
 
 
+def expected_rebuild_commands() -> list[str]:
+    return [
+        f"python .\\scripts\\{step.script}"
+        for step in rebuild_all.BUILD_STEPS
+    ] + ["python .\\scripts\\build_artifact_manifest.py"]
+
+
+def extract_powershell_block_after(text: str, marker: str, relative_path: str) -> str:
+    marker_index = text.find(marker)
+    require(marker_index >= 0, f"{relative_path} missing rebuild sequence marker {marker!r}")
+    block_start = text.find("```powershell", marker_index)
+    require(block_start >= 0, f"{relative_path} missing rebuild sequence powershell block")
+    block_start = text.find("\n", block_start)
+    require(block_start >= 0, f"{relative_path} has malformed rebuild sequence block")
+    block_end = text.find("```", block_start + 1)
+    require(block_end >= 0, f"{relative_path} has unterminated rebuild sequence block")
+    return text[block_start + 1 : block_end]
+
+
+def check_rebuild_sequence_docs(repo: Path = REPO) -> None:
+    expected = expected_rebuild_commands()
+    for relative_path, marker in REBUILD_SEQUENCE_DOCS.items():
+        text = (repo / relative_path).read_text(encoding="utf-8")
+        block = extract_powershell_block_after(text, marker, relative_path)
+        actual = [
+            line.strip()
+            for line in block.splitlines()
+            if line.strip().startswith("python .\\scripts\\")
+        ]
+        require(
+            actual == expected,
+            f"{relative_path} rebuild sequence differs from scripts/rebuild_all.py",
+        )
+
+
+def check_source_root_docs(repo: Path = REPO) -> None:
+    for relative_path, formatter in SOURCE_ROOT_DOC_REFERENCES.items():
+        text = (repo / relative_path).read_text(encoding="utf-8")
+        for root in SOURCE_ROOTS:
+            expected = formatter(root)
+            require(expected in text, f"{relative_path} missing source root reference {expected!r}")
+
+
+def check_source_light_commands() -> None:
+    failures: list[str] = []
+    for command in SOURCE_LIGHT_COMMANDS:
+        if len(command) < 2:
+            continue
+        script = Path(command[1]).name
+        if script in FORBIDDEN_SOURCE_LIGHT_SCRIPTS:
+            failures.append(" ".join(command))
+    require(
+        not failures,
+        "source-light clean clone commands must not require local source artifacts: " + "; ".join(failures),
+    )
+
+
 def check_clean_clone_contracts(repo: Path = REPO) -> None:
     require((repo / ".git").exists(), "clean clone contracts require a Git checkout")
     check_required_files(repo)
     check_no_forbidden_tracked_files(repo)
     check_docs(repo)
+    check_source_root_docs(repo)
+    check_rebuild_sequence_docs(repo)
+    check_source_light_commands()
 
 
 def run_source_light_checks(site: Path, empty_corpus_root: Path | None = None) -> None:

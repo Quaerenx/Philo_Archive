@@ -637,3 +637,23 @@ Boundary:
 
 - This is not a source-light CI check because the public clone intentionally excludes generated segment/search artifacts.
 - It proves that a restored local clone has a synchronized search-to-reader target pipeline, not merely present files.
+
+## 2026-06-09 clean clone reproducibility drift guard
+
+The next pass tightened the public-clone handoff itself. The goal was to ensure that a source-light clone remains restorable because its docs, root names, and command lists cannot silently drift from the actual rebuild entrypoint.
+
+Implemented:
+
+- `scripts/check_clean_clone_contracts.py`
+  - Verifies that README rebuild command lists match the real `scripts/rebuild_all.py` build order.
+  - Verifies that restore-facing docs name the same four source roots exposed by `path_config.py`.
+  - Verifies that source-light clean clone commands do not call source-heavy rebuild, search, notes, static route, or full-restore checks.
+- `README.md`
+  - Aligns the documented manual rebuild sequence with `scripts/rebuild_all.py`.
+- `docs/clean_clone_reproducibility.md`
+  - Documents the new documentation-drift and source-light-boundary guards.
+
+Boundary:
+
+- This remains a source-light contract. It validates handoff structure and command boundaries without requiring local source corpora.
+- Full corpus availability and generated artifact synchronization remain covered by `check_restore_readiness.py`, `check_source_target_contracts.py`, and `check_search_artifact_integrity.py` after local restore.

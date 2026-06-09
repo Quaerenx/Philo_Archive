@@ -70,10 +70,10 @@ python .\scripts\build_nietzsche_metadata.py
 python .\scripts\build_bible_metadata.py
 python .\scripts\build_bible_segments.py
 python .\scripts\build_kierkegaard_metadata.py
-python .\scripts\build_wittgenstein_metadata.py
-python .\scripts\build_nietzsche_segments.py
 python .\scripts\build_kierkegaard_segments.py
+python .\scripts\build_wittgenstein_metadata.py
 python .\scripts\build_wittgenstein_segments.py
+python .\scripts\build_nietzsche_segments.py
 python .\scripts\build_search_index.py
 python .\scripts\build_search_db.py
 python .\scripts\build_artifact_manifest.py
