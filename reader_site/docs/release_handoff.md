@@ -86,6 +86,7 @@ python .\scripts\build_release_stage_manifest.py --check
 python .\scripts\check_clean_clone_contracts.py
 python .\scripts\check_ci_contracts.py
 python .\scripts\check_encoding_contracts.py
+python .\scripts\check_path_contracts.py
 python .\scripts\check_source_publication_contracts.py
 python .\scripts\check_release_contracts.py
 python .\scripts\check_layout_contracts.py
@@ -114,6 +115,8 @@ git status --short
 `check_restore_readiness.py` verifies the local full-restore side of the same handoff: source roots, primary output folders, metadata, segment artifacts, portable search index, SQLite search database, and corpus coverage in search records.
 
 `check_encoding_contracts.py` verifies UTF-8 tracked text, Korean source-root names, and common mojibake fragments. If Windows PowerShell displays Korean paths incorrectly, use `Get-Content -Encoding UTF8`; see `docs/encoding_policy.md`.
+
+`check_path_contracts.py` verifies that runtime diagnostics, source serving, builders, release checks, and source-light checks agree on the same four source-root names and primary output folders.
 
 GitHub pull requests run `.github/workflows/reader-site-source-light.yml`, which executes the source-light clean clone checks without local corpora.
 

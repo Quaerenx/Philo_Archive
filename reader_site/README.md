@@ -158,6 +158,7 @@ python .\scripts\build_release_stage_manifest.py --check
 python .\scripts\check_clean_clone_contracts.py
 python .\scripts\check_ci_contracts.py
 python .\scripts\check_encoding_contracts.py
+python .\scripts\check_path_contracts.py
 python .\scripts\check_source_publication_contracts.py
 python .\scripts\check_release_contracts.py
 ```

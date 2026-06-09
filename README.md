@@ -101,6 +101,7 @@ python .\scripts\build_release_stage_manifest.py --check
 python .\scripts\check_clean_clone_contracts.py
 python .\scripts\check_ci_contracts.py
 python .\scripts\check_encoding_contracts.py
+python .\scripts\check_path_contracts.py
 python .\scripts\check_source_publication_contracts.py
 python .\scripts\check_release_contracts.py
 python .\scripts\check_layout_contracts.py
@@ -119,4 +120,4 @@ python .\scripts\check_static_routes.py
 
 GitHub pull requests run the source-light subset through `.github/workflows/reader-site-source-light.yml`. That workflow intentionally avoids full corpus rebuilds because the public repository does not include local source corpora or generated search artifacts.
 
-Before pushing to GitHub, read `reader_site/docs/release_handoff.md`, run `python .\scripts\build_release_stage_manifest.py --check`, `python .\scripts\check_clean_clone_contracts.py`, `python .\scripts\check_ci_contracts.py`, `python .\scripts\check_encoding_contracts.py`, `python .\scripts\check_source_publication_contracts.py`, `python .\scripts\check_restore_readiness.py`, `python .\scripts\check_source_target_contracts.py`, and `python .\scripts\check_release_contracts.py` to verify that local source corpora, large generated artifacts, personal notes, generated AI interpretations, source target checksums, clean-clone restore paths, GitHub Actions, source publication boundaries, restore readiness, and Korean path names are handled correctly.
+Before pushing to GitHub, read `reader_site/docs/release_handoff.md`, run `python .\scripts\build_release_stage_manifest.py --check`, `python .\scripts\check_clean_clone_contracts.py`, `python .\scripts\check_ci_contracts.py`, `python .\scripts\check_encoding_contracts.py`, `python .\scripts\check_path_contracts.py`, `python .\scripts\check_source_publication_contracts.py`, `python .\scripts\check_restore_readiness.py`, `python .\scripts\check_source_target_contracts.py`, and `python .\scripts\check_release_contracts.py` to verify that local source corpora, large generated artifacts, personal notes, generated AI interpretations, source target checksums, clean-clone restore paths, GitHub Actions, source publication boundaries, restore readiness, shared path contracts, and Korean path names are handled correctly.

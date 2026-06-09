@@ -35,6 +35,7 @@ CHECK_STEPS = [
     Step("Clean clone contracts", "check_clean_clone_contracts.py"),
     Step("CI contracts", "check_ci_contracts.py"),
     Step("Encoding contracts", "check_encoding_contracts.py"),
+    Step("Path contracts", "check_path_contracts.py"),
     Step("Source publication contracts", "check_source_publication_contracts.py"),
     Step("Layout contracts", "check_layout_contracts.py"),
     Step("AI provenance contracts", "check_provenance_contracts.py"),

@@ -568,3 +568,18 @@ Boundary:
 
 - `check_restore_readiness.py` is a local full-restore gate, not a source-light CI gate.
 - `check_clean_clone_contracts.py --run-source-light-checks` remains the public clone gate for environments without source corpora.
+
+## 2026-06-09 path contract gate
+
+The next small hardening pass addressed duplicated source-root knowledge without doing a broad path refactor.
+
+Implemented:
+
+- `scripts/check_path_contracts.py`
+  - Verifies that runtime diagnostics, source serving, release checks, source-publication checks, encoding checks, and release-stage checks agree on the same four Korean source-root names.
+  - Verifies that each runtime `primary_output` path matches the corresponding builder constant.
+  - Runs as part of the source-light clean-clone command set because it validates code constants, not local corpus availability.
+- `scripts/rebuild_all.py`
+  - Runs path contracts with the other local checks.
+
+This gives a stable guard before any future central path-configuration refactor.
