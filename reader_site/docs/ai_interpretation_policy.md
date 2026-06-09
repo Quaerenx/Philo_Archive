@@ -39,6 +39,8 @@ Allowed targets:
 
 The AI request must use source text gathered from the current corpus segment records or rendered source records. It must not use hidden browser text, unbounded source folders, unrelated local files, personal notes, or prior generated outputs unless the user explicitly includes them.
 
+The local `GET /api/source-target` endpoint is allowed before any AI runtime is enabled. It returns a bounded source target bundle for a single generated segment record: target URL, label, exact source text, source text preview, character count, and `source_text_sha256`. This endpoint does not call a model, does not store generated output, and must not be treated as an AI interpretation route.
+
 ## Record Schema
 
 Future AI records should be stored as JSONL objects under `reader_site/data/ai/`.

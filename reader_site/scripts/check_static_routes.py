@@ -105,6 +105,16 @@ def check_routes(base_url: str) -> None:
     require(health.get("status") in {"ok", "warning"}, "health status invalid")
     study = fetch_json(base_url, "/api/study")
     require("groups" in study and "count" in study, "study api shape invalid")
+    target = fetch_json(base_url, "/api/source-target?corpus_id=nietzsche&work_id=GM&target_id=p-0023")
+    target_record = target.get("target") or {}
+    require(target_record.get("record_type") == "source_target_bundle", "source target api record_type invalid")
+    require(target_record.get("target_url", "").startswith("/work/nietzsche/GM"), "source target api URL invalid")
+    require(len(target_record.get("source_text_sha256", "")) == 64, "source target api checksum invalid")
+    require(fetch_status(base_url, "/api/source-target?corpus_id=nietzsche&work_id=GM") == 400, "missing source target fields should return 400")
+    require(
+        fetch_status(base_url, "/api/source-target?corpus_id=nietzsche&work_id=GM&target_id=missing") == 404,
+        "missing source target should return 404",
+    )
 
 
 def main() -> None:

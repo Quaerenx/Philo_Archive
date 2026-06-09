@@ -11,6 +11,7 @@ sys.path.insert(0, str(SITE))
 from corpora.archive import build_archive  # noqa: E402
 from corpora.catalogs import bible_segments_payload_from_query  # noqa: E402
 from runtime_status import build_artifact_manifest, build_runtime_health  # noqa: E402
+from services.source_targets import sha256_text, source_target_payload_from_query  # noqa: E402
 
 
 def require(condition: bool, message: str) -> None:
@@ -131,11 +132,80 @@ def check_bible_segments_payload() -> None:
         raise AssertionError("missing bible work should raise FileNotFoundError")
 
 
+def check_source_target_payload() -> None:
+    cases = [
+        {"corpus_id": ["nietzsche"], "work_id": ["GM"], "target_id": ["p-0023"]},
+        {"corpus_id": ["bible"], "work_id": ["sblgnt.John"], "target_id": ["John.3.16"]},
+        {
+            "corpus_id": ["kierkegaard"],
+            "work_id": ["ba"],
+            "target_id": ["sks-0001"],
+            "variant_id": ["text"],
+        },
+        {
+            "corpus_id": ["wittgenstein"],
+            "work_id": ["Ms-101"],
+            "target_id": ["p-0001"],
+            "variant_id": ["source_transcription_normalized.full"],
+        },
+    ]
+    for query in cases:
+        payload = source_target_payload_from_query(query)
+        require_keys(payload, {"target"}, "source target payload")
+        target = payload["target"]
+        require_keys(
+            target,
+            {
+                "schema_version",
+                "record_type",
+                "corpus_id",
+                "work_id",
+                "variant_id",
+                "target_id",
+                "target_url",
+                "segment_type",
+                "label",
+                "source_text",
+                "source_text_preview",
+                "source_text_chars",
+                "source_text_sha256",
+            },
+            "source target",
+        )
+        require(target["schema_version"] == 1, "source target schema_version must be 1")
+        require(target["record_type"] == "source_target_bundle", "source target record_type mismatch")
+        require(target["corpus_id"] == query["corpus_id"][0], "source target corpus_id mismatch")
+        require(target["work_id"] == query["work_id"][0], "source target work_id mismatch")
+        require(target["target_id"] == query["target_id"][0], "source target target_id mismatch")
+        require(target["target_url"].startswith(f"/work/{target['corpus_id']}/"), "source target URL invalid")
+        require(target["source_text"].strip(), "source target source_text is empty")
+        require(target["source_text_chars"] == len(target["source_text"]), "source target chars mismatch")
+        require(
+            target["source_text_sha256"] == sha256_text(target["source_text"]),
+            "source target checksum mismatch",
+        )
+
+    try:
+        source_target_payload_from_query({"corpus_id": ["nietzsche"], "work_id": ["GM"]})
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("missing target_id should raise ValueError")
+
+    try:
+        source_target_payload_from_query({"corpus_id": ["nietzsche"], "work_id": ["GM"], "target_id": ["missing"]})
+    except FileNotFoundError:
+        pass
+    else:
+        raise AssertionError("missing source target should raise FileNotFoundError")
+
+
 def main() -> None:
     check_archive(build_archive())
     check_health(build_runtime_health())
     check_artifacts(build_artifact_manifest())
     check_bible_segments_payload()
+    check_source_target_payload()
     print("api contracts ok")
 
 

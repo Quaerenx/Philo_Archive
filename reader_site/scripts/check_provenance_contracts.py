@@ -95,6 +95,8 @@ def check_policy_document() -> None:
         "prompt_sha256",
         "services/source_targets.py",
         "check_source_target_contracts.py",
+        "GET /api/source-target",
+        "does not call a model",
     ]:
         require(phrase in text, f"AI policy missing provenance phrase {phrase!r}")
 
@@ -129,6 +131,8 @@ def check_source_target_resolver() -> None:
     source = SOURCE_TARGETS.read_text(encoding="utf-8")
     for phrase in [
         "resolve_segment_target",
+        "source_target_bundle",
+        "source_target_payload_from_query",
         "source_text_sha256",
         "sha256_text",
         "text_raw",
@@ -139,6 +143,10 @@ def check_source_target_resolver() -> None:
     validator = SOURCE_TARGET_VALIDATOR.read_text(encoding="utf-8")
     for corpus_id in ["nietzsche", "bible", "kierkegaard", "wittgenstein"]:
         require(f'"{corpus_id}"' in validator, f"source target check missing corpus case {corpus_id}")
+
+    server_source = SERVER.read_text(encoding="utf-8")
+    require('"/api/source-target"' in server_source, "server missing bounded source target bundle route")
+    require("source_target_payload_from_query" in server_source, "server does not use source target payload helper")
 
 
 def main() -> None:

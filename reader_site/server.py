@@ -27,6 +27,7 @@ from services.notes import (
     update_note_from_payload,
 )
 from services.search import search_payload_from_query
+from services.source_targets import source_target_payload_from_query
 from services.sources import (
     build_read_response,
     build_source_response,
@@ -85,6 +86,9 @@ class Handler(BaseHTTPRequestHandler):
             return
         if parsed.path == "/api/search":
             self.handle_search_get(parse_qs(parsed.query))
+            return
+        if parsed.path == "/api/source-target":
+            self.handle_source_target_get(parse_qs(parsed.query))
             return
         if parsed.path == "/api/study":
             self.handle_study_get(parse_qs(parsed.query))
@@ -212,6 +216,17 @@ class Handler(BaseHTTPRequestHandler):
 
     def handle_search_get(self, query: dict[str, list[str]]) -> None:
         self.send_json(search_payload_from_query(query))
+
+    def handle_source_target_get(self, query: dict[str, list[str]]) -> None:
+        try:
+            payload = source_target_payload_from_query(query)
+        except ValueError as exc:
+            self.send_error(400, str(exc))
+            return
+        except FileNotFoundError as exc:
+            self.send_error(404, str(exc))
+            return
+        self.send_json(payload)
 
     def handle_work(self, corpus_id: str, work_id: str, query: dict[str, list[str]] | None = None) -> None:
         self.send_work_viewer(corpus_id, work_id, first_value((query or {}).get("variant", [""])))

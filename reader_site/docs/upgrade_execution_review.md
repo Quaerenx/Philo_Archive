@@ -706,3 +706,29 @@ Boundary:
 
 - This change does not make `/api/study` perform expensive segment validation on every request.
 - Broken local note targets remain enforced by the read-only `check_note_target_integrity.py` restore gate.
+
+## 2026-06-09 source target bundle API
+
+The next pass added the smallest useful pre-AI boundary: a local API that resolves one selected source segment into an explicit bundle that can later be handed to Gemma/local model code.
+
+Implemented:
+
+- `services/source_targets.py`
+  - Adds `source_target_bundle` and `source_target_payload_from_query`.
+  - Returns schema version, target URL, variant id, exact source text, source text preview, character count, and `source_text_sha256`.
+- `server.py`
+  - Adds `GET /api/source-target`.
+  - Returns `400` for missing required fields and `404` for unknown source targets.
+- `scripts/check_api_contracts.py`
+  - Verifies Nietzsche, Bible, Kierkegaard, and Wittgenstein source target bundles.
+  - Verifies source text checksums are computed from the exact returned source text.
+- `scripts/check_static_routes.py`
+  - Verifies the HTTP route and error boundaries.
+- `docs/ai_interpretation_policy.md`
+  - Records that `/api/source-target` is allowed before an AI runtime because it does not call a model or store generated output.
+
+Boundary:
+
+- This is not an AI interpretation endpoint.
+- `/api/ai`, `/api/gemma`, and `/api/interpret` remain absent.
+- Generated AI output still remains local-only under `data/ai/` and excluded from Git.

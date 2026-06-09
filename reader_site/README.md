@@ -138,6 +138,7 @@ Markdown, Bible verse, Kierkegaard JSON, and plain segment rendering helpers liv
 Common work-page markup and template rendering live in `rendering/work_markup.py`.
 Reading/source page rendering lives in `rendering/static_pages.py`, backed by `templates/reading.html`, `templates/source.html`, and `assets/static-reader.css`.
 Source target resolution for future AI/Gemma interpretation lives in `services/source_targets.py`; it resolves selected segment URLs and computes `source_text_sha256` from local `text_raw` segment records.
+The local `/api/source-target?corpus_id=...&work_id=...&target_id=...` endpoint returns a bounded source target bundle for one generated segment. It is a pre-AI input boundary only: it returns exact source text plus checksum, but it does not call Gemma or save generated interpretations.
 
 Runtime diagnostics:
 

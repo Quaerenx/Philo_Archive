@@ -308,6 +308,45 @@ Work alias ranking rules:
 - Bible source prefixes such as `lxx Genesis` constrain work alias results to that source layer.
 - LXX/deuterocanonical work aliases include shorthand and alternate titles such as `Tob`, `Wis`, `Sir`, `Ecclesiasticus`, `EpJer`, `Psalm 151`, and `Additions to Daniel`.
 
+## `GET /api/source-target`
+
+Returns a bounded local source target bundle for one generated segment. This is the safe pre-AI boundary for a future Gemma/local-model interpretation layer: it resolves the selected target and returns the exact source text plus checksum, but it does not call a model or store generated output.
+
+Query parameters:
+
+```text
+corpus_id=<required corpus id>
+work_id=<required work id>
+target_id=<required segment id>
+variant_id=<optional variant id>
+```
+
+`segment_id` is accepted as an alias for `target_id`.
+
+Response:
+
+```json
+{
+  "target": {
+    "schema_version": 1,
+    "record_type": "source_target_bundle",
+    "corpus_id": "wittgenstein",
+    "work_id": "Ms-101",
+    "variant_id": "source_transcription_normalized.full",
+    "target_id": "p-0001",
+    "target_url": "/work/wittgenstein/Ms-101?variant=source_transcription_normalized.full#p-0001",
+    "segment_type": "paragraph",
+    "label": "Paragraph 1",
+    "source_text": "exact source text",
+    "source_text_preview": "short source preview",
+    "source_text_chars": 17,
+    "source_text_sha256": "64-char sha256"
+  }
+}
+```
+
+Missing required fields or unknown corpus ids return `400`. Unknown work, variant, or segment targets return `404`.
+
 Bible direct lookup:
 
 LXX/deuterocanonical references accept shorthand such as `Tob 1:1`, `Wis 1:1`, `Sir 1:1`, `EpJer 1:1`, and `Psalm 151:1`. Single-chapter materials stored with chapter `0` can be entered with chapter `1`.
