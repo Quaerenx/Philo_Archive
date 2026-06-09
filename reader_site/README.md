@@ -136,6 +136,7 @@ Work page HTML assembly lives in `services/work_pages.py`; it selects the corpus
 Markdown, Bible verse, Kierkegaard JSON, and plain segment rendering helpers live in `rendering/documents.py`.
 Common work-page markup and template rendering live in `rendering/work_markup.py`.
 Reading/source page rendering lives in `rendering/static_pages.py`, backed by `templates/reading.html`, `templates/source.html`, and `assets/static-reader.css`.
+Source target resolution for future AI/Gemma interpretation lives in `services/source_targets.py`; it resolves selected segment URLs and computes `source_text_sha256` from local `text_raw` segment records.
 
 Runtime diagnostics:
 
@@ -176,6 +177,7 @@ python .\scripts\check_server_boundary.py
 python .\scripts\check_layout_contracts.py
 python .\scripts\check_provenance_contracts.py
 python .\scripts\check_corpus_schema.py
+python .\scripts\check_source_target_contracts.py
 python .\scripts\check_api_contracts.py
 ```
 

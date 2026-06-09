@@ -111,12 +111,19 @@ Current `segment_scheme` values:
 - `sks_extract`: Kierkegaard SKS text/commentary/textual-account extracts.
 - `transcription_block`: Wittgenstein source, transcription, and metadata blocks.
 
+## Source Target Resolution
+
+`services/source_targets.py` resolves a selected corpus/work/variant/segment tuple back to the generated segment JSONL record.
+
+The resolver returns the stable reader URL, `text_raw`, a display preview, and `source_text_sha256`, which is computed from the exact UTF-8 `text_raw` string. This gives future AI/Gemma interpretation records a bounded source target without changing the original corpus segment schema.
+
 ## Validation
 
 Run:
 
 ```powershell
 python .\scripts\check_corpus_schema.py
+python .\scripts\check_source_target_contracts.py
 ```
 
 This validates all four metadata files and all four segment JSONL files. It is also included in:

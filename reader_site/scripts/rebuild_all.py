@@ -39,6 +39,7 @@ CHECK_STEPS = [
     Step("Layout contracts", "check_layout_contracts.py"),
     Step("AI provenance contracts", "check_provenance_contracts.py"),
     Step("Corpus schema contracts", "check_corpus_schema.py"),
+    Step("Source target contracts", "check_source_target_contracts.py"),
     Step("Runtime API contracts", "check_api_contracts.py"),
     Step("Search contracts", "check_search_contracts.py"),
     Step("Search relevance contracts", "check_search_relevance.py"),

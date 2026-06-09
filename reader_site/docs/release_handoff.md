@@ -92,6 +92,7 @@ python .\scripts\check_layout_contracts.py
 python .\scripts\check_server_boundary.py
 python .\scripts\check_provenance_contracts.py
 python .\scripts\check_corpus_schema.py
+python .\scripts\check_source_target_contracts.py
 python .\scripts\check_api_contracts.py
 python .\scripts\check_search_contracts.py
 python .\scripts\check_search_relevance.py

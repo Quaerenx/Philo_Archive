@@ -7,6 +7,27 @@
     "expected_work_rank_max": 1
   },
   {
+    "id": "nietzsche_fw_alias",
+    "query": "FW",
+    "corpus_id": "nietzsche",
+    "expected_work_id": "FW",
+    "expected_work_rank_max": 1
+  },
+  {
+    "id": "nietzsche_ac_alias",
+    "query": "AC",
+    "corpus_id": "nietzsche",
+    "expected_work_id": "AC",
+    "expected_work_rank_max": 1
+  },
+  {
+    "id": "nietzsche_zarathustra_alias",
+    "query": "Za-I",
+    "corpus_id": "nietzsche",
+    "expected_work_id": "Za-I",
+    "expected_work_rank_max": 1
+  },
+  {
     "id": "nietzsche_ressentiment_segment",
     "query": "ressentiment",
     "corpus_id": "nietzsche",
@@ -29,12 +50,60 @@
     "expected_top_corpus_id": "kierkegaard"
   },
   {
+    "id": "kierkegaard_begrebet_angest_alias",
+    "query": "ba",
+    "corpus_id": "kierkegaard",
+    "expected_work_id": "ba",
+    "expected_work_rank_max": 1
+  },
+  {
+    "id": "kierkegaard_frygt_baeven_alias",
+    "query": "fb",
+    "corpus_id": "kierkegaard",
+    "expected_work_id": "fb",
+    "expected_work_rank_max": 1
+  },
+  {
+    "id": "kierkegaard_sygdommen_alias",
+    "query": "sd",
+    "corpus_id": "kierkegaard",
+    "expected_work_id": "sd",
+    "expected_work_rank_max": 1
+  },
+  {
     "id": "bible_john_3_16",
     "query": "John 3:16",
     "corpus_id": "bible",
     "expected_engine": "sqlite-direct-bible",
     "expected_segment_work_id": "sblgnt.John",
     "expected_segment_id": "John.3.16",
+    "expected_segment_rank_max": 1
+  },
+  {
+    "id": "bible_romans_1_1",
+    "query": "Rom 1:1",
+    "corpus_id": "bible",
+    "expected_engine": "sqlite-direct-bible",
+    "expected_segment_work_id": "sblgnt.Rom",
+    "expected_segment_id": "Rom.1.1",
+    "expected_segment_rank_max": 1
+  },
+  {
+    "id": "bible_matthew_1_1",
+    "query": "Matthew 1:1",
+    "corpus_id": "bible",
+    "expected_engine": "sqlite-direct-bible",
+    "expected_segment_work_id": "sblgnt.Matt",
+    "expected_segment_id": "Matt.1.1",
+    "expected_segment_rank_max": 1
+  },
+  {
+    "id": "bible_isaiah_53_5",
+    "query": "Isaiah 53:5",
+    "corpus_id": "bible",
+    "expected_engine": "sqlite-direct-bible",
+    "expected_segment_work_id": "oshb.Isa",
+    "expected_segment_id": "Isa.53.5",
     "expected_segment_rank_max": 1
   },
   {
@@ -58,6 +127,27 @@
     "query": "lxx Genesis",
     "corpus_id": "bible",
     "expected_work_id": "lxx.Gen",
+    "expected_work_rank_max": 1
+  },
+  {
+    "id": "wittgenstein_ms101_alias",
+    "query": "Ms-101",
+    "corpus_id": "wittgenstein",
+    "expected_work_id": "Ms-101",
+    "expected_work_rank_max": 1
+  },
+  {
+    "id": "wittgenstein_ts213_alias",
+    "query": "Ts-213",
+    "corpus_id": "wittgenstein",
+    "expected_work_id": "Ts-213",
+    "expected_work_rank_max": 1
+  },
+  {
+    "id": "wittgenstein_group_works_alias",
+    "query": "Group_Works",
+    "corpus_id": "wittgenstein",
+    "expected_work_id": "Group_Works",
     "expected_work_rank_max": 1
   }
 ]

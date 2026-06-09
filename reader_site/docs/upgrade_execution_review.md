@@ -524,3 +524,25 @@ Implemented:
   - Makes the publication boundary explicit: tracked metadata may contain source paths, URLs, labels, and license notes, but must not contain full source text, generated segments, personal notes, or generated AI output.
 - `scripts/check_clean_clone_contracts.py`
   - Includes CI and source-publication checks in the source-light command set.
+
+## 2026-06-09 source target resolver gate
+
+The next pass kept the clean-clone contract source-light while adding a local full-restore check for exact reading targets.
+
+Implemented:
+
+- `services/source_targets.py`
+  - Resolves corpus/work/variant/segment tuples from regenerated segment JSONL files.
+  - Returns the reader URL, source `text_raw`, preview text, and `source_text_sha256`.
+- `scripts/check_source_target_contracts.py`
+  - Verifies representative Nietzsche, Bible, Kierkegaard, and Wittgenstein source targets.
+  - Verifies that missing targets fail explicitly instead of silently returning an unrelated segment.
+- `scripts/check_provenance_contracts.py`
+  - Now checks that the source target resolver and validator exist before any AI/Gemma route is enabled.
+- `scripts/rebuild_all.py`
+  - Runs source target contracts as part of local full rebuild validation.
+
+Boundary:
+
+- This check is intentionally not part of source-light CI because it requires regenerated local segment JSONL files.
+- Clean clones still prove structure, docs, GitHub Actions, publication boundaries, encoding, layout, server boundaries, and AI record contracts without local corpora.

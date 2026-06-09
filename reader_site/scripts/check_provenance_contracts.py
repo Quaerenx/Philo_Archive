@@ -10,6 +10,8 @@ POLICY = SITE / "docs" / "ai_interpretation_policy.md"
 GITIGNORE = REPO / ".gitignore"
 SERVER = SITE / "server.py"
 AI_RECORD_VALIDATOR = SITE / "scripts" / "check_ai_records_contracts.py"
+SOURCE_TARGETS = SITE / "services" / "source_targets.py"
+SOURCE_TARGET_VALIDATOR = SITE / "scripts" / "check_source_target_contracts.py"
 
 REQUIRED_POLICY_SECTIONS = [
     "## Non-Replacement Rule",
@@ -91,6 +93,8 @@ def check_policy_document() -> None:
         "Personal note",
         "source_text_sha256",
         "prompt_sha256",
+        "services/source_targets.py",
+        "check_source_target_contracts.py",
     ]:
         require(phrase in text, f"AI policy missing provenance phrase {phrase!r}")
 
@@ -120,11 +124,29 @@ def check_record_validator() -> None:
         require(f'"{field}"' in source, f"AI record validator missing schema field {field}")
 
 
+def check_source_target_resolver() -> None:
+    require(SOURCE_TARGETS.exists(), "missing source target resolver")
+    source = SOURCE_TARGETS.read_text(encoding="utf-8")
+    for phrase in [
+        "resolve_segment_target",
+        "source_text_sha256",
+        "sha256_text",
+        "text_raw",
+    ]:
+        require(phrase in source, f"source target resolver missing {phrase}")
+
+    require(SOURCE_TARGET_VALIDATOR.exists(), "missing source target contract check")
+    validator = SOURCE_TARGET_VALIDATOR.read_text(encoding="utf-8")
+    for corpus_id in ["nietzsche", "bible", "kierkegaard", "wittgenstein"]:
+        require(f'"{corpus_id}"' in validator, f"source target check missing corpus case {corpus_id}")
+
+
 def main() -> None:
     check_policy_document()
     check_gitignore()
     check_no_active_ai_routes()
     check_record_validator()
+    check_source_target_resolver()
     print("provenance contracts ok")
 
 

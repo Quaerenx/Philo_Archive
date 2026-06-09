@@ -158,11 +158,12 @@ It must not automatically send:
 Before implementing an AI endpoint or UI control, complete these gates:
 
 1. Define the exact prompt template and save a `prompt_template_id`.
-2. Implement source target resolution from existing segment/work data.
+2. Implement source target resolution from existing segment/work data in `services/source_targets.py`.
 3. Compute `source_text_sha256` before model invocation.
 4. Store generated output in `reader_site/data/ai/`, not in corpus metadata or source folders.
-5. Run `python .\scripts\check_ai_records_contracts.py` against generated AI JSONL records.
-6. Add visible UI labels that distinguish original source, personal notes, and generated interpretation.
-7. Verify release checks still exclude generated AI output.
+5. Run `python .\scripts\check_source_target_contracts.py` after local segment artifacts exist.
+6. Run `python .\scripts\check_ai_records_contracts.py` against generated AI JSONL records.
+7. Add visible UI labels that distinguish original source, personal notes, and generated interpretation.
+8. Verify release checks still exclude generated AI output.
 
 Until these gates are complete, the site should keep AI/Gemma interpretation as a documented future layer, not an active reader feature.

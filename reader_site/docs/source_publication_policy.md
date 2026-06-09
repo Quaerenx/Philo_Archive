@@ -50,6 +50,8 @@ Full reading/search behavior is restored locally by placing the source corpora u
 python .\scripts\rebuild_all.py
 ```
 
+After local segment files are regenerated, `services/source_targets.py` may compute source-text checksums for bounded reading targets. Those checksums are validation/provenance metadata; the generated segment JSONL files and full source text still stay out of Git.
+
 The public repository should remain useful without those corpora through source-light checks, documentation, and small metadata files.
 
 ## Verification
