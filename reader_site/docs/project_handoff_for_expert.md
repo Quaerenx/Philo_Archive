@@ -16,7 +16,7 @@ Personal Archive of Literature
 현재 로컬 서버:
 
 ```text
-http://127.0.0.1:8787/
+http://127.0.0.1:8793/
 ```
 
 주요 코드 위치:
@@ -152,7 +152,7 @@ server.py
 실행:
 
 ```powershell
-python .\server.py --port 8787
+python .\server.py --port 8793
 ```
 
 주요 역할:
@@ -811,15 +811,15 @@ python -m json.tool .\data\nietzsche_notes_schema.json > $null
 서버 실행:
 
 ```powershell
-python .\server.py --port 8787
+python .\server.py --port 8793
 ```
 
 브라우저 확인:
 
 ```text
-http://127.0.0.1:8787/
-http://127.0.0.1:8787/category/nietzsche
-http://127.0.0.1:8787/work/nietzsche/M#sec-1
+http://127.0.0.1:8793/
+http://127.0.0.1:8793/category/nietzsche
+http://127.0.0.1:8793/work/nietzsche/M#sec-1
 ```
 
 ## 12. 리스크와 주의사항

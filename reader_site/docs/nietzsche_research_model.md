@@ -34,19 +34,19 @@ The work page builds citation text from the current URL hash.
 Whole work:
 
 ```text
-Friedrich Nietzsche, Morgenröthe (M). Personal Archive of Literature. http://127.0.0.1:8787/work/nietzsche/M
+Friedrich Nietzsche, Morgenröthe (M). Personal Archive of Literature. http://127.0.0.1:8793/work/nietzsche/M
 ```
 
 Anchored section:
 
 ```text
-Friedrich Nietzsche, Morgenröthe (M), § 1. Personal Archive of Literature. http://127.0.0.1:8787/work/nietzsche/M#sec-1
+Friedrich Nietzsche, Morgenröthe (M), § 1. Personal Archive of Literature. http://127.0.0.1:8793/work/nietzsche/M#sec-1
 ```
 
 Anchored paragraph:
 
 ```text
-Friedrich Nietzsche, Morgenröthe (M), paragraph text. Personal Archive of Literature. http://127.0.0.1:8787/work/nietzsche/M#p-0001
+Friedrich Nietzsche, Morgenröthe (M), paragraph text. Personal Archive of Literature. http://127.0.0.1:8793/work/nietzsche/M#p-0001
 ```
 
 The citation format is intentionally simple for now; Phase 4 can add CSL/Zotero export.

@@ -5,13 +5,13 @@ Personal archive index for collected primary texts.
 ## Run
 
 ```powershell
-python .\reader_site\server.py --port 8787
+python .\reader_site\server.py --port 8793
 ```
 
 Then open:
 
 ```text
-http://127.0.0.1:8787
+http://127.0.0.1:8793
 ```
 
 The source corpus root defaults to the parent directory of `reader_site`. On another machine, either keep the same sibling-folder layout or set:

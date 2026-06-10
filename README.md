@@ -37,13 +37,13 @@ $env:PHILOSOPHY_CRAWL_ROOT="D:\archives\philosophy_crawl"
 
 ```powershell
 cd .\reader_site
-python .\server.py --port 8787
+python .\server.py --port 8793
 ```
 
 Open:
 
 ```text
-http://127.0.0.1:8787/
+http://127.0.0.1:8793/
 ```
 
 ## Regenerate Local Artifacts
@@ -91,8 +91,8 @@ Large generated files are ignored by Git:
 
 After starting the server, check the local runtime state at:
 
-- `http://127.0.0.1:8787/api/health`
-- `http://127.0.0.1:8787/api/artifacts`
+- `http://127.0.0.1:8793/api/health`
+- `http://127.0.0.1:8793/api/artifacts`
 
 Key validation commands:
 

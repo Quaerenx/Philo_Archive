@@ -350,7 +350,7 @@ Current result: 70 changed paths are classified as `stage`, with 0 `review` and 
 
 ## 2026-06-05 headless browser layout QA
 
-The in-app browser runtime was unavailable, so the visual pass used local headless Edge screenshots against the running server at `http://127.0.0.1:8787`.
+The in-app browser runtime was unavailable, so the visual pass used local headless Edge screenshots against the running server at `http://127.0.0.1:8793`.
 
 Screenshots checked:
 

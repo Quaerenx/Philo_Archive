@@ -68,13 +68,13 @@ python .\scripts\rebuild_all.py
 4. Start the reader:
 
 ```powershell
-python .\server.py --port 8787
+python .\server.py --port 8793
 ```
 
 5. Open:
 
 ```text
-http://127.0.0.1:8787/
+http://127.0.0.1:8793/
 ```
 
 ## Pre-Push Checks

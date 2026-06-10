@@ -75,7 +75,7 @@ git clone https://github.com/Quaerenx/Philo_Archive.git
 cd .\Philo_Archive\reader_site
 $env:PHILOSOPHY_CRAWL_ROOT="D:\archives\philosophy_crawl"
 python .\scripts\rebuild_all.py
-python .\server.py --port 8787
+python .\server.py --port 8793
 ```
 
 `PHILOSOPHY_CRAWL_ROOT` must contain these source folders:
