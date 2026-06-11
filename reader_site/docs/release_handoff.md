@@ -24,6 +24,7 @@ Git should not store:
 - local visual QA screenshots;
 - personal note JSONL files;
 - generated AI interpretation JSONL/SQLite files;
+- local Gemma runtime logs;
 - `.env` or machine-specific local path files.
 
 The enforced source-corpus exclusions are:
@@ -43,6 +44,8 @@ The enforced generated-artifact exclusions are:
 - `reader_site/data/release_stage_manifest.local.json`
 - `reader_site/data/visual_qa.local/`
 - `reader_site/data/visual_qa.local/*`
+- `reader_site/data/runtime.local/`
+- `reader_site/data/runtime.local/*`
 - `reader_site/data/notes/*.jsonl`
 - `reader_site/data/ai/*.jsonl`
 - `reader_site/data/ai/*.sqlite`
@@ -94,6 +97,7 @@ python .\scripts\check_layout_contracts.py
 python .\scripts\check_server_boundary.py
 python .\scripts\check_provenance_contracts.py
 python .\scripts\check_prompt_template_contracts.py --with-source-targets
+python .\scripts\check_sentence_translation_contracts.py --with-source-targets
 python .\scripts\check_corpus_schema.py
 python .\scripts\check_restore_readiness.py
 python .\scripts\check_source_target_contracts.py
@@ -127,6 +131,8 @@ git status --short
 `check_path_contracts.py` verifies that `reader_site/path_config.py`, runtime diagnostics, source serving, builders, release checks, and source-light checks agree on the same four source-root names and primary output folders.
 
 `check_prompt_template_contracts.py --with-source-targets` verifies that tracked AI prompt templates render deterministic prompt bundles from restored source targets, including `prompt_template_id`, `prompt_sha256`, `source_text_sha256`, and visible "Original source" / "Generated interpretation" labels. It does not call a model.
+
+`check_sentence_translation_contracts.py --with-source-targets` verifies the on-demand sentence translation boundary, sentence IDs such as `p-0023.s001`, prompt checksums, and local JSONL record shape. It does not call Gemma.
 
 GitHub pull requests run `.github/workflows/reader-site-source-light.yml`, which executes the source-light clean clone checks without local corpora.
 

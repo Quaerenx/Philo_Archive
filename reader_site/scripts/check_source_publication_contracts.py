@@ -27,6 +27,7 @@ FORBIDDEN_TRACKED_PATTERNS = [
     "reader_site/data/artifact_manifest.local.json",
     "reader_site/data/release_stage_manifest.local.json",
     "reader_site/data/visual_qa.local/*",
+    "reader_site/data/runtime.local/*",
     "reader_site/data/notes/*.jsonl",
     "reader_site/data/ai/*.jsonl",
     "reader_site/data/ai/*.sqlite",
@@ -59,6 +60,7 @@ REQUIRED_GITIGNORE_RULES = [
     "reader_site/data/search_index.sqlite-*",
     "reader_site/data/notes/*.jsonl",
     "reader_site/data/ai/*.jsonl",
+    "reader_site/data/runtime.local/",
 ]
 
 FORBIDDEN_TEXT_KEYS = {

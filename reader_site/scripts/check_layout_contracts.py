@@ -68,16 +68,21 @@ def check_page_frame_css(relative_path: str, css: str) -> None:
 
 
 def check_reader_css(relative_path: str, css: str) -> None:
-    for needle in [
+    common_needles = [
         ".reader {",
-        "width: var(--reader-column-width",
         "background: var(--reader-background",
         "border: 1px solid var(--reader-border",
         "@media (max-width: 860px)",
         "width: auto;",
         "margin: 0 10px 24px;",
-    ]:
+    ]
+    for needle in common_needles:
         require_contains(css, needle, relative_path)
+    if relative_path == "assets/reader-work.css":
+        require_contains(css, "width: calc(100% - 64px);", relative_path)
+        require_contains(css, "grid-template-columns: minmax(0, 1fr) 320px;", relative_path)
+    else:
+        require_contains(css, "width: var(--reader-column-width", relative_path)
 
 
 def check_home_css() -> None:
@@ -144,11 +149,30 @@ def check_work_source_bundle_ui() -> None:
         "function sourceBundleUrl",
         'new Set(["segment", "section", "paragraph", "verse"])',
         "/api/source-target",
+        "/api/sentence-translation",
+        "requestSentenceTranslation(false)",
         "Source bundle requires a section, paragraph, or verse target.",
         "Source bundle URL copied.",
     ]:
         require_contains(script, needle, "assets/reader-work.js")
     require_contains(template, "/assets/reader-work.js?v=common3", "templates/work.html")
+    for needle in [
+        "reading-desk",
+        "source-page",
+        "study-page",
+        "translation-card",
+    ]:
+        require_contains(template, needle, "templates/work.html")
+
+    css = read_site_file("assets/reader-work.css")
+    for needle in [
+        ".reading-desk",
+        ".source-page",
+        ".study-page",
+        "position: sticky;",
+        ".reader-sentence.loading",
+    ]:
+        require_contains(css, needle, "assets/reader-work.css")
 
 
 def main() -> None:

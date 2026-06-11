@@ -12,7 +12,7 @@ The reader app is split by responsibility:
 - `reader_site/corpora/catalogs.py`: metadata loading, work resolution, and Bible segment lookup.
 - `reader_site/corpora/work_models.py`: corpus-specific work-page model builders.
 - `reader_site/rendering/`: common work, reading, source, and document HTML rendering.
-- `reader_site/services/`: search, notes storage, source/read page services, and source target resolution.
+- `reader_site/services/`: search, notes storage, source/read page services, source target resolution, and local sentence translation services.
 
 ## Expected Local Layout
 
@@ -38,6 +38,12 @@ $env:PHILOSOPHY_CRAWL_ROOT="D:\archives\philosophy_crawl"
 ```powershell
 cd .\reader_site
 python .\server.py --port 8793
+```
+
+For local Gemma sentence translation:
+
+```powershell
+.\run_reader_with_gemma.ps1
 ```
 
 Open:
@@ -88,6 +94,8 @@ Large generated files are ignored by Git:
 - `reader_site/data/search_index.sqlite`
 - `reader_site/data/artifact_manifest.local.json`
 - personal notes under `reader_site/data/notes/*.jsonl`
+- generated AI records under `reader_site/data/ai/*.jsonl`
+- local Gemma runtime logs under `reader_site/data/runtime.local/`
 
 After starting the server, check the local runtime state at:
 
@@ -109,6 +117,7 @@ python .\scripts\check_layout_contracts.py
 python .\scripts\check_server_boundary.py
 python .\scripts\check_provenance_contracts.py
 python .\scripts\check_prompt_template_contracts.py
+python .\scripts\check_sentence_translation_contracts.py
 python .\scripts\check_corpus_schema.py
 python .\scripts\check_restore_readiness.py
 python .\scripts\check_source_target_contracts.py
@@ -124,4 +133,4 @@ python .\scripts\check_static_routes.py
 
 GitHub pull requests run the source-light subset through `.github/workflows/reader-site-source-light.yml`. That workflow intentionally avoids full corpus rebuilds because the public repository does not include local source corpora or generated search artifacts.
 
-Before pushing to GitHub, read `reader_site/docs/release_handoff.md`, run `python .\scripts\build_release_stage_manifest.py --check`, `python .\scripts\check_clean_clone_contracts.py --run-source-light-checks`, `python .\scripts\check_ci_contracts.py`, `python .\scripts\check_encoding_contracts.py`, `python .\scripts\check_path_contracts.py`, `python .\scripts\check_source_publication_contracts.py`, `python .\scripts\check_restore_readiness.py`, `python .\scripts\check_source_target_contracts.py`, `python .\scripts\check_prompt_template_contracts.py --with-source-targets`, `python .\scripts\check_note_target_integrity.py`, and `python .\scripts\check_release_contracts.py` to verify that local source corpora, large generated artifacts, personal notes, generated AI interpretations, source target checksums, prompt checksums, clean-clone restore paths, GitHub Actions, source publication boundaries, restore readiness, shared path contracts, and Korean path names are handled correctly.
+Before pushing to GitHub, read `reader_site/docs/release_handoff.md`, run `python .\scripts\build_release_stage_manifest.py --check`, `python .\scripts\check_clean_clone_contracts.py --run-source-light-checks`, `python .\scripts\check_ci_contracts.py`, `python .\scripts\check_encoding_contracts.py`, `python .\scripts\check_path_contracts.py`, `python .\scripts\check_source_publication_contracts.py`, `python .\scripts\check_restore_readiness.py`, `python .\scripts\check_source_target_contracts.py`, `python .\scripts\check_prompt_template_contracts.py --with-source-targets`, `python .\scripts\check_sentence_translation_contracts.py --with-source-targets`, `python .\scripts\check_note_target_integrity.py`, and `python .\scripts\check_release_contracts.py` to verify that local source corpora, large generated artifacts, personal notes, generated AI interpretations/translations, source target checksums, prompt checksums, clean-clone restore paths, GitHub Actions, source publication boundaries, restore readiness, shared path contracts, and Korean path names are handled correctly.

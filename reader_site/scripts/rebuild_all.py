@@ -40,6 +40,7 @@ CHECK_STEPS = [
     Step("Layout contracts", "check_layout_contracts.py"),
     Step("AI provenance contracts", "check_provenance_contracts.py"),
     Step("Prompt template contracts", "check_prompt_template_contracts.py", ("--with-source-targets",)),
+    Step("Sentence translation contracts", "check_sentence_translation_contracts.py", ("--with-source-targets",)),
     Step("Corpus schema contracts", "check_corpus_schema.py"),
     Step("Source target contracts", "check_source_target_contracts.py"),
     Step("Restore readiness contracts", "check_restore_readiness.py"),

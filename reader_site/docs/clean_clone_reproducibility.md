@@ -16,7 +16,7 @@ A clean clone should not contain:
 - generated `*_segments.jsonl` files;
 - generated search indexes or SQLite databases;
 - personal notes;
-- generated AI interpretations;
+- generated AI interpretations and sentence translations;
 - local visual QA screenshots.
 
 ## Source-Light Checks
@@ -33,7 +33,7 @@ python .\scripts\check_clean_clone_contracts.py --run-source-light-checks
 The exact source-light command set is:
 
 ```powershell
-python -m compileall -q .\server.py .\runtime_status.py .\corpora .\rendering .\services .\scripts
+python -m compileall -q .\server.py .\runtime_status.py .\sentence_units.py .\corpora .\rendering .\services .\scripts
 python .\scripts\check_ci_contracts.py
 python .\scripts\check_encoding_contracts.py
 python .\scripts\check_path_contracts.py
@@ -43,6 +43,7 @@ python .\scripts\check_layout_contracts.py
 python .\scripts\check_server_boundary.py
 python .\scripts\check_provenance_contracts.py
 python .\scripts\check_prompt_template_contracts.py
+python .\scripts\check_sentence_translation_contracts.py
 python .\scripts\check_ai_records_contracts.py
 python .\scripts\build_release_stage_manifest.py --check
 ```

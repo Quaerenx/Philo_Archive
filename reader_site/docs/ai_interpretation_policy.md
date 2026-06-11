@@ -41,9 +41,13 @@ The AI request must use source text gathered from the current corpus segment rec
 
 The local `GET /api/source-target` endpoint is allowed before any AI runtime is enabled. It returns a bounded source target bundle for a single generated segment record: target URL, label, exact source text, source text preview, character count, and `source_text_sha256`. This endpoint does not call a model, does not store generated output, and must not be treated as an AI interpretation route.
 
+The local `POST /api/sentence-translation` endpoint is the first active AI runtime boundary. It accepts only a selected `corpus_id`, `work_id`, `variant_id`, `segment_id`, and `sentence_id`; it does not accept arbitrary user prompt text. The server resolves the sentence from local generated segment records, computes `source_text_sha256`, `sentence_text_sha256`, and `prompt_sha256`, then calls a local-only llama.cpp server. The llama.cpp server must bind to `127.0.0.1`, even when the reader itself is exposed on the LAN.
+
 ## Record Schema
 
 Future AI records should be stored as JSONL objects under `reader_site/data/ai/`.
+
+Sentence translation records use `record_type: "ai_sentence_translation"` and add `segment_id`, `sentence_id`, `sentence_text_sha256`, `model_runtime`, `translation`, `commentary`, and `cautions`. Legacy records may still include `literal_gloss` and `key_terms`, but the reader UI must not render those fields. These records remain generated study aids, not source text.
 
 Required fields:
 
@@ -96,6 +100,7 @@ Default local paths:
 
 ```text
 reader_site/data/ai/<corpus_id>_interpretations.jsonl
+reader_site/data/ai/<corpus_id>_sentence_translations.jsonl
 reader_site/data/ai/ai_interpretation_index.sqlite
 ```
 
@@ -110,6 +115,7 @@ Every AI surface must clearly label generated material.
 Minimum labels:
 
 - "Generated interpretation" for AI output;
+- "Generated translation & commentary" for sentence translation output;
 - "Original source" for source text excerpts;
 - "Personal note" for user notes;
 - model name/version visible in details or metadata;

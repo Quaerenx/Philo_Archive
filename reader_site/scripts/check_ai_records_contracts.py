@@ -17,6 +17,7 @@ from services.interpretation_prompts import prompt_template_ids  # noqa: E402
 
 HEX_SHA256 = re.compile(r"^[0-9a-f]{64}$")
 ALLOWED_REVIEW_STATES = {"generated", "reviewed", "rejected"}
+ALLOWED_RECORD_TYPES = {"ai_interpretation", "ai_sentence_translation"}
 KNOWN_PROMPT_TEMPLATE_IDS = prompt_template_ids()
 REQUIRED_FIELDS = [
     "schema_version",
@@ -41,6 +42,17 @@ REQUIRED_FIELDS = [
     "interpretation",
     "citations",
     "review_state",
+]
+SENTENCE_TRANSLATION_FIELDS = [
+    "segment_id",
+    "sentence_id",
+    "sentence_text_sha256",
+    "model_runtime",
+    "translation",
+    "literal_gloss",
+    "commentary",
+    "key_terms",
+    "cautions",
 ]
 REQUIRED_TEXT_FIELDS = [
     "id",
@@ -90,7 +102,7 @@ def validate_citation(citation: Any, path: Path, line_number: int, index: int, p
     )
     require(
         citation["source_text_sha256"] == parent_hash,
-        context(path, line_number, f"citations[{index}].source_text_sha256 must match source_text_sha256"),
+        context(path, line_number, f"citations[{index}].source_text_sha256 must match expected source hash"),
     )
     require(citation["target_url"].startswith("/work/"), context(path, line_number, f"citations[{index}].target_url must point at a work route"))
 
@@ -103,7 +115,7 @@ def validate_record(record: Any, path: Path, line_number: int) -> None:
         require(isinstance(record[field], str) and record[field].strip(), context(path, line_number, f"{field} must be a non-empty string"))
 
     require(record["schema_version"] == 1, context(path, line_number, "schema_version must be 1"))
-    require(record["record_type"] == "ai_interpretation", context(path, line_number, "record_type must be ai_interpretation"))
+    require(record["record_type"] in ALLOWED_RECORD_TYPES, context(path, line_number, "record_type is invalid"))
     require(record["review_state"] in ALLOWED_REVIEW_STATES, context(path, line_number, "review_state is invalid"))
     require(isinstance(record.get("variant_id"), str), context(path, line_number, "variant_id must be a string"))
     require(isinstance(record["temperature"], int | float), context(path, line_number, "temperature must be numeric"))
@@ -118,11 +130,26 @@ def validate_record(record: Any, path: Path, line_number: int) -> None:
     require_iso_timestamp(record["created_at"], path, line_number, "created_at")
     require_iso_timestamp(record["generated_at"], path, line_number, "generated_at")
 
+    citation_hash = record["source_text_sha256"]
+    if record["record_type"] == "ai_sentence_translation":
+        for field in SENTENCE_TRANSLATION_FIELDS:
+            require(field in record, context(path, line_number, f"missing required sentence translation field {field}"))
+        for field in ("segment_id", "sentence_id", "sentence_text_sha256", "model_runtime"):
+            require(isinstance(record[field], str) and record[field].strip(), context(path, line_number, f"{field} must be a non-empty string"))
+        for field in ("translation", "literal_gloss", "commentary"):
+            require(isinstance(record[field], str), context(path, line_number, f"{field} must be a string"))
+        require(HEX_SHA256.fullmatch(record["sentence_text_sha256"]) is not None, context(path, line_number, "sentence_text_sha256 must be a SHA-256 hex digest"))
+        require(record["target_id"] == record["sentence_id"], context(path, line_number, "target_id must match sentence_id"))
+        require(record["sentence_id"].startswith(f"{record['segment_id']}.s"), context(path, line_number, "sentence_id must belong to segment_id"))
+        require(isinstance(record["key_terms"], list), context(path, line_number, "key_terms must be a list"))
+        require(isinstance(record["cautions"], list), context(path, line_number, "cautions must be a list"))
+        citation_hash = record["sentence_text_sha256"]
+
     citations = record["citations"]
     require(isinstance(citations, list), context(path, line_number, "citations must be a list"))
     require(citations, context(path, line_number, "citations must include at least one source citation"))
     for index, citation in enumerate(citations):
-        validate_citation(citation, path, line_number, index, record["source_text_sha256"])
+        validate_citation(citation, path, line_number, index, citation_hash)
 
 
 def iter_record_files(path: Path) -> list[Path]:

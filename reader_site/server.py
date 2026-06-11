@@ -27,6 +27,7 @@ from services.notes import (
     update_note_from_payload,
 )
 from services.search import search_payload_from_query
+from services.sentence_translations import sentence_translation_from_payload
 from services.source_targets import source_target_payload_from_query
 from services.sources import (
     build_read_response,
@@ -118,6 +119,9 @@ class Handler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         if parsed.path == "/api/notes":
             self.handle_notes_post()
+            return
+        if parsed.path == "/api/sentence-translation":
+            self.handle_sentence_translation_post()
             return
         self.send_error(404)
 
@@ -227,6 +231,25 @@ class Handler(BaseHTTPRequestHandler):
             self.send_error(404, str(exc))
             return
         self.send_json(payload)
+
+    def handle_sentence_translation_post(self) -> None:
+        try:
+            payload = self.read_json_payload(max_length=32768)
+        except ValueError as exc:
+            self.send_error(400, str(exc))
+            return
+        try:
+            result = sentence_translation_from_payload(payload)
+        except ValueError as exc:
+            self.send_json({"ok": False, "error": str(exc)}, status=400)
+            return
+        except FileNotFoundError as exc:
+            self.send_json({"ok": False, "error": str(exc)}, status=404)
+            return
+        except ConnectionError as exc:
+            self.send_json({"ok": False, "error": str(exc)}, status=503)
+            return
+        self.send_json(result)
 
     def handle_work(self, corpus_id: str, work_id: str, query: dict[str, list[str]] | None = None) -> None:
         self.send_work_viewer(corpus_id, work_id, first_value((query or {}).get("variant", [""])))

@@ -30,6 +30,7 @@ FORBIDDEN_CLEAN_CLONE_PATTERNS = [
     "reader_site/data/artifact_manifest.local.json",
     "reader_site/data/release_stage_manifest.local.json",
     "reader_site/data/visual_qa.local/*",
+    "reader_site/data/runtime.local/*",
     "reader_site/data/notes/*.jsonl",
     "reader_site/data/ai/*.jsonl",
     "reader_site/data/ai/*.sqlite",
@@ -52,6 +53,8 @@ REQUIRED_FILES = [
     "reader_site/README.md",
     "reader_site/path_config.py",
     "reader_site/server.py",
+    "reader_site/sentence_units.py",
+    "reader_site/run_reader_with_gemma.ps1",
     "reader_site/scripts/rebuild_all.py",
     "reader_site/scripts/check_clean_clone_contracts.py",
     "reader_site/scripts/check_ci_contracts.py",
@@ -60,12 +63,15 @@ REQUIRED_FILES = [
     "reader_site/scripts/check_path_contracts.py",
     "reader_site/scripts/check_source_publication_contracts.py",
     "reader_site/scripts/check_prompt_template_contracts.py",
+    "reader_site/scripts/check_sentence_translation_contracts.py",
     "reader_site/scripts/check_source_target_contracts.py",
     "reader_site/scripts/check_restore_readiness.py",
     "reader_site/scripts/check_search_artifact_integrity.py",
     "reader_site/scripts/check_note_target_integrity.py",
     "reader_site/data/ai_prompt_templates.json",
     "reader_site/services/interpretation_prompts.py",
+    "reader_site/services/sentence_targets.py",
+    "reader_site/services/sentence_translations.py",
     "reader_site/services/source_targets.py",
     "reader_site/docs/clean_clone_reproducibility.md",
     "reader_site/docs/encoding_policy.md",
@@ -141,7 +147,7 @@ FORBIDDEN_SOURCE_LIGHT_SCRIPTS = {
 }
 
 SOURCE_LIGHT_COMMANDS = [
-    [sys.executable, "-m", "compileall", "-q", "server.py", "runtime_status.py", "corpora", "rendering", "services", "scripts"],
+    [sys.executable, "-m", "compileall", "-q", "server.py", "runtime_status.py", "sentence_units.py", "corpora", "rendering", "services", "scripts"],
     [sys.executable, "scripts/check_ci_contracts.py"],
     [sys.executable, "scripts/check_encoding_contracts.py"],
     [sys.executable, "scripts/check_path_contracts.py"],
@@ -151,6 +157,7 @@ SOURCE_LIGHT_COMMANDS = [
     [sys.executable, "scripts/check_server_boundary.py"],
     [sys.executable, "scripts/check_provenance_contracts.py"],
     [sys.executable, "scripts/check_prompt_template_contracts.py"],
+    [sys.executable, "scripts/check_sentence_translation_contracts.py"],
     [sys.executable, "scripts/check_ai_records_contracts.py"],
     [sys.executable, "scripts/build_release_stage_manifest.py", "--check"],
 ]
@@ -257,7 +264,7 @@ def source_light_command_doc_lines() -> list[str]:
         for part in command[1:]:
             if part.startswith("scripts/"):
                 display_parts.append(".\\" + part.replace("/", "\\"))
-            elif part in {"server.py", "runtime_status.py", "corpora", "rendering", "services", "scripts"}:
+            elif part in {"server.py", "runtime_status.py", "sentence_units.py", "corpora", "rendering", "services", "scripts"}:
                 display_parts.append(".\\" + part)
             else:
                 display_parts.append(part.replace("/", "\\"))

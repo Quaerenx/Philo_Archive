@@ -25,6 +25,8 @@ GENERATED_ARTIFACT_PATTERNS = [
     "reader_site/data/release_stage_manifest.local.json",
     "reader_site/data/visual_qa.local/",
     "reader_site/data/visual_qa.local/*",
+    "reader_site/data/runtime.local/",
+    "reader_site/data/runtime.local/*",
 ]
 
 LOCAL_STATE_PATTERNS = [
@@ -125,6 +127,7 @@ def assert_ignored_existing_artifacts() -> None:
             SITE / "data" / "artifact_manifest.local.json",
             SITE / "data" / "release_stage_manifest.local.json",
             SITE / "data" / "visual_qa.local",
+            SITE / "data" / "runtime.local",
             SITE / "data" / "ai" / "nietzsche_interpretations.jsonl",
             SITE / "data" / "ai" / "ai_interpretation_index.sqlite",
             SITE / "data" / "bible_segments.jsonl",

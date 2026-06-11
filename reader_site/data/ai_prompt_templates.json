@@ -19,6 +19,29 @@
         "source_text"
       ],
       "template": "Prompt template: {prompt_template_id}\n\nYou are preparing a generated interpretation for a private study archive. Explain only the selected source target. Do not replace, rewrite, or silently correct the original source text. Do not use filesystem paths, hidden local files, personal notes, or prior generated output.\n\nRequired output sections:\n1. Generated interpretation\n2. Key terms or structure\n3. Cautions and uncertainty\n4. Study questions\n\nSource target:\n- corpus_id: {corpus_id}\n- work_id: {work_id}\n- variant_id: {variant_id}\n- target_id: {target_id}\n- target_url: {target_url}\n- label: {label}\n- source_text_sha256: {source_text_sha256}\n- source_text_chars: {source_text_chars}\n\nOriginal source:\n{source_text}\n"
+    },
+    {
+      "prompt_template_id": "sentence_translation_study_v1",
+      "record_type": "ai_prompt_template",
+      "description": "On-demand source-bounded translation and study commentary for one selected sentence.",
+      "default_temperature": 0.2,
+      "required_placeholders": [
+        "prompt_template_id",
+        "corpus_id",
+        "work_id",
+        "variant_id",
+        "segment_id",
+        "sentence_id",
+        "target_url",
+        "label",
+        "source_text_sha256",
+        "sentence_text_sha256",
+        "source_text_chars",
+        "sentence_text_chars",
+        "source_text",
+        "sentence_text"
+      ],
+      "template": "Prompt template: {prompt_template_id}\n\nYou are preparing Generated interpretation and translation for a private study archive. Do not replace, rewrite, silently correct, or expand the Original source. Do not use filesystem paths, hidden local files, personal notes, prior generated output, or any text outside the provided source target.\n\nReturn only a valid JSON object with these keys: translation, commentary, cautions. Use Korean for the generated explanation. Keep the answer source-bounded and mark uncertainty when needed. Do not include literal glosses, vocabulary lists, or key-term sections.\n\nSource target:\n- corpus_id: {corpus_id}\n- work_id: {work_id}\n- variant_id: {variant_id}\n- segment_id: {segment_id}\n- sentence_id: {sentence_id}\n- target_url: {target_url}\n- label: {label}\n- source_text_sha256: {source_text_sha256}\n- sentence_text_sha256: {sentence_text_sha256}\n- source_text_chars: {source_text_chars}\n- sentence_text_chars: {sentence_text_chars}\n\nOriginal source segment for minimal context:\n{source_text}\n\nSelected Original source sentence:\n{sentence_text}\n"
     }
   ]
 }

@@ -349,6 +349,44 @@ Missing required fields or unknown corpus ids return `400`. Unknown work, varian
 
 Work pages expose this boundary through the Citation panel's `Copy source bundle` action. The button copies the local `/api/source-target` URL for the current section, paragraph, or verse anchor.
 
+## `POST /api/sentence-translation`
+
+Generates or loads a local cached Gemma study translation for one clicked sentence. The endpoint does not accept arbitrary source text or free-form prompts; it resolves the sentence from existing local segment records.
+
+Request:
+
+```json
+{
+  "corpus_id": "nietzsche",
+  "work_id": "GM",
+  "variant_id": "",
+  "segment_id": "p-0023",
+  "sentence_id": "p-0023.s001",
+  "regenerate": false
+}
+```
+
+Response:
+
+```json
+{
+  "ok": true,
+  "cached": false,
+  "record": {
+    "record_type": "ai_sentence_translation",
+    "target_url": "/work/nietzsche/GM#p-0023.s001",
+    "translation": "generated Korean translation",
+    "commentary": "source-bounded commentary",
+    "cautions": ["caution"],
+    "source_text_sha256": "64-char sha256",
+    "sentence_text_sha256": "64-char sha256",
+    "prompt_sha256": "64-char sha256"
+  }
+}
+```
+
+If the llama.cpp sidecar is not running at `127.0.0.1:8794`, the endpoint returns `503` with `{"ok": false, "error": "Gemma runtime is not running"}`. Generated JSONL files under `data/ai/` are local-only and ignored by Git.
+
 Bible direct lookup:
 
 LXX/deuterocanonical references accept shorthand such as `Tob 1:1`, `Wis 1:1`, `Sir 1:1`, `EpJer 1:1`, and `Psalm 151:1`. Single-chapter materials stored with chapter `0` can be entered with chapter `1`.

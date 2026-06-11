@@ -30,6 +30,8 @@ FORBIDDEN_PATTERNS = [
     "reader_site/data/release_stage_manifest.local.json",
     "reader_site/data/visual_qa.local/",
     "reader_site/data/visual_qa.local/*",
+    "reader_site/data/runtime.local/",
+    "reader_site/data/runtime.local/*",
     "reader_site/data/notes/*.jsonl",
     "reader_site/data/ai/*.jsonl",
     "reader_site/data/ai/*.sqlite",
@@ -47,6 +49,8 @@ ALLOWED_EXACT_PATHS = {
     "reader_site/README.md",
     "reader_site/data/ai/.gitkeep",
     "reader_site/data/notes/.gitkeep",
+    "reader_site/run_reader_with_gemma.ps1",
+    "reader_site/sentence_units.py",
 }
 
 ALLOWED_PREFIXES = [

@@ -84,7 +84,10 @@ def check_routes(base_url: str) -> None:
     work_path = first_work_route()
     work_body = fetch_text(base_url, work_path)
     require("reader-work" in work_body or "work-page" in work_body, f"{work_path} did not look like a work page")
+    require("reading-desk" in work_body, f"{work_path} missing reading desk layout")
     require("copySourceBundle" in work_body, f"{work_path} missing source bundle action")
+    require("translation-card" in work_body, f"{work_path} missing sentence translation panel")
+    require("reader-sentence" in work_body, f"{work_path} missing sentence spans")
     work_cases = [
         "/work/nietzsche/M",
         "/work/bible/oshb.Gen",

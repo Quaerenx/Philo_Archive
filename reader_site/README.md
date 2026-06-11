@@ -14,6 +14,14 @@ Then open:
 http://127.0.0.1:8793
 ```
 
+To run the reader with local Gemma 4 on-demand sentence translation:
+
+```powershell
+.\reader_site\run_reader_with_gemma.ps1
+```
+
+This starts Philo Archive on port `8793` and a local-only llama.cpp sidecar at `http://127.0.0.1:8794`. The default model path is `C:\Users\PP\Downloads\gemma-4-26B-A4B-it-Q4_K_M.gguf`.
+
 The source corpus root defaults to the parent directory of `reader_site`. On another machine, either keep the same sibling-folder layout or set:
 
 ```powershell
@@ -137,9 +145,10 @@ Work page HTML assembly lives in `services/work_pages.py`; it selects the corpus
 Markdown, Bible verse, Kierkegaard JSON, and plain segment rendering helpers live in `rendering/documents.py`.
 Common work-page markup and template rendering live in `rendering/work_markup.py`.
 Reading/source page rendering lives in `rendering/static_pages.py`, backed by `templates/reading.html`, `templates/source.html`, and `assets/static-reader.css`.
-Source target resolution for future AI/Gemma interpretation lives in `services/source_targets.py`; it resolves selected segment URLs and computes `source_text_sha256` from local `text_raw` segment records.
+Source target resolution for AI/Gemma interpretation lives in `services/source_targets.py`; it resolves selected segment URLs and computes `source_text_sha256` from local `text_raw` segment records.
 The local `/api/source-target?corpus_id=...&work_id=...&target_id=...` endpoint returns a bounded source target bundle for one generated segment. It is a pre-AI input boundary only: it returns exact source text plus checksum, but it does not call Gemma or save generated interpretations.
-Prompt template preparation for future AI/Gemma interpretation lives in `data/ai_prompt_templates.json` and `services/interpretation_prompts.py`. It renders a selected source target into a deterministic prompt bundle with `prompt_template_id`, `prompt_sha256`, and `source_text_sha256`, but it still does not call a model or save generated interpretations.
+Prompt template preparation lives in `data/ai_prompt_templates.json` and `services/interpretation_prompts.py`. It renders a selected source target into a deterministic prompt bundle with `prompt_template_id`, `prompt_sha256`, and `source_text_sha256`.
+On-demand sentence translation lives in `services/sentence_targets.py` and `services/sentence_translations.py`. The reader sends only the clicked sentence plus its bounded segment context to the local llama.cpp server. Generated records are stored locally under `data/ai/*_sentence_translations.jsonl` and are intentionally ignored by Git.
 
 Runtime diagnostics:
 
@@ -182,6 +191,7 @@ python .\scripts\check_server_boundary.py
 python .\scripts\check_layout_contracts.py
 python .\scripts\check_provenance_contracts.py
 python .\scripts\check_prompt_template_contracts.py --with-source-targets
+python .\scripts\check_sentence_translation_contracts.py --with-source-targets
 python .\scripts\check_corpus_schema.py
 python .\scripts\check_restore_readiness.py
 python .\scripts\check_source_target_contracts.py

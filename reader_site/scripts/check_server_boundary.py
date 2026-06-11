@@ -41,6 +41,7 @@ REQUIRED_IMPORTED_NAMES = {
     "notes_payload_from_query",
     "resolve_static_file",
     "search_payload_from_query",
+    "sentence_translation_from_payload",
     "study_export_from_query",
     "study_payload_from_query",
     "update_note_from_payload",

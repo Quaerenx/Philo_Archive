@@ -19,6 +19,8 @@ reader_site/data/notes/*.jsonl
 reader_site/data/ai/*.jsonl
 reader_site/data/ai/*.sqlite
 reader_site/data/ai/*.sqlite-*
+reader_site/data/runtime.local/
+reader_site/data/runtime.local/*
 reader_site/local_paths.json
 .env
 .env.*

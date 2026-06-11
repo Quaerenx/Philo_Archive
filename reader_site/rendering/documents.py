@@ -5,6 +5,8 @@ import json
 import re
 from pathlib import Path
 
+from sentence_units import render_sentence_spans
+
 
 def clean_markdown_title(value: str) -> str:
     value = re.sub(r"^#+\s*", "", value.strip())
@@ -78,7 +80,7 @@ def render_reading_document(text: str) -> dict:
             return
         paragraph_count += 1
         paragraph_id = f"p-{paragraph_count:04d}"
-        value = html.escape(" ".join(paragraph))
+        value = render_sentence_spans(paragraph_id, " ".join(paragraph))
         output.append(
             f'<p id="{paragraph_id}" data-label="Paragraph {paragraph_count}" data-target-type="paragraph">'
             f'<a class="segment-anchor" href="#{paragraph_id}" '
@@ -176,7 +178,7 @@ def render_segments_from_texts(texts: list[str], prefix: str = "p") -> dict:
             paragraph_count += 1
             segment_id = f"{prefix}-{paragraph_count:04d}"
             escaped_id = html.escape(segment_id, quote=True)
-            escaped = html.escape(chunk)
+            escaped = render_sentence_spans(segment_id, chunk)
             label = f"Paragraph {paragraph_count}"
             output.append(
                 f'<p id="{escaped_id}" data-label="{html.escape(label, quote=True)}" data-target-type="paragraph">'
@@ -261,7 +263,7 @@ def render_bible_work_document(work: dict, segments: list[dict]) -> dict:
                 f'aria-label="{html.escape(label, quote=True)}">#</a>{html.escape(label)}</h2>'
             )
         label = str(segment.get("label") or segment_id)
-        text = html.escape(str(segment.get("text_raw") or ""))
+        text = render_sentence_spans(segment_id, str(segment.get("text_raw") or ""))
         escaped_id = html.escape(segment_id, quote=True)
         output.append(
             f'<p id="{escaped_id}" class="verse" data-label="{html.escape(label, quote=True)}" data-target-type="verse">'
