@@ -330,12 +330,15 @@ function resetActionConfirmationButton(config) {
   config.button.setAttribute("aria-label", config.defaultAria);
 }
 
-function clearActionConfirmations() {
+function clearActionConfirmations(message = "") {
   window.clearTimeout(actionConfirmationTimer);
   actionConfirmationTimer = 0;
   pendingActionConfirmation = "";
   resetActionConfirmationButton(actionConfirmationConfig("regenerate"));
   resetActionConfirmationButton(actionConfirmationConfig("reject"));
+  if (message) {
+    setTranslationStatus(message);
+  }
 }
 
 function hasPendingActionConfirmation() {
@@ -351,8 +354,8 @@ function armActionConfirmation(action) {
   config.button.textContent = config.confirmText;
   config.button.title = config.confirmTitle;
   config.button.setAttribute("aria-label", config.confirmAria);
-  setTranslationStatus(config.status);
-  actionConfirmationTimer = window.setTimeout(clearActionConfirmations, ACTION_CONFIRM_MS);
+  setTranslationStatus(config.status, true);
+  actionConfirmationTimer = window.setTimeout(() => clearActionConfirmations("Pending action expired."), ACTION_CONFIRM_MS);
 }
 
 function handleConfirmedAction(action) {

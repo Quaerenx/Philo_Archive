@@ -410,6 +410,8 @@ def check_work_source_bundle_ui() -> None:
         "hasPendingActionConfirmation",
         "clearActionConfirmations",
         "Pending action cancelled.",
+        "Pending action expired.",
+        "setTranslationStatus(config.status, true)",
         "isMobileStudyLayout",
         "studyPanelViewportHeight",
         "mobileSentenceSafeBottom",
@@ -484,7 +486,7 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common42", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common43", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common37", "templates/work.html")
     for needle in [
         "reading-desk",
