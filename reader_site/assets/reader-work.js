@@ -1063,6 +1063,13 @@ function resetTranslationOutputScroll() {
   }
 }
 
+function studyPanelStickyOffset() {
+  if (!isMobileStudyLayout() || !studyPage?.classList.contains("is-expanded")) return 0;
+  const toggleHeight = studyPanelToggle ? studyPanelToggle.offsetHeight + 8 : 0;
+  const tabsHeight = studyTabsContainer ? studyTabsContainer.offsetHeight : 0;
+  return toggleHeight + tabsHeight + 8;
+}
+
 function scrollTranslationSectionIntoView(sectionName) {
   const section = Array.from(translationOutput.querySelectorAll("[data-translation-section]"))
     .find((item) => item.dataset.translationSection === sectionName);
@@ -1076,7 +1083,7 @@ function scrollTranslationSectionIntoView(sectionName) {
   } else if (studyPage) {
     const containerRect = studyPage.getBoundingClientRect();
     const sectionRect = section.getBoundingClientRect();
-    const top = Math.max(0, studyPage.scrollTop + sectionRect.top - containerRect.top - stickyOffset);
+    const top = Math.max(0, studyPage.scrollTop + sectionRect.top - containerRect.top - stickyOffset - studyPanelStickyOffset());
     studyPage.scrollTo({ top, behavior });
   } else {
     section.scrollIntoView({ block: "start", inline: "nearest", behavior });

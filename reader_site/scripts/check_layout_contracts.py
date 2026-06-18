@@ -554,6 +554,7 @@ def check_work_source_bundle_ui() -> None:
         "scrollIntoView({",
         "inline: \"nearest\"",
         "studyPage.scrollTop = 0",
+        "function studyPanelStickyOffset",
         "studyPage.scrollTo({ top, behavior })",
         "section.scrollIntoView({ block: \"start\", inline: \"nearest\", behavior })",
         "aria-selected",
@@ -562,8 +563,8 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common61", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common49", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common62", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common50", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -727,8 +728,9 @@ def check_work_source_bundle_ui() -> None:
         ".study-page.is-dragging",
         ".study-page:not(.is-expanded) .study-tabs",
         "env(safe-area-inset-bottom, 0px)",
-        "scroll-padding-top: 62px",
+        "scroll-padding-top: 112px",
         "scroll-padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px))",
+        ".study-page.is-expanded .study-panel-toggle",
         ".study-page.is-expanded .study-panel.active",
         "padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px))",
         "overscroll-behavior: contain",

@@ -1562,7 +1562,7 @@ h1 {
     padding: 10px 10px 0;
     padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
     overflow: auto;
-    scroll-padding-top: 62px;
+    scroll-padding-top: 112px;
     scroll-padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
   }
 
@@ -1610,6 +1610,13 @@ h1 {
     font-size: 9px;
   }
 
+  .study-page.is-expanded .study-panel-toggle {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    box-shadow: 0 6px 12px rgba(255, 255, 255, 0.9);
+  }
+
   .study-page:not(.is-expanded) .study-tabs,
   .study-page:not(.is-expanded) .study-panel {
     display: none;
@@ -1617,7 +1624,7 @@ h1 {
 
   .study-tabs {
     position: sticky;
-    top: 0;
+    top: 56px;
     z-index: 2;
     grid-template-columns: repeat(4, minmax(72px, 1fr));
     gap: 6px;
