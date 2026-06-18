@@ -359,10 +359,13 @@ def check_work_source_bundle_ui() -> None:
         "gemmaRuntimeCheckButton.addEventListener",
         "translationRecordsSummary",
         "function setTranslationRecordsSummary",
+        "function updateTranslationExportLinks",
         "async function loadTranslationRecordsSummary",
         "/api/sentence-translations/summary",
         "AI records:",
         "review_state_counts",
+        "exportAllTranslations",
+        "review_state\", \"all\"",
         "renderTranslationPending",
         "translation-loading-copy",
         "Source locked",
@@ -545,8 +548,8 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common56", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common46", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common57", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common47", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -563,6 +566,9 @@ def check_work_source_bundle_ui() -> None:
         "Gemma checking...",
         "translationRecordsSummary",
         "AI records: checking...",
+        "translation-export-links",
+        "exportAllTranslations",
+        "Export all",
         "aria-label=\"Full study panel. Select a sentence\"",
         'aria-controls="studyCompanionPanel"',
         "readingPosition",
@@ -638,6 +644,9 @@ def check_work_source_bundle_ui() -> None:
         ".runtime-status[data-runtime-state=\"offline\"]",
         ".translation-records-summary",
         ".translation-records-summary[data-records-state=\"has-records\"]",
+        ".translation-export-links",
+        ".translation-export-link",
+        ".translation-export-link.is-empty",
         ".sentence-controls button.needs-confirm",
         ".translation-review-actions button.needs-confirm",
         "min-height: 38px",

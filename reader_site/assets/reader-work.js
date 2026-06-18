@@ -33,6 +33,7 @@ const studyPanelToggle = document.getElementById("studyPanelToggle");
 const studyPanelScrim = document.getElementById("studyPanelScrim");
 const translationRecordsSummary = document.getElementById("translationRecordsSummary");
 const exportReviewedTranslations = document.getElementById("exportReviewedTranslations");
+const exportAllTranslations = document.getElementById("exportAllTranslations");
 const noteTags = document.getElementById("noteTags");
 const noteText = document.getElementById("noteText");
 const noteSaveButton = noteForm.querySelector("button[type='submit']");
@@ -342,6 +343,23 @@ function setTranslationRecordsSummary(text, state = "empty") {
   translationRecordsSummary.dataset.recordsState = state;
 }
 
+function updateTranslationExportLinks(total, reviewed) {
+  if (exportReviewedTranslations) {
+    exportReviewedTranslations.dataset.exportCount = String(reviewed);
+    exportReviewedTranslations.classList.toggle("is-empty", reviewed === 0);
+    exportReviewedTranslations.title = reviewed
+      ? `Export ${reviewed} reviewed translation records`
+      : "No reviewed translation records yet";
+  }
+  if (exportAllTranslations) {
+    exportAllTranslations.dataset.exportCount = String(total);
+    exportAllTranslations.classList.toggle("is-empty", total === 0);
+    exportAllTranslations.title = total
+      ? `Export ${total} translation records`
+      : "No translation records yet";
+  }
+}
+
 async function loadTranslationRecordsSummary() {
   if (!translationRecordsSummary) return;
   const params = new URLSearchParams({
@@ -363,8 +381,10 @@ async function loadTranslationRecordsSummary() {
       `AI records: ${total} total / ${generated} generated / ${reviewed} reviewed / ${rejected} rejected`,
       total ? "has-records" : "empty"
     );
+    updateTranslationExportLinks(total, reviewed);
   } catch (error) {
     setTranslationRecordsSummary("AI records unavailable.", "unavailable");
+    updateTranslationExportLinks(0, 0);
   }
 }
 
@@ -1985,6 +2005,11 @@ function initializeStudyCompanion() {
     format: "markdown"
   });
   exportReviewedTranslations.href = `/api/sentence-translations/export?${exportParams}`;
+  const exportAllParams = new URLSearchParams(exportParams);
+  exportAllParams.set("review_state", "all");
+  if (exportAllTranslations) {
+    exportAllTranslations.href = `/api/sentence-translations/export?${exportAllParams}`;
+  }
   const conceptsPanel = document.querySelector('[data-study-panel="concepts"]');
   if (conceptsPanel && !conceptsPanel.textContent.trim()) {
     conceptsPanel.innerHTML = '<section class="research-card"><h2>Concepts</h2><p class="source-notes">No concept notes for this work.</p></section>';

@@ -419,10 +419,20 @@ h1 {
   border-top: 1px solid #eeeeee;
 }
 
-.reviewed-export-link {
-  display: inline-block;
+.translation-export-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
   margin-top: 10px;
+}
+
+.translation-export-link {
   color: #555;
+}
+
+.translation-export-link.is-empty {
+  color: #777;
+  text-decoration-color: #cfcfcf;
 }
 
 .translation-records-summary {
@@ -1645,7 +1655,7 @@ h1 {
     padding-bottom: 14px;
   }
 
-  .reviewed-export-link {
+  .translation-export-links {
     margin-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
   }
 
