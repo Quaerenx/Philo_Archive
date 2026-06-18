@@ -395,6 +395,13 @@ def check_work_source_bundle_ui() -> None:
         "activeTranslationController.abort()",
         "signal: controller.signal",
         'error.name === "AbortError"',
+        "REGENERATE_CONFIRM_MS",
+        "clearRegenerateConfirmation",
+        "armRegenerateConfirmation",
+        "handleRegenerateClick",
+        "Confirm regenerate",
+        "Click Confirm regenerate to replace this translation.",
+        "requestSentenceTranslation(true)",
         "isMobileStudyLayout",
         "studyPanelViewportHeight",
         "mobileSentenceSafeBottom",
@@ -469,8 +476,8 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common38", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common35", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common39", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common36", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -542,6 +549,7 @@ def check_work_source_bundle_ui() -> None:
         ".study-tabs",
         ".study-tab:focus-visible",
         ".study-tab.active::after",
+        ".sentence-controls button.needs-confirm",
         "min-height: 38px",
         "grid-template-columns: repeat(4, minmax(72px, 1fr))",
         "overscroll-behavior-x: contain",

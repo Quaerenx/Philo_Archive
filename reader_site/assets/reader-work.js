@@ -50,10 +50,13 @@ let noteDraftSaveTimer = 0;
 let lockedNoteTarget = null;
 let studyPanelDragState = null;
 let ignoreNextStudyPanelToggleClick = false;
+let regenerateConfirmArmed = false;
+let regenerateConfirmTimer = 0;
 const visibleSentenceNodes = new Set();
 const COMMENTARY_COLLAPSE_LENGTH = 420;
 const STUDY_PANEL_STORAGE_KEY = "philo.reader.studyPanelExpanded";
 const STUDY_PANEL_DRAG_THRESHOLD = 36;
+const REGENERATE_CONFIRM_MS = 4500;
 const NOTE_DRAFT_STORAGE_KEY = [
   "philo.reader.noteDraft",
   researchData.corpus_id || researchData.author_id || "",
@@ -285,6 +288,40 @@ function setActionButtonBusy(button, isBusy) {
     button.disabled = false;
   }
   delete button.dataset.wasDisabled;
+}
+
+function clearRegenerateConfirmation() {
+  window.clearTimeout(regenerateConfirmTimer);
+  regenerateConfirmTimer = 0;
+  regenerateConfirmArmed = false;
+  regenerateSentenceButton.classList.remove("needs-confirm");
+  regenerateSentenceButton.textContent = "Regenerate";
+  regenerateSentenceButton.title = "Regenerate translation";
+  regenerateSentenceButton.setAttribute("aria-label", "Regenerate translation");
+}
+
+function armRegenerateConfirmation() {
+  regenerateConfirmArmed = true;
+  regenerateSentenceButton.classList.add("needs-confirm");
+  regenerateSentenceButton.textContent = "Confirm regenerate";
+  regenerateSentenceButton.title = "Click again to replace this generated translation";
+  regenerateSentenceButton.setAttribute("aria-label", "Confirm regenerate translation");
+  setTranslationStatus("Click Confirm regenerate to replace this translation.");
+  window.clearTimeout(regenerateConfirmTimer);
+  regenerateConfirmTimer = window.setTimeout(clearRegenerateConfirmation, REGENERATE_CONFIRM_MS);
+}
+
+function handleRegenerateClick() {
+  if (!selectedSentence) {
+    setTranslationStatus("Select a sentence first.", true);
+    return;
+  }
+  if (!regenerateConfirmArmed) {
+    armRegenerateConfirmation();
+    return;
+  }
+  clearRegenerateConfirmation();
+  requestSentenceTranslation(true);
 }
 
 function sentenceIndex(sentenceId) {
@@ -645,6 +682,7 @@ function selectSentence(node, updateHash = true) {
   selectedSentence = sentence;
   if (!sameSentence) {
     selectedTranslationRecord = null;
+    clearRegenerateConfirmation();
   }
   renderTranslationTarget();
   updateSentenceContext();
@@ -873,6 +911,7 @@ function renderTranslationRecord(record, cached) {
 }
 
 async function requestSentenceTranslation(regenerate = false) {
+  clearRegenerateConfirmation();
   if (!selectedSentence) {
     setTranslationStatus("Select a sentence first.", true);
     return;
@@ -1323,7 +1362,7 @@ copySourceBundleButton.addEventListener("click", async () => {
   noteStatus.textContent = "Source bundle URL copied.";
 });
 
-regenerateSentenceButton.addEventListener("click", () => requestSentenceTranslation(true));
+regenerateSentenceButton.addEventListener("click", handleRegenerateClick);
 previousSentenceButton.addEventListener("click", () => navigateSentence(-1));
 nextSentenceButton.addEventListener("click", () => navigateSentence(1));
 markTranslationReviewedButton.addEventListener("click", () => updateTranslationReview("reviewed"));

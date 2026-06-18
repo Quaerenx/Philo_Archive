@@ -350,6 +350,12 @@ h1 {
   margin: 0;
 }
 
+.sentence-controls button.needs-confirm {
+  background: #fffdf2;
+  border-color: #b00000;
+  box-shadow: inset 3px 0 0 #b00000;
+}
+
 .translation-review-actions {
   padding-top: 8px;
   border-top: 1px solid #eeeeee;
