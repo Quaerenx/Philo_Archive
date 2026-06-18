@@ -484,9 +484,14 @@ def check_work_source_bundle_ui() -> None:
         "No notes found for this work.",
         "copyStudyCard",
         "function translationNoteDraftText",
+        "function focusNoteComposer",
+        "noteForm.scrollIntoView",
+        "preventScroll: isMobileStudyLayout()",
         "Generated translation & commentary",
         "Original source",
         "Korean translation",
+        "Translation drafted into this note. Review and save.",
+        "Translation appended to this note. Review and save.",
         "Translation appended to Notes.",
         "noteText.setSelectionRange",
         "translationStudyCardText",
@@ -505,7 +510,7 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common47", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common48", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common40", "templates/work.html")
     for needle in [
         "reading-desk",
@@ -530,6 +535,7 @@ def check_work_source_bundle_ui() -> None:
         "noteListSummary",
         "noteSort",
         "aria-busy=\"false\"",
+        'aria-describedby="noteStatus"',
         "sentenceContext",
         'role="tablist"',
         'role="tab"',

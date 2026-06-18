@@ -1156,6 +1156,28 @@ function translationNoteDraftText(record) {
   return lines.join("\n");
 }
 
+function focusNoteComposer() {
+  const focus = () => {
+    if (isMobileStudyLayout() && noteForm && typeof noteForm.scrollIntoView === "function") {
+      noteForm.scrollIntoView({
+        block: "start",
+        inline: "nearest",
+        behavior: prefersReducedMotion() ? "auto" : "smooth"
+      });
+    }
+    try {
+      noteText.focus({ preventScroll: isMobileStudyLayout() });
+    } catch (error) {
+      noteText.focus();
+    }
+    if (noteText.setSelectionRange) {
+      const noteEnd = noteText.value.length;
+      noteText.setSelectionRange(noteEnd, noteEnd);
+    }
+  };
+  window.requestAnimationFrame(focus);
+}
+
 function draftNoteFromTranslation() {
   if (!selectedTranslationRecord) return;
   const draftText = translationNoteDraftText(selectedTranslationRecord);
@@ -1170,11 +1192,8 @@ function draftNoteFromTranslation() {
   saveNoteDraft();
   setStudyPanel("notes");
   setStudyPanelExpanded(true);
-  noteText.focus();
-  if (noteText.setSelectionRange) {
-    const noteEnd = noteText.value.length;
-    noteText.setSelectionRange(noteEnd, noteEnd);
-  }
+  focusNoteComposer();
+  noteStatus.textContent = existingNote ? "Translation appended to this note. Review and save." : "Translation drafted into this note. Review and save.";
   setTranslationStatus(existingNote ? "Translation appended to Notes." : "Translation drafted into Notes.");
 }
 
