@@ -52,6 +52,8 @@ let activeTranslationTargetKey = "";
 let pendingTranslationRegenerate = false;
 let translationMode = "reading";
 let translationStatusTimer = null;
+let translationElapsedTimer = 0;
+let translationStartedAt = 0;
 let gemmaRuntimeCheckController = null;
 let recentlyChangedNoteId = "";
 let activeReadingCueNode = null;
@@ -67,6 +69,11 @@ const COMMENTARY_COLLAPSE_LENGTH = 420;
 const STUDY_PANEL_STORAGE_KEY = "philo.reader.studyPanelExpanded";
 const STUDY_PANEL_DRAG_THRESHOLD = 36;
 const ACTION_CONFIRM_MS = 4500;
+const TRANSLATION_WAIT_PHASES = [
+  [0, "Preparing local model request"],
+  [12, "Gemma is still generating locally"],
+  [30, "Longer local generation in progress"]
+];
 const NOTE_DRAFT_STORAGE_KEY = [
   "philo.reader.noteDraft",
   researchData.corpus_id || researchData.author_id || "",
@@ -1049,7 +1056,55 @@ function setTranslationBusy(isBusy) {
     translationCard.classList.toggle("is-loading", isBusy);
   }
   translationOutput.setAttribute("aria-busy", isBusy ? "true" : "false");
+  if (!isBusy) {
+    clearTranslationElapsedTimer();
+  }
   updateStudyPanelToggleLabel();
+}
+
+function clearTranslationElapsedTimer() {
+  if (translationElapsedTimer) {
+    window.clearInterval(translationElapsedTimer);
+    translationElapsedTimer = 0;
+  }
+  translationStartedAt = 0;
+}
+
+function formatElapsedSeconds(seconds) {
+  if (seconds < 60) return `${seconds}s`;
+  const minutes = Math.floor(seconds / 60);
+  const remainder = seconds % 60;
+  return `${minutes}m ${String(remainder).padStart(2, "0")}s`;
+}
+
+function translationWaitPhase(seconds) {
+  let label = TRANSLATION_WAIT_PHASES[0][1];
+  TRANSLATION_WAIT_PHASES.forEach(([threshold, phase]) => {
+    if (seconds >= threshold) {
+      label = phase;
+    }
+  });
+  return label;
+}
+
+function updateTranslationElapsed() {
+  if (!translationStartedAt) return;
+  const seconds = Math.max(0, Math.floor((Date.now() - translationStartedAt) / 1000));
+  const elapsedNode = translationOutput.querySelector("[data-translation-elapsed]");
+  if (elapsedNode) {
+    elapsedNode.textContent = `Elapsed ${formatElapsedSeconds(seconds)}`;
+  }
+  const phaseNode = translationOutput.querySelector("[data-translation-phase-note]");
+  if (phaseNode) {
+    phaseNode.textContent = translationWaitPhase(seconds);
+  }
+}
+
+function startTranslationElapsedTimer() {
+  clearTranslationElapsedTimer();
+  translationStartedAt = Date.now();
+  updateTranslationElapsed();
+  translationElapsedTimer = window.setInterval(updateTranslationElapsed, 1000);
 }
 
 function translationOutputUsesInternalScroll() {
@@ -1113,7 +1168,9 @@ function renderTranslationPending(regenerate = false) {
       <span class="translation-loading-copy">
         <strong>${escapeHtml(actionLabel)}</strong>
         <span>${escapeHtml(position)}</span>
+        <span class="translation-phase-note" data-translation-phase-note>Preparing local model request</span>
       </span>
+      <span class="translation-elapsed" data-translation-elapsed aria-hidden="true">Elapsed 0s</span>
     </div>
     <p class="translation-pending-source"><span>Source locked</span>${escapeHtml(sourceText)}</p>
     <ol class="translation-progress-steps" aria-hidden="true">
@@ -1137,6 +1194,7 @@ function renderTranslationPending(regenerate = false) {
         <span class="translation-skeleton-line short"></span>
       </div>
     </div>`;
+  startTranslationElapsedTimer();
   updateSentenceControls();
 }
 

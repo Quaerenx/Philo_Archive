@@ -377,6 +377,14 @@ def check_work_source_bundle_ui() -> None:
         "review_state\", \"all\"",
         "renderTranslationPending",
         "translation-loading-copy",
+        "TRANSLATION_WAIT_PHASES",
+        "translationElapsedTimer",
+        "startTranslationElapsedTimer",
+        "clearTranslationElapsedTimer",
+        "formatElapsedSeconds",
+        "data-translation-elapsed",
+        "data-translation-phase-note",
+        "Gemma is still generating locally",
         "Source locked",
         "translation-progress-steps",
         "class=\"done\"",
@@ -565,8 +573,8 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common63", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common50", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common64", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common51", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -696,6 +704,8 @@ def check_work_source_bundle_ui() -> None:
         "line-height: 1.72",
         ".translation-loading",
         ".translation-loading-copy",
+        ".translation-phase-note",
+        ".translation-elapsed",
         ".translation-pending-source span",
         ".translation-progress-steps",
         ".translation-progress-steps li.done::before",
