@@ -652,8 +652,8 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common78", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common64", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common79", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common65", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -761,6 +761,10 @@ def check_work_source_bundle_ui() -> None:
         ".translation-review-state[data-review-state=\"generated\"]",
         ".translation-review-state[data-review-state=\"reviewed\"]",
         ".translation-review-state[data-review-state=\"rejected\"]",
+        ".sentence-controls",
+        "grid-template-columns: repeat(2, minmax(0, 1fr))",
+        "#regenerateSentence",
+        "grid-column: 1 / -1",
         "#nextUnstudiedSentence",
         "#nextReviewSentence",
         ".study-tabs",
