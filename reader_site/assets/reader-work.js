@@ -232,12 +232,30 @@ function cancelStudyPanelDrag() {
   }
 }
 
+function setCommentaryExpanded(commentary, expanded) {
+  if (!commentary) return;
+  const toggle = commentary.querySelector(".commentary-toggle");
+  if (!toggle) return;
+  commentary.classList.toggle("is-expanded", expanded);
+  commentary.classList.toggle("is-collapsed", !expanded);
+  toggle.setAttribute("aria-expanded", expanded ? "true" : "false");
+  toggle.textContent = expanded ? "Collapse commentary" : "Show full commentary";
+}
+
+function syncTranslationModeDensity() {
+  if (!translationOutput) return;
+  const commentary = translationOutput.querySelector(".translation-commentary");
+  if (!commentary) return;
+  setCommentaryExpanded(commentary, translationMode === "study");
+}
+
 function setTranslationMode(mode) {
   translationMode = mode === "study" ? "study" : "reading";
   readingModeButton.classList.toggle("active", translationMode === "reading");
   studyModeButton.classList.toggle("active", translationMode === "study");
   translationOutput.classList.toggle("reading-mode", translationMode === "reading");
   translationOutput.classList.toggle("study-mode", translationMode === "study");
+  syncTranslationModeDensity();
 }
 
 function setTranslationStatus(message, persistent = false) {
@@ -849,6 +867,7 @@ function renderTranslationRecord(record, cached) {
       ${optionalCautions(record)}
     </div>
   `;
+  syncTranslationModeDensity();
   updateStudyPanelToggleLabel();
   updateSentenceControls();
 }
@@ -1389,10 +1408,7 @@ translationOutput.addEventListener("click", (event) => {
   if (!toggle) return;
   const commentary = toggle.closest(".translation-commentary");
   if (!commentary) return;
-  const expanded = commentary.classList.toggle("is-expanded");
-  commentary.classList.toggle("is-collapsed", !expanded);
-  toggle.setAttribute("aria-expanded", expanded ? "true" : "false");
-  toggle.textContent = expanded ? "Collapse commentary" : "Show full commentary";
+  setCommentaryExpanded(commentary, !commentary.classList.contains("is-expanded"));
 });
 
 studyTabs.forEach((tab) => {

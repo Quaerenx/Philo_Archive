@@ -738,6 +738,10 @@ h1 {
   max-height: none;
 }
 
+.translation-commentary.is-expanded p::after {
+  display: none;
+}
+
 .commentary-toggle {
   margin-top: 6px;
 }

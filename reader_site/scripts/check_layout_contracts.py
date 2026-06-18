@@ -353,6 +353,8 @@ def check_work_source_bundle_ui() -> None:
         "setActionButtonBusy",
         "Could not save note.",
         "renderCommentary",
+        "setCommentaryExpanded",
+        "syncTranslationModeDensity",
         "translationJumpNav",
         "scrollTranslationSectionIntoView",
         "data-translation-jump",
@@ -361,6 +363,7 @@ def check_work_source_bundle_ui() -> None:
         "translation-result",
         "translation-section-primary",
         "Show full commentary",
+        "Collapse commentary",
         "recentlyChangedNoteId",
         "Note saved and highlighted.",
         "setStudyPanelExpanded",
@@ -466,8 +469,8 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common37", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common34", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common38", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common35", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -570,6 +573,7 @@ def check_work_source_bundle_ui() -> None:
         "@keyframes archive-loading-rail",
         ".research-card button.is-working",
         ".translation-commentary.is-collapsed",
+        ".translation-commentary.is-expanded p::after",
         ".commentary-toggle",
         ".note-item.is-recent",
         "@keyframes archive-note-highlight",
