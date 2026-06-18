@@ -12,13 +12,17 @@ sys.path.insert(0, str(SITE))
 
 from sentence_units import render_sentence_spans, sentence_units  # noqa: E402
 from services.sentence_targets import sentence_target_bundle  # noqa: E402
+from services import sentence_translations as sentence_translation_service  # noqa: E402
 from services.sentence_translations import (  # noqa: E402
     PROMPT_TEMPLATE_ID,
     build_record,
     build_sentence_prompt_bundle,
     export_sentence_translations_markdown,
+    find_cached_record,
     normalized_model_output,
+    public_record_id,
     public_translation_record,
+    update_sentence_translation_review,
 )
 from services.source_targets import sha256_text  # noqa: E402
 from scripts.check_ai_records_contracts import validate_file  # noqa: E402
@@ -95,10 +99,74 @@ def check_prompt_and_record(target: dict) -> None:
         require(validate_file(path) == 1, "sentence translation record validator failed")
 
 
+def check_cache_and_review_compatibility(target: dict) -> None:
+    prompt_bundle = build_sentence_prompt_bundle(target)
+    older = build_record(
+        target,
+        prompt_bundle,
+        {
+            "translation": "older translation",
+            "commentary": "older commentary",
+            "cautions": [],
+        },
+    )
+    rejected = build_record(
+        target,
+        prompt_bundle,
+        {
+            "translation": "rejected translation",
+            "commentary": "rejected commentary",
+            "cautions": [],
+        },
+    )
+    rejected["review_state"] = "rejected"
+    newest = build_record(
+        target,
+        prompt_bundle,
+        {
+            "translation": "newest translation",
+            "commentary": "newest commentary",
+            "cautions": [],
+        },
+    )
+    legacy = dict(newest)
+    legacy.pop("id", None)
+    public_legacy = public_translation_record(legacy)
+    require(public_legacy["id"].startswith("legacy-"), "legacy sentence translations need a stable public id")
+    require(public_record_id(legacy) == public_legacy["id"], "legacy public id should be stable")
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        path = Path(temp_dir) / "sentence_translations.jsonl"
+        path.write_text(
+            "\n".join(json.dumps(record, ensure_ascii=False) for record in [older, newest, rejected]) + "\n",
+            encoding="utf-8",
+        )
+        cached = find_cached_record(path, target, prompt_bundle)
+        require(cached and cached["translation"] == "newest translation", "cache should return newest non-rejected record")
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        original_ai_dir = sentence_translation_service.AI_DIR
+        sentence_translation_service.AI_DIR = Path(temp_dir)
+        try:
+            path = sentence_translation_service.ai_record_path(target["corpus_id"])
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(json.dumps(legacy, ensure_ascii=False) + "\n", encoding="utf-8")
+            updated = update_sentence_translation_review(
+                {"corpus_id": target["corpus_id"], "review_state": "reviewed"},
+                public_legacy["id"],
+            )
+            require(updated["record"]["review_state"] == "reviewed", "legacy public id should support review updates")
+            stored = json.loads(path.read_text(encoding="utf-8").splitlines()[0])
+            require(stored["id"] == public_legacy["id"], "reviewing a legacy record should persist the stable id")
+        finally:
+            sentence_translation_service.AI_DIR = original_ai_dir
+
+
 def check_restored_source_target() -> None:
     target = sentence_target_bundle("nietzsche", "GM", "p-0023", "p-0023.s001", "")
     require(target["sentence_id"] == "p-0023.s001", "restored sentence target id mismatch")
     check_prompt_and_record(target)
+    check_cache_and_review_compatibility(target)
 
 
 def main() -> None:
@@ -107,7 +175,9 @@ def main() -> None:
     args = parser.parse_args()
 
     check_sentence_units()
-    check_prompt_and_record(synthetic_sentence_target())
+    synthetic_target = synthetic_sentence_target()
+    check_prompt_and_record(synthetic_target)
+    check_cache_and_review_compatibility(synthetic_target)
     if args.with_source_targets:
         check_restored_source_target()
     print("sentence translation contracts ok")

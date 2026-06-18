@@ -39,6 +39,13 @@ def clean_id(value: str) -> str:
     return value
 
 
+def valid_record_id(value: Any) -> str:
+    candidate = str(value or "").strip()
+    if re.fullmatch(r"[A-Za-z0-9_.-]+", candidate) is None:
+        return ""
+    return candidate
+
+
 def safe_corpus_id(value: str) -> str:
     value = str(value or "").strip()
     require(re.fullmatch(r"[A-Za-z0-9_-]+", value) is not None, "invalid corpus_id")
@@ -230,6 +237,26 @@ def write_records(path: Path, records: list[dict[str, Any]]) -> None:
             handle.write(json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n")
 
 
+def public_record_id(record: dict[str, Any]) -> str:
+    stored_id = valid_record_id(record.get("id"))
+    if stored_id:
+        return stored_id
+    identity = {
+        "record_type": record.get("record_type", ""),
+        "created_at": record.get("created_at", ""),
+        "generated_at": record.get("generated_at", ""),
+        "corpus_id": record.get("corpus_id", ""),
+        "work_id": record.get("work_id", ""),
+        "variant_id": record.get("variant_id", ""),
+        "segment_id": record.get("segment_id", ""),
+        "sentence_id": record.get("sentence_id", record.get("target_id", "")),
+        "source_text_sha256": record.get("source_text_sha256", ""),
+        "sentence_text_sha256": record.get("sentence_text_sha256", ""),
+        "prompt_sha256": record.get("prompt_sha256", ""),
+    }
+    return "legacy-" + sha256_text(json.dumps(identity, ensure_ascii=False, sort_keys=True))[:32]
+
+
 def find_cached_record(path: Path, target: dict[str, Any], prompt_bundle: dict[str, Any]) -> dict[str, Any] | None:
     for record in reversed(iter_cached_records(path)):
         if record.get("record_type") != "ai_sentence_translation":
@@ -299,7 +326,9 @@ def build_record(target: dict[str, Any], prompt_bundle: dict[str, Any], output: 
 
 
 def public_translation_record(record: dict[str, Any]) -> dict[str, Any]:
-    return {key: value for key, value in record.items() if key not in {"literal_gloss", "key_terms"}}
+    public_record = {key: value for key, value in record.items() if key not in {"literal_gloss", "key_terms"}}
+    public_record["id"] = public_record_id(record)
+    return public_record
 
 
 def update_sentence_translation_review(payload: dict[str, Any], record_id: str) -> dict[str, Any]:
@@ -312,9 +341,11 @@ def update_sentence_translation_review(payload: dict[str, Any], record_id: str) 
     now = utc_now()
     updated: dict[str, Any] | None = None
     for index, record in enumerate(records):
-        if record.get("id") != record_id:
+        if public_record_id(record) != record_id:
             continue
         next_record = dict(record)
+        if not valid_record_id(next_record.get("id")):
+            next_record["id"] = record_id
         next_record["review_state"] = review_state
         next_record["reviewed_at"] = now if review_state == "reviewed" else ""
         next_record["updated_at"] = now
