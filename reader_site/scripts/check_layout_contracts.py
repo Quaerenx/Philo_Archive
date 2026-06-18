@@ -357,6 +357,9 @@ def check_work_source_bundle_ui() -> None:
         "cancelTranslationRequest",
         "data-translation-cancel",
         "data-translation-retry",
+        "data-translation-retry=\"${escapeHtml(retryMode)}\"",
+        "Regenerate again",
+        "retry.dataset.translationRetry === \"regenerate\"",
         "Translation request cancelled.",
         "No generated text was saved",
         "resetTranslationOutputScroll",
@@ -402,6 +405,7 @@ def check_work_source_bundle_ui() -> None:
         "sentenceScrollBlock",
         "activeTranslationController",
         "activeTranslationTargetKey",
+        "pendingTranslationRegenerate",
         "selectedTranslationTargetKey",
         "Translation is already running...",
         "activeTranslationController.abort()",
@@ -501,7 +505,7 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common46", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common47", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common40", "templates/work.html")
     for needle in [
         "reading-desk",

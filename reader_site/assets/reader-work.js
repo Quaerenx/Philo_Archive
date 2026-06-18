@@ -41,6 +41,7 @@ let selectedTranslationRecord = null;
 let activeTranslationRequest = 0;
 let activeTranslationController = null;
 let activeTranslationTargetKey = "";
+let pendingTranslationRegenerate = false;
 let translationMode = "reading";
 let translationStatusTimer = null;
 let recentlyChangedNoteId = "";
@@ -906,6 +907,7 @@ function scrollTranslationSectionIntoView(sectionName) {
 
 function renderTranslationPending(regenerate = false) {
   selectedTranslationRecord = null;
+  pendingTranslationRegenerate = Boolean(regenerate);
   translationOutput.hidden = false;
   translationOutput.classList.toggle("reading-mode", translationMode === "reading");
   translationOutput.classList.toggle("study-mode", translationMode === "study");
@@ -949,6 +951,7 @@ function renderTranslationPending(regenerate = false) {
 
 function renderTranslationError(message) {
   selectedTranslationRecord = null;
+  pendingTranslationRegenerate = false;
   setTranslationBusy(false);
   translationOutput.hidden = false;
   resetTranslationOutputScroll();
@@ -967,11 +970,14 @@ function renderTranslationCancelled(message = "Translation request cancelled.") 
   translationOutput.hidden = false;
   resetTranslationOutputScroll();
   const position = selectedSentence ? selectedSentencePositionLabel() : "selected sentence";
+  const retryMode = pendingTranslationRegenerate ? "regenerate" : "translate";
+  const retryLabel = pendingTranslationRegenerate ? "Regenerate again" : "Try again";
+  pendingTranslationRegenerate = false;
   translationOutput.innerHTML = `
     <div class="translation-cancelled" role="note">
       <h3>Translation cancelled</h3>
       <p>${escapeHtml(cleanText(message))} No generated text was saved for ${escapeHtml(position)}.</p>
-      <button type="button" data-translation-retry>Try again</button>
+      <button type="button" data-translation-retry="${escapeHtml(retryMode)}">${escapeHtml(retryLabel)}</button>
     </div>`;
   updateStudyPanelToggleLabel();
   updateSentenceControls();
@@ -979,6 +985,7 @@ function renderTranslationCancelled(message = "Translation request cancelled.") 
 
 function renderTranslationRecord(record, cached) {
   selectedTranslationRecord = record;
+  pendingTranslationRegenerate = false;
   const reviewState = cleanText(record.review_state || "generated");
   setTranslationBusy(false);
   translationOutput.hidden = false;
@@ -1560,7 +1567,7 @@ translationOutput.addEventListener("click", (event) => {
   }
   const retry = event.target.closest("[data-translation-retry]");
   if (retry) {
-    requestSentenceTranslation(false);
+    requestSentenceTranslation(retry.dataset.translationRetry === "regenerate");
     return;
   }
   const jump = event.target.closest("[data-translation-jump]");
