@@ -609,8 +609,12 @@ def check_work_source_bundle_ui() -> None:
         "function renderTranslationTarget",
         "function selectedSentenceIsVisible",
         "function updateTranslationTargetViewState",
+        "function focusSelectedSourceSentence",
+        "function flashSourceFocus",
+        'event.key.toLowerCase() === "s"',
         "translation-target-excerpt",
         "data-selected-source-jump",
+        'aria-keyshortcuts="S"',
         "Source off screen",
         "NOTE_DRAFT_STORAGE_KEY",
         "noteDraftPayload",
@@ -682,8 +686,8 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common79", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common65", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common80", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common66", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -831,6 +835,8 @@ def check_work_source_bundle_ui() -> None:
         ".translation-target-excerpt",
         ".translation-target.is-source-away",
         ".translation-target button",
+        ".reader-sentence.source-focus",
+        "@keyframes archive-source-focus",
         ".translation-result",
         ".study-session-preview",
         ".study-session-preview-header",

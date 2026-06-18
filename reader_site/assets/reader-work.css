@@ -1645,6 +1645,10 @@ h1 {
   animation-name: archive-source-cache-confirm;
 }
 
+.reader-sentence.source-focus {
+  animation: archive-source-focus 1.25s ease-out 1;
+}
+
 .reader-sentence.review-state-changed {
   animation: archive-sentence-review-confirm 1.35s ease-out 1;
 }
@@ -1772,6 +1776,17 @@ h1 {
   }
 }
 
+@keyframes archive-source-focus {
+  0% {
+    background-color: #fff7cf;
+    box-shadow: inset 3px 0 0 #b00000, 0 0 0 2px rgba(176, 0, 0, 0.12);
+  }
+  100% {
+    background-color: #fff1b8;
+    box-shadow: inset 3px 0 0 #c01818, 0 0 0 0 rgba(176, 0, 0, 0);
+  }
+}
+
 @keyframes archive-review-confirm {
   0% {
     background-color: #eff8f0;
@@ -1893,6 +1908,7 @@ h1 {
   .reader-sentence.loading,
   .reader-sentence.just-studied,
   .reader-sentence.just-loaded-cache,
+  .reader-sentence.source-focus,
   .translation-output.has-fresh-result .translation-section-primary,
   .translation-output.has-fresh-cached-result .translation-section-primary,
   .reader-sentence.review-state-changed,

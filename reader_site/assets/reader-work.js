@@ -61,6 +61,7 @@ let translationElapsedTimer = 0;
 let translationStartedAt = 0;
 let translationRevealTimer = 0;
 let sentenceRevealTimer = 0;
+let sourceFocusTimer = 0;
 let translationReviewFlashTimer = 0;
 let sentenceReviewFlashTimer = 0;
 let translationSentenceStates = new Map();
@@ -790,6 +791,7 @@ function updateTranslationTargetViewState() {
   const jumpButton = translationTarget.querySelector("[data-selected-source-jump]");
   if (jumpButton) {
     jumpButton.textContent = sourceVisible ? "Center" : "Show source";
+    jumpButton.setAttribute("aria-keyshortcuts", "S");
     jumpButton.setAttribute(
       "aria-label",
       `${sourceVisible ? "Center" : "Show"} selected source sentence ${selectedSentence.sentenceId}`
@@ -813,8 +815,38 @@ function renderTranslationTarget() {
       <span class="translation-target-status" data-selected-source-status></span>
       <p class="translation-target-excerpt" title="${escapeHtml(sourceText)}">${escapeHtml(sourceText)}</p>
     </div>
-    <button type="button" data-selected-source-jump>Show source</button>`;
+    <button type="button" data-selected-source-jump aria-keyshortcuts="S">Show source</button>`;
   updateTranslationTargetViewState();
+}
+
+function flashSourceFocus(node) {
+  if (!node) return;
+  window.clearTimeout(sourceFocusTimer);
+  node.classList.remove("source-focus");
+  void node.offsetWidth;
+  node.classList.add("source-focus");
+  sourceFocusTimer = window.setTimeout(() => {
+    node.classList.remove("source-focus");
+    sourceFocusTimer = 0;
+  }, prefersReducedMotion() ? 0 : 1300);
+}
+
+function focusSelectedSourceSentence() {
+  if (!selectedSentence) {
+    setTranslationStatus("Select a sentence first.", true);
+    return false;
+  }
+  const node = selectedSentenceNode();
+  if (!node) {
+    setTranslationStatus("Selected source is not available on this page.", true);
+    return false;
+  }
+  scrollSentenceIntoView(node);
+  updateReadingPosition(node);
+  updateTranslationTargetViewState();
+  flashSourceFocus(node);
+  setTranslationStatus("Selected source centered.");
+  return true;
 }
 
 function readingCueTargetLine() {
@@ -1359,6 +1391,7 @@ function translationJumpNav(record) {
     hasCommentary ? ["commentary", "Commentary"] : null
   ].filter(Boolean);
   return `<div class="translation-jump-nav" aria-label="Translation result sections">
+    <button type="button" data-selected-source-jump aria-keyshortcuts="S">Source</button>
     ${buttons.map(([section, label]) => `<button type="button" data-translation-jump="${escapeHtml(section)}">${escapeHtml(label)}</button>`).join("")}
   </div>`;
 }
@@ -2547,11 +2580,7 @@ if (translationTarget) {
   translationTarget.addEventListener("click", (event) => {
     const jumpButton = event.target.closest("[data-selected-source-jump]");
     if (!jumpButton || !selectedSentence) return;
-    const node = selectedSentenceNode();
-    if (!node) return;
-    scrollSentenceIntoView(node);
-    updateReadingPosition(node);
-    updateTranslationTargetViewState();
+    focusSelectedSourceSentence();
   });
 }
 
@@ -2564,6 +2593,11 @@ if (readingPosition) {
 }
 
 translationOutput.addEventListener("click", (event) => {
+  const sourceJump = event.target.closest("[data-selected-source-jump]");
+  if (sourceJump) {
+    focusSelectedSourceSentence();
+    return;
+  }
   const cancel = event.target.closest("[data-translation-cancel]");
   if (cancel) {
     cancelTranslationRequest();
@@ -2676,6 +2710,11 @@ document.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && isMobileStudyLayout() && studyPage?.classList.contains("is-expanded")) {
     event.preventDefault();
     setStudyPanelExpanded(false, true);
+    return;
+  }
+  if (event.key.toLowerCase() === "s") {
+    event.preventDefault();
+    focusSelectedSourceSentence();
     return;
   }
   if (
