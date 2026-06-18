@@ -201,6 +201,10 @@ h1 {
   display: none;
 }
 
+.study-panel-scrim {
+  display: none;
+}
+
 .research-card {
   min-width: 0;
   max-width: 100%;
@@ -270,7 +274,8 @@ h1 {
 }
 
 .research-card textarea,
-.research-card input {
+.research-card input,
+.research-card select {
   width: 100%;
   margin-top: 4px;
   color: #000;
@@ -351,6 +356,19 @@ h1 {
 
 .translation-target {
   color: #333;
+}
+
+.reading-position {
+  min-height: 14px;
+  margin-top: 5px;
+  color: #666;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.reading-position strong {
+  color: #333;
+  font-weight: normal;
 }
 
 .sentence-context {
@@ -479,6 +497,27 @@ h1 {
   gap: 12px;
 }
 
+.translation-jump-nav {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 0 0 8px;
+  background: #fff;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.translation-jump-nav button {
+  min-height: 22px;
+  margin: 0;
+  padding: 2px 7px;
+  color: #333;
+  background: #f8f8f8;
+  border-color: #d4d4d4;
+}
+
 .translation-section {
   min-width: 0;
   padding-top: 10px;
@@ -493,6 +532,11 @@ h1 {
 .translation-section-primary {
   padding-left: 10px;
   border-left: 3px solid #b00000;
+}
+
+.translation-section.is-jump-target {
+  background: #fffdf0;
+  box-shadow: inset 3px 0 0 #d4b500;
 }
 
 .translation-output .translation-primary {
@@ -573,6 +617,7 @@ h1 {
 
 .citation-preview,
 .note-status,
+.note-list-summary,
 .notes-list {
   max-width: 100%;
   color: #555;
@@ -581,10 +626,91 @@ h1 {
   word-break: break-word;
 }
 
+.note-target-tools {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px;
+  align-items: start;
+  margin-bottom: 8px;
+}
+
+.note-target-preview {
+  min-width: 0;
+  padding: 5px 7px;
+  color: #555;
+  line-height: 1.4;
+  background: #f8f8f8;
+  border: 1px solid #e0e0e0;
+}
+
+.note-target-preview.is-locked {
+  background: #fff9df;
+  border-left: 3px solid #b00000;
+}
+
+.note-target-preview span,
+.note-target-preview strong {
+  display: block;
+}
+
+.note-target-preview strong {
+  color: #000;
+  font-weight: normal;
+}
+
+.research-card .note-target-lock {
+  margin: 0;
+  white-space: nowrap;
+}
+
+.notes-list-tools {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 94px;
+  gap: 8px;
+  align-items: end;
+}
+
+.note-list-summary {
+  min-height: 14px;
+  margin-top: 8px;
+  font-size: 9px;
+}
+
 .notes-list {
   max-height: 160px;
   margin-top: 10px;
   overflow: auto;
+}
+
+.notes-list-pending {
+  display: grid;
+  gap: 6px;
+  padding-top: 2px;
+}
+
+.notes-list-skeleton {
+  display: block;
+  width: 78%;
+  height: 10px;
+  background: linear-gradient(90deg, #ececec 0%, #fafafa 44%, #ececec 88%);
+  background-size: 220% 100%;
+  border: 1px solid #e3e3e3;
+  animation: archive-skeleton 1.2s ease-in-out infinite;
+}
+
+.notes-list-skeleton.wide {
+  width: 94%;
+}
+
+.notes-list-skeleton.short {
+  width: 48%;
+}
+
+.notes-empty {
+  padding: 8px;
+  color: #555;
+  background: #f8f8f8;
+  border: 1px solid #e0e0e0;
 }
 
 .note-item {
@@ -730,6 +856,11 @@ h1 {
   border-bottom-color: #c8a800;
 }
 
+.reader-sentence.reading-cue:not(.selected):not(.loading) {
+  background: #fffdf0;
+  border-bottom-color: #e4d88a;
+}
+
 .reader-sentence.selected {
   background: #fff1b8;
   border-bottom-color: #9b7a00;
@@ -844,6 +975,7 @@ h1 {
   .loading-spinner,
   .research-card button.is-working::after,
   .translation-skeleton-line,
+  .notes-list-skeleton,
   .study-panel.active,
   .note-item.is-recent,
   .reader-sentence.loading {
@@ -862,6 +994,11 @@ h1 {
     margin: 0 auto;
     border-right: 0;
     border-left: 0;
+  }
+
+  .page::before {
+    width: 100%;
+    background-size: auto var(--header-portrait-height, 128px);
   }
 
   .reader {
@@ -904,6 +1041,21 @@ h1 {
     border-right: 0;
   }
 
+  .study-panel-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 3;
+    display: block;
+    padding: 0;
+    background: rgba(238, 238, 238, 0.42);
+    border: 0;
+    cursor: default;
+  }
+
+  .study-panel-scrim[hidden] {
+    display: none;
+  }
+
   .study-page {
     position: fixed;
     top: auto;
@@ -933,6 +1085,10 @@ h1 {
     overflow: auto;
   }
 
+  .study-page.is-dragging {
+    transition: none;
+  }
+
   .study-panel-toggle {
     display: block;
     width: 100%;
@@ -945,6 +1101,8 @@ h1 {
     background: #fff;
     border: 1px solid #bdbdbd;
     cursor: pointer;
+    touch-action: none;
+    user-select: none;
   }
 
   .study-panel-toggle::before {
@@ -994,6 +1152,18 @@ h1 {
 
   .translation-output {
     max-height: 32vh;
+  }
+
+  .note-target-tools {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .notes-list-tools {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .research-card .note-target-lock {
+    justify-self: start;
   }
 
   .mode-toggle {

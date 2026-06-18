@@ -4,8 +4,13 @@ const noteForm = document.getElementById("noteForm");
 const noteStatus = document.getElementById("noteStatus");
 const notesList = document.getElementById("notesList");
 const noteFilter = document.getElementById("noteFilter");
+const noteSort = document.getElementById("noteSort");
+const noteListSummary = document.getElementById("noteListSummary");
+const noteTargetPreview = document.getElementById("noteTargetPreview");
+const lockNoteTargetButton = document.getElementById("lockNoteTarget");
 const copySourceBundleButton = document.getElementById("copySourceBundle");
 const translationTarget = document.getElementById("translationTarget");
+const readingPosition = document.getElementById("readingPosition");
 const sentenceContext = document.getElementById("sentenceContext");
 const previousSentenceButton = document.getElementById("previousSentence");
 const nextSentenceButton = document.getElementById("nextSentence");
@@ -21,6 +26,7 @@ const translationOutput = document.getElementById("translationOutput");
 const translationCard = document.querySelector(".translation-card");
 const studyPage = document.querySelector(".study-page");
 const studyPanelToggle = document.getElementById("studyPanelToggle");
+const studyPanelScrim = document.getElementById("studyPanelScrim");
 const exportReviewedTranslations = document.getElementById("exportReviewedTranslations");
 const noteTags = document.getElementById("noteTags");
 const noteText = document.getElementById("noteText");
@@ -38,8 +44,22 @@ let activeTranslationTargetKey = "";
 let translationMode = "reading";
 let translationStatusTimer = null;
 let recentlyChangedNoteId = "";
+let activeReadingCueNode = null;
+let readingPositionRefreshHandle = 0;
+let noteDraftSaveTimer = 0;
+let lockedNoteTarget = null;
+let studyPanelDragState = null;
+let ignoreNextStudyPanelToggleClick = false;
+const visibleSentenceNodes = new Set();
 const COMMENTARY_COLLAPSE_LENGTH = 420;
 const STUDY_PANEL_STORAGE_KEY = "philo.reader.studyPanelExpanded";
+const STUDY_PANEL_DRAG_THRESHOLD = 36;
+const NOTE_DRAFT_STORAGE_KEY = [
+  "philo.reader.noteDraft",
+  researchData.corpus_id || researchData.author_id || "",
+  researchData.work_id || "",
+  researchData.variant_id || ""
+].join(":");
 
 function cleanText(value) {
   return String(value || "").replace(/[#¶]/g, "").replace(/\s+/g, " ").trim();
@@ -131,8 +151,69 @@ function setStudyPanelExpanded(expanded, remember = false) {
   studyPage.classList.toggle("is-expanded", expanded);
   studyPanelToggle.setAttribute("aria-expanded", expanded ? "true" : "false");
   updateStudyPanelToggleLabel();
+  updateStudyPanelScrim();
   if (remember) {
     rememberStudyPanelExpanded(expanded);
+  }
+}
+
+function updateStudyPanelScrim() {
+  if (!studyPanelScrim || !studyPage) return;
+  const visible = isMobileStudyLayout() && studyPage.classList.contains("is-expanded");
+  studyPanelScrim.hidden = !visible;
+  studyPanelScrim.setAttribute("aria-hidden", visible ? "false" : "true");
+}
+
+function beginStudyPanelDrag(event) {
+  if (!isMobileStudyLayout() || !studyPage || !studyPanelToggle) return;
+  if (event.button !== undefined && event.button !== 0) return;
+  studyPanelDragState = {
+    pointerId: event.pointerId,
+    startY: event.clientY,
+    deltaY: 0,
+    moved: false
+  };
+  studyPage.classList.add("is-dragging");
+  if (studyPanelToggle.setPointerCapture) {
+    studyPanelToggle.setPointerCapture(event.pointerId);
+  }
+}
+
+function updateStudyPanelDrag(event) {
+  if (!studyPanelDragState || event.pointerId !== studyPanelDragState.pointerId) return;
+  studyPanelDragState.deltaY = event.clientY - studyPanelDragState.startY;
+  if (Math.abs(studyPanelDragState.deltaY) > 8) {
+    studyPanelDragState.moved = true;
+    event.preventDefault();
+  }
+}
+
+function finishStudyPanelDrag(event) {
+  if (!studyPanelDragState || event.pointerId !== studyPanelDragState.pointerId) return;
+  const { deltaY, moved } = studyPanelDragState;
+  studyPanelDragState = null;
+  studyPage.classList.remove("is-dragging");
+  if (studyPanelToggle.releasePointerCapture) {
+    try {
+      studyPanelToggle.releasePointerCapture(event.pointerId);
+    } catch (error) {
+      // Pointer capture may already be released by the browser.
+    }
+  }
+  if (!moved) return;
+  ignoreNextStudyPanelToggleClick = true;
+  if (deltaY <= -STUDY_PANEL_DRAG_THRESHOLD) {
+    setStudyPanelExpanded(true, true);
+  }
+  if (deltaY >= STUDY_PANEL_DRAG_THRESHOLD) {
+    setStudyPanelExpanded(false, true);
+  }
+}
+
+function cancelStudyPanelDrag() {
+  studyPanelDragState = null;
+  if (studyPage) {
+    studyPage.classList.remove("is-dragging");
   }
 }
 
@@ -175,6 +256,85 @@ function setActionButtonBusy(button, isBusy) {
 
 function sentenceIndex(sentenceId) {
   return sentenceNodes.findIndex((node) => (node.dataset.sentenceId || node.id) === sentenceId);
+}
+
+function sentencePositionText(sentenceId) {
+  const index = sentenceIndex(sentenceId);
+  return index >= 0 ? `Sentence ${index + 1} of ${sentenceNodes.length}` : sentenceId;
+}
+
+function readingCueTargetLine() {
+  if (isMobileStudyLayout()) {
+    return Math.max(120, window.innerHeight * 0.34);
+  }
+  return window.innerHeight * 0.48;
+}
+
+function updateReadingPosition(node) {
+  if (!node || !readingPosition) return;
+  if (activeReadingCueNode && activeReadingCueNode !== node) {
+    activeReadingCueNode.classList.remove("reading-cue");
+  }
+  activeReadingCueNode = node;
+  activeReadingCueNode.classList.add("reading-cue");
+  const sentenceId = node.dataset.sentenceId || node.id || "";
+  const label = sentencePositionText(sentenceId);
+  readingPosition.innerHTML = `<span>Reading near</span> <strong>${escapeHtml(label)}</strong>`;
+  readingPosition.setAttribute("aria-label", `Current reading position: ${label}`);
+}
+
+function refreshReadingPosition() {
+  readingPositionRefreshHandle = 0;
+  if (!sentenceNodes.length || !readingPosition) return;
+  const candidates = visibleSentenceNodes.size ? Array.from(visibleSentenceNodes) : sentenceNodes;
+  const targetLine = readingCueTargetLine();
+  let bestNode = null;
+  let bestDistance = Number.POSITIVE_INFINITY;
+  candidates.forEach((node) => {
+    const rect = node.getBoundingClientRect();
+    if (rect.bottom < 0 || rect.top > window.innerHeight) return;
+    const center = rect.top + rect.height / 2;
+    const distance = Math.abs(center - targetLine);
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      bestNode = node;
+    }
+  });
+  if (bestNode) {
+    updateReadingPosition(bestNode);
+  }
+}
+
+function scheduleReadingPositionRefresh() {
+  if (readingPositionRefreshHandle) return;
+  readingPositionRefreshHandle = window.requestAnimationFrame(refreshReadingPosition);
+}
+
+function initializeReadingPositionTracker() {
+  if (!readingPosition || !sentenceNodes.length) return;
+  if ("IntersectionObserver" in window) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          visibleSentenceNodes.add(entry.target);
+        } else {
+          visibleSentenceNodes.delete(entry.target);
+        }
+      });
+      scheduleReadingPositionRefresh();
+    }, {
+      root: null,
+      rootMargin: "-18% 0px -32% 0px",
+      threshold: 0
+    });
+    sentenceNodes.forEach((node) => observer.observe(node));
+  }
+  window.addEventListener("scroll", scheduleReadingPositionRefresh, { passive: true });
+  window.addEventListener("resize", () => {
+    scheduleReadingPositionRefresh();
+    updateStudyPanelScrim();
+  });
+  scheduleReadingPositionRefresh();
 }
 
 function updateSentenceContext() {
@@ -225,12 +385,77 @@ function currentTarget() {
   const id = decodeURIComponent(location.hash.replace(/^#/, "")) || "work";
   const node = id === "work" ? null : document.getElementById(id);
   const label = node ? cleanText(node.dataset.label || node.textContent) : researchData.title;
-  const type = node ? (node.dataset.targetType || researchData.default_target_type || "segment") : "work";
+  const type = node
+    ? (node.classList.contains("reader-sentence") ? "sentence" : (node.dataset.targetType || researchData.default_target_type || "segment"))
+    : "work";
   const baseUrl = location.origin + location.pathname + location.search;
   const url = id === "work"
     ? baseUrl
     : baseUrl + "#" + encodeURIComponent(id);
   return { id, label, type, url };
+}
+
+function targetSnapshot(target = currentTarget()) {
+  return {
+    id: target.id || "work",
+    label: cleanText(target.label || researchData.title || "Current work"),
+    type: target.type || "work",
+    url: target.url || location.href
+  };
+}
+
+function noteTargetForSave() {
+  return lockedNoteTarget || targetSnapshot();
+}
+
+function noteTargetTypeLabel(type) {
+  if (type === "work") return "Work";
+  if (type === "paragraph") return "Paragraph";
+  if (type === "verse") return "Verse";
+  if (type === "section") return "Section";
+  if (type === "sentence") return "Sentence";
+  return cleanText(type || "Target");
+}
+
+function noteTargetDisplayText(target) {
+  const safeTarget = targetSnapshot(target);
+  return `${noteTargetTypeLabel(safeTarget.type)} / ${safeTarget.label || safeTarget.id}`;
+}
+
+function updateNoteTargetPreview() {
+  if (!noteTargetPreview || !lockNoteTargetButton) return;
+  const target = noteTargetForSave();
+  const locked = Boolean(lockedNoteTarget);
+  noteTargetPreview.classList.toggle("is-locked", locked);
+  noteTargetPreview.innerHTML = `
+    <span>${locked ? "Locked note target" : "Note target follows selection"}</span>
+    <strong>${escapeHtml(noteTargetDisplayText(target))}</strong>`;
+  noteTargetPreview.setAttribute("aria-label", `${locked ? "Locked note target" : "Note target"}: ${noteTargetDisplayText(target)}`);
+  lockNoteTargetButton.textContent = locked ? "Unlock target" : "Lock target";
+  lockNoteTargetButton.setAttribute("aria-pressed", locked ? "true" : "false");
+}
+
+function lockCurrentNoteTarget(announce = true) {
+  lockedNoteTarget = targetSnapshot();
+  updateNoteTargetPreview();
+  saveNoteDraft();
+  if (announce) {
+    noteStatus.textContent = "Note target locked.";
+  }
+}
+
+function unlockNoteTarget(announce = true) {
+  lockedNoteTarget = null;
+  updateNoteTargetPreview();
+  saveNoteDraft(false);
+  if (announce) {
+    noteStatus.textContent = "Note target follows selection.";
+  }
+}
+
+function syncTargetDependentViews() {
+  updateCitationPreview();
+  updateNoteTargetPreview();
 }
 
 function selectedTranslationTargetKey() {
@@ -303,9 +528,11 @@ function selectSentence(node, updateHash = true) {
   updateSentenceContext();
   updateSentenceControls();
   updateStudyPanelToggleLabel();
+  updateReadingPosition(node);
   if (updateHash) {
     history.replaceState(null, "", `${location.pathname}${location.search}#${encodeURIComponent(sentence.sentenceId)}`);
   }
+  syncTargetDependentViews();
 }
 
 function selectSentenceFromHash() {
@@ -395,7 +622,7 @@ function renderList(values) {
 function optionalCautions(record) {
   const cautions = renderList(record.cautions);
   if (!cautions) return "";
-  return `<section class="translation-section translation-extra">
+  return `<section class="translation-section translation-extra" data-translation-section="cautions">
       <h3>Cautions</h3>
       ${cautions}
     </section>`;
@@ -405,11 +632,22 @@ function renderCommentary(commentary) {
   const text = cleanText(commentary || "");
   const shouldCollapse = text.length > COMMENTARY_COLLAPSE_LENGTH;
   return `
-    <section class="translation-section translation-commentary${shouldCollapse ? " is-collapsed" : ""}">
+    <section class="translation-section translation-commentary${shouldCollapse ? " is-collapsed" : ""}" data-translation-section="commentary">
       <h3>Commentary</h3>
       <p>${escapeHtml(text)}</p>
       ${shouldCollapse ? '<button type="button" class="commentary-toggle" aria-expanded="false">Show full commentary</button>' : ""}
     </section>`;
+}
+
+function translationJumpNav(record) {
+  const hasCommentary = Boolean(cleanText(record.commentary || record.interpretation || ""));
+  const buttons = [
+    ["translation", "Translation"],
+    hasCommentary ? ["commentary", "Commentary"] : null
+  ].filter(Boolean);
+  return `<div class="translation-jump-nav" aria-label="Translation result sections">
+    ${buttons.map(([section, label]) => `<button type="button" data-translation-jump="${escapeHtml(section)}">${escapeHtml(label)}</button>`).join("")}
+  </div>`;
 }
 
 function setTranslationBusy(isBusy) {
@@ -422,6 +660,21 @@ function setTranslationBusy(isBusy) {
 
 function resetTranslationOutputScroll() {
   translationOutput.scrollTop = 0;
+}
+
+function scrollTranslationSectionIntoView(sectionName) {
+  const section = Array.from(translationOutput.querySelectorAll("[data-translation-section]"))
+    .find((item) => item.dataset.translationSection === sectionName);
+  if (!section) return;
+  const nav = translationOutput.querySelector(".translation-jump-nav");
+  const stickyOffset = nav ? nav.offsetHeight + 8 : 8;
+  const top = Math.max(0, section.offsetTop - translationOutput.offsetTop - stickyOffset);
+  translationOutput.scrollTo({
+    top,
+    behavior: prefersReducedMotion() ? "auto" : "smooth"
+  });
+  section.classList.add("is-jump-target");
+  window.setTimeout(() => section.classList.remove("is-jump-target"), prefersReducedMotion() ? 0 : 900);
 }
 
 function renderTranslationPending(regenerate = false) {
@@ -471,11 +724,12 @@ function renderTranslationRecord(record, cached) {
   translationOutput.innerHTML = `
     <div class="translation-result">
       <div class="translation-review-state">${escapeHtml(reviewState)}${cached ? " / cached" : ""}</div>
-      <section class="translation-section translation-extra">
+      ${translationJumpNav(record)}
+      <section class="translation-section translation-extra" data-translation-section="source">
         <h3>Original source</h3>
         <p>${escapeHtml(cleanText(record.source_text_excerpt || selectedSentence?.text || ""))}</p>
       </section>
-      <section class="translation-section translation-section-primary">
+      <section class="translation-section translation-section-primary" data-translation-section="translation">
         <h3>Translation</h3>
         <p class="translation-primary">${escapeHtml(cleanText(record.translation || ""))}</p>
       </section>
@@ -604,6 +858,7 @@ function draftNoteFromTranslation() {
   const existingTags = noteTags.value.split(",").map((item) => item.trim()).filter(Boolean);
   const mergedTags = Array.from(new Set([...existingTags, "ai-translation"]));
   noteTags.value = mergedTags.join(", ");
+  saveNoteDraft();
   setStudyPanel("notes");
   setStudyPanelExpanded(true);
   noteText.focus();
@@ -626,6 +881,92 @@ function translationStudyCardText(record) {
     lines.push("Commentary", commentary);
   }
   return lines.join("\n");
+}
+
+function noteDraftPayload() {
+  return {
+    note: noteText.value,
+    tags: noteTags.value,
+    locked_target: lockedNoteTarget ? targetSnapshot(lockedNoteTarget) : null,
+    updated_at: new Date().toISOString()
+  };
+}
+
+function hasNoteDraftValue(payload) {
+  return Boolean(cleanText(payload.note || "") || cleanText(payload.tags || ""));
+}
+
+function readerSessionStorage() {
+  try {
+    return window.sessionStorage || null;
+  } catch (error) {
+    return null;
+  }
+}
+
+function saveNoteDraft(autoLockTarget = true) {
+  const storage = readerSessionStorage();
+  if (!storage) return;
+  if (autoLockTarget && !lockedNoteTarget && hasNoteDraftValue({ note: noteText.value, tags: noteTags.value })) {
+    lockedNoteTarget = targetSnapshot();
+    updateNoteTargetPreview();
+  }
+  const payload = noteDraftPayload();
+  try {
+    if (hasNoteDraftValue(payload)) {
+      storage.setItem(NOTE_DRAFT_STORAGE_KEY, JSON.stringify(payload));
+    } else {
+      storage.removeItem(NOTE_DRAFT_STORAGE_KEY);
+    }
+  } catch (error) {
+    return;
+  }
+}
+
+function scheduleNoteDraftSave() {
+  if (!lockedNoteTarget && hasNoteDraftValue({ note: noteText.value, tags: noteTags.value })) {
+    lockedNoteTarget = targetSnapshot();
+    updateNoteTargetPreview();
+  }
+  window.clearTimeout(noteDraftSaveTimer);
+  noteDraftSaveTimer = window.setTimeout(saveNoteDraft, 180);
+}
+
+function restoreNoteDraft() {
+  const storage = readerSessionStorage();
+  if (!storage) return;
+  try {
+    const rawDraft = storage.getItem(NOTE_DRAFT_STORAGE_KEY);
+    if (!rawDraft) return;
+    const draft = JSON.parse(rawDraft);
+    if (!hasNoteDraftValue(draft)) return;
+    if (draft.locked_target) {
+      lockedNoteTarget = targetSnapshot(draft.locked_target);
+      updateNoteTargetPreview();
+    }
+    if (!noteText.value) {
+      noteText.value = draft.note || "";
+    }
+    if (!noteTags.value) {
+      noteTags.value = draft.tags || "";
+    }
+    if (hasNoteDraftValue(noteDraftPayload())) {
+      noteStatus.textContent = "Note draft restored.";
+    }
+  } catch (error) {
+    return;
+  }
+}
+
+function clearNoteDraft() {
+  window.clearTimeout(noteDraftSaveTimer);
+  const storage = readerSessionStorage();
+  if (!storage) return;
+  try {
+    storage.removeItem(NOTE_DRAFT_STORAGE_KEY);
+  } catch (error) {
+    return;
+  }
 }
 
 async function copyStudyCard() {
@@ -674,6 +1015,65 @@ async function copyText(value) {
   }
 }
 
+function noteTimestamp(note) {
+  const value = note.updated_at || note.created_at || "";
+  const time = Date.parse(value);
+  return Number.isFinite(time) ? time : 0;
+}
+
+function sortedNotes(notes) {
+  const items = Array.isArray(notes) ? [...notes] : [];
+  const sortMode = noteSort ? noteSort.value : "recent";
+  if (sortMode === "target") {
+    return items.sort((a, b) => {
+      const labelCompare = cleanText(a.target_label || "").localeCompare(cleanText(b.target_label || ""));
+      return labelCompare || noteTimestamp(b) - noteTimestamp(a);
+    });
+  }
+  return items.sort((a, b) => noteTimestamp(b) - noteTimestamp(a));
+}
+
+function renderNotesPending() {
+  notesList.setAttribute("aria-busy", "true");
+  if (noteListSummary) {
+    noteListSummary.textContent = "Loading notes...";
+  }
+  notesList.innerHTML = `
+    <div class="notes-list-pending" aria-hidden="true">
+      <span class="notes-list-skeleton wide"></span>
+      <span class="notes-list-skeleton"></span>
+      <span class="notes-list-skeleton short"></span>
+    </div>`;
+}
+
+function renderNotesList(notes) {
+  const items = sortedNotes(notes);
+  notesList.setAttribute("aria-busy", "false");
+  if (noteListSummary) {
+    const filter = noteFilter ? noteFilter.value.trim() : "";
+    const sortLabel = noteSort && noteSort.value === "target" ? "target order" : "recent first";
+    noteListSummary.textContent = `${items.length} notes${filter ? " matching filter" : ""} / ${sortLabel}`;
+  }
+  if (!items.length) {
+    notesList.innerHTML = '<div class="notes-empty">No notes found for this work.</div>';
+    return;
+  }
+  notesList.innerHTML = items.map((note) => {
+    const tags = (note.tags || []).join(", ");
+    const updated = note.updated_at ? ` / edited ${cleanText(note.updated_at)}` : "";
+    const recentClass = note.id === recentlyChangedNoteId ? " is-recent" : "";
+    return `<div class="note-item${recentClass}" data-note-id="${escapeHtml(note.id)}" data-note-tags="${escapeHtml(tags)}">
+      <strong>${escapeHtml(cleanText(note.target_label))}</strong><br>
+      <div class="note-text">${escapeHtml(cleanText(note.note))}</div>
+      <small>${escapeHtml(cleanText(tags))}${escapeHtml(updated)}</small>
+      <div class="note-actions">
+        <button type="button" data-action="edit-note" data-note-id="${escapeHtml(note.id)}">Edit</button>
+        <button type="button" data-action="delete-note" data-note-id="${escapeHtml(note.id)}">Delete</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
 async function loadNotes() {
   const corpusId = researchData.corpus_id || researchData.author_id || "";
   const workId = researchData.work_id || "";
@@ -684,26 +1084,12 @@ async function loadNotes() {
   } else if (filter) {
     params.set("q", filter);
   }
+  renderNotesPending();
   try {
     const response = await fetch(`/api/notes?${params}`);
     if (!response.ok) return;
     const payload = await response.json();
-    notesList.innerHTML = payload.notes.length
-      ? payload.notes.map((note) => {
-        const tags = (note.tags || []).join(", ");
-        const updated = note.updated_at ? ` / edited ${cleanText(note.updated_at)}` : "";
-        const recentClass = note.id === recentlyChangedNoteId ? " is-recent" : "";
-        return `<div class="note-item${recentClass}" data-note-id="${escapeHtml(note.id)}" data-note-tags="${escapeHtml(tags)}">
-          <strong>${escapeHtml(cleanText(note.target_label))}</strong><br>
-          <div class="note-text">${escapeHtml(cleanText(note.note))}</div>
-          <small>${escapeHtml(cleanText(tags))}${escapeHtml(updated)}</small>
-          <div class="note-actions">
-            <button type="button" data-action="edit-note" data-note-id="${escapeHtml(note.id)}">Edit</button>
-            <button type="button" data-action="delete-note" data-note-id="${escapeHtml(note.id)}">Delete</button>
-          </div>
-        </div>`;
-      }).join("")
-      : "";
+    renderNotesList(payload.notes || []);
     if (recentlyChangedNoteId) {
       const recentNote = Array.from(notesList.querySelectorAll(".note-item"))
         .find((item) => item.dataset.noteId === recentlyChangedNoteId);
@@ -712,6 +1098,10 @@ async function loadNotes() {
       }
     }
   } catch (error) {
+    notesList.setAttribute("aria-busy", "false");
+    if (noteListSummary) {
+      noteListSummary.textContent = "Notes unavailable.";
+    }
     noteStatus.textContent = "Could not load notes.";
   }
 }
@@ -776,9 +1166,30 @@ copyStudyCardButton.addEventListener("click", copyStudyCard);
 draftTranslationNoteButton.addEventListener("click", draftNoteFromTranslation);
 readingModeButton.addEventListener("click", () => setTranslationMode("reading"));
 studyModeButton.addEventListener("click", () => setTranslationMode("study"));
+lockNoteTargetButton.addEventListener("click", () => {
+  if (lockedNoteTarget) {
+    unlockNoteTarget();
+  } else {
+    lockCurrentNoteTarget();
+  }
+});
 if (studyPanelToggle && studyPage) {
   studyPanelToggle.addEventListener("click", () => {
+    if (ignoreNextStudyPanelToggleClick) {
+      ignoreNextStudyPanelToggleClick = false;
+      return;
+    }
     setStudyPanelExpanded(!studyPage.classList.contains("is-expanded"), true);
+  });
+  studyPanelToggle.addEventListener("pointerdown", beginStudyPanelDrag);
+  studyPanelToggle.addEventListener("pointermove", updateStudyPanelDrag);
+  studyPanelToggle.addEventListener("pointerup", finishStudyPanelDrag);
+  studyPanelToggle.addEventListener("pointercancel", cancelStudyPanelDrag);
+}
+
+if (studyPanelScrim) {
+  studyPanelScrim.addEventListener("click", () => {
+    setStudyPanelExpanded(false, true);
   });
 }
 
@@ -802,6 +1213,11 @@ if (sentenceContext) {
 }
 
 translationOutput.addEventListener("click", (event) => {
+  const jump = event.target.closest("[data-translation-jump]");
+  if (jump) {
+    scrollTranslationSectionIntoView(jump.dataset.translationJump || "");
+    return;
+  }
   const toggle = event.target.closest(".commentary-toggle");
   if (!toggle) return;
   const commentary = toggle.closest(".translation-commentary");
@@ -866,6 +1282,11 @@ document.addEventListener("keydown", (event) => {
     target.isContentEditable
   );
   if (isTyping || event.altKey || event.ctrlKey || event.metaKey) return;
+  if (event.key === "Escape" && isMobileStudyLayout() && studyPage?.classList.contains("is-expanded")) {
+    event.preventDefault();
+    setStudyPanelExpanded(false, true);
+    return;
+  }
   if (
     (event.key === "ArrowDown" || event.key === "ArrowUp" || event.key === "j" || event.key === "k") &&
     target?.closest?.(".study-page")
@@ -885,7 +1306,7 @@ document.addEventListener("keydown", (event) => {
 noteForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   setActionButtonBusy(noteSaveButton, true);
-  const target = currentTarget();
+  const target = noteTargetForSave();
   const note = document.getElementById("noteText").value.trim();
   const tags = document.getElementById("noteTags").value.split(",").map((item) => item.trim()).filter(Boolean);
   const selection = window.getSelection ? window.getSelection().toString().trim() : "";
@@ -909,7 +1330,9 @@ noteForm.addEventListener("submit", async (event) => {
     if (response.ok) {
       const payload = await response.json().catch(() => ({}));
       recentlyChangedNoteId = payload.note?.id || "";
+      clearNoteDraft();
       noteForm.reset();
+      unlockNoteTarget(false);
       noteStatus.textContent = "Note saved and highlighted.";
       await loadNotes();
     } else {
@@ -928,6 +1351,15 @@ if (noteFilter) {
     noteFilter._timer = window.setTimeout(loadNotes, 180);
   });
 }
+
+if (noteSort) {
+  noteSort.addEventListener("change", loadNotes);
+}
+
+[noteText, noteTags].forEach((field) => {
+  if (!field) return;
+  field.addEventListener("input", scheduleNoteDraftSave);
+});
 
 notesList.addEventListener("click", async (event) => {
   const button = event.target.closest("button[data-action]");
@@ -965,13 +1397,14 @@ notesList.addEventListener("click", async (event) => {
 });
 
 window.addEventListener("hashchange", () => {
-  updateCitationPreview();
+  syncTargetDependentViews();
   selectSentenceFromHash();
   updateSentenceControls();
 });
 
 function initializeStudyCompanion() {
   setTranslationMode("reading");
+  restoreNoteDraft();
   setStudyPanelExpanded(storedStudyPanelExpanded());
   setStudyPanel("translation");
   const exportParams = new URLSearchParams({
@@ -990,8 +1423,10 @@ function initializeStudyCompanion() {
     requestSentenceTranslation(false);
   }
   updateSentenceControls();
+  syncTargetDependentViews();
+  updateStudyPanelScrim();
 }
 
-updateCitationPreview();
 initializeStudyCompanion();
+initializeReadingPositionTracker();
 loadNotes();

@@ -36,6 +36,15 @@ def require_contains(text: str, needle: str, label: str) -> None:
     require(needle in text, f"{label} missing {needle!r}")
 
 
+def css_rule_block(css: str, selector: str, label: str) -> str:
+    start = css.find(selector)
+    require(start >= 0, f"{label} missing selector {selector!r}")
+    open_brace = css.find("{", start)
+    close_brace = css.find("}", open_brace)
+    require(open_brace >= 0 and close_brace >= 0, f"{label} malformed selector block {selector!r}")
+    return css[open_brace + 1:close_brace]
+
+
 def check_tokens() -> None:
     tokens = read_site_file(TOKEN_FILE)
     expected_tokens = {
@@ -248,6 +257,12 @@ def check_work_source_bundle_ui() -> None:
     script = read_site_file("assets/reader-work.js")
     for needle in [
         "function sourceBundleUrl",
+        "function targetSnapshot",
+        "function noteTargetForSave",
+        "function updateNoteTargetPreview",
+        "function lockCurrentNoteTarget",
+        "function unlockNoteTarget",
+        "function syncTargetDependentViews",
         'new Set(["segment", "section", "paragraph", "verse"])',
         "/api/source-target",
         "/api/sentence-translation",
@@ -264,13 +279,32 @@ def check_work_source_bundle_ui() -> None:
         "setActionButtonBusy",
         "Could not save note.",
         "renderCommentary",
+        "translationJumpNav",
+        "scrollTranslationSectionIntoView",
+        "data-translation-jump",
+        "data-translation-section=\"translation\"",
+        "data-translation-section=\"commentary\"",
         "translation-result",
         "translation-section-primary",
         "Show full commentary",
         "recentlyChangedNoteId",
         "Note saved and highlighted.",
         "setStudyPanelExpanded",
+        "updateStudyPanelScrim",
+        "studyPanelScrim",
+        "beginStudyPanelDrag",
+        "updateStudyPanelDrag",
+        "finishStudyPanelDrag",
+        "cancelStudyPanelDrag",
+        "STUDY_PANEL_DRAG_THRESHOLD",
+        "ignoreNextStudyPanelToggleClick",
+        "pointerdown",
+        "pointermove",
+        "pointerup",
+        "pointercancel",
+        'event.key === "Escape"',
         "selectedSentencePositionLabel",
+        "sentencePositionText",
         "studyPanelToggleSummary",
         "updateStudyPanelToggleLabel",
         "translation ready",
@@ -297,6 +331,32 @@ def check_work_source_bundle_ui() -> None:
         "rememberStudyPanelExpanded",
         "updateSentenceContext",
         "sentence-context-item",
+        "readingPosition",
+        "initializeReadingPositionTracker",
+        "IntersectionObserver",
+        "visibleSentenceNodes",
+        "requestAnimationFrame(refreshReadingPosition)",
+        "readingCueTargetLine",
+        "updateReadingPosition(node)",
+        "NOTE_DRAFT_STORAGE_KEY",
+        "noteDraftPayload",
+        "readerSessionStorage",
+        "saveNoteDraft",
+        "locked_target",
+        "restoreNoteDraft",
+        "clearNoteDraft",
+        "sessionStorage",
+        "Note draft restored.",
+        "Note target locked.",
+        "Note target follows selection.",
+        "const target = noteTargetForSave()",
+        "noteSort",
+        "noteListSummary",
+        "function sortedNotes",
+        "function renderNotesPending",
+        "function renderNotesList",
+        "notes-list-skeleton",
+        "No notes found for this work.",
         "copyStudyCard",
         "translationStudyCardText",
         "Clipboard copy failed",
@@ -308,18 +368,31 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common22", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common19", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common29", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common26", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
         "study-page",
         "studyCompanionPanel",
         "studyPanelToggle",
+        "studyPanelScrim",
+        "Close study panel",
         "study-panel-toggle-action",
         "study-panel-toggle-summary",
         "aria-label=\"Full study panel. Select a sentence\"",
         'aria-controls="studyCompanionPanel"',
+        "readingPosition",
+        "Current reading position",
+        "Reading position",
+        "noteTargetPreview",
+        "lockNoteTarget",
+        "Lock target",
+        'aria-pressed="false"',
+        "notes-list-tools",
+        "noteListSummary",
+        "noteSort",
+        "aria-busy=\"false\"",
         "sentenceContext",
         'role="tablist"',
         'role="tab"',
@@ -341,6 +414,14 @@ def check_work_source_bundle_ui() -> None:
         require_contains(template, needle, "templates/work.html")
 
     css = read_site_file("assets/reader-work.css")
+    mobile_css = css.split("@media (max-width: 860px)", maxsplit=1)[1]
+    mobile_page_before = css_rule_block(mobile_css, ".page::before", "assets/reader-work.css mobile block")
+    for needle in [
+        "width: 100%;",
+        "background-size: auto var(--header-portrait-height, 128px);",
+    ]:
+        require_contains(mobile_page_before, needle, ".page::before mobile overflow guard")
+
     for needle in [
         ".reading-desk",
         "grid-template-columns: minmax(0, 1fr) 340px",
@@ -348,6 +429,11 @@ def check_work_source_bundle_ui() -> None:
         ".source-page",
         "padding-right: 20px",
         ".study-page",
+        ".page::before",
+        "background-size: auto var(--header-portrait-height, 128px)",
+        ".study-panel-scrim",
+        ".study-panel-scrim[hidden]",
+        "background: rgba(238, 238, 238, 0.42)",
         "position: sticky;",
         "position: fixed;",
         "top: auto;",
@@ -359,6 +445,8 @@ def check_work_source_bundle_ui() -> None:
         "animation: archive-panel-in 140ms ease-out both",
         ".translation-output.reading-mode .translation-extra",
         ".translation-result",
+        ".translation-jump-nav",
+        ".translation-section.is-jump-target",
         ".translation-section",
         ".translation-section-primary",
         "border-left: 3px solid #b00000",
@@ -378,14 +466,27 @@ def check_work_source_bundle_ui() -> None:
         ".study-panel-toggle-summary",
         "text-overflow: ellipsis",
         ".study-page.is-expanded",
+        ".study-page.is-dragging",
         ".study-page:not(.is-expanded) .study-tabs",
         "env(safe-area-inset-bottom, 0px)",
         "overscroll-behavior: contain",
         "touch-action: pan-y",
+        "touch-action: none",
+        "user-select: none",
         "max(10px, env(safe-area-inset-right, 0px))",
         "max-height: min(72vh, calc(100dvh - 32px))",
         "scroll-margin-block",
         ".sentence-context",
+        ".reading-position",
+        ".reader-sentence.reading-cue",
+        ".note-target-tools",
+        ".note-target-preview",
+        ".note-target-preview.is-locked",
+        ".note-target-lock",
+        ".notes-list-tools",
+        ".note-list-summary",
+        ".notes-list-skeleton",
+        ".notes-empty",
         ".research-card .sentence-context-item",
         "overscroll-behavior: contain",
         "scrollbar-gutter: stable",

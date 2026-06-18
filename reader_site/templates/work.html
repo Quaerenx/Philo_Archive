@@ -6,7 +6,7 @@
   <title>{{TITLE}} / {{CORPUS_TITLE}}</title>
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
-  <link rel="stylesheet" href="/assets/reader-work.css?v=common19">
+  <link rel="stylesheet" href="/assets/reader-work.css?v=common26">
 </head>
 <body class="{{BODY_CLASS}}">
   <div class="page">
@@ -30,6 +30,7 @@
         <section class="source-page" aria-label="Original source">
           <article class="reading-body" dir="{{TEXT_DIRECTION}}" data-headings="{{HEADING_COUNT}}" data-segments="{{SEGMENT_COUNT}}">{{CONTENT}}</article>
         </section>
+        <button type="button" id="studyPanelScrim" class="study-panel-scrim" aria-label="Close study panel" hidden></button>
         <aside id="studyCompanionPanel" class="study-page" aria-label="Study companion">
           <button type="button" id="studyPanelToggle" class="study-panel-toggle" aria-expanded="false" aria-controls="studyCompanionPanel" aria-label="Full study panel. Select a sentence"><span class="study-panel-toggle-action">Full study panel</span><span class="study-panel-toggle-summary">Select a sentence</span></button>
           <nav class="study-tabs" role="tablist" aria-label="Study companion tools" aria-orientation="horizontal">
@@ -48,6 +49,7 @@
                 </div>
               </div>
               <div id="translationTarget" class="translation-target">Select a sentence in the source page.</div>
+              <div id="readingPosition" class="reading-position" aria-label="Current reading position">Reading position</div>
               <div id="sentenceContext" class="sentence-context" aria-label="Selected sentence context" hidden></div>
               <div class="sentence-controls" aria-label="Sentence navigation">
                 <button type="button" id="previousSentence" aria-keyshortcuts="ArrowUp K" title="Previous sentence" disabled>Previous</button>
@@ -68,14 +70,25 @@
           <section id="study-panel-notes" class="study-panel" role="tabpanel" aria-labelledby="study-tab-notes" tabindex="0" data-study-panel="notes" hidden>
             <section class="research-card notes-card">
               <h2>Notes</h2>
+              <div class="note-target-tools">
+                <div id="noteTargetPreview" class="note-target-preview" aria-label="Note target">Note target</div>
+                <button type="button" id="lockNoteTarget" class="note-target-lock" aria-pressed="false">Lock target</button>
+              </div>
               <form id="noteForm">
                 <label>Tags<input id="noteTags" name="tags" autocomplete="off"></label>
                 <label>Note<textarea id="noteText" name="note" required></textarea></label>
                 <button type="submit">Save note</button>
               </form>
               <div id="noteStatus" class="note-status" role="status" aria-live="polite" aria-atomic="true"></div>
-              <label>Filter<input id="noteFilter" name="note_filter" autocomplete="off"></label>
-              <div id="notesList" class="notes-list"></div>
+              <div class="notes-list-tools">
+                <label>Filter<input id="noteFilter" name="note_filter" autocomplete="off"></label>
+                <label>Sort<select id="noteSort" name="note_sort">
+                  <option value="recent">Recent</option>
+                  <option value="target">Target</option>
+                </select></label>
+              </div>
+              <div id="noteListSummary" class="note-list-summary" aria-live="polite"></div>
+              <div id="notesList" class="notes-list" aria-busy="false"></div>
             </section>
           </section>
           <section id="study-panel-citation" class="study-panel" role="tabpanel" aria-labelledby="study-tab-citation" tabindex="0" data-study-panel="citation" hidden>
@@ -95,6 +108,6 @@
     </main>
   </div>
   <script id="researchData" type="application/json">{{RESEARCH_JSON}}</script>
-  <script src="/assets/reader-work.js?v=common22"></script>
+  <script src="/assets/reader-work.js?v=common29"></script>
 </body>
 </html>

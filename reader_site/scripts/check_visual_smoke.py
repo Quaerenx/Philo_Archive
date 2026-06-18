@@ -139,8 +139,10 @@ def check_route_markup(route: str, html: str) -> None:
             "reading-desk",
             "study-tabs",
             "studyPanelToggle",
+            "studyPanelScrim",
             "study-panel-toggle-action",
             "study-panel-toggle-summary",
+            "readingPosition",
             "sentenceContext",
             "previousSentence",
             "nextSentence",
@@ -148,10 +150,14 @@ def check_route_markup(route: str, html: str) -> None:
             "role=\"status\"",
             "aria-busy=\"false\"",
             "noteStatus",
+            "noteTargetPreview",
+            "lockNoteTarget",
+            "noteListSummary",
+            "noteSort",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common19",
-            "reader-work.js?v=common22",
+            "reader-work.css?v=common26",
+            "reader-work.js?v=common29",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
 

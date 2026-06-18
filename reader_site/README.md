@@ -246,6 +246,14 @@ To keep HTML marker validation while recording flaky local browser screenshot fa
 python .\scripts\check_visual_smoke.py --allow-screenshot-failures
 ```
 
+For manual browser QA of the work reader, open a cached sentence such as:
+
+```text
+http://127.0.0.1:8793/work/nietzsche/GM#p-0004.s001
+```
+
+Confirm that the selected sentence loads its cached translation, the Translation/Commentary jump buttons scroll within the study card, the mobile study panel opens/closes with the handle and outside tap, the Notes sort control updates the list summary, and mobile viewports do not create horizontal page overflow.
+
 Check the static pages, representative work page, `/api/health`, and `/api/study` through a temporary local HTTP server with:
 
 ```powershell
