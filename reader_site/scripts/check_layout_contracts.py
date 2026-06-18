@@ -380,6 +380,11 @@ def check_work_source_bundle_ui() -> None:
         "function continueStudy",
         "Review generated",
         "review-generated",
+        "wantsExport",
+        "Export session",
+        "export-session",
+        "Opening study session export.",
+        "window.location.href = exportStudySession.href",
         "need review",
         "All sentences have AI records.",
         "No unstudied sentence after current position.",
@@ -606,7 +611,7 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common69", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common70", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common56", "templates/work.html")
     for needle in [
         "reading-desk",

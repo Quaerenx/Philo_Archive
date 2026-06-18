@@ -427,16 +427,26 @@ function updateStudyProgress() {
   setStudyProgress(`Study progress: ${studied} of ${total} sentences have AI records / ${remaining} remaining${reviewText}`, state);
   if (continueStudyButton) {
     const wantsReview = remaining === 0 && pendingReview > 0;
+    const wantsExport = remaining === 0 && pendingReview === 0 && stateCounts.reviewed > 0;
     const nextIndex = wantsReview ? nextGeneratedSentenceIndex() : continueStudySentenceIndex();
-    continueStudyButton.textContent = wantsReview ? "Review generated" : "Continue study";
-    continueStudyButton.dataset.studyAction = wantsReview ? "review-generated" : "continue";
-    continueStudyButton.disabled = nextIndex < 0;
-    continueStudyButton.title = nextIndex >= 0
-      ? `${wantsReview ? "Review" : "Continue at"} ${sentencePositionText(sentenceNodeId(sentenceNodes[nextIndex]))}`
-      : (wantsReview ? "No generated translations need review" : "All sentences have AI records");
-    continueStudyButton.setAttribute("aria-label", nextIndex >= 0
-      ? `${wantsReview ? "Review generated translation at" : "Continue study at"} ${sentencePositionText(sentenceNodeId(sentenceNodes[nextIndex]))}`
-      : (wantsReview ? "No generated translations need review" : "Study progress complete"));
+    const nextLabel = nextIndex >= 0 ? sentencePositionText(sentenceNodeId(sentenceNodes[nextIndex])) : "";
+    if (wantsExport) {
+      continueStudyButton.textContent = "Export session";
+      continueStudyButton.dataset.studyAction = "export-session";
+      continueStudyButton.disabled = false;
+      continueStudyButton.title = "Export reviewed notes and reviewed Gemma translations";
+      continueStudyButton.setAttribute("aria-label", "Export reviewed study session");
+    } else {
+      continueStudyButton.textContent = wantsReview ? "Review generated" : "Continue study";
+      continueStudyButton.dataset.studyAction = wantsReview ? "review-generated" : "continue";
+      continueStudyButton.disabled = nextIndex < 0;
+      continueStudyButton.title = nextIndex >= 0
+        ? `${wantsReview ? "Review" : "Continue at"} ${nextLabel}`
+        : (wantsReview ? "No generated translations need review" : "All sentences have AI records");
+      continueStudyButton.setAttribute("aria-label", nextIndex >= 0
+        ? `${wantsReview ? "Review generated translation at" : "Continue study at"} ${nextLabel}`
+        : (wantsReview ? "No generated translations need review" : "Study progress complete"));
+    }
   }
 }
 
@@ -1230,6 +1240,15 @@ function navigateToNextUnstudiedSentence() {
 
 function continueStudy() {
   const action = continueStudyButton?.dataset.studyAction || "continue";
+  if (action === "export-session") {
+    if (exportStudySession && exportStudySession.href) {
+      setTranslationStatus("Opening study session export.");
+      window.location.href = exportStudySession.href;
+    } else {
+      setTranslationStatus("Study session export is unavailable.", true);
+    }
+    return;
+  }
   const nextIndex = action === "review-generated"
     ? nextGeneratedSentenceIndex()
     : continueStudySentenceIndex();
