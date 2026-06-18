@@ -258,6 +258,7 @@ def check_work_source_bundle_ui() -> None:
     for needle in [
         "function sourceBundleUrl",
         "function targetSnapshot",
+        "function selectedSentenceTargetSnapshot",
         "function noteTargetForSave",
         "function updateNoteTargetPreview",
         "function lockCurrentNoteTarget",
@@ -338,6 +339,12 @@ def check_work_source_bundle_ui() -> None:
         "requestAnimationFrame(refreshReadingPosition)",
         "readingCueTargetLine",
         "updateReadingPosition(node)",
+        "function renderTranslationTarget",
+        "function selectedSentenceIsVisible",
+        "function updateTranslationTargetViewState",
+        "translation-target-excerpt",
+        "data-selected-source-jump",
+        "Source off screen",
         "NOTE_DRAFT_STORAGE_KEY",
         "noteDraftPayload",
         "readerSessionStorage",
@@ -360,6 +367,12 @@ def check_work_source_bundle_ui() -> None:
         "notes-list-skeleton",
         "No notes found for this work.",
         "copyStudyCard",
+        "function translationNoteDraftText",
+        "Generated translation & commentary",
+        "Original source",
+        "Korean translation",
+        "Translation appended to Notes.",
+        "noteText.setSelectionRange",
         "translationStudyCardText",
         "Clipboard copy failed",
         'target?.closest?.(".study-page")',
@@ -370,8 +383,8 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common30", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common27", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common34", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common30", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -446,6 +459,11 @@ def check_work_source_bundle_ui() -> None:
         ".study-panel.active",
         "animation: archive-panel-in 140ms ease-out both",
         ".translation-output.reading-mode .translation-extra",
+        ".translation-target-main",
+        ".translation-target-status",
+        ".translation-target-excerpt",
+        ".translation-target.is-source-away",
+        ".translation-target button",
         ".translation-result",
         ".translation-jump-nav",
         ".translation-section.is-jump-target",
@@ -456,7 +474,12 @@ def check_work_source_bundle_ui() -> None:
         "line-height: 1.62",
         "line-height: 1.72",
         ".translation-loading",
+        ".translation-study-skeleton",
+        ".translation-skeleton-block",
+        ".translation-skeleton-heading",
         ".translation-skeleton-line",
+        ".translation-card.is-loading::before",
+        "@keyframes archive-loading-rail",
         ".research-card button.is-working",
         ".translation-commentary.is-collapsed",
         ".commentary-toggle",

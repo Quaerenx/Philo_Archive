@@ -263,6 +263,58 @@ function sentencePositionText(sentenceId) {
   return index >= 0 ? `Sentence ${index + 1} of ${sentenceNodes.length}` : sentenceId;
 }
 
+function selectedSentenceNode() {
+  return selectedSentence ? document.getElementById(selectedSentence.sentenceId) : null;
+}
+
+function selectedSentenceIsVisible() {
+  const node = selectedSentenceNode();
+  if (!node) return false;
+  const rect = node.getBoundingClientRect();
+  const safeTop = 0;
+  const safeBottom = isMobileStudyLayout() ? mobileSentenceSafeBottom() : window.innerHeight;
+  return rect.bottom > safeTop && rect.top < safeBottom;
+}
+
+function updateTranslationTargetViewState() {
+  if (!translationTarget || !selectedSentence) return;
+  const sourceVisible = selectedSentenceIsVisible();
+  translationTarget.classList.toggle("is-source-visible", sourceVisible);
+  translationTarget.classList.toggle("is-source-away", !sourceVisible);
+  const status = translationTarget.querySelector("[data-selected-source-status]");
+  if (status) {
+    status.textContent = sourceVisible ? "Source in view" : "Source off screen";
+  }
+  const jumpButton = translationTarget.querySelector("[data-selected-source-jump]");
+  if (jumpButton) {
+    jumpButton.textContent = sourceVisible ? "Center" : "Show source";
+    jumpButton.setAttribute(
+      "aria-label",
+      `${sourceVisible ? "Center" : "Show"} selected source sentence ${selectedSentence.sentenceId}`
+    );
+  }
+}
+
+function renderTranslationTarget() {
+  if (!translationTarget) return;
+  if (!selectedSentence) {
+    translationTarget.textContent = "Select a sentence in the source page.";
+    translationTarget.classList.remove("is-source-visible", "is-source-away");
+    return;
+  }
+  const position = selectedSentencePositionLabel();
+  const sourceText = cleanText(selectedSentence.text || "");
+  translationTarget.innerHTML = `
+    <div class="translation-target-main">
+      <span class="translation-target-label">${escapeHtml(position)}</span>
+      <strong class="translation-target-id">${escapeHtml(selectedSentence.sentenceId)}</strong>
+      <span class="translation-target-status" data-selected-source-status></span>
+      <p class="translation-target-excerpt" title="${escapeHtml(sourceText)}">${escapeHtml(sourceText)}</p>
+    </div>
+    <button type="button" data-selected-source-jump>Show source</button>`;
+  updateTranslationTargetViewState();
+}
+
 function readingCueTargetLine() {
   if (isMobileStudyLayout()) {
     return Math.max(120, window.innerHeight * 0.34);
@@ -303,6 +355,7 @@ function refreshReadingPosition() {
   if (bestNode) {
     updateReadingPosition(bestNode);
   }
+  updateTranslationTargetViewState();
 }
 
 function scheduleReadingPositionRefresh() {
@@ -402,6 +455,17 @@ function targetSnapshot(target = currentTarget()) {
     type: target.type || "work",
     url: target.url || location.href
   };
+}
+
+function selectedSentenceTargetSnapshot() {
+  if (!selectedSentence) return targetSnapshot();
+  const baseUrl = location.origin + location.pathname + location.search;
+  return targetSnapshot({
+    id: selectedSentence.sentenceId,
+    label: `${selectedSentencePositionLabel()} / ${selectedSentence.sentenceId}`,
+    type: "sentence",
+    url: `${baseUrl}#${encodeURIComponent(selectedSentence.sentenceId)}`
+  });
 }
 
 function noteTargetForSave() {
@@ -522,9 +586,7 @@ function selectSentence(node, updateHash = true) {
   if (!sameSentence) {
     selectedTranslationRecord = null;
   }
-  const index = sentenceIndex(sentence.sentenceId);
-  const position = index >= 0 ? `Sentence ${index + 1} of ${sentenceNodes.length}` : sentence.sentenceId;
-  translationTarget.textContent = `${position} / ${sentence.sentenceId}`;
+  renderTranslationTarget();
   updateSentenceContext();
   updateSentenceControls();
   updateStudyPanelToggleLabel();
@@ -691,10 +753,18 @@ function renderTranslationPending(regenerate = false) {
       <span>${escapeHtml(actionLabel)}</span>
     </div>
     <p class="translation-pending-source">${escapeHtml(cleanText(selectedSentence?.text || ""))}</p>
-    <div class="translation-skeleton" aria-hidden="true">
-      <span class="translation-skeleton-line wide"></span>
-      <span class="translation-skeleton-line"></span>
-      <span class="translation-skeleton-line short"></span>
+    <div class="translation-skeleton translation-study-skeleton" aria-hidden="true">
+      <div class="translation-skeleton-block primary">
+        <span class="translation-skeleton-heading"></span>
+        <span class="translation-skeleton-line wide"></span>
+        <span class="translation-skeleton-line"></span>
+      </div>
+      <div class="translation-skeleton-block commentary">
+        <span class="translation-skeleton-heading short"></span>
+        <span class="translation-skeleton-line wide"></span>
+        <span class="translation-skeleton-line"></span>
+        <span class="translation-skeleton-line short"></span>
+      </div>
     </div>`;
   updateSentenceControls();
 }
@@ -843,26 +913,47 @@ async function updateTranslationReview(reviewState) {
   }
 }
 
-function draftNoteFromTranslation() {
-  if (!selectedTranslationRecord) return;
-  const translation = cleanText(selectedTranslationRecord.translation || "");
-  const commentary = cleanText(selectedTranslationRecord.commentary || selectedTranslationRecord.interpretation || "");
-  const parts = [];
+function translationNoteDraftText(record) {
+  if (!record) return "";
+  const source = cleanText(record.source_text_excerpt || selectedSentence?.text || "");
+  const translation = cleanText(record.translation || "");
+  const commentary = cleanText(record.commentary || record.interpretation || "");
+  const lines = [
+    "Generated translation & commentary",
+    `Target: ${selectedSentencePositionLabel()} / ${selectedSentence?.sentenceId || ""}`
+  ];
+  if (source) {
+    lines.push("", "Original source", source);
+  }
   if (translation) {
-    parts.push(`Translation:\n${translation}`);
+    lines.push("", "Korean translation", translation);
   }
   if (commentary) {
-    parts.push(`Commentary:\n${commentary}`);
+    lines.push("", "Commentary", commentary);
   }
-  noteText.value = parts.join("\n\n");
+  return lines.join("\n");
+}
+
+function draftNoteFromTranslation() {
+  if (!selectedTranslationRecord) return;
+  const draftText = translationNoteDraftText(selectedTranslationRecord);
+  if (!draftText) return;
+  const existingNote = noteText.value.trim();
+  noteText.value = existingNote ? `${existingNote}\n\n---\n\n${draftText}` : draftText;
   const existingTags = noteTags.value.split(",").map((item) => item.trim()).filter(Boolean);
   const mergedTags = Array.from(new Set([...existingTags, "ai-translation"]));
   noteTags.value = mergedTags.join(", ");
+  lockedNoteTarget = selectedSentenceTargetSnapshot();
+  updateNoteTargetPreview();
   saveNoteDraft();
   setStudyPanel("notes");
   setStudyPanelExpanded(true);
   noteText.focus();
-  setTranslationStatus("Translation drafted into Notes.");
+  if (noteText.setSelectionRange) {
+    const noteEnd = noteText.value.length;
+    noteText.setSelectionRange(noteEnd, noteEnd);
+  }
+  setTranslationStatus(existingNote ? "Translation appended to Notes." : "Translation drafted into Notes.");
 }
 
 function translationStudyCardText(record) {
@@ -1223,6 +1314,18 @@ if (sentenceContext) {
     if (!wasSelected || !selectedTranslationRecord) {
       requestSentenceTranslation(false);
     }
+  });
+}
+
+if (translationTarget) {
+  translationTarget.addEventListener("click", (event) => {
+    const jumpButton = event.target.closest("[data-selected-source-jump]");
+    if (!jumpButton || !selectedSentence) return;
+    const node = selectedSentenceNode();
+    if (!node) return;
+    scrollSentenceIntoView(node);
+    updateReadingPosition(node);
+    updateTranslationTargetViewState();
   });
 }
 
