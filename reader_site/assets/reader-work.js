@@ -1178,12 +1178,21 @@ function focusNoteComposer() {
   window.requestAnimationFrame(focus);
 }
 
+function noteAlreadyIncludesDraft(draftText) {
+  const normalize = (value) => String(value || "").replace(/\r\n?/g, "\n").trim();
+  const draft = normalize(draftText);
+  return Boolean(draft && normalize(noteText.value).includes(draft));
+}
+
 function draftNoteFromTranslation() {
   if (!selectedTranslationRecord) return;
   const draftText = translationNoteDraftText(selectedTranslationRecord);
   if (!draftText) return;
   const existingNote = noteText.value.trim();
-  noteText.value = existingNote ? `${existingNote}\n\n---\n\n${draftText}` : draftText;
+  const alreadyDrafted = noteAlreadyIncludesDraft(draftText);
+  if (!alreadyDrafted) {
+    noteText.value = existingNote ? `${existingNote}\n\n---\n\n${draftText}` : draftText;
+  }
   const existingTags = noteTags.value.split(",").map((item) => item.trim()).filter(Boolean);
   const mergedTags = Array.from(new Set([...existingTags, "ai-translation"]));
   noteTags.value = mergedTags.join(", ");
@@ -1193,6 +1202,11 @@ function draftNoteFromTranslation() {
   setStudyPanel("notes");
   setStudyPanelExpanded(true);
   focusNoteComposer();
+  if (alreadyDrafted) {
+    noteStatus.textContent = "This translation is already in the note. Review and save.";
+    setTranslationStatus("Translation is already in Notes.");
+    return;
+  }
   noteStatus.textContent = existingNote ? "Translation appended to this note. Review and save." : "Translation drafted into this note. Review and save.";
   setTranslationStatus(existingNote ? "Translation appended to Notes." : "Translation drafted into Notes.");
 }

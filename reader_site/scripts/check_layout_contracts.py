@@ -485,6 +485,9 @@ def check_work_source_bundle_ui() -> None:
         "copyStudyCard",
         "function translationNoteDraftText",
         "function focusNoteComposer",
+        "function noteAlreadyIncludesDraft",
+        "This translation is already in the note. Review and save.",
+        "Translation is already in Notes.",
         "noteForm.scrollIntoView",
         "preventScroll: isMobileStudyLayout()",
         "Generated translation & commentary",
@@ -510,7 +513,7 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common48", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common49", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common40", "templates/work.html")
     for needle in [
         "reading-desk",
