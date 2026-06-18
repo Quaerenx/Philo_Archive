@@ -60,6 +60,8 @@ let translationElapsedTimer = 0;
 let translationStartedAt = 0;
 let translationRevealTimer = 0;
 let sentenceRevealTimer = 0;
+let translationReviewFlashTimer = 0;
+let sentenceReviewFlashTimer = 0;
 let translationSentenceStates = new Map();
 let translationSentenceStatesLoaded = false;
 let gemmaRuntimeCheckController = null;
@@ -91,6 +93,11 @@ const TRANSLATION_STATE_LABELS = {
   generated: "Generated translation",
   reviewed: "Reviewed translation",
   rejected: "Rejected translation"
+};
+const TRANSLATION_REVIEW_CHIP_LABELS = {
+  generated: "Needs review",
+  reviewed: "Reviewed",
+  rejected: "Rejected"
 };
 const TRANSLATION_STATE_SHORT = {
   generated: "AI",
@@ -462,6 +469,34 @@ function normalizedTranslationReviewState(value) {
   return TRANSLATION_STATE_LABELS[state] ? state : "generated";
 }
 
+function applySentenceTranslationState(item, flash = false) {
+  const sentenceId = cleanText(item && (item.sentence_id || item.target_id));
+  if (!sentenceId) return false;
+  const node = document.getElementById(sentenceId);
+  if (!node || !node.classList.contains("reader-sentence")) return false;
+  const reviewState = normalizedTranslationReviewState(item.review_state);
+  const label = TRANSLATION_STATE_LABELS[reviewState];
+  translationSentenceStates.set(sentenceId, {
+    reviewState,
+    label,
+    recordId: cleanText(item.record_id || item.id || ""),
+    updatedAt: cleanText(item.updated_at || item.reviewed_at || item.generated_at || "")
+  });
+  if (!Object.prototype.hasOwnProperty.call(node.dataset, "originalTitle")) {
+    node.dataset.originalTitle = node.getAttribute("title") || "";
+  }
+  node.classList.add("has-translation-state");
+  node.dataset.translationState = reviewState;
+  node.dataset.translationStateShort = TRANSLATION_STATE_SHORT[reviewState];
+  node.dataset.translationStateLabel = label;
+  const originalTitle = node.dataset.originalTitle;
+  node.setAttribute("title", `${originalTitle ? `${originalTitle} / ` : ""}${label}`);
+  if (flash) {
+    flashSentenceReviewState(node, reviewState);
+  }
+  return true;
+}
+
 function clearSentenceTranslationStates(markLoaded = false) {
   translationSentenceStates = new Map();
   translationSentenceStatesLoaded = markLoaded;
@@ -489,27 +524,7 @@ function applySentenceTranslationStates(states) {
   translationSentenceStatesLoaded = true;
   if (!Array.isArray(states)) return;
   states.forEach((item) => {
-    const sentenceId = cleanText(item && item.sentence_id);
-    if (!sentenceId) return;
-    const node = document.getElementById(sentenceId);
-    if (!node || !node.classList.contains("reader-sentence")) return;
-    const reviewState = normalizedTranslationReviewState(item.review_state);
-    const label = TRANSLATION_STATE_LABELS[reviewState];
-    translationSentenceStates.set(sentenceId, {
-      reviewState,
-      label,
-      recordId: cleanText(item.record_id || ""),
-      updatedAt: cleanText(item.updated_at || "")
-    });
-    if (!Object.prototype.hasOwnProperty.call(node.dataset, "originalTitle")) {
-      node.dataset.originalTitle = node.getAttribute("title") || "";
-    }
-    node.classList.add("has-translation-state");
-    node.dataset.translationState = reviewState;
-    node.dataset.translationStateShort = TRANSLATION_STATE_SHORT[reviewState];
-    node.dataset.translationStateLabel = label;
-    const originalTitle = node.dataset.originalTitle;
-    node.setAttribute("title", `${originalTitle ? `${originalTitle} / ` : ""}${label}`);
+    applySentenceTranslationState(item, false);
   });
   updateStudyProgress();
   updateSentenceControls();
@@ -1317,15 +1332,43 @@ function translationResultToolbar(record, cached, reviewState) {
   const targetLabel = selectedSentence
     ? selectedSentencePositionLabel()
     : cleanText(record.sentence_id || "Selected sentence");
-  const stateLabel = `${cleanText(reviewState || "generated")}${cached ? " / cached" : " / generated"}`;
+  const normalizedReviewState = normalizedTranslationReviewState(reviewState);
+  const stateLabel = TRANSLATION_REVIEW_CHIP_LABELS[normalizedReviewState];
+  const sourceLabel = cached ? "Cached" : "Generated";
   return `<div class="translation-result-toolbar">
     <div class="translation-result-meta">
       <span class="translation-result-kicker">Selected sentence</span>
       <strong class="translation-result-target">${escapeHtml(targetLabel)}</strong>
-      <span class="translation-review-state">${escapeHtml(stateLabel)}</span>
+      <span class="translation-review-state" data-review-state="${escapeHtml(normalizedReviewState)}">
+        <span>${escapeHtml(stateLabel)}</span>
+        <small>${escapeHtml(sourceLabel)}</small>
+      </span>
     </div>
     ${translationJumpNav(record)}
   </div>`;
+}
+
+function setTranslationReviewVisualState(reviewState) {
+  if (!translationCard) return;
+  const normalizedReviewState = reviewState ? normalizedTranslationReviewState(reviewState) : "";
+  if (normalizedReviewState) {
+    translationCard.dataset.reviewState = normalizedReviewState;
+  } else {
+    delete translationCard.dataset.reviewState;
+  }
+}
+
+function flashTranslationReviewState(reviewState) {
+  if (!translationCard) return;
+  const normalizedReviewState = normalizedTranslationReviewState(reviewState);
+  window.clearTimeout(translationReviewFlashTimer);
+  translationCard.classList.remove("review-state-changed", "review-state-reviewed", "review-state-rejected", "review-state-generated");
+  void translationCard.offsetWidth;
+  translationCard.classList.add("review-state-changed", `review-state-${normalizedReviewState}`);
+  translationReviewFlashTimer = window.setTimeout(() => {
+    translationCard.classList.remove("review-state-changed", "review-state-reviewed", "review-state-rejected", "review-state-generated");
+    translationReviewFlashTimer = 0;
+  }, prefersReducedMotion() ? 0 : 1450);
 }
 
 function setTranslationBusy(isBusy) {
@@ -1456,6 +1499,7 @@ function scrollTranslationSectionIntoView(sectionName) {
 function renderTranslationPending(regenerate = false) {
   selectedTranslationRecord = null;
   pendingTranslationRegenerate = Boolean(regenerate);
+  setTranslationReviewVisualState("");
   translationOutput.hidden = false;
   translationOutput.classList.toggle("reading-mode", translationMode === "reading");
   translationOutput.classList.toggle("study-mode", translationMode === "study");
@@ -1530,6 +1574,7 @@ function renderTranslationError(message) {
   const isRuntimeError = translationErrorIsRuntime(cleanMessage);
   pendingTranslationRegenerate = false;
   setTranslationBusy(false);
+  setTranslationReviewVisualState("");
   translationOutput.hidden = false;
   resetTranslationOutputScroll();
   translationOutput.innerHTML = `
@@ -1549,6 +1594,7 @@ function renderTranslationError(message) {
 function renderTranslationCancelled(message = "Translation request cancelled.") {
   selectedTranslationRecord = null;
   setTranslationBusy(false);
+  setTranslationReviewVisualState("");
   translationOutput.hidden = false;
   resetTranslationOutputScroll();
   const position = selectedSentence ? selectedSentencePositionLabel() : "selected sentence";
@@ -1568,6 +1614,7 @@ function renderTranslationCancelled(message = "Translation request cancelled.") 
 function renderStudySessionPreviewPending() {
   selectedTranslationRecord = null;
   pendingTranslationRegenerate = false;
+  setTranslationReviewVisualState("");
   translationOutput.hidden = false;
   translationOutput.classList.toggle("reading-mode", false);
   translationOutput.classList.toggle("study-mode", true);
@@ -1682,6 +1729,7 @@ function renderStudySessionPreview(payload) {
   selectedTranslationRecord = null;
   pendingTranslationRegenerate = false;
   setTranslationBusy(false);
+  setTranslationReviewVisualState("");
   translationOutput.hidden = false;
   translationOutput.classList.toggle("reading-mode", false);
   translationOutput.classList.toggle("study-mode", true);
@@ -1719,6 +1767,7 @@ function renderStudySessionPreview(payload) {
 function renderStudySessionPreviewError(message) {
   selectedTranslationRecord = null;
   setTranslationBusy(false);
+  setTranslationReviewVisualState("");
   translationOutput.hidden = false;
   resetTranslationOutputScroll();
   translationOutput.innerHTML = `
@@ -1756,11 +1805,12 @@ async function previewStudySession() {
   }
 }
 
-function renderTranslationRecord(record, cached) {
+function renderTranslationRecord(record, cached, reviewFlashState = "") {
   selectedTranslationRecord = record;
   pendingTranslationRegenerate = false;
-  const reviewState = cleanText(record.review_state || "generated");
+  const reviewState = normalizedTranslationReviewState(record.review_state || "generated");
   setTranslationBusy(false);
+  setTranslationReviewVisualState(reviewState);
   translationOutput.hidden = false;
   translationOutput.classList.toggle("reading-mode", translationMode === "reading");
   translationOutput.classList.toggle("study-mode", translationMode === "study");
@@ -1780,7 +1830,12 @@ function renderTranslationRecord(record, cached) {
       ${optionalCautions(record)}
     </div>
   `;
-  revealFreshTranslationResult(cached);
+  applySentenceTranslationState(record, Boolean(reviewFlashState));
+  if (reviewFlashState) {
+    flashTranslationReviewState(reviewFlashState);
+  } else {
+    revealFreshTranslationResult(cached);
+  }
   syncTranslationModeDensity();
   updateStudyPanelToggleLabel();
   updateSentenceControls();
@@ -1807,6 +1862,19 @@ function revealFreshTranslationResult(cached) {
     sentenceNode.classList.remove("just-studied", "just-loaded-cache");
     sentenceRevealTimer = 0;
   }, prefersReducedMotion() ? 0 : 1700);
+}
+
+function flashSentenceReviewState(node, reviewState) {
+  if (!node) return;
+  const normalizedReviewState = normalizedTranslationReviewState(reviewState);
+  window.clearTimeout(sentenceReviewFlashTimer);
+  node.classList.remove("review-state-changed", "review-state-reviewed", "review-state-rejected", "review-state-generated");
+  void node.offsetWidth;
+  node.classList.add("review-state-changed", `review-state-${normalizedReviewState}`);
+  sentenceReviewFlashTimer = window.setTimeout(() => {
+    node.classList.remove("review-state-changed", "review-state-reviewed", "review-state-rejected", "review-state-generated");
+    sentenceReviewFlashTimer = 0;
+  }, prefersReducedMotion() ? 0 : 1600);
 }
 
 function cancelTranslationRequest() {
@@ -1933,7 +2001,7 @@ async function updateTranslationReview(reviewState) {
       setTranslationStatus(payload.error || "Could not update translation review.", true);
       return;
     }
-    renderTranslationRecord(payload.record, true);
+    renderTranslationRecord(payload.record, true, reviewState);
     loadTranslationRecordsSummary();
     loadStudySessionSummary();
     setTranslationStatus(reviewState === "reviewed" ? "Translation marked reviewed." : "Translation rejected.");

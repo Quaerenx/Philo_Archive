@@ -405,6 +405,8 @@ def check_work_source_bundle_ui() -> None:
         "need review",
         "All sentences have AI records.",
         "No unstudied sentence after current position.",
+        "TRANSLATION_REVIEW_CHIP_LABELS",
+        "function applySentenceTranslationState",
         "function applySentenceTranslationStates",
         "function clearSentenceTranslationStates",
         "data-translation-state-short",
@@ -414,6 +416,11 @@ def check_work_source_bundle_ui() -> None:
         "/api/sentence-translations/summary",
         "AI records:",
         "review_state_counts",
+        "function setTranslationReviewVisualState",
+        "function flashTranslationReviewState",
+        "function flashSentenceReviewState",
+        "translationReviewFlashTimer",
+        "sentenceReviewFlashTimer",
         "exportAllTranslations",
         "exportStudySession",
         "/api/study-session/export",
@@ -643,8 +650,8 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common76", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common62", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common77", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common63", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -742,6 +749,14 @@ def check_work_source_bundle_ui() -> None:
         ".reader-sentence.has-translation-state::after",
         ".reader-sentence[data-translation-state=\"reviewed\"]::after",
         ".reader-sentence[data-translation-state=\"rejected\"]::after",
+        ".reader-sentence.review-state-changed",
+        ".translation-card[data-review-state=\"generated\"]",
+        ".translation-card[data-review-state=\"reviewed\"]",
+        ".translation-card[data-review-state=\"rejected\"]",
+        ".translation-card.review-state-changed",
+        ".translation-review-state[data-review-state=\"generated\"]",
+        ".translation-review-state[data-review-state=\"reviewed\"]",
+        ".translation-review-state[data-review-state=\"rejected\"]",
         "#nextUnstudiedSentence",
         ".study-tabs",
         ".study-tab:focus-visible",
@@ -817,6 +832,10 @@ def check_work_source_bundle_ui() -> None:
         ".translation-card.is-loading::before",
         "@keyframes archive-loading-rail",
         "@keyframes archive-progress-dot",
+        "@keyframes archive-review-confirm",
+        "@keyframes archive-review-reject",
+        "@keyframes archive-sentence-review-confirm",
+        "@keyframes archive-sentence-review-reject",
         ".translation-cancelled",
         ".translation-cancelled button",
         ".translation-runtime-hint",
