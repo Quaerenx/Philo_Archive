@@ -954,9 +954,15 @@ h1 {
 
 .notes-list-tools {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 94px;
+  grid-template-columns: minmax(0, 1fr) auto 94px;
   gap: 8px;
   align-items: end;
+}
+
+.research-card .note-filter-clear {
+  min-height: 24px;
+  margin: 0;
+  white-space: nowrap;
 }
 
 .note-list-summary {

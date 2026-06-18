@@ -474,13 +474,16 @@ def check_work_source_bundle_ui() -> None:
         "Note target follows selection.",
         "const target = noteTargetForSave()",
         "noteSort",
+        "noteFilterClear",
+        "function updateNoteFilterClearState",
+        "Note filter cleared.",
         "noteListSummary",
         "function sortedNotes",
         "function renderNotesPending",
         "function renderNotesList",
         "function revealRecentNote",
         "Recently changed note",
-        "Recently changed note is hidden by the current filter. Clear the filter to show it.",
+        "Recently changed note is hidden by the current filter. Use Clear filter to show it.",
         "recentNote.focus({ preventScroll: true })",
         "function noteTargetHref",
         "Open target",
@@ -517,8 +520,8 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common51", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common41", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common52", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common42", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -541,6 +544,8 @@ def check_work_source_bundle_ui() -> None:
         "notes-list-tools",
         "noteListSummary",
         "noteSort",
+        "noteFilterClear",
+        "Clear filter",
         "aria-busy=\"false\"",
         'aria-describedby="noteStatus"',
         "sentenceContext",
@@ -676,6 +681,7 @@ def check_work_source_bundle_ui() -> None:
         ".note-target-preview.is-locked",
         ".note-target-lock",
         ".notes-list-tools",
+        ".note-filter-clear",
         ".note-list-summary",
         ".notes-list-skeleton",
         ".notes-empty",

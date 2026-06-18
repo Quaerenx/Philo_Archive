@@ -4,6 +4,7 @@ const noteForm = document.getElementById("noteForm");
 const noteStatus = document.getElementById("noteStatus");
 const notesList = document.getElementById("notesList");
 const noteFilter = document.getElementById("noteFilter");
+const noteFilterClear = document.getElementById("noteFilterClear");
 const noteSort = document.getElementById("noteSort");
 const noteListSummary = document.getElementById("noteListSummary");
 const noteTargetPreview = document.getElementById("noteTargetPreview");
@@ -1379,6 +1380,11 @@ function sortedNotes(notes) {
   return items.sort((a, b) => noteTimestamp(b) - noteTimestamp(a));
 }
 
+function updateNoteFilterClearState() {
+  if (!noteFilterClear || !noteFilter) return;
+  noteFilterClear.disabled = !noteFilter.value.trim();
+}
+
 function noteTargetHref(note) {
   const url = cleanText(note.url || "");
   if (url.startsWith("/work/") || url.startsWith("/read?") || url.startsWith("/source?")) {
@@ -1476,7 +1482,7 @@ async function loadNotes() {
       if (recentNote) {
         revealRecentNote(recentNote);
       } else if (filter && noteStatus) {
-        noteStatus.textContent = "Recently changed note is hidden by the current filter. Clear the filter to show it.";
+        noteStatus.textContent = "Recently changed note is hidden by the current filter. Use Clear filter to show it.";
       }
     }
   } catch (error) {
@@ -1763,7 +1769,19 @@ noteForm.addEventListener("submit", async (event) => {
 if (noteFilter) {
   noteFilter.addEventListener("input", () => {
     window.clearTimeout(noteFilter._timer);
+    updateNoteFilterClearState();
     noteFilter._timer = window.setTimeout(loadNotes, 180);
+  });
+  updateNoteFilterClearState();
+}
+
+if (noteFilterClear && noteFilter) {
+  noteFilterClear.addEventListener("click", () => {
+    noteFilter.value = "";
+    updateNoteFilterClearState();
+    noteStatus.textContent = "Note filter cleared.";
+    loadNotes();
+    noteFilter.focus();
   });
 }
 
