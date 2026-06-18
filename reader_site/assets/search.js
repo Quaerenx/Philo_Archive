@@ -156,6 +156,17 @@ function resultKind(label, className) {
   return `<span class="result-kind ${escapeHtml(className)}">${escapeHtml(label)}</span>`;
 }
 
+function resultSummaryNav(groups) {
+  if (!Array.isArray(groups) || groups.length < 2) return "";
+  const links = groups
+    .map((group) => `<a class="result-summary-link" href="#${escapeHtml(group.id)}">
+      <span>${escapeHtml(group.label)}</span>
+      <strong>${Number(group.count || 0).toLocaleString()}</strong>
+    </a>`)
+    .join("");
+  return `<nav class="result-summary-nav" aria-label="Search result groups">${links}</nav>`;
+}
+
 function setSearchBusy(isBusy) {
   form.classList.toggle("is-searching", isBusy);
   resultsEl.setAttribute("aria-busy", isBusy ? "true" : "false");
@@ -267,17 +278,34 @@ function renderResults(payload, query) {
       </article>`;
     })
     .join("");
-  const sections = [];
+  const groups = [];
   if (workMarkup) {
-    sections.push(`<section class="result-group">${resultGroupHeader("Works", workResults.length, "work")}${workMarkup}</section>`);
+    groups.push({
+      id: "search-results-works",
+      label: "Works",
+      count: workResults.length,
+      markup: `<section id="search-results-works" class="result-group">${resultGroupHeader("Works", workResults.length, "work")}${workMarkup}</section>`
+    });
   }
   if (segmentMarkup) {
-    sections.push(`<section class="result-group">${resultGroupHeader("Segments", segmentResults.length, "segment")}${segmentMarkup}</section>`);
+    groups.push({
+      id: "search-results-segments",
+      label: "Segments",
+      count: segmentResults.length,
+      markup: `<section id="search-results-segments" class="result-group">${resultGroupHeader("Segments", segmentResults.length, "segment")}${segmentMarkup}</section>`
+    });
   }
   if (noteMarkup) {
-    sections.push(`<section class="result-group">${resultGroupHeader("Notes", noteResults.length, "note")}${noteMarkup}</section>`);
+    groups.push({
+      id: "search-results-notes",
+      label: "Notes",
+      count: noteResults.length,
+      markup: `<section id="search-results-notes" class="result-group">${resultGroupHeader("Notes", noteResults.length, "note")}${noteMarkup}</section>`
+    });
   }
-  resultsEl.innerHTML = sections.length ? sections.join("") : renderEmptySearch(query);
+  resultsEl.innerHTML = groups.length
+    ? `${resultSummaryNav(groups)}${groups.map((group) => group.markup).join("")}`
+    : renderEmptySearch(query);
 }
 
 async function loadMetadata(corpusId) {

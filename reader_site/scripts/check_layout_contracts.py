@@ -150,8 +150,8 @@ def check_search_ui() -> None:
     script = read_site_file("assets/search.js")
     css = read_site_file("assets/search.css")
     for needle in [
-        "/assets/search.css?v=phase11",
-        "/assets/search.js?v=phase11",
+        "/assets/search.css?v=phase12",
+        "/assets/search.js?v=phase12",
         'id="searchSubmit"',
         'id="searchClear"',
         'id="searchActiveFilters"',
@@ -172,6 +172,10 @@ def check_search_ui() -> None:
         "function removeSearchFilter",
         "function resultGroupHeader",
         "function resultKind",
+        "function resultSummaryNav",
+        "search-results-works",
+        "search-results-segments",
+        "search-results-notes",
         "result-group-count",
         "result-kind",
         "searchClear.addEventListener",
@@ -191,6 +195,8 @@ def check_search_ui() -> None:
         ".active-filters",
         ".active-filters.has-filters",
         ".filter-chip",
+        ".result-summary-nav",
+        ".result-summary-link",
         ".result-group-header",
         ".result-group-count",
         ".result-kind",

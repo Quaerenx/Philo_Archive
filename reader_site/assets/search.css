@@ -228,6 +228,38 @@ h1 {
   margin-top: 14px;
 }
 
+.result-summary-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  padding: 8px;
+  background: #fbfbfb;
+  border: 1px solid #e0e0e0;
+}
+
+.result-summary-link {
+  display: inline-flex;
+  min-height: 26px;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 7px;
+  color: #333;
+  background: #fff;
+  border: 1px solid #d4d4d4;
+}
+
+.result-summary-link:hover,
+.result-summary-link:focus-visible {
+  text-decoration: none;
+  border-color: #999;
+}
+
+.result-summary-link strong {
+  color: #555;
+  font-weight: normal;
+}
+
 .empty-state {
   padding: 14px;
   background: #fbfbfb;
