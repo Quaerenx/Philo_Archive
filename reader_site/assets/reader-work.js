@@ -1958,6 +1958,7 @@ noteForm.addEventListener("submit", async (event) => {
       unlockNoteTarget(false);
       noteStatus.textContent = "Note saved and highlighted.";
       await loadNotes();
+      await loadStudySessionSummary();
     } else {
       noteStatus.textContent = "Could not save note.";
     }
@@ -2016,6 +2017,7 @@ notesList.addEventListener("click", async (event) => {
     if (updatedNote) {
       recentlyChangedNoteId = updatedNote.id || noteId;
       await loadNotes();
+      await loadStudySessionSummary();
     }
     setActionButtonBusy(button, false);
   }
@@ -2029,6 +2031,7 @@ notesList.addEventListener("click", async (event) => {
         recentlyChangedNoteId = "";
       }
       await loadNotes();
+      await loadStudySessionSummary();
     }
     setActionButtonBusy(button, false);
   }
