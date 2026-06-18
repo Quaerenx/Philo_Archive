@@ -377,14 +377,17 @@ def check_work_source_bundle_ui() -> None:
         "Clipboard copy failed",
         'target?.closest?.(".study-page")',
         "activateStudyTabByIndex",
+        "ensureActiveStudyTabVisible",
+        "scrollIntoView({",
+        "inline: \"nearest\"",
         "aria-selected",
         "panel.hidden = !active",
         'event.key === "ArrowRight"',
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common34", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common30", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common35", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common32", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -455,6 +458,11 @@ def check_work_source_bundle_ui() -> None:
         ".reader-sentence.loading",
         ".study-tabs",
         ".study-tab:focus-visible",
+        ".study-tab.active::after",
+        "min-height: 38px",
+        "grid-template-columns: repeat(4, minmax(72px, 1fr))",
+        "overscroll-behavior-x: contain",
+        "scrollbar-width: thin",
         "@keyframes archive-panel-in",
         ".study-panel.active",
         "animation: archive-panel-in 140ms ease-out both",
@@ -494,6 +502,10 @@ def check_work_source_bundle_ui() -> None:
         ".study-page.is-dragging",
         ".study-page:not(.is-expanded) .study-tabs",
         "env(safe-area-inset-bottom, 0px)",
+        "scroll-padding-top: 62px",
+        "scroll-padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px))",
+        ".study-page.is-expanded .study-panel.active",
+        "padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px))",
         "overscroll-behavior: contain",
         "touch-action: pan-y",
         "touch-action: none",

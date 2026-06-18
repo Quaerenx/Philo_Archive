@@ -162,6 +162,10 @@ h1 {
   margin-bottom: 8px;
 }
 
+.study-tab {
+  position: relative;
+}
+
 .study-tab,
 .mode-toggle button {
   min-width: 0;
@@ -1209,6 +1213,8 @@ h1 {
     padding: 10px 10px 0;
     padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
     overflow: auto;
+    scroll-padding-top: 62px;
+    scroll-padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
   }
 
   .study-page.is-dragging {
@@ -1264,8 +1270,38 @@ h1 {
     position: sticky;
     top: 0;
     z-index: 2;
-    padding-bottom: 8px;
+    grid-template-columns: repeat(4, minmax(72px, 1fr));
+    gap: 6px;
+    margin: 0 -2px 10px;
+    padding: 0 2px 10px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
     background: #fff;
+    border-bottom: 1px solid #eeeeee;
+    scrollbar-width: thin;
+  }
+
+  .study-page.is-expanded .study-panel.active {
+    padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .study-tab {
+    min-height: 38px;
+    padding: 5px 4px 6px;
+  }
+
+  .study-tab.active {
+    border-color: #b00000;
+  }
+
+  .study-tab.active::after {
+    position: absolute;
+    right: 8px;
+    bottom: 4px;
+    left: 8px;
+    height: 2px;
+    background: #b00000;
+    content: "";
   }
 
   .translation-card-header {
@@ -1278,6 +1314,11 @@ h1 {
 
   .translation-output {
     max-height: 32vh;
+    padding-bottom: 14px;
+  }
+
+  .reviewed-export-link {
+    margin-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
   }
 
   .note-target-tools {

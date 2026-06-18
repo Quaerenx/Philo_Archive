@@ -74,11 +74,15 @@ function escapeHtml(value) {
 }
 
 function setStudyPanel(name, focusTab = false) {
+  let activeTab = null;
   studyTabs.forEach((tab) => {
     const active = tab.dataset.studyTab === name;
     tab.classList.toggle("active", active);
     tab.setAttribute("aria-selected", active ? "true" : "false");
     tab.tabIndex = active ? 0 : -1;
+    if (active) {
+      activeTab = tab;
+    }
     if (active && focusTab) {
       tab.focus();
     }
@@ -87,6 +91,17 @@ function setStudyPanel(name, focusTab = false) {
     const active = panel.dataset.studyPanel === name;
     panel.classList.toggle("active", active);
     panel.hidden = !active;
+  });
+  ensureActiveStudyTabVisible(activeTab);
+}
+
+function ensureActiveStudyTabVisible(tab) {
+  if (!tab || !studyTabsContainer || !isMobileStudyLayout()) return;
+  if (typeof tab.scrollIntoView !== "function") return;
+  tab.scrollIntoView({
+    block: "nearest",
+    inline: "nearest",
+    behavior: prefersReducedMotion() ? "auto" : "smooth"
   });
 }
 
