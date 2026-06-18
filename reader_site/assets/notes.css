@@ -340,8 +340,26 @@ h1 {
   border-top: 1px solid #d4d4d4;
 }
 
+.note-card.is-recent {
+  padding: 10px 10px 10px 12px;
+  background: #fff9df;
+  border: 1px solid #d8c36a;
+  border-left: 3px solid #b00000;
+  animation: archive-note-highlight 1.8s ease-out 1;
+}
+
+.note-card.is-recent:focus {
+  outline: 2px solid #b00000;
+  outline-offset: 2px;
+}
+
 .note-card:first-child {
   border-top: 0;
+}
+
+.note-card.is-recent:first-child {
+  border: 1px solid #d8c36a;
+  border-left: 3px solid #b00000;
 }
 
 .note-title {
@@ -451,11 +469,21 @@ h1 {
   }
 }
 
+@keyframes archive-note-highlight {
+  0% {
+    background-color: #fff0b8;
+  }
+  100% {
+    background-color: #fff9df;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .notes-form.is-loading #notesSubmit::after,
   .note-actions button.is-working::after,
   .note-edit-actions button.is-working::after,
-  .notes-skeleton-line {
+  .notes-skeleton-line,
+  .note-card.is-recent {
     animation: none;
   }
 }

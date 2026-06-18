@@ -220,8 +220,8 @@ def check_notes_ui() -> None:
     script = read_site_file("assets/notes.js")
     css = read_site_file("assets/notes.css")
     for needle in [
-        "/assets/notes.css?v=notes8",
-        "/assets/notes.js?v=notes9",
+        "/assets/notes.css?v=notes9",
+        "/assets/notes.js?v=notes10",
         'id="notesSubmit"',
         'id="notesClear"',
         'id="notesActiveFilters"',
@@ -240,6 +240,12 @@ def check_notes_ui() -> None:
         "function notesSummaryButton",
         "function renderNotesSummary",
         "data-notes-summary-filter",
+        "recentlyChangedNoteId",
+        "function revealRecentlyChangedNote",
+        "Recently changed note",
+        "Recently changed note is hidden by the current filters.",
+        "recentNote.scrollIntoView",
+        "recentNote.focus({ preventScroll: true })",
         "function renderEmptyNotes",
         "function clearNotesFilters",
         "function updateNotesClearState",
@@ -264,6 +270,9 @@ def check_notes_ui() -> None:
         ".filter-chip",
         ".notes-summary-nav",
         ".notes-summary-filter",
+        ".note-card.is-recent",
+        ".note-card.is-recent:focus",
+        "@keyframes archive-note-highlight",
         ".notes-form.is-loading #notesSubmit",
         ".empty-state",
         ".empty-actions",

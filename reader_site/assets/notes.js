@@ -17,6 +17,7 @@ let requestedCorpusId = "";
 let requestedTargetId = "";
 let activeNotesController = null;
 let activeNotesRequest = 0;
+let recentlyChangedNoteId = "";
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -249,7 +250,9 @@ function renderNotes(notes) {
       const reviewActionLabel = reviewState === "reviewed" ? "Mark raw" : "Mark reviewed";
       const quote = note.quote ? `<blockquote class="note-quote">${escapeHtml(cleanText(note.quote))}</blockquote>` : "";
       const href = note.url ? `<a href="${escapeHtml(note.url)}">${escapeHtml(title || "Open note target")}</a>` : escapeHtml(title || "Untitled note");
-      return `<article class="note-card" data-note-id="${escapeHtml(note.id)}" data-corpus-id="${escapeHtml(note.corpus_id)}" data-review-state="${escapeHtml(reviewState)}">
+      const isRecent = note.id === recentlyChangedNoteId;
+      const recentAttrs = isRecent ? ' tabindex="-1" aria-label="Recently changed note"' : "";
+      return `<article class="note-card${isRecent ? " is-recent" : ""}" data-note-id="${escapeHtml(note.id)}" data-corpus-id="${escapeHtml(note.corpus_id)}" data-review-state="${escapeHtml(reviewState)}"${recentAttrs}>
         <div class="note-title">
           ${href}
           <span class="note-meta">${escapeHtml(cleanText(date))}</span>
@@ -274,10 +277,36 @@ function renderNotes(notes) {
       </article>`;
     }).join("")
     : renderEmptyNotes();
+  revealRecentlyChangedNote();
 }
 
 function noteById(noteId) {
   return lastNotes.find((note) => note.id === noteId);
+}
+
+function revealRecentlyChangedNote() {
+  if (!recentlyChangedNoteId) return;
+  const recentNote = Array.from(resultsEl.querySelectorAll(".note-card"))
+    .find((card) => card.dataset.noteId === recentlyChangedNoteId);
+  if (!recentNote) {
+    statusEl.textContent = "Recently changed note is hidden by the current filters.";
+    return;
+  }
+  if (typeof recentNote.scrollIntoView === "function") {
+    recentNote.scrollIntoView({
+      block: "center",
+      inline: "nearest",
+      behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"
+    });
+  }
+  if (typeof recentNote.focus === "function") {
+    try {
+      recentNote.focus({ preventScroll: true });
+    } catch {
+      recentNote.focus();
+    }
+  }
+  recentlyChangedNoteId = "";
 }
 
 function toggleEditor(card, forceOpen = null) {
@@ -419,6 +448,9 @@ resultsEl.addEventListener("click", async (event) => {
     setActionButtonBusy(button, true);
     try {
       const ok = await updateReviewState(noteId, corpusId, nextState);
+      if (ok) {
+        recentlyChangedNoteId = noteId;
+      }
       statusEl.textContent = ok ? "Review state updated." : "Could not update review state.";
       await loadNotes();
     } finally {
@@ -465,6 +497,9 @@ resultsEl.addEventListener("submit", async (event) => {
   setActionButtonBusy(saveButton, true);
   try {
     const ok = await updateNote(noteId, corpusId, noteText, splitTags(editForm.elements.tags.value));
+    if (ok) {
+      recentlyChangedNoteId = noteId;
+    }
     statusEl.textContent = ok ? "Note updated." : "Could not update note.";
     await loadNotes();
   } finally {
