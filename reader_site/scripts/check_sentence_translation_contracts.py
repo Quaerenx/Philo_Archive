@@ -157,6 +157,9 @@ def check_cache_and_review_compatibility(target: dict) -> None:
             )
             require(summary["count"] == 1, "sentence translation summary count failed")
             require(summary["review_state_counts"]["generated"] == 1, "sentence translation summary generated count failed")
+            require(summary["sentence_state_count"] == 1, "sentence translation summary sentence state count failed")
+            require(summary["sentence_states"][0]["sentence_id"] == target["sentence_id"], "sentence translation summary state sentence id failed")
+            require(summary["sentence_states"][0]["review_state"] == "generated", "sentence translation summary state review failed")
             updated = update_sentence_translation_review(
                 {"corpus_id": target["corpus_id"], "review_state": "reviewed"},
                 public_legacy["id"],
@@ -166,6 +169,7 @@ def check_cache_and_review_compatibility(target: dict) -> None:
                 {"corpus_id": [target["corpus_id"]], "work_id": [target["work_id"]]}
             )
             require(summary["review_state_counts"]["reviewed"] == 1, "sentence translation summary reviewed count failed")
+            require(summary["sentence_states"][0]["review_state"] == "reviewed", "sentence translation summary reviewed state failed")
             stored = json.loads(path.read_text(encoding="utf-8").splitlines()[0])
             require(stored["id"] == public_legacy["id"], "reviewing a legacy record should persist the stable id")
         finally:

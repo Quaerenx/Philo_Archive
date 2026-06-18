@@ -234,8 +234,21 @@ def check_sentence_translation_export() -> None:
     require(payload["kind"] == "json", "sentence translations json export should be json")
     require_keys(payload["payload"], {"count", "records"}, "sentence translations export")
     summary = sentence_translations_summary_from_query({"corpus_id": ["nietzsche"], "work_id": ["GM"]})
-    require_keys(summary, {"ok", "count", "review_state_counts", "latest_generated_at", "latest_reviewed_at"}, "sentence translations summary")
+    require_keys(
+        summary,
+        {
+            "ok",
+            "count",
+            "review_state_counts",
+            "sentence_state_count",
+            "sentence_states",
+            "latest_generated_at",
+            "latest_reviewed_at",
+        },
+        "sentence translations summary",
+    )
     require_keys(summary["review_state_counts"], {"generated", "reviewed", "rejected"}, "sentence translations review counts")
+    require(isinstance(summary["sentence_states"], list), "sentence translations summary states should be a list")
 
 
 def check_study_session_export() -> None:

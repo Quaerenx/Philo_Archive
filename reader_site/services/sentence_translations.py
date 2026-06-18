@@ -396,6 +396,7 @@ def sentence_translations_summary_from_query(query: dict[str, list[str]]) -> dic
     review_counts = {"generated": 0, "reviewed": 0, "rejected": 0}
     latest_generated_at = ""
     latest_reviewed_at = ""
+    sentence_states: dict[str, dict[str, Any]] = {}
     for record in records:
         review_state = str(record.get("review_state") or "generated").strip().lower()
         if review_state not in review_counts:
@@ -403,16 +404,32 @@ def sentence_translations_summary_from_query(query: dict[str, list[str]]) -> dic
         review_counts[review_state] += 1
         generated_at = str(record.get("generated_at") or record.get("created_at") or "")
         reviewed_at = str(record.get("reviewed_at") or "")
+        updated_at = str(record.get("updated_at") or reviewed_at or generated_at)
         if generated_at > latest_generated_at:
             latest_generated_at = generated_at
         if reviewed_at > latest_reviewed_at:
             latest_reviewed_at = reviewed_at
+        sentence_id = str(record.get("sentence_id") or record.get("target_id") or "").strip()
+        if sentence_id:
+            current = sentence_states.get(sentence_id)
+            if current is None or updated_at >= current.get("updated_at", ""):
+                sentence_states[sentence_id] = {
+                    "sentence_id": sentence_id,
+                    "segment_id": str(record.get("segment_id") or ""),
+                    "review_state": review_state,
+                    "record_id": public_record_id(record),
+                    "updated_at": updated_at,
+                    "generated_at": generated_at,
+                    "reviewed_at": reviewed_at,
+                }
     return {
         "ok": True,
         "corpus_id": corpus_id,
         "work_id": work_id,
         "count": len(records),
         "review_state_counts": review_counts,
+        "sentence_state_count": len(sentence_states),
+        "sentence_states": sorted(sentence_states.values(), key=lambda item: item["sentence_id"]),
         "latest_generated_at": latest_generated_at,
         "latest_reviewed_at": latest_reviewed_at,
     }

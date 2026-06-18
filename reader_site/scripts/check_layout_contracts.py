@@ -360,6 +360,14 @@ def check_work_source_bundle_ui() -> None:
         "translationRecordsSummary",
         "function setTranslationRecordsSummary",
         "function updateTranslationExportLinks",
+        "translationSentenceStates",
+        "TRANSLATION_STATE_LABELS",
+        "TRANSLATION_STATE_SHORT",
+        "function applySentenceTranslationStates",
+        "function clearSentenceTranslationStates",
+        "data-translation-state-short",
+        "data-translation-state-label",
+        "sentence_state_count",
         "async function loadTranslationRecordsSummary",
         "/api/sentence-translations/summary",
         "AI records:",
@@ -578,8 +586,8 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common65", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common52", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common66", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common53", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -668,6 +676,9 @@ def check_work_source_bundle_ui() -> None:
         "position: fixed;",
         "top: auto;",
         ".reader-sentence.loading",
+        ".reader-sentence.has-translation-state::after",
+        ".reader-sentence[data-translation-state=\"reviewed\"]::after",
+        ".reader-sentence[data-translation-state=\"rejected\"]::after",
         ".study-tabs",
         ".study-tab:focus-visible",
         ".study-tab.active::after",

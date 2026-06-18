@@ -54,6 +54,7 @@ let translationMode = "reading";
 let translationStatusTimer = null;
 let translationElapsedTimer = 0;
 let translationStartedAt = 0;
+let translationSentenceStates = new Map();
 let gemmaRuntimeCheckController = null;
 let recentlyChangedNoteId = "";
 let activeReadingCueNode = null;
@@ -74,6 +75,16 @@ const TRANSLATION_WAIT_PHASES = [
   [12, "Gemma is still generating locally"],
   [30, "Longer local generation in progress"]
 ];
+const TRANSLATION_STATE_LABELS = {
+  generated: "Generated translation",
+  reviewed: "Reviewed translation",
+  rejected: "Rejected translation"
+};
+const TRANSLATION_STATE_SHORT = {
+  generated: "AI",
+  reviewed: "OK",
+  rejected: "NO"
+};
 const NOTE_DRAFT_STORAGE_KEY = [
   "philo.reader.noteDraft",
   researchData.corpus_id || researchData.author_id || "",
@@ -369,6 +380,58 @@ function updateTranslationExportLinks(total, reviewed) {
   }
 }
 
+function normalizedTranslationReviewState(value) {
+  const state = cleanText(value).toLowerCase();
+  return TRANSLATION_STATE_LABELS[state] ? state : "generated";
+}
+
+function clearSentenceTranslationStates() {
+  translationSentenceStates = new Map();
+  sentenceNodes.forEach((node) => {
+    node.classList.remove("has-translation-state");
+    node.removeAttribute("data-translation-state");
+    node.removeAttribute("data-translation-state-short");
+    node.removeAttribute("data-translation-state-label");
+    if (Object.prototype.hasOwnProperty.call(node.dataset, "originalTitle")) {
+      const originalTitle = node.dataset.originalTitle;
+      if (originalTitle) {
+        node.setAttribute("title", originalTitle);
+      } else {
+        node.removeAttribute("title");
+      }
+      delete node.dataset.originalTitle;
+    }
+  });
+}
+
+function applySentenceTranslationStates(states) {
+  clearSentenceTranslationStates();
+  if (!Array.isArray(states)) return;
+  states.forEach((item) => {
+    const sentenceId = cleanText(item && item.sentence_id);
+    if (!sentenceId) return;
+    const node = document.getElementById(sentenceId);
+    if (!node || !node.classList.contains("reader-sentence")) return;
+    const reviewState = normalizedTranslationReviewState(item.review_state);
+    const label = TRANSLATION_STATE_LABELS[reviewState];
+    translationSentenceStates.set(sentenceId, {
+      reviewState,
+      label,
+      recordId: cleanText(item.record_id || ""),
+      updatedAt: cleanText(item.updated_at || "")
+    });
+    if (!Object.prototype.hasOwnProperty.call(node.dataset, "originalTitle")) {
+      node.dataset.originalTitle = node.getAttribute("title") || "";
+    }
+    node.classList.add("has-translation-state");
+    node.dataset.translationState = reviewState;
+    node.dataset.translationStateShort = TRANSLATION_STATE_SHORT[reviewState];
+    node.dataset.translationStateLabel = label;
+    const originalTitle = node.dataset.originalTitle;
+    node.setAttribute("title", `${originalTitle ? `${originalTitle} / ` : ""}${label}`);
+  });
+}
+
 function setStudySessionSummary(text, state = "empty") {
   if (!studySessionSummary) return;
   studySessionSummary.textContent = text;
@@ -430,12 +493,14 @@ async function loadTranslationRecordsSummary() {
     const generated = Number(counts.generated || 0);
     const reviewed = Number(counts.reviewed || 0);
     const rejected = Number(counts.rejected || 0);
+    applySentenceTranslationStates(payload.sentence_states || []);
     setTranslationRecordsSummary(
-      `AI records: ${total} total / ${generated} generated / ${reviewed} reviewed / ${rejected} rejected`,
+      `AI records: ${total} total / ${Number(payload.sentence_state_count || 0)} sentences / ${generated} generated / ${reviewed} reviewed / ${rejected} rejected`,
       total ? "has-records" : "empty"
     );
     updateTranslationExportLinks(total, reviewed);
   } catch (error) {
+    clearSentenceTranslationStates();
     setTranslationRecordsSummary("AI records unavailable.", "unavailable");
     updateTranslationExportLinks(0, 0);
   }
