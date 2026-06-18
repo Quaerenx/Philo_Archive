@@ -347,11 +347,20 @@ function updateReadingPosition(node) {
   const sentenceId = node.dataset.sentenceId || node.id || "";
   const label = sentencePositionText(sentenceId);
   const isSelected = Boolean(selectedSentence && selectedSentence.sentenceId === sentenceId);
+  const excerpt = cleanText(node.textContent);
+  readingPosition.classList.toggle("is-selected-cue", isSelected);
+  readingPosition.classList.toggle("is-selectable-cue", !isSelected);
   const action = isSelected
     ? '<span class="reading-position-current">Selected</span>'
     : '<button type="button" data-reading-cue-select>Study this</button>';
-  readingPosition.innerHTML = `<span>Reading near</span> <strong>${escapeHtml(label)}</strong> ${action}`;
-  readingPosition.setAttribute("aria-label", `Current reading position: ${label}`);
+  readingPosition.innerHTML = `
+    <div class="reading-position-main">
+      <span>Reading near</span>
+      <strong>${escapeHtml(label)}</strong>
+      ${action}
+    </div>
+    <p class="reading-position-excerpt" title="${escapeHtml(excerpt)}">${escapeHtml(excerpt)}</p>`;
+  readingPosition.setAttribute("aria-label", `Current reading position: ${label}. ${excerpt}`);
 }
 
 function studyReadingCueSentence() {

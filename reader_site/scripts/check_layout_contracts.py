@@ -412,6 +412,10 @@ def check_work_source_bundle_ui() -> None:
         "requestAnimationFrame(refreshReadingPosition)",
         "readingCueTargetLine",
         "updateReadingPosition(node)",
+        "reading-position-main",
+        "reading-position-excerpt",
+        "is-selectable-cue",
+        "Current reading position: ${label}. ${excerpt}",
         "function studyReadingCueSentence",
         "data-reading-cue-select",
         "readingPosition.addEventListener",
@@ -462,8 +466,8 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common36", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common33", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common37", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common34", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -591,6 +595,9 @@ def check_work_source_bundle_ui() -> None:
         "scroll-margin-block",
         ".sentence-context",
         ".reading-position",
+        ".reading-position.is-selectable-cue",
+        ".reading-position-main",
+        ".reading-position-excerpt",
         ".reading-position button",
         ".reading-position-current",
         ".reader-sentence.reading-cue",

@@ -433,15 +433,30 @@ h1 {
 }
 
 .reading-position {
+  display: grid;
+  gap: 3px;
+  min-height: 24px;
+  margin-top: 6px;
+  padding: 6px 7px;
+  color: #666;
+  background: #fbfbfb;
+  border: 1px solid #eeeeee;
+  border-left: 3px solid #d4d4d4;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.reading-position.is-selectable-cue {
+  background: #fffdf2;
+  border-left-color: #b00000;
+}
+
+.reading-position-main {
   display: flex;
   flex-wrap: wrap;
   gap: 4px 6px;
   align-items: center;
-  min-height: 24px;
-  margin-top: 5px;
-  color: #666;
-  font-size: 10px;
-  line-height: 1.4;
+  min-width: 0;
 }
 
 .reading-position strong {
@@ -472,6 +487,19 @@ h1 {
   color: #555;
   background: #f7f7f7;
   border: 1px solid #d4d4d4;
+}
+
+.reading-position-excerpt {
+  display: -webkit-box;
+  max-height: 3em;
+  margin: 0;
+  overflow: hidden;
+  color: #333;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 11px;
+  line-height: 1.5;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .sentence-context {
