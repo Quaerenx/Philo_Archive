@@ -487,7 +487,7 @@ def check_work_source_bundle_ui() -> None:
     ]:
         require_contains(script, needle, "assets/reader-work.js")
     require_contains(template, "/assets/reader-work.js?v=common43", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common37", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common38", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -640,6 +640,10 @@ def check_work_source_bundle_ui() -> None:
         ".research-card .sentence-context-item",
         "overscroll-behavior: contain",
         "scrollbar-gutter: stable",
+        "@media (min-width: 861px)",
+        ".study-page .translation-output",
+        "overflow: visible",
+        "will-change: transform",
         ".translation-output:focus-visible",
         "@media (prefers-reduced-motion: reduce)",
     ]:
