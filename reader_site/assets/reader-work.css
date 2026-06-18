@@ -934,6 +934,11 @@ h1 {
   gap: 12px;
 }
 
+.translation-output.has-fresh-result .translation-section-primary,
+.translation-output.has-fresh-cached-result .translation-section-primary {
+  animation: archive-translation-arrival 1.25s ease-out 1;
+}
+
 .study-session-preview {
   display: grid;
   gap: 12px;
@@ -1532,6 +1537,16 @@ h1 {
   animation: archive-sentence-pulse 1.2s ease-in-out infinite;
 }
 
+.reader-sentence.just-studied,
+.reader-sentence.just-loaded-cache {
+  border-bottom-color: #b00000;
+  animation: archive-source-confirm 1.45s ease-out 1;
+}
+
+.reader-sentence.just-loaded-cache {
+  animation-name: archive-source-cache-confirm;
+}
+
 .reader-sentence.has-translation-state::after {
   display: inline-block;
   min-width: 17px;
@@ -1618,6 +1633,39 @@ h1 {
   }
 }
 
+@keyframes archive-translation-arrival {
+  0% {
+    background-color: #fff1b8;
+    box-shadow: inset 3px 0 0 #b00000;
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 transparent;
+  }
+}
+
+@keyframes archive-source-confirm {
+  0% {
+    background-color: #fff0b8;
+    box-shadow: inset 3px 0 0 #b00000;
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 transparent;
+  }
+}
+
+@keyframes archive-source-cache-confirm {
+  0% {
+    background-color: #f3f0df;
+    box-shadow: inset 3px 0 0 #999;
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 transparent;
+  }
+}
+
 @keyframes archive-panel-in {
   0% {
     opacity: 0.65;
@@ -1692,7 +1740,11 @@ h1 {
   .notes-list-skeleton,
   .study-panel.active,
   .note-item.is-recent,
-  .reader-sentence.loading {
+  .reader-sentence.loading,
+  .reader-sentence.just-studied,
+  .reader-sentence.just-loaded-cache,
+  .translation-output.has-fresh-result .translation-section-primary,
+  .translation-output.has-fresh-cached-result .translation-section-primary {
     animation: none;
   }
 

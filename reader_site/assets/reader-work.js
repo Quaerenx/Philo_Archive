@@ -58,6 +58,8 @@ let translationMode = "reading";
 let translationStatusTimer = null;
 let translationElapsedTimer = 0;
 let translationStartedAt = 0;
+let translationRevealTimer = 0;
+let sentenceRevealTimer = 0;
 let translationSentenceStates = new Map();
 let translationSentenceStatesLoaded = false;
 let gemmaRuntimeCheckController = null;
@@ -79,6 +81,10 @@ const TRANSLATION_WAIT_PHASES = [
   [0, "Preparing local model request"],
   [12, "Gemma is still generating locally"],
   [30, "Longer local generation in progress"]
+];
+const TRANSLATION_PROGRESS_PHASES = [
+  [0, "request"],
+  [2, "generate"]
 ];
 const TRANSLATION_STATE_LABELS = {
   generated: "Generated translation",
@@ -1357,6 +1363,30 @@ function translationWaitPhase(seconds) {
   return label;
 }
 
+function translationProgressPhase(seconds) {
+  let activeStep = TRANSLATION_PROGRESS_PHASES[0][1];
+  TRANSLATION_PROGRESS_PHASES.forEach(([threshold, step]) => {
+    if (seconds >= threshold) {
+      activeStep = step;
+    }
+  });
+  return activeStep;
+}
+
+function updateTranslationProgressSteps(seconds) {
+  const activeStep = translationProgressPhase(seconds);
+  const order = ["source", "request", "generate"];
+  const activeIndex = order.indexOf(activeStep);
+  translationOutput.querySelectorAll("[data-translation-step]").forEach((step) => {
+    const stepIndex = order.indexOf(step.dataset.translationStep || "");
+    const isDone = stepIndex >= 0 && stepIndex < activeIndex;
+    const isActive = step.dataset.translationStep === activeStep;
+    step.classList.toggle("done", isDone);
+    step.classList.toggle("active", isActive);
+    step.setAttribute("aria-current", isActive ? "step" : "false");
+  });
+}
+
 function updateTranslationElapsed() {
   if (!translationStartedAt) return;
   const seconds = Math.max(0, Math.floor((Date.now() - translationStartedAt) / 1000));
@@ -1368,6 +1398,7 @@ function updateTranslationElapsed() {
   if (phaseNode) {
     phaseNode.textContent = translationWaitPhase(seconds);
   }
+  updateTranslationProgressSteps(seconds);
 }
 
 function startTranslationElapsedTimer() {
@@ -1443,10 +1474,10 @@ function renderTranslationPending(regenerate = false) {
       <span class="translation-elapsed" data-translation-elapsed aria-hidden="true">Elapsed 0s</span>
     </div>
     <p class="translation-pending-source"><span>Source locked</span>${escapeHtml(sourceText)}</p>
-    <ol class="translation-progress-steps" aria-hidden="true">
-      <li class="done">Source</li>
-      <li class="active">Generate</li>
-      <li>Cache</li>
+    <ol class="translation-progress-steps" aria-label="Translation progress">
+      <li class="done" data-translation-step="source">Source</li>
+      <li class="active" data-translation-step="request" aria-current="step">Request</li>
+      <li data-translation-step="generate" aria-current="false">Generate</li>
     </ol>
     <div class="translation-loading-actions">
       <button type="button" data-translation-cancel>Cancel request</button>
@@ -1724,9 +1755,33 @@ function renderTranslationRecord(record, cached) {
       ${optionalCautions(record)}
     </div>
   `;
+  revealFreshTranslationResult(cached);
   syncTranslationModeDensity();
   updateStudyPanelToggleLabel();
   updateSentenceControls();
+}
+
+function revealFreshTranslationResult(cached) {
+  const sentenceNode = selectedSentenceNode();
+  if (translationOutput) {
+    window.clearTimeout(translationRevealTimer);
+    translationOutput.classList.remove("has-fresh-result", "has-fresh-cached-result");
+    void translationOutput.offsetWidth;
+    translationOutput.classList.add(cached ? "has-fresh-cached-result" : "has-fresh-result");
+    translationRevealTimer = window.setTimeout(() => {
+      translationOutput.classList.remove("has-fresh-result", "has-fresh-cached-result");
+      translationRevealTimer = 0;
+    }, prefersReducedMotion() ? 0 : 1500);
+  }
+  if (!sentenceNode) return;
+  window.clearTimeout(sentenceRevealTimer);
+  sentenceNode.classList.remove("just-studied", "just-loaded-cache");
+  void sentenceNode.offsetWidth;
+  sentenceNode.classList.add(cached ? "just-loaded-cache" : "just-studied");
+  sentenceRevealTimer = window.setTimeout(() => {
+    sentenceNode.classList.remove("just-studied", "just-loaded-cache");
+    sentenceRevealTimer = 0;
+  }, prefersReducedMotion() ? 0 : 1700);
 }
 
 function cancelTranslationRequest() {

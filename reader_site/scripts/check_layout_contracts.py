@@ -614,6 +614,13 @@ def check_work_source_bundle_ui() -> None:
         "noteText.setSelectionRange",
         "translationStudyCardText",
         "Clipboard copy failed",
+        "TRANSLATION_PROGRESS_PHASES",
+        "function updateTranslationProgressSteps",
+        "data-translation-step=\"request\"",
+        "data-translation-step=\"generate\"",
+        "function revealFreshTranslationResult",
+        "has-fresh-result",
+        "just-studied",
         'target?.closest?.(".study-page")',
         "activateStudyTabByIndex",
         "ensureActiveStudyTabVisible",
@@ -629,8 +636,8 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common74", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common60", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common75", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common61", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
