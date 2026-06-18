@@ -347,6 +347,11 @@ def check_work_source_bundle_ui() -> None:
         "updateTranslationReview(\"reviewed\")",
         "setTranslationMode(\"reading\")",
         "renderTranslationPending",
+        "translation-loading-copy",
+        "Source locked",
+        "translation-progress-steps",
+        "class=\"done\"",
+        "selectedSentencePositionLabel()",
         "renderTranslationError",
         "resetTranslationOutputScroll",
         "translationOutput.scrollTop = 0",
@@ -490,8 +495,8 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common44", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common38", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common45", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common39", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -592,12 +597,18 @@ def check_work_source_bundle_ui() -> None:
         "line-height: 1.62",
         "line-height: 1.72",
         ".translation-loading",
+        ".translation-loading-copy",
+        ".translation-pending-source span",
+        ".translation-progress-steps",
+        ".translation-progress-steps li.done::before",
+        ".translation-progress-steps li.active::before",
         ".translation-study-skeleton",
         ".translation-skeleton-block",
         ".translation-skeleton-heading",
         ".translation-skeleton-line",
         ".translation-card.is-loading::before",
         "@keyframes archive-loading-rail",
+        "@keyframes archive-progress-dot",
         ".research-card button.is-working",
         ".translation-commentary.is-collapsed",
         ".translation-commentary.is-expanded p::after",

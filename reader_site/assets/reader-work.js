@@ -912,12 +912,22 @@ function renderTranslationPending(regenerate = false) {
   setTranslationBusy(true);
   resetTranslationOutputScroll();
   const actionLabel = regenerate ? "Regenerating study note" : "Studying selected sentence";
+  const position = selectedSentencePositionLabel();
+  const sourceText = cleanText(selectedSentence?.text || "");
   translationOutput.innerHTML = `
-    <div class="translation-loading" role="status" aria-label="${escapeHtml(actionLabel)}">
+    <div class="translation-loading" role="status" aria-live="polite" aria-label="${escapeHtml(`${actionLabel}: ${position}`)}">
       <span class="loading-spinner" aria-hidden="true"></span>
-      <span>${escapeHtml(actionLabel)}</span>
+      <span class="translation-loading-copy">
+        <strong>${escapeHtml(actionLabel)}</strong>
+        <span>${escapeHtml(position)}</span>
+      </span>
     </div>
-    <p class="translation-pending-source">${escapeHtml(cleanText(selectedSentence?.text || ""))}</p>
+    <p class="translation-pending-source"><span>Source locked</span>${escapeHtml(sourceText)}</p>
+    <ol class="translation-progress-steps" aria-hidden="true">
+      <li class="done">Source</li>
+      <li class="active">Generate</li>
+      <li>Cache</li>
+    </ol>
     <div class="translation-skeleton translation-study-skeleton" aria-hidden="true">
       <div class="translation-skeleton-block primary">
         <span class="translation-skeleton-heading"></span>
