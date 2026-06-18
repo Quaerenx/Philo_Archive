@@ -876,6 +876,34 @@ h1 {
   padding: 8px 9px;
 }
 
+.translation-runtime-hint {
+  color: #4b3030;
+}
+
+.translation-runtime-command {
+  display: block;
+  max-width: 100%;
+  padding: 5px 6px;
+  margin: 0 0 8px;
+  overflow-x: auto;
+  color: #3a1717;
+  background: #fff;
+  border: 1px solid #e7cccc;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.translation-error-actions {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.translation-error-actions button {
+  min-height: 25px;
+  padding: 3px 8px;
+}
+
 .translation-cancelled {
   color: #333;
   background: #f8f8f8;

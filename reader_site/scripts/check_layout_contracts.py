@@ -353,6 +353,11 @@ def check_work_source_bundle_ui() -> None:
         "class=\"done\"",
         "selectedSentencePositionLabel()",
         "renderTranslationError",
+        "translation-runtime-hint",
+        "Start the local Gemma runtime, then retry this sentence.",
+        "translation-runtime-command",
+        ".\\\\run_reader_with_gemma.ps1",
+        "translation-error-actions",
         "renderTranslationCancelled",
         "cancelTranslationRequest",
         "data-translation-cancel",
@@ -523,8 +528,8 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common53", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common43", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common54", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common44", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -644,6 +649,9 @@ def check_work_source_bundle_ui() -> None:
         "@keyframes archive-progress-dot",
         ".translation-cancelled",
         ".translation-cancelled button",
+        ".translation-runtime-hint",
+        ".translation-runtime-command",
+        ".translation-error-actions",
         ".research-card button.is-working",
         ".translation-commentary.is-collapsed",
         ".translation-commentary.is-expanded p::after",

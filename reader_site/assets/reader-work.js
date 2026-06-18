@@ -952,6 +952,8 @@ function renderTranslationPending(regenerate = false) {
 
 function renderTranslationError(message) {
   selectedTranslationRecord = null;
+  const retryMode = pendingTranslationRegenerate ? "regenerate" : "translate";
+  const retryLabel = pendingTranslationRegenerate ? "Regenerate again" : "Try again";
   pendingTranslationRegenerate = false;
   setTranslationBusy(false);
   translationOutput.hidden = false;
@@ -960,6 +962,11 @@ function renderTranslationError(message) {
     <div class="translation-error" role="note">
       <h3>Translation unavailable</h3>
       <p>${escapeHtml(cleanText(message || "Gemma runtime is not running."))}</p>
+      <p class="translation-runtime-hint">Start the local Gemma runtime, then retry this sentence.</p>
+      <code class="translation-runtime-command">.\\run_reader_with_gemma.ps1</code>
+      <div class="translation-error-actions">
+        <button type="button" data-translation-retry="${escapeHtml(retryMode)}">${escapeHtml(retryLabel)}</button>
+      </div>
     </div>`;
   updateStudyPanelToggleLabel();
   updateSentenceControls();
