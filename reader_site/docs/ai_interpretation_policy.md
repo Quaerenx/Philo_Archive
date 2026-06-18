@@ -47,7 +47,9 @@ The local `POST /api/sentence-translation` endpoint is the first active AI runti
 
 Future AI records should be stored as JSONL objects under `reader_site/data/ai/`.
 
-Sentence translation records use `record_type: "ai_sentence_translation"` and add `segment_id`, `sentence_id`, `sentence_text_sha256`, `model_runtime`, `translation`, `commentary`, and `cautions`. Legacy records may still include `literal_gloss` and `key_terms`, but the reader UI must not render those fields. These records remain generated study aids, not source text.
+Sentence translation records use `record_type: "ai_sentence_translation"` and add `segment_id`, `sentence_id`, `sentence_text_sha256`, `model_runtime`, `translation`, `commentary`, and `cautions`. New records use schema version 2 and do not store `literal_gloss` or `key_terms`. Legacy schema version 1 records may still include those fields, but the reader UI must not render them. These records remain generated study aids, not source text.
+
+Sentence translation review state can be updated locally through `/api/sentence-translations/<record_id>`. Reviewed records can be exported through `/api/sentence-translations/export`; rejected records must not be returned as cached defaults for new reading sessions.
 
 Required fields:
 

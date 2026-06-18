@@ -11,6 +11,7 @@ sys.path.insert(0, str(SITE))
 from corpora.archive import build_archive  # noqa: E402
 from corpora.catalogs import bible_segments_payload_from_query  # noqa: E402
 from runtime_status import build_artifact_manifest, build_runtime_health  # noqa: E402
+from services.sentence_translations import sentence_translations_export_from_query  # noqa: E402
 from services.source_targets import sha256_text, source_target_payload_from_query  # noqa: E402
 
 
@@ -78,7 +79,7 @@ def check_archive(payload: dict[str, Any]) -> None:
 def check_health(payload: dict[str, Any]) -> None:
     require_keys(
         payload,
-        {"status", "generated_at", "site_root", "corpus_root", "corpora", "search", "issues", "next_recommended_upgrades"},
+        {"status", "generated_at", "site_root", "corpus_root", "corpora", "search", "gemma", "issues", "next_recommended_upgrades"},
         "health",
     )
     require(payload["status"] in {"ok", "warning"}, "health.status must be ok or warning")
@@ -109,6 +110,10 @@ def check_health(payload: dict[str, Any]) -> None:
         check_file_record(corpus["notes"], f"{context}.notes")
     check_file_record(payload["search"], "health.search")
     require_keys(payload["search"], {"records", "fts5"}, "health.search")
+    require_keys(payload["gemma"], {"base_url", "reachable", "model_count", "models"}, "health.gemma")
+    require(isinstance(payload["gemma"]["reachable"], bool), "health.gemma.reachable must be bool")
+    require(isinstance(payload["gemma"]["model_count"], int), "health.gemma.model_count must be int")
+    require(isinstance(payload["gemma"]["models"], list), "health.gemma.models must be list")
 
 
 def check_artifacts(payload: dict[str, Any]) -> None:
@@ -213,12 +218,26 @@ def check_source_target_payload() -> None:
         raise AssertionError("missing source target should raise FileNotFoundError")
 
 
+def check_sentence_translation_export() -> None:
+    markdown = sentence_translations_export_from_query(
+        {"corpus_id": ["nietzsche"], "work_id": ["GM"], "format": ["markdown"]}
+    )
+    require(markdown["kind"] == "text", "sentence translations markdown export should be text")
+    require("Reviewed Gemma Sentence Translations" in markdown["body"], "sentence translations markdown export heading missing")
+    payload = sentence_translations_export_from_query(
+        {"corpus_id": ["nietzsche"], "work_id": ["GM"], "format": ["json"], "review_state": ["all"]}
+    )
+    require(payload["kind"] == "json", "sentence translations json export should be json")
+    require_keys(payload["payload"], {"count", "records"}, "sentence translations export")
+
+
 def main() -> None:
     check_archive(build_archive())
     check_health(build_runtime_health())
     check_artifacts(build_artifact_manifest())
     check_bible_segments_payload()
     check_source_target_payload()
+    check_sentence_translation_export()
     print("api contracts ok")
 
 

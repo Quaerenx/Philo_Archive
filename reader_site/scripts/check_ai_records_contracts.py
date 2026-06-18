@@ -49,10 +49,12 @@ SENTENCE_TRANSLATION_FIELDS = [
     "sentence_text_sha256",
     "model_runtime",
     "translation",
-    "literal_gloss",
     "commentary",
-    "key_terms",
     "cautions",
+]
+LEGACY_SENTENCE_TRANSLATION_FIELDS = [
+    "literal_gloss",
+    "key_terms",
 ]
 REQUIRED_TEXT_FIELDS = [
     "id",
@@ -114,7 +116,7 @@ def validate_record(record: Any, path: Path, line_number: int) -> None:
     for field in REQUIRED_TEXT_FIELDS:
         require(isinstance(record[field], str) and record[field].strip(), context(path, line_number, f"{field} must be a non-empty string"))
 
-    require(record["schema_version"] == 1, context(path, line_number, "schema_version must be 1"))
+    require(record["schema_version"] in {1, 2}, context(path, line_number, "schema_version must be 1 or 2"))
     require(record["record_type"] in ALLOWED_RECORD_TYPES, context(path, line_number, "record_type is invalid"))
     require(record["review_state"] in ALLOWED_REVIEW_STATES, context(path, line_number, "review_state is invalid"))
     require(isinstance(record.get("variant_id"), str), context(path, line_number, "variant_id must be a string"))
@@ -134,14 +136,20 @@ def validate_record(record: Any, path: Path, line_number: int) -> None:
     if record["record_type"] == "ai_sentence_translation":
         for field in SENTENCE_TRANSLATION_FIELDS:
             require(field in record, context(path, line_number, f"missing required sentence translation field {field}"))
+        if record["schema_version"] == 1:
+            for field in LEGACY_SENTENCE_TRANSLATION_FIELDS:
+                require(field in record, context(path, line_number, f"missing required legacy sentence translation field {field}"))
         for field in ("segment_id", "sentence_id", "sentence_text_sha256", "model_runtime"):
             require(isinstance(record[field], str) and record[field].strip(), context(path, line_number, f"{field} must be a non-empty string"))
-        for field in ("translation", "literal_gloss", "commentary"):
+        for field in ("translation", "commentary"):
             require(isinstance(record[field], str), context(path, line_number, f"{field} must be a string"))
+        if record["schema_version"] == 1:
+            require(isinstance(record["literal_gloss"], str), context(path, line_number, "literal_gloss must be a string"))
         require(HEX_SHA256.fullmatch(record["sentence_text_sha256"]) is not None, context(path, line_number, "sentence_text_sha256 must be a SHA-256 hex digest"))
         require(record["target_id"] == record["sentence_id"], context(path, line_number, "target_id must match sentence_id"))
         require(record["sentence_id"].startswith(f"{record['segment_id']}.s"), context(path, line_number, "sentence_id must belong to segment_id"))
-        require(isinstance(record["key_terms"], list), context(path, line_number, "key_terms must be a list"))
+        if record["schema_version"] == 1:
+            require(isinstance(record["key_terms"], list), context(path, line_number, "key_terms must be a list"))
         require(isinstance(record["cautions"], list), context(path, line_number, "cautions must be a list"))
         citation_hash = record["sentence_text_sha256"]
 

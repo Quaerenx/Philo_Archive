@@ -28,7 +28,7 @@ a:hover {
   min-height: calc(100vh - 48px);
   margin: var(--page-frame-margin, 24px auto);
   padding: 0;
-  overflow: hidden;
+  overflow: visible;
   background-image: var(--header-strip-image, url("/assets/header-strip.svg?v=nietzsche-portrait"));
   background-repeat: repeat-x;
   background-color: var(--page-frame-background, #eeeeee);
@@ -148,11 +148,47 @@ h1 {
 
 .study-page {
   position: sticky;
-  top: 18px;
+  top: 24px;
   align-self: start;
-  max-height: calc(100vh - 36px);
+  max-height: calc(100vh - 48px);
   padding-right: 4px;
   overflow: auto;
+}
+
+.study-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.study-tab,
+.mode-toggle button {
+  min-width: 0;
+  min-height: 24px;
+  padding: 2px 6px;
+  color: #555;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  line-height: 1.25;
+  background: #f6f6f6;
+  border: 1px solid #d4d4d4;
+  cursor: pointer;
+}
+
+.study-tab.active,
+.mode-toggle button.active {
+  color: #000;
+  background: #fff;
+  border-color: #999;
+}
+
+.study-panel {
+  display: none;
+}
+
+.study-panel.active {
+  display: block;
 }
 
 .research-card {
@@ -216,6 +252,49 @@ h1 {
   background: #fff;
 }
 
+.translation-card-header {
+  display: flex;
+  gap: 10px;
+  align-items: start;
+  justify-content: space-between;
+}
+
+.mode-toggle {
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 3px;
+}
+
+.mode-toggle button {
+  min-height: 22px;
+  margin: 0;
+  padding: 2px 7px;
+}
+
+.sentence-controls,
+.translation-review-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.sentence-controls button,
+.translation-review-actions button {
+  margin: 0;
+}
+
+.translation-review-actions {
+  padding-top: 8px;
+  border-top: 1px solid #eeeeee;
+}
+
+.reviewed-export-link {
+  display: inline-block;
+  margin-top: 10px;
+  color: #555;
+}
+
 .translation-target,
 .translation-status,
 .translation-output {
@@ -230,8 +309,15 @@ h1 {
 }
 
 .translation-status {
+  min-height: 15px;
   margin-top: 8px;
   color: #555;
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+
+.translation-status.visible {
+  opacity: 1;
 }
 
 .translation-output {
@@ -244,6 +330,24 @@ h1 {
   font-family: Georgia, "Times New Roman", serif;
   font-size: 15px;
   line-height: 1.55;
+}
+
+.translation-commentary p {
+  margin: 0;
+  color: #333;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.translation-output.reading-mode .translation-extra {
+  display: none;
+}
+
+.translation-review-state {
+  margin: 0 0 8px;
+  color: #555;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 10px;
 }
 
 .translation-output h3 {
@@ -409,6 +513,7 @@ h1 {
 .reader-sentence.selected {
   background: #fff1b8;
   border-bottom-color: #9b7a00;
+  box-shadow: inset 3px 0 0 #c01818;
 }
 
 .reader-sentence.loading {
@@ -515,10 +620,32 @@ h1 {
   }
 
   .study-page {
-    position: static;
-    max-height: none;
-    padding-right: 0;
-    overflow: visible;
+    position: sticky;
+    bottom: 0;
+    z-index: 4;
+    max-height: 68vh;
+    padding: 10px 10px 0;
+    margin: 20px -10px 0;
+    overflow: auto;
+    background: #fff;
+    border-top: 1px solid #d4d4d4;
+    box-shadow: 0 -8px 20px rgba(0, 0, 0, 0.08);
+  }
+
+  .study-tabs {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    padding-bottom: 8px;
+    background: #fff;
+  }
+
+  .translation-card-header {
+    display: block;
+  }
+
+  .mode-toggle {
+    margin-top: 6px;
   }
 
   .segment-anchor {

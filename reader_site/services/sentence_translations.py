@@ -223,6 +223,13 @@ def iter_cached_records(path: Path) -> list[dict[str, Any]]:
     return records
 
 
+def write_records(path: Path, records: list[dict[str, Any]]) -> None:
+    AI_DIR.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="\n") as handle:
+        for record in records:
+            handle.write(json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n")
+
+
 def find_cached_record(path: Path, target: dict[str, Any], prompt_bundle: dict[str, Any]) -> dict[str, Any] | None:
     for record in reversed(iter_cached_records(path)):
         if record.get("record_type") != "ai_sentence_translation":
@@ -253,7 +260,7 @@ def build_record(target: dict[str, Any], prompt_bundle: dict[str, Any], output: 
     now = utc_now()
     interpretation = output["commentary"] or output["translation"] or "Generated sentence translation."
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "record_type": "ai_sentence_translation",
         "id": str(uuid.uuid4()),
         "created_at": now,
@@ -277,9 +284,7 @@ def build_record(target: dict[str, Any], prompt_bundle: dict[str, Any], output: 
         "prompt_sha256": prompt_bundle["prompt_sha256"],
         "temperature": prompt_bundle["temperature"],
         "translation": output["translation"],
-        "literal_gloss": "",
         "commentary": output["commentary"],
-        "key_terms": [],
         "cautions": [str(item) for item in output["cautions"]],
         "interpretation": interpretation,
         "citations": [
@@ -290,11 +295,106 @@ def build_record(target: dict[str, Any], prompt_bundle: dict[str, Any], output: 
             }
         ],
         "review_state": "generated",
-    }
+}
 
 
 def public_translation_record(record: dict[str, Any]) -> dict[str, Any]:
     return {key: value for key, value in record.items() if key not in {"literal_gloss", "key_terms"}}
+
+
+def update_sentence_translation_review(payload: dict[str, Any], record_id: str) -> dict[str, Any]:
+    corpus_id = safe_corpus_id(str(payload.get("corpus_id", "")))
+    review_state = str(payload.get("review_state", "")).strip().lower()
+    require(review_state in {"reviewed", "rejected", "generated"}, "invalid review_state")
+    record_id = clean_id(record_id)
+    path = ai_record_path(corpus_id)
+    records = iter_cached_records(path)
+    now = utc_now()
+    updated: dict[str, Any] | None = None
+    for index, record in enumerate(records):
+        if record.get("id") != record_id:
+            continue
+        next_record = dict(record)
+        next_record["review_state"] = review_state
+        next_record["reviewed_at"] = now if review_state == "reviewed" else ""
+        next_record["updated_at"] = now
+        records[index] = next_record
+        updated = next_record
+        break
+    if updated is None:
+        raise FileNotFoundError("sentence translation record not found")
+    write_records(path, records)
+    return {"ok": True, "record": public_translation_record(updated)}
+
+
+def sentence_translations_for_export(query: dict[str, list[str]]) -> list[dict[str, Any]]:
+    corpus_id = safe_corpus_id(str((query.get("corpus_id") or [""])[0]))
+    work_id = str((query.get("work_id") or [""])[0]).strip()
+    review_state = str((query.get("review_state") or ["reviewed"])[0]).strip().lower() or "reviewed"
+    require(review_state in {"generated", "reviewed", "rejected", "all"}, "invalid review_state")
+    records = [
+        public_translation_record(record)
+        for record in iter_cached_records(ai_record_path(corpus_id))
+        if record.get("record_type") == "ai_sentence_translation"
+    ]
+    if work_id:
+        records = [record for record in records if record.get("work_id") == work_id]
+    if review_state != "all":
+        records = [record for record in records if record.get("review_state") == review_state]
+    return sorted(
+        records,
+        key=lambda record: (
+            str(record.get("work_id") or ""),
+            str(record.get("segment_id") or ""),
+            str(record.get("sentence_id") or ""),
+            str(record.get("generated_at") or ""),
+        ),
+    )
+
+
+def export_sentence_translations_markdown(records: list[dict[str, Any]]) -> str:
+    lines = ["# Reviewed Gemma Sentence Translations", "", f"{len(records)} records", ""]
+    for record in records:
+        label = " / ".join(
+            item
+            for item in [
+                str(record.get("corpus_id") or ""),
+                str(record.get("work_id") or ""),
+                str(record.get("sentence_id") or ""),
+            ]
+            if item
+        )
+        lines.extend([f"## {label or 'Sentence translation'}", ""])
+        if record.get("target_url"):
+            lines.append(f"- URL: {record['target_url']}")
+        if record.get("review_state"):
+            lines.append(f"- Review: {record['review_state']}")
+        if record.get("reviewed_at"):
+            lines.append(f"- Reviewed: {record['reviewed_at']}")
+        if record.get("source_text_excerpt"):
+            lines.extend(["", "Original:", "", "> " + str(record["source_text_excerpt"]).replace("\n", "\n> ")])
+        if record.get("translation"):
+            lines.extend(["", "Translation:", "", str(record["translation"])])
+        if record.get("commentary"):
+            lines.extend(["", "Commentary:", "", str(record["commentary"])])
+        cautions = record.get("cautions") if isinstance(record.get("cautions"), list) else []
+        if cautions:
+            lines.extend(["", "Cautions:"])
+            lines.extend(f"- {item}" for item in cautions)
+        lines.append("")
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def sentence_translations_export_from_query(query: dict[str, list[str]]) -> dict[str, Any]:
+    records = sentence_translations_for_export(query)
+    export_format = str((query.get("format") or ["markdown"])[0]).strip().lower()
+    if export_format == "json":
+        return {"kind": "json", "payload": {"count": len(records), "records": records}}
+    return {
+        "kind": "text",
+        "body": export_sentence_translations_markdown(records),
+        "content_type": "text/markdown; charset=utf-8",
+    }
 
 
 def sentence_translation_from_payload(payload: dict[str, Any]) -> dict[str, Any]:

@@ -153,14 +153,20 @@ def check_work_source_bundle_ui() -> None:
         "requestSentenceTranslation(false)",
         "Source bundle requires a section, paragraph, or verse target.",
         "Source bundle URL copied.",
+        "navigateSentence(1)",
+        "updateTranslationReview(\"reviewed\")",
+        "setTranslationMode(\"reading\")",
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common3", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common5", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
         "study-page",
         "translation-card",
+        "study-tabs",
+        "previousSentence",
+        "markTranslationReviewed",
     ]:
         require_contains(template, needle, "templates/work.html")
 
@@ -171,6 +177,8 @@ def check_work_source_bundle_ui() -> None:
         ".study-page",
         "position: sticky;",
         ".reader-sentence.loading",
+        ".study-tabs",
+        ".translation-output.reading-mode .translation-extra",
     ]:
         require_contains(css, needle, "assets/reader-work.css")
 

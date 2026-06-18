@@ -16,7 +16,9 @@ from services.sentence_translations import (  # noqa: E402
     PROMPT_TEMPLATE_ID,
     build_record,
     build_sentence_prompt_bundle,
+    export_sentence_translations_markdown,
     normalized_model_output,
+    public_translation_record,
 )
 from services.source_targets import sha256_text  # noqa: E402
 from scripts.check_ai_records_contracts import validate_file  # noqa: E402
@@ -80,6 +82,13 @@ def check_prompt_and_record(target: dict) -> None:
         )
     )
     record = build_record(target, prompt_bundle, output)
+    require(record["schema_version"] == 2, "new sentence translation records should use schema v2")
+    public_record = public_translation_record(record)
+    require("literal_gloss" not in public_record, "public sentence translation record should hide literal_gloss")
+    require("key_terms" not in public_record, "public sentence translation record should hide key_terms")
+    markdown = export_sentence_translations_markdown([public_record])
+    require("Reviewed Gemma Sentence Translations" in markdown, "sentence translation markdown export heading missing")
+    require(target["sentence_id"] in markdown, "sentence translation markdown export missing sentence id")
     with tempfile.TemporaryDirectory() as temp_dir:
         path = Path(temp_dir) / "ai_sentence_translation.jsonl"
         path.write_text(json.dumps(record, ensure_ascii=False) + "\n", encoding="utf-8")

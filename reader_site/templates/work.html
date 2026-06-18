@@ -6,7 +6,7 @@
   <title>{{TITLE}} / {{CORPUS_TITLE}}</title>
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
-  <link rel="stylesheet" href="/assets/reader-work.css?v=common2">
+  <link rel="stylesheet" href="/assets/reader-work.css?v=common3">
 </head>
 <body class="{{BODY_CLASS}}">
   <div class="page">
@@ -31,37 +31,67 @@
           <article class="reading-body" dir="{{TEXT_DIRECTION}}" data-headings="{{HEADING_COUNT}}" data-segments="{{SEGMENT_COUNT}}">{{CONTENT}}</article>
         </section>
         <aside class="study-page" aria-label="Study companion">
-          <section class="research-card translation-card">
-            <h2>Generated translation & commentary</h2>
-            <div id="translationTarget" class="translation-target">Select a sentence in the source page.</div>
-            <button type="button" id="regenerateSentence" disabled>Regenerate</button>
-            <div id="translationStatus" class="translation-status"></div>
-            <div id="translationOutput" class="translation-output" hidden></div>
+          <nav class="study-tabs" aria-label="Study companion tools">
+            <button type="button" class="study-tab active" data-study-tab="translation">Translation</button>
+            <button type="button" class="study-tab" data-study-tab="notes">Notes</button>
+            <button type="button" class="study-tab" data-study-tab="citation">Citation</button>
+            <button type="button" class="study-tab" data-study-tab="concepts">Concepts</button>
+          </nav>
+          <section class="study-panel active" data-study-panel="translation">
+            <section class="research-card translation-card">
+              <div class="translation-card-header">
+                <h2>Translation</h2>
+                <div class="mode-toggle" role="group" aria-label="Translation display mode">
+                  <button type="button" id="readingMode" class="active">Reading</button>
+                  <button type="button" id="studyMode">Study</button>
+                </div>
+              </div>
+              <div id="translationTarget" class="translation-target">Select a sentence in the source page.</div>
+              <div class="sentence-controls" aria-label="Sentence navigation">
+                <button type="button" id="previousSentence" disabled>Previous</button>
+                <button type="button" id="nextSentence" disabled>Next</button>
+                <button type="button" id="regenerateSentence" disabled>Regenerate</button>
+              </div>
+              <div class="translation-review-actions" aria-label="Translation review actions">
+                <button type="button" id="markTranslationReviewed" disabled>Mark reviewed</button>
+                <button type="button" id="rejectTranslation" disabled>Reject</button>
+                <button type="button" id="draftTranslationNote" disabled>Draft note</button>
+              </div>
+              <div id="translationStatus" class="translation-status" aria-live="polite"></div>
+              <div id="translationOutput" class="translation-output reading-mode" hidden></div>
+              <a id="exportReviewedTranslations" class="reviewed-export-link" href="/api/sentence-translations/export?format=markdown">Export reviewed translations</a>
+            </section>
           </section>
-          <section class="research-card citation-card">
-            <h2>Citation</h2>
-            <div id="citationPreview" class="citation-preview"></div>
-            <button type="button" id="copyCitation">Copy citation</button>
-            <button type="button" id="copyUrl">Copy URL</button>
-            <button type="button" id="copySourceBundle">Copy source bundle</button>
+          <section class="study-panel" data-study-panel="notes">
+            <section class="research-card notes-card">
+              <h2>Notes</h2>
+              <form id="noteForm">
+                <label>Tags<input id="noteTags" name="tags" autocomplete="off"></label>
+                <label>Note<textarea id="noteText" name="note" required></textarea></label>
+                <button type="submit">Save note</button>
+              </form>
+              <div id="noteStatus" class="note-status"></div>
+              <label>Filter<input id="noteFilter" name="note_filter" autocomplete="off"></label>
+              <div id="notesList" class="notes-list"></div>
+            </section>
           </section>
-          <section class="research-card notes-card">
-            <h2>Notes</h2>
-            <form id="noteForm">
-              <label>Tags<input id="noteTags" name="tags" autocomplete="off"></label>
-              <label>Note<textarea id="noteText" name="note" required></textarea></label>
-              <button type="submit">Save note</button>
-            </form>
-            <div id="noteStatus" class="note-status"></div>
-            <label>Filter<input id="noteFilter" name="note_filter" autocomplete="off"></label>
-            <div id="notesList" class="notes-list"></div>
+          <section class="study-panel" data-study-panel="citation">
+            <section class="research-card citation-card">
+              <h2>Citation</h2>
+              <div id="citationPreview" class="citation-preview"></div>
+              <button type="button" id="copyCitation">Copy citation</button>
+              <button type="button" id="copyUrl">Copy URL</button>
+              <button type="button" id="copySourceBundle">Copy source bundle</button>
+            </section>
           </section>
-          {{CONCEPTS}}
+          <section class="study-panel" data-study-panel="concepts">
+            {{CONCEPTS}}
+          </section>
         </aside>
       </section>
     </main>
   </div>
   <script id="researchData" type="application/json">{{RESEARCH_JSON}}</script>
-  <script src="/assets/reader-work.js?v=common3"></script>
+  <script src="/assets/reader-work.js?v=common5"></script>
 </body>
 </html>

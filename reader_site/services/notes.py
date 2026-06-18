@@ -8,6 +8,7 @@ from urllib.parse import quote
 from uuid import uuid4
 
 from corpora.catalogs import validate_work_target
+from services.sentence_targets import resolve_sentence_target
 from services.source_targets import resolve_segment_target
 from services.sources import work_href
 
@@ -16,7 +17,7 @@ SITE = Path(__file__).resolve().parents[1]
 NOTES_DIR = SITE / "data" / "notes"
 DEFAULT_CORPUS_IDS = ("nietzsche", "bible", "kierkegaard", "wittgenstein")
 VALID_REVIEW_STATES = {"raw", "reviewed"}
-SEGMENT_NOTE_TARGET_TYPES = {"segment", "paragraph", "verse"}
+SEGMENT_NOTE_TARGET_TYPES = {"segment", "paragraph", "verse", "sentence"}
 
 
 def safe_note_slug(value: str) -> str:
@@ -59,6 +60,10 @@ def note_target_url(corpus_id: str, work_id: str, variant_id: str = "", target_i
 def validate_note_target(corpus_id: str, work_id: str, variant_id: str, target_id: str, target_type: str) -> None:
     validate_work_target(corpus_id, work_id)
     if not target_id or target_id == "work":
+        return
+    if target_type == "sentence":
+        segment_id = target_id.split(".s", 1)[0]
+        resolve_sentence_target(corpus_id, work_id, segment_id, target_id, variant_id)
         return
     if target_type in SEGMENT_NOTE_TARGET_TYPES:
         resolve_segment_target(corpus_id, work_id, target_id, variant_id)

@@ -6,12 +6,28 @@ const notesList = document.getElementById("notesList");
 const noteFilter = document.getElementById("noteFilter");
 const copySourceBundleButton = document.getElementById("copySourceBundle");
 const translationTarget = document.getElementById("translationTarget");
+const previousSentenceButton = document.getElementById("previousSentence");
+const nextSentenceButton = document.getElementById("nextSentence");
 const regenerateSentenceButton = document.getElementById("regenerateSentence");
+const markTranslationReviewedButton = document.getElementById("markTranslationReviewed");
+const rejectTranslationButton = document.getElementById("rejectTranslation");
+const draftTranslationNoteButton = document.getElementById("draftTranslationNote");
+const readingModeButton = document.getElementById("readingMode");
+const studyModeButton = document.getElementById("studyMode");
 const translationStatus = document.getElementById("translationStatus");
 const translationOutput = document.getElementById("translationOutput");
+const exportReviewedTranslations = document.getElementById("exportReviewedTranslations");
+const noteTags = document.getElementById("noteTags");
+const noteText = document.getElementById("noteText");
+const studyTabs = Array.from(document.querySelectorAll(".study-tab"));
+const studyPanels = Array.from(document.querySelectorAll(".study-panel"));
+const sentenceNodes = Array.from(document.querySelectorAll(".reader-sentence"));
 const sourceBundleTargetTypes = new Set(["segment", "section", "paragraph", "verse"]);
 let selectedSentence = null;
+let selectedTranslationRecord = null;
 let activeTranslationRequest = 0;
+let translationMode = "reading";
+let translationStatusTimer = null;
 
 function cleanText(value) {
   return String(value || "").replace(/[#¶]/g, "").replace(/\s+/g, " ").trim();
@@ -23,6 +39,51 @@ function escapeHtml(value) {
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;");
+}
+
+function setStudyPanel(name) {
+  studyTabs.forEach((tab) => {
+    tab.classList.toggle("active", tab.dataset.studyTab === name);
+  });
+  studyPanels.forEach((panel) => {
+    panel.classList.toggle("active", panel.dataset.studyPanel === name);
+  });
+}
+
+function setTranslationMode(mode) {
+  translationMode = mode === "study" ? "study" : "reading";
+  readingModeButton.classList.toggle("active", translationMode === "reading");
+  studyModeButton.classList.toggle("active", translationMode === "study");
+  translationOutput.classList.toggle("reading-mode", translationMode === "reading");
+  translationOutput.classList.toggle("study-mode", translationMode === "study");
+}
+
+function setTranslationStatus(message, persistent = false) {
+  window.clearTimeout(translationStatusTimer);
+  translationStatus.textContent = message || "";
+  translationStatus.classList.toggle("visible", Boolean(message));
+  if (message && !persistent) {
+    translationStatusTimer = window.setTimeout(() => {
+      translationStatus.textContent = "";
+      translationStatus.classList.remove("visible");
+    }, 3200);
+  }
+}
+
+function sentenceIndex(sentenceId) {
+  return sentenceNodes.findIndex((node) => (node.dataset.sentenceId || node.id) === sentenceId);
+}
+
+function updateSentenceControls() {
+  const index = selectedSentence ? sentenceIndex(selectedSentence.sentenceId) : -1;
+  const hasSelection = index >= 0;
+  previousSentenceButton.disabled = !hasSelection || index === 0;
+  nextSentenceButton.disabled = !hasSelection || index === sentenceNodes.length - 1;
+  regenerateSentenceButton.disabled = !hasSelection;
+  const hasRecord = Boolean(selectedTranslationRecord && selectedTranslationRecord.id);
+  markTranslationReviewedButton.disabled = !hasRecord || selectedTranslationRecord.review_state === "reviewed";
+  rejectTranslationButton.disabled = !hasRecord || selectedTranslationRecord.review_state === "rejected";
+  draftTranslationNoteButton.disabled = !hasRecord;
 }
 
 function currentTarget() {
@@ -86,8 +147,11 @@ function selectSentence(node, updateHash = true) {
   });
   node.classList.add("selected");
   selectedSentence = sentence;
-  translationTarget.textContent = `${sentence.sentenceId} / ${sentence.text}`;
-  regenerateSentenceButton.disabled = false;
+  selectedTranslationRecord = null;
+  const index = sentenceIndex(sentence.sentenceId);
+  const position = index >= 0 ? `Sentence ${index + 1} of ${sentenceNodes.length}` : sentence.sentenceId;
+  translationTarget.textContent = `${position} / ${sentence.sentenceId}`;
+  updateSentenceControls();
   if (updateHash) {
     history.replaceState(null, "", `${location.pathname}${location.search}#${encodeURIComponent(sentence.sentenceId)}`);
   }
@@ -102,6 +166,23 @@ function selectSentenceFromHash() {
   }
 }
 
+function scrollSentenceIntoView(node) {
+  if (!node || typeof node.scrollIntoView !== "function") return;
+  node.scrollIntoView({ block: "center", inline: "nearest", behavior: "smooth" });
+}
+
+function navigateSentence(delta) {
+  if (!sentenceNodes.length) return;
+  const currentIndex = selectedSentence ? sentenceIndex(selectedSentence.sentenceId) : -1;
+  const nextIndex = Math.min(sentenceNodes.length - 1, Math.max(0, currentIndex + delta));
+  const nextNode = sentenceNodes[nextIndex >= 0 ? nextIndex : 0];
+  if (!nextNode) return;
+  selectSentence(nextNode);
+  scrollSentenceIntoView(nextNode);
+  setStudyPanel("translation");
+  requestSentenceTranslation(false);
+}
+
 function renderList(values) {
   if (!Array.isArray(values) || !values.length) return "";
   return `<ul>${values.map((value) => `<li>${escapeHtml(cleanText(value))}</li>`).join("")}</ul>`;
@@ -110,30 +191,40 @@ function renderList(values) {
 function optionalCautions(record) {
   const cautions = renderList(record.cautions);
   if (!cautions) return "";
-  return `<h3>Cautions</h3>${cautions}`;
+  return `<div class="translation-extra"><h3>Cautions</h3>${cautions}</div>`;
 }
 
 function renderTranslationRecord(record, cached) {
+  selectedTranslationRecord = record;
+  const reviewState = cleanText(record.review_state || "generated");
   translationOutput.hidden = false;
+  translationOutput.classList.toggle("reading-mode", translationMode === "reading");
+  translationOutput.classList.toggle("study-mode", translationMode === "study");
   translationOutput.innerHTML = `
-    <h3>Original source</h3>
-    <p>${escapeHtml(cleanText(record.source_text_excerpt || selectedSentence?.text || ""))}</p>
+    <div class="translation-review-state">${escapeHtml(reviewState)}${cached ? " / cached" : ""}</div>
+    <div class="translation-extra">
+      <h3>Original source</h3>
+      <p>${escapeHtml(cleanText(record.source_text_excerpt || selectedSentence?.text || ""))}</p>
+    </div>
     <h3>Translation</h3>
     <p class="translation-primary">${escapeHtml(cleanText(record.translation || ""))}</p>
-    <h3>Commentary</h3>
-    <p>${escapeHtml(cleanText(record.commentary || record.interpretation || ""))}</p>
+    <div class="translation-commentary">
+      <h3>Commentary</h3>
+      <p>${escapeHtml(cleanText(record.commentary || record.interpretation || ""))}</p>
+    </div>
     ${optionalCautions(record)}`;
+  updateSentenceControls();
 }
 
 async function requestSentenceTranslation(regenerate = false) {
   if (!selectedSentence) {
-    translationStatus.textContent = "Select a sentence first.";
+    setTranslationStatus("Select a sentence first.", true);
     return;
   }
   const requestId = activeTranslationRequest + 1;
   activeTranslationRequest = requestId;
   const sentenceNode = document.getElementById(selectedSentence.sentenceId);
-  translationStatus.textContent = regenerate ? "Regenerating with Gemma..." : "Translating with Gemma...";
+  setTranslationStatus(regenerate ? "Regenerating with Gemma..." : "Translating with Gemma...", true);
   regenerateSentenceButton.disabled = true;
   if (sentenceNode) {
     sentenceNode.classList.add("loading");
@@ -154,19 +245,62 @@ async function requestSentenceTranslation(regenerate = false) {
     const payload = await response.json().catch(() => ({}));
     if (requestId !== activeTranslationRequest) return;
     if (!response.ok || !payload.ok) {
-      translationStatus.textContent = payload.error || "Gemma runtime is not running.";
+      setTranslationStatus(payload.error || "Gemma runtime is not running.", true);
       return;
     }
     renderTranslationRecord(payload.record, payload.cached);
-    translationStatus.textContent = payload.cached ? "Loaded cached translation." : "Generated translation saved locally.";
+    setTranslationStatus(payload.cached ? "Loaded cached translation." : "Generated translation saved locally.");
   } finally {
     if (requestId === activeTranslationRequest) {
-      regenerateSentenceButton.disabled = false;
+      updateSentenceControls();
     }
     if (sentenceNode) {
       sentenceNode.classList.remove("loading");
     }
   }
+}
+
+async function updateTranslationReview(reviewState) {
+  if (!selectedTranslationRecord || !selectedTranslationRecord.id) {
+    setTranslationStatus("No generated translation is selected.", true);
+    return;
+  }
+  setTranslationStatus(reviewState === "reviewed" ? "Marking reviewed..." : "Updating review state...", true);
+  const response = await fetch(`/api/sentence-translations/${encodeURIComponent(selectedTranslationRecord.id)}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      corpus_id: researchData.corpus_id || researchData.author_id || "",
+      review_state: reviewState
+    })
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok || !payload.ok) {
+    setTranslationStatus(payload.error || "Could not update translation review.", true);
+    return;
+  }
+  renderTranslationRecord(payload.record, true);
+  setTranslationStatus(reviewState === "reviewed" ? "Translation marked reviewed." : "Translation rejected.");
+}
+
+function draftNoteFromTranslation() {
+  if (!selectedTranslationRecord) return;
+  const translation = cleanText(selectedTranslationRecord.translation || "");
+  const commentary = cleanText(selectedTranslationRecord.commentary || selectedTranslationRecord.interpretation || "");
+  const parts = [];
+  if (translation) {
+    parts.push(`Translation:\n${translation}`);
+  }
+  if (commentary) {
+    parts.push(`Commentary:\n${commentary}`);
+  }
+  noteText.value = parts.join("\n\n");
+  const existingTags = noteTags.value.split(",").map((item) => item.trim()).filter(Boolean);
+  const mergedTags = Array.from(new Set([...existingTags, "ai-translation"]));
+  noteTags.value = mergedTags.join(", ");
+  setStudyPanel("notes");
+  noteText.focus();
+  setTranslationStatus("Translation drafted into Notes.");
 }
 
 function updateCitationPreview() {
@@ -202,7 +336,7 @@ async function loadNotes() {
   notesList.innerHTML = payload.notes.length
     ? payload.notes.map((note) => {
       const tags = (note.tags || []).join(", ");
-      const updated = note.updated_at ? ` · edited ${cleanText(note.updated_at)}` : "";
+      const updated = note.updated_at ? ` / edited ${cleanText(note.updated_at)}` : "";
       return `<div class="note-item" data-note-id="${escapeHtml(note.id)}" data-note-tags="${escapeHtml(tags)}">
         <strong>${escapeHtml(cleanText(note.target_label))}</strong><br>
         <div class="note-text">${escapeHtml(cleanText(note.note))}</div>
@@ -258,12 +392,43 @@ copySourceBundleButton.addEventListener("click", async () => {
 });
 
 regenerateSentenceButton.addEventListener("click", () => requestSentenceTranslation(true));
+previousSentenceButton.addEventListener("click", () => navigateSentence(-1));
+nextSentenceButton.addEventListener("click", () => navigateSentence(1));
+markTranslationReviewedButton.addEventListener("click", () => updateTranslationReview("reviewed"));
+rejectTranslationButton.addEventListener("click", () => updateTranslationReview("rejected"));
+draftTranslationNoteButton.addEventListener("click", draftNoteFromTranslation);
+readingModeButton.addEventListener("click", () => setTranslationMode("reading"));
+studyModeButton.addEventListener("click", () => setTranslationMode("study"));
+
+studyTabs.forEach((tab) => {
+  tab.addEventListener("click", () => setStudyPanel(tab.dataset.studyTab || "translation"));
+});
 
 document.querySelector(".reading-body").addEventListener("click", (event) => {
   const sentence = event.target.closest(".reader-sentence");
   if (sentence) {
     selectSentence(sentence);
+    setStudyPanel("translation");
     requestSentenceTranslation(false);
+  }
+});
+
+document.addEventListener("keydown", (event) => {
+  const target = event.target;
+  const isTyping = target && (
+    target.tagName === "INPUT" ||
+    target.tagName === "TEXTAREA" ||
+    target.tagName === "SELECT" ||
+    target.isContentEditable
+  );
+  if (isTyping || event.altKey || event.ctrlKey || event.metaKey) return;
+  if (event.key === "ArrowDown" || event.key === "j") {
+    event.preventDefault();
+    navigateSentence(1);
+  }
+  if (event.key === "ArrowUp" || event.key === "k") {
+    event.preventDefault();
+    navigateSentence(-1);
   }
 });
 
@@ -330,7 +495,30 @@ notesList.addEventListener("click", async (event) => {
 window.addEventListener("hashchange", () => {
   updateCitationPreview();
   selectSentenceFromHash();
+  updateSentenceControls();
 });
+
+function initializeStudyCompanion() {
+  setTranslationMode("reading");
+  setStudyPanel("translation");
+  const exportParams = new URLSearchParams({
+    corpus_id: researchData.corpus_id || researchData.author_id || "",
+    work_id: researchData.work_id || "",
+    review_state: "reviewed",
+    format: "markdown"
+  });
+  exportReviewedTranslations.href = `/api/sentence-translations/export?${exportParams}`;
+  const conceptsPanel = document.querySelector('[data-study-panel="concepts"]');
+  if (conceptsPanel && !conceptsPanel.textContent.trim()) {
+    conceptsPanel.innerHTML = '<section class="research-card"><h2>Concepts</h2><p class="source-notes">No concept notes for this work.</p></section>';
+  }
+  selectSentenceFromHash();
+  if (selectedSentence) {
+    requestSentenceTranslation(false);
+  }
+  updateSentenceControls();
+}
+
 updateCitationPreview();
-selectSentenceFromHash();
+initializeStudyCompanion();
 loadNotes();

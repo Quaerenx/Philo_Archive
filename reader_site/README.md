@@ -20,6 +20,13 @@ To run the reader with local Gemma 4 on-demand sentence translation:
 .\reader_site\run_reader_with_gemma.ps1
 ```
 
+Check the running local reader and Gemma sidecar:
+
+```powershell
+cd .\reader_site
+python .\scripts\check_local_runtime.py
+```
+
 This starts Philo Archive on port `8793` and a local-only llama.cpp sidecar at `http://127.0.0.1:8794`. The default model path is `C:\Users\PP\Downloads\gemma-4-26B-A4B-it-Q4_K_M.gguf`.
 
 The source corpus root defaults to the parent directory of `reader_site`. On another machine, either keep the same sibling-folder layout or set:
@@ -248,6 +255,10 @@ Common corpus/work/variant/segment schema contract: `docs/corpus_schema.md`.
 AI/Gemma interpretation provenance policy: `docs/ai_interpretation_policy.md`.
 
 Upgrade completion audit: `docs/upgrade_completion_audit.md`.
+
+Current usability/upgrade review: `docs/project_usability_upgrade_review_2026-06-17.md`.
+
+Local Windows autostart: `docs/local_windows_autostart.md`.
 
 Release handoff and Git upload policy: `docs/release_handoff.md`.
 

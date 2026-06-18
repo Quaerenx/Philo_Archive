@@ -7,6 +7,8 @@ import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+from urllib.error import URLError
+from urllib.request import urlopen
 
 from path_config import (
     BIBLE_OUTPUT,
@@ -26,6 +28,7 @@ DATA = SITE / "data"
 
 SEARCH_INDEX = DATA / "search_index.jsonl"
 SEARCH_DB = DATA / "search_index.sqlite"
+GEMMA_BASE_URL = os.environ.get("PHILO_GEMMA_BASE_URL", "http://127.0.0.1:8794")
 
 CORPORA = [
     {
@@ -165,6 +168,32 @@ def search_database_summary() -> dict[str, Any]:
     return summary
 
 
+def gemma_runtime_summary() -> dict[str, Any]:
+    summary: dict[str, Any] = {
+        "base_url": GEMMA_BASE_URL,
+        "reachable": False,
+        "model_count": 0,
+        "models": [],
+    }
+    try:
+        with urlopen(f"{GEMMA_BASE_URL.rstrip('/')}/v1/models", timeout=0.8) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except (OSError, URLError, TimeoutError, json.JSONDecodeError) as exc:
+        summary["error"] = str(exc)
+        return summary
+    models = payload.get("data") or payload.get("models") or []
+    if not isinstance(models, list):
+        models = []
+    summary["reachable"] = True
+    summary["model_count"] = len(models)
+    summary["models"] = [
+        str(model.get("id") or model.get("name") or model.get("model") or "")
+        for model in models
+        if isinstance(model, dict)
+    ][:5]
+    return summary
+
+
 def corpus_status(config: dict[str, Any]) -> dict[str, Any]:
     metadata = read_metadata_summary(config["metadata"])
     return {
@@ -222,6 +251,7 @@ def build_artifact_manifest(include_checksums: bool = False) -> dict[str, Any]:
 def build_runtime_health() -> dict[str, Any]:
     corpora = [corpus_status(config) for config in CORPORA]
     search = search_database_summary()
+    gemma = gemma_runtime_summary()
     issues = []
     for corpus in corpora:
         if not corpus["source_root_exists"]:
@@ -236,10 +266,13 @@ def build_runtime_health() -> dict[str, Any]:
         issues.append("missing search sqlite database")
     elif not search.get("fts5"):
         issues.append("search database is LIKE-based; FTS5 upgrade is still pending")
+    if not gemma.get("reachable"):
+        issues.append("Gemma runtime is not reachable")
 
     next_upgrades = [
         "Use the automated visual smoke script plus targeted browser review for future layout changes.",
-        "Prototype AI/Gemma interpretation only after implementing the documented provenance gates.",
+        "Add a dedicated local cache management page for generated Gemma sentence translations.",
+        "Refine corpus-specific reading paths after reviewing Bible canon layers and Wittgenstein/Kierkegaard variant semantics.",
         "Split route dispatch into a dedicated route module only if the HTTP handler grows again.",
     ]
     if search.get("fts5"):
@@ -254,6 +287,7 @@ def build_runtime_health() -> dict[str, Any]:
         "corpus_root": str(ROOT),
         "corpora": corpora,
         "search": search,
+        "gemma": gemma,
         "issues": issues,
         "next_recommended_upgrades": next_upgrades,
     }

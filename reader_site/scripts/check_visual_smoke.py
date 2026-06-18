@@ -106,6 +106,20 @@ def fetch_html(url: str) -> str:
         return response.read().decode("utf-8", errors="replace")
 
 
+def check_route_markup(route: str, html: str) -> None:
+    if route.startswith("/work/"):
+        for needle in [
+            "reading-desk",
+            "study-tabs",
+            "previousSentence",
+            "nextSentence",
+            "markTranslationReviewed",
+            "translation-output",
+            "reader-sentence",
+        ]:
+            require(needle in html, f"{route} missing visual smoke marker {needle!r}")
+
+
 def capture(browser: str, url: str, output_path: Path, width: int, height: int) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     command = [
@@ -150,6 +164,7 @@ def main() -> None:
             html = fetch_html(url)
             require("<html" in html.lower(), f"{route} response does not look like a page")
             require("Personal Archive of Literature" in html or "Archive" in html, f"{route} is missing archive identity text")
+            check_route_markup(route, html)
             for viewport_label, width, height in VIEWPORTS:
                 output_path = args.output / f"{route_label}-{viewport_label}.png"
                 capture(browser, url, output_path, width, height)

@@ -87,6 +87,9 @@ def check_routes(base_url: str) -> None:
     require("reading-desk" in work_body, f"{work_path} missing reading desk layout")
     require("copySourceBundle" in work_body, f"{work_path} missing source bundle action")
     require("translation-card" in work_body, f"{work_path} missing sentence translation panel")
+    require("previousSentence" in work_body and "nextSentence" in work_body, f"{work_path} missing sentence navigation")
+    require("markTranslationReviewed" in work_body, f"{work_path} missing translation review action")
+    require("study-tabs" in work_body, f"{work_path} missing study tabs")
     require("reader-sentence" in work_body, f"{work_path} missing sentence spans")
     work_cases = [
         "/work/nietzsche/M",
@@ -109,6 +112,8 @@ def check_routes(base_url: str) -> None:
     require(health.get("status") in {"ok", "warning"}, "health status invalid")
     study = fetch_json(base_url, "/api/study")
     require("groups" in study and "count" in study, "study api shape invalid")
+    translation_export = fetch_text(base_url, "/api/sentence-translations/export?corpus_id=nietzsche&work_id=GM&format=markdown")
+    require("Reviewed Gemma Sentence Translations" in translation_export, "sentence translation export invalid")
     target = fetch_json(base_url, "/api/source-target?corpus_id=nietzsche&work_id=GM&target_id=p-0023")
     target_record = target.get("target") or {}
     require(target_record.get("record_type") == "source_target_bundle", "source target api record_type invalid")

@@ -87,6 +87,7 @@ Notes:
   "corpus_root": "C:\\Users\\PP\\PROJECT\\0.philosophy\\philosophy_crawl",
   "corpora": [],
   "search": {},
+  "gemma": {},
   "issues": [],
   "next_recommended_upgrades": []
 }
@@ -149,6 +150,17 @@ File records such as `metadata`, `segments`, and `notes`:
     "wittgenstein": 125676
   },
   "fts5": true
+}
+```
+
+`gemma`:
+
+```json
+{
+  "base_url": "http://127.0.0.1:8794",
+  "reachable": true,
+  "model_count": 1,
+  "models": ["gemma-4-26B-A4B-it-Q4_K_M.gguf"]
 }
 ```
 
@@ -386,6 +398,32 @@ Response:
 ```
 
 If the llama.cpp sidecar is not running at `127.0.0.1:8794`, the endpoint returns `503` with `{"ok": false, "error": "Gemma runtime is not running"}`. Generated JSONL files under `data/ai/` are local-only and ignored by Git.
+
+## `PUT /api/sentence-translations/<record_id>`
+
+Updates the local review state for one generated sentence translation record. This does not call Gemma and does not edit source text.
+
+Request:
+
+```json
+{
+  "corpus_id": "nietzsche",
+  "review_state": "reviewed"
+}
+```
+
+Allowed `review_state` values are `generated`, `reviewed`, and `rejected`.
+
+## `GET /api/sentence-translations/export`
+
+Exports local sentence translation records for study review.
+
+Query parameters:
+
+- `corpus_id`: required corpus id.
+- `work_id`: optional work id filter.
+- `review_state`: `reviewed` by default; also accepts `generated`, `rejected`, or `all`.
+- `format`: `markdown` by default; `json` returns structured records.
 
 Bible direct lookup:
 

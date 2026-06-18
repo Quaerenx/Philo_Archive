@@ -1,5 +1,7 @@
 const state = {
   archive: null,
+  categoryQuery: "",
+  activeSection: "all",
 };
 
 const el = {
@@ -27,6 +29,35 @@ function currentCategoryId() {
 
 function filteredSections(corpus) {
   return corpus.sections.filter((section) => section.links.length || section.count);
+}
+
+function normalizedContains(value, query) {
+  return normalize(value).includes(normalize(query));
+}
+
+function filteredCategorySections(corpus) {
+  const sections = filteredSections(corpus)
+    .filter((section) => state.activeSection === "all" || section.title === state.activeSection)
+    .map((section) => {
+      const links = section.links.filter((link) => {
+        if (!state.categoryQuery) return true;
+        return [
+          link.label,
+          link.meta,
+          link.work_id,
+          section.title,
+          section.meta,
+        ].some((value) => normalizedContains(value, state.categoryQuery));
+      });
+      return { ...section, links, count: links.length };
+    });
+  return sections.filter((section) => section.links.length);
+}
+
+function readingPathLinks(corpus) {
+  const sections = filteredSections(corpus);
+  const primary = sections.find((section) => /주요|core|hebrew|works/i.test(`${section.title} ${section.meta || ""}`)) || sections[0];
+  return primary ? primary.links.slice(0, 6) : [];
 }
 
 function renderShell(title, subtitle) {
@@ -70,10 +101,15 @@ function renderCategory(categoryId) {
   }
 
   renderShell(corpus.title, corpus.subtitle || corpus.id);
-  const sections = filteredSections(corpus);
+  const baseSections = filteredSections(corpus);
+  if (state.activeSection !== "all" && !baseSections.some((section) => section.title === state.activeSection)) {
+    state.activeSection = "all";
+  }
+  const sections = filteredCategorySections(corpus);
   if (!sections.length) {
     el.archiveLinks.innerHTML = [
       `<a class="back-link" href="/">Archive index</a>`,
+      categoryControls(corpus, baseSections),
       `<div class="empty">No matching texts.</div>`,
     ].join("");
     return;
@@ -81,6 +117,7 @@ function renderCategory(categoryId) {
 
   el.archiveLinks.innerHTML = [
     `<a class="back-link" href="/">Archive index</a>`,
+    categoryControls(corpus, baseSections),
     sections
       .map((section) => {
         const sectionMeta = section.meta ? `<div class="section-meta">${escapeHtml(section.meta)}</div>` : "";
@@ -94,6 +131,45 @@ function renderCategory(categoryId) {
       })
       .join(""),
   ].join("");
+  bindCategoryControls();
+}
+
+function categoryControls(corpus, sections) {
+  const pathLinks = readingPathLinks(corpus)
+    .map((link) => `<a href="${escapeHtml(link.href)}">${escapeHtml(link.label)}</a>`)
+    .join("");
+  const sectionButtons = [
+    `<button type="button" class="section-filter${state.activeSection === "all" ? " active" : ""}" data-section-filter="all">All</button>`,
+    ...sections.map((section) => (
+      `<button type="button" class="section-filter${state.activeSection === section.title ? " active" : ""}" data-section-filter="${escapeHtml(section.title)}">${escapeHtml(section.title)}</button>`
+    )),
+  ].join("");
+  return `<section class="category-tools">
+    <div class="reading-path"><strong>Reading path</strong><div>${pathLinks || '<span class="empty">No reading path available.</span>'}</div></div>
+    <label class="category-filter">Filter<input id="categoryFilter" value="${escapeHtml(state.categoryQuery)}" autocomplete="off"></label>
+    <div class="section-filters" aria-label="Section filters">${sectionButtons}</div>
+  </section>`;
+}
+
+function bindCategoryControls() {
+  const filter = document.querySelector("#categoryFilter");
+  if (filter) {
+    filter.addEventListener("input", () => {
+      state.categoryQuery = filter.value.trim();
+      renderArchive();
+      const nextFilter = document.querySelector("#categoryFilter");
+      if (nextFilter) {
+        nextFilter.focus();
+        nextFilter.setSelectionRange(nextFilter.value.length, nextFilter.value.length);
+      }
+    });
+  }
+  document.querySelectorAll(".section-filter").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.activeSection = button.dataset.sectionFilter || "all";
+      renderArchive();
+    });
+  });
 }
 
 async function init() {
