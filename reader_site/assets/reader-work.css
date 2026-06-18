@@ -435,6 +435,17 @@ h1 {
   text-decoration-color: #cfcfcf;
 }
 
+.study-session-summary {
+  margin-top: 6px;
+  color: #5f5f5f;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.study-session-summary[data-session-state="has-content"] {
+  color: #444;
+}
+
 .translation-records-summary {
   margin-top: 10px;
   padding: 5px 6px;

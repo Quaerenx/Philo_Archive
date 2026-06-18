@@ -35,6 +35,7 @@ const translationRecordsSummary = document.getElementById("translationRecordsSum
 const exportReviewedTranslations = document.getElementById("exportReviewedTranslations");
 const exportAllTranslations = document.getElementById("exportAllTranslations");
 const exportStudySession = document.getElementById("exportStudySession");
+const studySessionSummary = document.getElementById("studySessionSummary");
 const noteTags = document.getElementById("noteTags");
 const noteText = document.getElementById("noteText");
 const noteSaveButton = noteForm.querySelector("button[type='submit']");
@@ -358,6 +359,50 @@ function updateTranslationExportLinks(total, reviewed) {
     exportAllTranslations.title = total
       ? `Export ${total} translation records`
       : "No translation records yet";
+  }
+}
+
+function setStudySessionSummary(text, state = "empty") {
+  if (!studySessionSummary) return;
+  studySessionSummary.textContent = text;
+  studySessionSummary.dataset.sessionState = state;
+}
+
+function updateStudySessionExportLink(noteCount, translationCount) {
+  if (!exportStudySession) return;
+  const total = noteCount + translationCount;
+  exportStudySession.dataset.exportCount = String(total);
+  exportStudySession.classList.toggle("is-empty", total === 0);
+  exportStudySession.title = total
+    ? `Export reviewed study session: ${noteCount} notes and ${translationCount} translations`
+    : "No reviewed notes or reviewed translations for this session yet";
+}
+
+async function loadStudySessionSummary() {
+  if (!studySessionSummary) return;
+  const params = new URLSearchParams({
+    corpus_id: researchData.corpus_id || researchData.author_id || "",
+    work_id: researchData.work_id || "",
+    notes_review_state: "reviewed",
+    translation_review_state: "reviewed",
+    format: "json"
+  });
+  try {
+    const response = await fetch(`/api/study-session/export?${params}`);
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok || !payload.ok) {
+      throw new Error(payload.error || "Study session unavailable");
+    }
+    const noteCount = Number(payload.note_count || 0);
+    const translationCount = Number(payload.translation_count || 0);
+    setStudySessionSummary(
+      `Session export: ${noteCount} reviewed notes / ${translationCount} reviewed translations`,
+      noteCount + translationCount ? "has-content" : "empty"
+    );
+    updateStudySessionExportLink(noteCount, translationCount);
+  } catch (error) {
+    setStudySessionSummary("Session export unavailable.", "unavailable");
+    updateStudySessionExportLink(0, 0);
   }
 }
 
@@ -1261,6 +1306,7 @@ async function updateTranslationReview(reviewState) {
     }
     renderTranslationRecord(payload.record, true);
     loadTranslationRecordsSummary();
+    loadStudySessionSummary();
     setTranslationStatus(reviewState === "reviewed" ? "Translation marked reviewed." : "Translation rejected.");
   } catch (error) {
     const message = error && error.message ? error.message : "Could not update translation review.";
@@ -2035,6 +2081,7 @@ function initializeStudyCompanion() {
   updateStudyPanelScrim();
   checkGemmaRuntimeStatus(false);
   loadTranslationRecordsSummary();
+  loadStudySessionSummary();
 }
 
 initializeStudyCompanion();
