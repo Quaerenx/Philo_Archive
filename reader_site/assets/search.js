@@ -3,9 +3,12 @@ const queryInput = document.getElementById("queryInput");
 const corpusSelect = document.getElementById("corpusSelect");
 const workSelect = document.getElementById("workSelect");
 const variantSelect = document.getElementById("variantSelect");
+const searchSubmit = document.getElementById("searchSubmit");
 const statusEl = document.getElementById("searchStatus");
 const resultsEl = document.getElementById("results");
 const metadataCache = {};
+let activeSearchController = null;
+let activeSearchRequest = 0;
 const metadataEndpoints = {
   nietzsche: "/api/nietzsche/metadata",
   bible: "/api/bible/metadata",
@@ -46,6 +49,32 @@ function notesHref(result) {
   if (result.work_id) params.set("work_id", result.work_id);
   if (result.segment_id) params.set("target_id", result.segment_id);
   return `/notes?${params}`;
+}
+
+function setSearchBusy(isBusy) {
+  form.classList.toggle("is-searching", isBusy);
+  resultsEl.setAttribute("aria-busy", isBusy ? "true" : "false");
+  if (searchSubmit) {
+    searchSubmit.disabled = isBusy;
+    searchSubmit.setAttribute("aria-busy", isBusy ? "true" : "false");
+  }
+}
+
+function renderSearchPending(query) {
+  const label = query ? `Searching "${query}"...` : "Searching...";
+  statusEl.textContent = label;
+  resultsEl.innerHTML = `
+    <article class="result search-skeleton" aria-hidden="true">
+      <span class="search-skeleton-line title"></span>
+      <span class="search-skeleton-line"></span>
+      <span class="search-skeleton-line short"></span>
+    </article>
+    <article class="result search-skeleton" aria-hidden="true">
+      <span class="search-skeleton-line title"></span>
+      <span class="search-skeleton-line"></span>
+      <span class="search-skeleton-line short"></span>
+    </article>`;
+  setSearchBusy(true);
 }
 
 function renderResults(payload, query) {
@@ -204,24 +233,49 @@ async function runSearch() {
   const corpusId = corpusSelect.value;
   const workId = workSelect.disabled ? "" : workSelect.value;
   const variantId = variantSelect.disabled ? "" : variantSelect.value;
+  const requestId = activeSearchRequest + 1;
+  activeSearchRequest = requestId;
+  if (activeSearchController) {
+    activeSearchController.abort();
+    activeSearchController = null;
+  }
   updateUrl(query, corpusId, workId, variantId);
   if (!query) {
     statusEl.textContent = "";
     resultsEl.innerHTML = "";
+    setSearchBusy(false);
     return;
   }
-  statusEl.textContent = "Searching...";
-  resultsEl.innerHTML = "";
+  const controller = new AbortController();
+  activeSearchController = controller;
+  renderSearchPending(query);
   const params = new URLSearchParams({ q: query, limit: "40" });
   if (corpusId) params.set("corpus_id", corpusId);
   if (workId) params.set("work_id", workId);
   if (variantId) params.set("variant_id", variantId);
-  const response = await fetch(`/api/search?${params}`);
-  if (!response.ok) {
-    statusEl.textContent = "Search failed.";
-    return;
+  try {
+    const response = await fetch(`/api/search?${params}`, { signal: controller.signal });
+    if (requestId !== activeSearchRequest) return;
+    if (!response.ok) {
+      statusEl.textContent = "Search failed.";
+      resultsEl.innerHTML = "";
+      return;
+    }
+    renderResults(await response.json(), query);
+  } catch (error) {
+    if (error && error.name === "AbortError") {
+      return;
+    }
+    if (requestId === activeSearchRequest) {
+      statusEl.textContent = "Search failed.";
+      resultsEl.innerHTML = "";
+    }
+  } finally {
+    if (requestId === activeSearchRequest) {
+      activeSearchController = null;
+      setSearchBusy(false);
+    }
   }
-  renderResults(await response.json(), query);
 }
 
 form.addEventListener("submit", (event) => {

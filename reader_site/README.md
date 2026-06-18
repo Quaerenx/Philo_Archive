@@ -234,7 +234,17 @@ Capture local browser screenshots for visual smoke QA:
 python .\scripts\check_visual_smoke.py
 ```
 
-The visual smoke script writes ignored PNG artifacts under `data/visual_qa.local/` and requires a local Edge, Chrome, or Chromium install.
+The visual smoke script writes ignored PNG artifacts under `data/visual_qa.local/` and requires a local Edge, Chrome, or Chromium install. In locked-down browser environments, validate the routed HTML/UI markers without screenshots:
+
+```powershell
+python .\scripts\check_visual_smoke.py --html-only
+```
+
+To keep HTML marker validation while recording flaky local browser screenshot failures, use:
+
+```powershell
+python .\scripts\check_visual_smoke.py --allow-screenshot-failures
+```
 
 Check the static pages, representative work page, `/api/health`, and `/api/study` through a temporary local HTTP server with:
 

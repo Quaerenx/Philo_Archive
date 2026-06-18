@@ -6,7 +6,7 @@
   <title>{{TITLE}} / {{CORPUS_TITLE}}</title>
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
-  <link rel="stylesheet" href="/assets/reader-work.css?v=common17">
+  <link rel="stylesheet" href="/assets/reader-work.css?v=common19">
 </head>
 <body class="{{BODY_CLASS}}">
   <div class="page">
@@ -31,7 +31,7 @@
           <article class="reading-body" dir="{{TEXT_DIRECTION}}" data-headings="{{HEADING_COUNT}}" data-segments="{{SEGMENT_COUNT}}">{{CONTENT}}</article>
         </section>
         <aside id="studyCompanionPanel" class="study-page" aria-label="Study companion">
-          <button type="button" id="studyPanelToggle" class="study-panel-toggle" aria-expanded="false" aria-controls="studyCompanionPanel">Full study panel</button>
+          <button type="button" id="studyPanelToggle" class="study-panel-toggle" aria-expanded="false" aria-controls="studyCompanionPanel" aria-label="Full study panel. Select a sentence"><span class="study-panel-toggle-action">Full study panel</span><span class="study-panel-toggle-summary">Select a sentence</span></button>
           <nav class="study-tabs" role="tablist" aria-label="Study companion tools" aria-orientation="horizontal">
             <button type="button" id="study-tab-translation" class="study-tab active" role="tab" aria-selected="true" aria-controls="study-panel-translation" tabindex="0" data-study-tab="translation">Translation</button>
             <button type="button" id="study-tab-notes" class="study-tab" role="tab" aria-selected="false" aria-controls="study-panel-notes" tabindex="-1" data-study-tab="notes">Notes</button>
@@ -95,6 +95,6 @@
     </main>
   </div>
   <script id="researchData" type="application/json">{{RESEARCH_JSON}}</script>
-  <script src="/assets/reader-work.js?v=common18"></script>
+  <script src="/assets/reader-work.js?v=common22"></script>
 </body>
 </html>

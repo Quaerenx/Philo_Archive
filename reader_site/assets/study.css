@@ -140,8 +140,35 @@ h1 {
 }
 
 .study-form button {
+  position: relative;
   padding: 4px 12px;
   cursor: pointer;
+}
+
+.study-form button:disabled {
+  color: #777;
+  cursor: default;
+  background: #f3f3f3;
+}
+
+.study-form.is-loading button {
+  padding-right: 28px;
+  background: #fffaf0;
+  border-color: #c8b86a;
+}
+
+.study-form.is-loading button::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  width: 10px;
+  height: 10px;
+  margin-top: -5px;
+  border: 2px solid #d8d1a8;
+  border-top-color: #b00000;
+  border-radius: 50%;
+  animation: archive-spin 850ms linear infinite;
 }
 
 .export-row {
@@ -245,6 +272,52 @@ h1 {
   margin: 7px 0 0;
   padding-left: 12px;
   border-left: 2px solid #d4d4d4;
+}
+
+.study-skeleton {
+  display: grid;
+  gap: 8px;
+  min-height: 92px;
+}
+
+.study-skeleton-line {
+  display: block;
+  width: 88%;
+  height: 10px;
+  background: linear-gradient(90deg, #ececec 0%, #fafafa 44%, #ececec 88%);
+  background-size: 220% 100%;
+  border: 1px solid #e3e3e3;
+  animation: archive-skeleton 1.2s ease-in-out infinite;
+}
+
+.study-skeleton-line.title {
+  width: 58%;
+}
+
+.study-skeleton-line.short {
+  width: 44%;
+}
+
+@keyframes archive-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes archive-skeleton {
+  0% {
+    background-position: 120% 0;
+  }
+  100% {
+    background-position: -120% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .study-form.is-loading button::after,
+  .study-skeleton-line {
+    animation: none;
+  }
 }
 
 @media (max-width: 860px) {

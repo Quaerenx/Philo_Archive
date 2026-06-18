@@ -128,8 +128,35 @@ h1 {
 }
 
 .search-form button {
+  position: relative;
   padding: 4px 12px;
   cursor: pointer;
+}
+
+.search-form button:disabled {
+  color: #777;
+  cursor: default;
+  background: #f3f3f3;
+}
+
+.search-form.is-searching button {
+  padding-right: 28px;
+  background: #fffaf0;
+  border-color: #c8b86a;
+}
+
+.search-form.is-searching button::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  width: 10px;
+  height: 10px;
+  margin-top: -5px;
+  border: 2px solid #d8d1a8;
+  border-top-color: #b00000;
+  border-radius: 50%;
+  animation: archive-spin 850ms linear infinite;
 }
 
 .results {
@@ -218,6 +245,52 @@ h1 {
 mark {
   padding: 0 1px;
   background: #fff3a3;
+}
+
+.search-skeleton {
+  display: grid;
+  gap: 8px;
+  min-height: 82px;
+}
+
+.search-skeleton-line {
+  display: block;
+  width: 86%;
+  height: 10px;
+  background: linear-gradient(90deg, #ececec 0%, #fafafa 44%, #ececec 88%);
+  background-size: 220% 100%;
+  border: 1px solid #e3e3e3;
+  animation: archive-skeleton 1.2s ease-in-out infinite;
+}
+
+.search-skeleton-line.title {
+  width: 54%;
+}
+
+.search-skeleton-line.short {
+  width: 42%;
+}
+
+@keyframes archive-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes archive-skeleton {
+  0% {
+    background-position: 120% 0;
+  }
+  100% {
+    background-position: -120% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .search-form.is-searching button::after,
+  .search-skeleton-line {
+    animation: none;
+  }
 }
 
 @media (max-width: 860px) {

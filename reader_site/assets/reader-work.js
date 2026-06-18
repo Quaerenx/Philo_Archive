@@ -33,6 +33,8 @@ const sourceBundleTargetTypes = new Set(["segment", "section", "paragraph", "ver
 let selectedSentence = null;
 let selectedTranslationRecord = null;
 let activeTranslationRequest = 0;
+let activeTranslationController = null;
+let activeTranslationTargetKey = "";
 let translationMode = "reading";
 let translationStatusTimer = null;
 let recentlyChangedNoteId = "";
@@ -92,11 +94,43 @@ function rememberStudyPanelExpanded(expanded) {
   }
 }
 
+function selectedSentencePositionLabel() {
+  if (!selectedSentence) return "Select a sentence";
+  const index = sentenceIndex(selectedSentence.sentenceId);
+  return index >= 0 ? `Sentence ${index + 1} of ${sentenceNodes.length}` : selectedSentence.sentenceId;
+}
+
+function studyPanelToggleSummary() {
+  if (!selectedSentence) return "Select a sentence";
+  const position = selectedSentencePositionLabel();
+  if (translationCard && translationCard.classList.contains("is-loading")) {
+    return `${position} / studying`;
+  }
+  if (translationOutput && translationOutput.querySelector(".translation-error")) {
+    return `${position} / unavailable`;
+  }
+  if (selectedTranslationRecord) {
+    return `${position} / translation ready`;
+  }
+  return position;
+}
+
+function updateStudyPanelToggleLabel() {
+  if (!studyPage || !studyPanelToggle) return;
+  const expanded = studyPage.classList.contains("is-expanded");
+  const action = expanded ? "Compact study panel" : "Full study panel";
+  const summary = studyPanelToggleSummary();
+  studyPanelToggle.innerHTML = `
+    <span class="study-panel-toggle-action">${escapeHtml(action)}</span>
+    <span class="study-panel-toggle-summary">${escapeHtml(summary)}</span>`;
+  studyPanelToggle.setAttribute("aria-label", `${action}. ${summary}`);
+}
+
 function setStudyPanelExpanded(expanded, remember = false) {
   if (!studyPage || !studyPanelToggle) return;
   studyPage.classList.toggle("is-expanded", expanded);
   studyPanelToggle.setAttribute("aria-expanded", expanded ? "true" : "false");
-  studyPanelToggle.textContent = expanded ? "Compact study panel" : "Full study panel";
+  updateStudyPanelToggleLabel();
   if (remember) {
     rememberStudyPanelExpanded(expanded);
   }
@@ -199,6 +233,17 @@ function currentTarget() {
   return { id, label, type, url };
 }
 
+function selectedTranslationTargetKey() {
+  if (!selectedSentence) return "";
+  return [
+    researchData.corpus_id || researchData.author_id || "",
+    researchData.work_id || "",
+    researchData.variant_id || "",
+    selectedSentence.segmentId,
+    selectedSentence.sentenceId
+  ].join("|");
+}
+
 function citationText() {
   const target = currentTarget();
   if (researchData.corpus_id === "bible") {
@@ -243,17 +288,21 @@ function sentenceFromNode(node) {
 function selectSentence(node, updateHash = true) {
   const sentence = sentenceFromNode(node);
   if (!sentence || !sentence.sentenceId || !sentence.segmentId) return;
+  const sameSentence = selectedSentence && selectedSentence.sentenceId === sentence.sentenceId;
   document.querySelectorAll(".reader-sentence.selected").forEach((item) => {
     item.classList.remove("selected");
   });
   node.classList.add("selected");
   selectedSentence = sentence;
-  selectedTranslationRecord = null;
+  if (!sameSentence) {
+    selectedTranslationRecord = null;
+  }
   const index = sentenceIndex(sentence.sentenceId);
   const position = index >= 0 ? `Sentence ${index + 1} of ${sentenceNodes.length}` : sentence.sentenceId;
   translationTarget.textContent = `${position} / ${sentence.sentenceId}`;
   updateSentenceContext();
   updateSentenceControls();
+  updateStudyPanelToggleLabel();
   if (updateHash) {
     history.replaceState(null, "", `${location.pathname}${location.search}#${encodeURIComponent(sentence.sentenceId)}`);
   }
@@ -326,12 +375,16 @@ function navigateSentence(delta) {
     : Math.min(sentenceNodes.length - 1, Math.max(0, currentIndex + delta));
   const nextNode = sentenceNodes[nextIndex];
   if (!nextNode) return;
+  const nextSentenceId = nextNode.dataset.sentenceId || nextNode.id || "";
+  const wasSelected = selectedSentence && selectedSentence.sentenceId === nextSentenceId;
   selectSentence(nextNode);
   scrollSentenceIntoView(nextNode);
   setStudyPanel("translation");
   setStudyPanelExpanded(true);
   keepSentenceAboveStudyPanel(nextNode);
-  requestSentenceTranslation(false);
+  if (!wasSelected || !selectedTranslationRecord) {
+    requestSentenceTranslation(false);
+  }
 }
 
 function renderList(values) {
@@ -342,18 +395,21 @@ function renderList(values) {
 function optionalCautions(record) {
   const cautions = renderList(record.cautions);
   if (!cautions) return "";
-  return `<div class="translation-extra"><h3>Cautions</h3>${cautions}</div>`;
+  return `<section class="translation-section translation-extra">
+      <h3>Cautions</h3>
+      ${cautions}
+    </section>`;
 }
 
 function renderCommentary(commentary) {
   const text = cleanText(commentary || "");
   const shouldCollapse = text.length > COMMENTARY_COLLAPSE_LENGTH;
   return `
-    <div class="translation-commentary${shouldCollapse ? " is-collapsed" : ""}">
+    <section class="translation-section translation-commentary${shouldCollapse ? " is-collapsed" : ""}">
       <h3>Commentary</h3>
       <p>${escapeHtml(text)}</p>
       ${shouldCollapse ? '<button type="button" class="commentary-toggle" aria-expanded="false">Show full commentary</button>' : ""}
-    </div>`;
+    </section>`;
 }
 
 function setTranslationBusy(isBusy) {
@@ -361,6 +417,11 @@ function setTranslationBusy(isBusy) {
     translationCard.classList.toggle("is-loading", isBusy);
   }
   translationOutput.setAttribute("aria-busy", isBusy ? "true" : "false");
+  updateStudyPanelToggleLabel();
+}
+
+function resetTranslationOutputScroll() {
+  translationOutput.scrollTop = 0;
 }
 
 function renderTranslationPending(regenerate = false) {
@@ -369,6 +430,7 @@ function renderTranslationPending(regenerate = false) {
   translationOutput.classList.toggle("reading-mode", translationMode === "reading");
   translationOutput.classList.toggle("study-mode", translationMode === "study");
   setTranslationBusy(true);
+  resetTranslationOutputScroll();
   const actionLabel = regenerate ? "Regenerating study note" : "Studying selected sentence";
   translationOutput.innerHTML = `
     <div class="translation-loading" role="status" aria-label="${escapeHtml(actionLabel)}">
@@ -388,11 +450,13 @@ function renderTranslationError(message) {
   selectedTranslationRecord = null;
   setTranslationBusy(false);
   translationOutput.hidden = false;
+  resetTranslationOutputScroll();
   translationOutput.innerHTML = `
     <div class="translation-error" role="note">
       <h3>Translation unavailable</h3>
       <p>${escapeHtml(cleanText(message || "Gemma runtime is not running."))}</p>
     </div>`;
+  updateStudyPanelToggleLabel();
   updateSentenceControls();
 }
 
@@ -403,16 +467,23 @@ function renderTranslationRecord(record, cached) {
   translationOutput.hidden = false;
   translationOutput.classList.toggle("reading-mode", translationMode === "reading");
   translationOutput.classList.toggle("study-mode", translationMode === "study");
+  resetTranslationOutputScroll();
   translationOutput.innerHTML = `
-    <div class="translation-review-state">${escapeHtml(reviewState)}${cached ? " / cached" : ""}</div>
-    <div class="translation-extra">
-      <h3>Original source</h3>
-      <p>${escapeHtml(cleanText(record.source_text_excerpt || selectedSentence?.text || ""))}</p>
+    <div class="translation-result">
+      <div class="translation-review-state">${escapeHtml(reviewState)}${cached ? " / cached" : ""}</div>
+      <section class="translation-section translation-extra">
+        <h3>Original source</h3>
+        <p>${escapeHtml(cleanText(record.source_text_excerpt || selectedSentence?.text || ""))}</p>
+      </section>
+      <section class="translation-section translation-section-primary">
+        <h3>Translation</h3>
+        <p class="translation-primary">${escapeHtml(cleanText(record.translation || ""))}</p>
+      </section>
+      ${renderCommentary(record.commentary || record.interpretation || "")}
+      ${optionalCautions(record)}
     </div>
-    <h3>Translation</h3>
-    <p class="translation-primary">${escapeHtml(cleanText(record.translation || ""))}</p>
-    ${renderCommentary(record.commentary || record.interpretation || "")}
-    ${optionalCautions(record)}`;
+  `;
+  updateStudyPanelToggleLabel();
   updateSentenceControls();
 }
 
@@ -421,8 +492,19 @@ async function requestSentenceTranslation(regenerate = false) {
     setTranslationStatus("Select a sentence first.", true);
     return;
   }
+  const targetKey = selectedTranslationTargetKey();
+  if (!regenerate && activeTranslationController && activeTranslationTargetKey === targetKey) {
+    setTranslationStatus("Translation is already running...", true);
+    return;
+  }
+  if (activeTranslationController) {
+    activeTranslationController.abort();
+  }
   const requestId = activeTranslationRequest + 1;
   activeTranslationRequest = requestId;
+  const controller = new AbortController();
+  activeTranslationController = controller;
+  activeTranslationTargetKey = targetKey;
   const sentenceNode = document.getElementById(selectedSentence.sentenceId);
   setTranslationStatus(regenerate ? "Regenerating with Gemma..." : "Translating with Gemma...", true);
   renderTranslationPending(regenerate);
@@ -441,7 +523,8 @@ async function requestSentenceTranslation(regenerate = false) {
         segment_id: selectedSentence.segmentId,
         sentence_id: selectedSentence.sentenceId,
         regenerate
-      })
+      }),
+      signal: controller.signal
     });
     const payload = await response.json().catch(() => ({}));
     if (requestId !== activeTranslationRequest) return;
@@ -453,6 +536,9 @@ async function requestSentenceTranslation(regenerate = false) {
     renderTranslationRecord(payload.record, payload.cached);
     setTranslationStatus(payload.cached ? "Loaded cached translation." : "Generated translation saved locally.");
   } catch (error) {
+    if (error && error.name === "AbortError") {
+      return;
+    }
     if (requestId === activeTranslationRequest) {
       const message = error && error.message ? error.message : "Gemma runtime is not running.";
       setTranslationStatus(message, true);
@@ -460,6 +546,8 @@ async function requestSentenceTranslation(regenerate = false) {
     }
   } finally {
     if (requestId === activeTranslationRequest) {
+      activeTranslationController = null;
+      activeTranslationTargetKey = "";
       updateSentenceControls();
     }
     if (sentenceNode) {
@@ -707,7 +795,7 @@ if (sentenceContext) {
     setStudyPanel("translation");
     setStudyPanelExpanded(true);
     keepSentenceAboveStudyPanel(node);
-    if (!wasSelected) {
+    if (!wasSelected || !selectedTranslationRecord) {
       requestSentenceTranslation(false);
     }
   });
@@ -757,11 +845,15 @@ if (studyTabsContainer) {
 document.querySelector(".reading-body").addEventListener("click", (event) => {
   const sentence = event.target.closest(".reader-sentence");
   if (sentence) {
+    const sentenceId = sentence.dataset.sentenceId || sentence.id || "";
+    const wasSelected = selectedSentence && selectedSentence.sentenceId === sentenceId;
     selectSentence(sentence);
     setStudyPanel("translation");
     setStudyPanelExpanded(true);
     keepSentenceAboveStudyPanel(sentence);
-    requestSentenceTranslation(false);
+    if (!wasSelected || !selectedTranslationRecord) {
+      requestSentenceTranslation(false);
+    }
   }
 });
 

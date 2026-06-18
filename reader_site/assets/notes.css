@@ -144,8 +144,41 @@ h1 {
 .notes-form button,
 .note-actions button,
 .note-edit-actions button {
+  position: relative;
   padding: 4px 12px;
   cursor: pointer;
+}
+
+.notes-form button:disabled,
+.note-actions button:disabled,
+.note-edit-actions button:disabled {
+  color: #777;
+  cursor: default;
+  background: #f3f3f3;
+}
+
+.notes-form.is-loading button,
+.note-actions button.is-working,
+.note-edit-actions button.is-working {
+  padding-right: 28px;
+  background: #fffaf0;
+  border-color: #c8b86a;
+}
+
+.notes-form.is-loading button::after,
+.note-actions button.is-working::after,
+.note-edit-actions button.is-working::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  width: 10px;
+  height: 10px;
+  margin-top: -5px;
+  border: 2px solid #d8d1a8;
+  border-top-color: #b00000;
+  border-radius: 50%;
+  animation: archive-spin 850ms linear infinite;
 }
 
 .export-row {
@@ -233,6 +266,54 @@ h1 {
 .note-edit-form textarea {
   min-height: 96px;
   resize: vertical;
+}
+
+.notes-skeleton {
+  display: grid;
+  gap: 8px;
+  min-height: 92px;
+}
+
+.notes-skeleton-line {
+  display: block;
+  width: 88%;
+  height: 10px;
+  background: linear-gradient(90deg, #ececec 0%, #fafafa 44%, #ececec 88%);
+  background-size: 220% 100%;
+  border: 1px solid #e3e3e3;
+  animation: archive-skeleton 1.2s ease-in-out infinite;
+}
+
+.notes-skeleton-line.title {
+  width: 58%;
+}
+
+.notes-skeleton-line.short {
+  width: 44%;
+}
+
+@keyframes archive-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes archive-skeleton {
+  0% {
+    background-position: 120% 0;
+  }
+  100% {
+    background-position: -120% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notes-form.is-loading button::after,
+  .note-actions button.is-working::after,
+  .note-edit-actions button.is-working::after,
+  .notes-skeleton-line {
+    animation: none;
+  }
 }
 
 @media (max-width: 860px) {

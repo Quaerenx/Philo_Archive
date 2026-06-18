@@ -3,11 +3,14 @@ const queryInput = document.getElementById("studyQuery");
 const corpusSelect = document.getElementById("studyCorpus");
 const workInput = document.getElementById("studyWork");
 const tagInput = document.getElementById("studyTag");
+const studySubmit = document.getElementById("studySubmit");
 const statusEl = document.getElementById("studyStatus");
 const resultsEl = document.getElementById("studyResults");
 const exportMarkdown = document.getElementById("studyExportMarkdown");
 const manageLink = document.getElementById("studyManageLink");
 let requestedCorpusId = "";
+let activeStudyController = null;
+let activeStudyRequest = 0;
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -47,6 +50,31 @@ function updateUrl() {
   const params = currentParams("json");
   params.delete("format");
   history.replaceState(null, "", params.toString() ? `/study?${params}` : "/study");
+}
+
+function setStudyBusy(isBusy) {
+  form.classList.toggle("is-loading", isBusy);
+  resultsEl.setAttribute("aria-busy", isBusy ? "true" : "false");
+  if (studySubmit) {
+    studySubmit.disabled = isBusy;
+    studySubmit.setAttribute("aria-busy", isBusy ? "true" : "false");
+  }
+}
+
+function renderStudyPending() {
+  statusEl.textContent = "Loading reviewed notes...";
+  resultsEl.innerHTML = `
+    <section class="study-group study-skeleton" aria-hidden="true">
+      <span class="study-skeleton-line title"></span>
+      <span class="study-skeleton-line"></span>
+      <span class="study-skeleton-line short"></span>
+    </section>
+    <section class="study-group study-skeleton" aria-hidden="true">
+      <span class="study-skeleton-line title"></span>
+      <span class="study-skeleton-line"></span>
+      <span class="study-skeleton-line short"></span>
+    </section>`;
+  setStudyBusy(true);
 }
 
 function noteManageHref(note) {
@@ -150,17 +178,41 @@ async function loadCorpora() {
 }
 
 async function loadStudy() {
+  const requestId = activeStudyRequest + 1;
+  activeStudyRequest = requestId;
+  if (activeStudyController) {
+    activeStudyController.abort();
+    activeStudyController = null;
+  }
   updateUrl();
   updateLinks();
-  statusEl.textContent = "Loading reviewed notes...";
-  resultsEl.innerHTML = "";
-  const response = await fetch(`/api/study?${currentParams("json")}`);
-  if (!response.ok) {
-    statusEl.textContent = "Could not load reviewed notes.";
-    return;
+  const controller = new AbortController();
+  activeStudyController = controller;
+  renderStudyPending();
+  try {
+    const response = await fetch(`/api/study?${currentParams("json")}`, { signal: controller.signal });
+    if (requestId !== activeStudyRequest) return;
+    if (!response.ok) {
+      statusEl.textContent = "Could not load reviewed notes.";
+      resultsEl.innerHTML = "";
+      return;
+    }
+    const payload = await response.json();
+    renderStudy(payload);
+  } catch (error) {
+    if (error && error.name === "AbortError") {
+      return;
+    }
+    if (requestId === activeStudyRequest) {
+      statusEl.textContent = "Could not load reviewed notes.";
+      resultsEl.innerHTML = "";
+    }
+  } finally {
+    if (requestId === activeStudyRequest) {
+      activeStudyController = null;
+      setStudyBusy(false);
+    }
   }
-  const payload = await response.json();
-  renderStudy(payload);
 }
 
 form.addEventListener("submit", (event) => {

@@ -107,11 +107,40 @@ def fetch_html(url: str) -> str:
 
 
 def check_route_markup(route: str, html: str) -> None:
+    if route == "/study":
+        for needle in [
+            "studySubmit",
+            "studyStatus",
+            "aria-busy=\"false\"",
+            "study.css?v=study5",
+            "study.js?v=study5",
+        ]:
+            require(needle in html, f"{route} missing visual smoke marker {needle!r}")
+    if route == "/notes":
+        for needle in [
+            "notesSubmit",
+            "notesStatus",
+            "aria-busy=\"false\"",
+            "notes.css?v=notes4",
+            "notes.js?v=notes5",
+        ]:
+            require(needle in html, f"{route} missing visual smoke marker {needle!r}")
+    if route == "/search":
+        for needle in [
+            "searchSubmit",
+            "searchStatus",
+            "aria-busy=\"false\"",
+            "search.css?v=phase7",
+            "search.js?v=phase7",
+        ]:
+            require(needle in html, f"{route} missing visual smoke marker {needle!r}")
     if route.startswith("/work/"):
         for needle in [
             "reading-desk",
             "study-tabs",
             "studyPanelToggle",
+            "study-panel-toggle-action",
+            "study-panel-toggle-summary",
             "sentenceContext",
             "previousSentence",
             "nextSentence",
@@ -121,36 +150,70 @@ def check_route_markup(route: str, html: str) -> None:
             "noteStatus",
             "translation-output",
             "reader-sentence",
+            "reader-work.css?v=common19",
+            "reader-work.js?v=common22",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
 
 
 def capture(browser: str, url: str, output_path: Path, width: int, height: int) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    command = [
-        browser,
-        "--headless=new",
-        "--disable-gpu",
-        "--hide-scrollbars",
-        f"--window-size={width},{height}",
-        f"--screenshot={output_path}",
-        url,
-    ]
-    result = subprocess.run(command, cwd=SITE, capture_output=True, text=True, timeout=45)
-    require(result.returncode == 0, f"browser screenshot failed for {url}: {result.stderr.strip()}")
-    require(output_path.exists(), f"screenshot was not written: {output_path}")
-    data = output_path.read_bytes()
-    require(data.startswith(PNG_SIGNATURE), f"screenshot is not a PNG: {output_path}")
-    require(len(data) > 5000, f"screenshot is unexpectedly small: {output_path}")
+    if output_path.exists():
+        output_path.unlink()
+    profile_dir = output_path.with_suffix(".profile")
+    if profile_dir.exists():
+        shutil.rmtree(profile_dir, ignore_errors=True)
+    try:
+        command = [
+            browser,
+            "--headless=new",
+            "--disable-gpu",
+            "--disable-gpu-sandbox",
+            "--disable-background-networking",
+            "--disable-breakpad",
+            "--disable-crash-reporter",
+            "--disable-features=DawnGraphite,Vulkan,UseSkiaRenderer,CanvasOopRasterization",
+            "--hide-scrollbars",
+            "--no-default-browser-check",
+            "--no-first-run",
+            "--use-angle=swiftshader",
+            f"--user-data-dir={profile_dir.resolve().as_posix()}",
+            f"--window-size={width},{height}",
+            f"--screenshot={output_path}",
+            url,
+        ]
+        try:
+            result = subprocess.run(
+                command,
+                cwd=SITE,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                timeout=45,
+            )
+        except subprocess.TimeoutExpired as exc:
+            stderr = exc.stderr if isinstance(exc.stderr, str) else (exc.stderr or b"").decode("utf-8", errors="replace")
+            raise AssertionError(f"browser screenshot timed out for {url}: {stderr.strip()}") from exc
+        stderr = (result.stderr or "").strip()
+        require(result.returncode == 0, f"browser screenshot failed for {url}: {stderr}")
+        require(output_path.exists(), f"screenshot was not written: {output_path}")
+        data = output_path.read_bytes()
+        require(data.startswith(PNG_SIGNATURE), f"screenshot is not a PNG: {output_path}")
+        require(len(data) > 5000, f"screenshot is unexpectedly small: {output_path}")
+    finally:
+        shutil.rmtree(profile_dir, ignore_errors=True)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Capture local browser screenshots for reader-site visual smoke QA.", allow_abbrev=False)
     parser.add_argument("--browser", default="", help="Path to Edge/Chrome/Chromium. Defaults to common local installs.")
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT, help="Screenshot output directory.")
+    parser.add_argument("--html-only", action="store_true", help="Validate routed HTML markers without launching a browser.")
+    parser.add_argument("--allow-screenshot-failures", action="store_true", help="Report screenshot failures without failing HTML smoke checks.")
     args = parser.parse_args()
 
-    browser = find_browser(args.browser)
+    browser = "" if args.html_only else find_browser(args.browser)
     port = free_port()
     base_url = f"http://127.0.0.1:{port}"
     server = subprocess.Popen(
@@ -163,18 +226,36 @@ def main() -> None:
     try:
         wait_for_health(base_url, server)
         routes = [*ROUTES, *discover_source_routes()]
-        count = 0
+        html_count = 0
+        screenshot_count = 0
+        screenshot_failures = []
         for route_label, route in routes:
             url = f"{base_url}{route}"
             html = fetch_html(url)
             require("<html" in html.lower(), f"{route} response does not look like a page")
             require("Personal Archive of Literature" in html or "Archive" in html, f"{route} is missing archive identity text")
             check_route_markup(route, html)
+            html_count += 1
+            if args.html_only:
+                continue
             for viewport_label, width, height in VIEWPORTS:
                 output_path = args.output / f"{route_label}-{viewport_label}.png"
-                capture(browser, url, output_path, width, height)
-                count += 1
-        print(f"visual smoke ok ({count} screenshots in {args.output})")
+                try:
+                    capture(browser, url, output_path, width, height)
+                    screenshot_count += 1
+                except AssertionError as exc:
+                    message = f"{route_label}/{viewport_label}: {exc}"
+                    if not args.allow_screenshot_failures:
+                        raise AssertionError(message) from exc
+                    screenshot_failures.append(message)
+        if args.html_only:
+            print(f"visual smoke html ok ({html_count} routes)")
+        elif screenshot_failures:
+            print(f"visual smoke html ok ({html_count} routes); screenshot failures allowed ({len(screenshot_failures)})")
+            for failure in screenshot_failures:
+                print(f"- {failure}")
+        else:
+            print(f"visual smoke ok ({screenshot_count} screenshots in {args.output})")
     finally:
         server.terminate()
         try:

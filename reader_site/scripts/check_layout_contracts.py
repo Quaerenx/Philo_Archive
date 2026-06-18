@@ -136,6 +136,107 @@ def check_study_target_ui() -> None:
         require_contains(css, needle, "assets/study.css")
 
 
+def check_search_ui() -> None:
+    html = read_site_file("search.html")
+    script = read_site_file("assets/search.js")
+    css = read_site_file("assets/search.css")
+    for needle in [
+        "/assets/search.css?v=phase7",
+        "/assets/search.js?v=phase7",
+        'id="searchSubmit"',
+        'role="status"',
+        'aria-busy="false"',
+    ]:
+        require_contains(html, needle, "search.html")
+    for needle in [
+        "activeSearchController",
+        "activeSearchRequest",
+        "setSearchBusy",
+        "renderSearchPending",
+        "search-skeleton",
+        "activeSearchController.abort()",
+        "signal: controller.signal",
+        'error.name === "AbortError"',
+    ]:
+        require_contains(script, needle, "assets/search.js")
+    for needle in [
+        ".search-form.is-searching",
+        ".search-skeleton-line",
+        "@keyframes archive-spin",
+        "@keyframes archive-skeleton",
+        "@media (prefers-reduced-motion: reduce)",
+    ]:
+        require_contains(css, needle, "assets/search.css")
+
+
+def check_notes_ui() -> None:
+    html = read_site_file("notes.html")
+    script = read_site_file("assets/notes.js")
+    css = read_site_file("assets/notes.css")
+    for needle in [
+        "/assets/notes.css?v=notes4",
+        "/assets/notes.js?v=notes5",
+        'id="notesSubmit"',
+        'role="status"',
+        'aria-busy="false"',
+    ]:
+        require_contains(html, needle, "notes.html")
+    for needle in [
+        "activeNotesController",
+        "activeNotesRequest",
+        "setNotesBusy",
+        "setActionButtonBusy",
+        "renderNotesPending",
+        "notes-skeleton",
+        "activeNotesController.abort()",
+        "signal: controller.signal",
+        'error.name === "AbortError"',
+    ]:
+        require_contains(script, needle, "assets/notes.js")
+    for needle in [
+        ".notes-form.is-loading",
+        ".notes-skeleton-line",
+        ".note-actions button.is-working",
+        "@keyframes archive-spin",
+        "@keyframes archive-skeleton",
+        "@media (prefers-reduced-motion: reduce)",
+    ]:
+        require_contains(css, needle, "assets/notes.css")
+
+
+def check_study_ui() -> None:
+    html = read_site_file("study.html")
+    script = read_site_file("assets/study.js")
+    css = read_site_file("assets/study.css")
+    for needle in [
+        "/assets/study.css?v=study5",
+        "/assets/study.js?v=study5",
+        'id="studySubmit"',
+        'role="status"',
+        'aria-busy="false"',
+    ]:
+        require_contains(html, needle, "study.html")
+    for needle in [
+        "activeStudyController",
+        "activeStudyRequest",
+        "setStudyBusy",
+        "renderStudyPending",
+        "study-skeleton",
+        "activeStudyController.abort()",
+        "signal: controller.signal",
+        'error.name === "AbortError"',
+    ]:
+        require_contains(script, needle, "assets/study.js")
+    for needle in [
+        ".study-form.is-loading",
+        ".study-skeleton-line",
+        "@keyframes archive-spin",
+        "@keyframes archive-skeleton",
+        "@media (prefers-reduced-motion: reduce)",
+    ]:
+        require_contains(css, needle, "assets/study.css")
+
+
 def check_work_source_bundle_ui() -> None:
     template = read_site_file("templates/work.html")
     for needle in [
@@ -158,16 +259,31 @@ def check_work_source_bundle_ui() -> None:
         "setTranslationMode(\"reading\")",
         "renderTranslationPending",
         "renderTranslationError",
+        "resetTranslationOutputScroll",
+        "translationOutput.scrollTop = 0",
         "setActionButtonBusy",
         "Could not save note.",
         "renderCommentary",
+        "translation-result",
+        "translation-section-primary",
         "Show full commentary",
         "recentlyChangedNoteId",
         "Note saved and highlighted.",
         "setStudyPanelExpanded",
+        "selectedSentencePositionLabel",
+        "studyPanelToggleSummary",
+        "updateStudyPanelToggleLabel",
+        "translation ready",
         "Full study panel",
         "prefersReducedMotion",
         "sentenceScrollBlock",
+        "activeTranslationController",
+        "activeTranslationTargetKey",
+        "selectedTranslationTargetKey",
+        "Translation is already running...",
+        "activeTranslationController.abort()",
+        "signal: controller.signal",
+        'error.name === "AbortError"',
         "isMobileStudyLayout",
         "studyPanelViewportHeight",
         "mobileSentenceSafeBottom",
@@ -192,14 +308,17 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common18", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common17", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common22", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common19", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
         "study-page",
         "studyCompanionPanel",
         "studyPanelToggle",
+        "study-panel-toggle-action",
+        "study-panel-toggle-summary",
+        "aria-label=\"Full study panel. Select a sentence\"",
         'aria-controls="studyCompanionPanel"',
         "sentenceContext",
         'role="tablist"',
@@ -239,6 +358,10 @@ def check_work_source_bundle_ui() -> None:
         ".study-panel.active",
         "animation: archive-panel-in 140ms ease-out both",
         ".translation-output.reading-mode .translation-extra",
+        ".translation-result",
+        ".translation-section",
+        ".translation-section-primary",
+        "border-left: 3px solid #b00000",
         "max-height: clamp(220px, 42vh, 520px)",
         "line-height: 1.62",
         "line-height: 1.72",
@@ -251,6 +374,9 @@ def check_work_source_bundle_ui() -> None:
         "@keyframes archive-note-highlight",
         ".study-panel-toggle",
         ".study-panel-toggle::before",
+        ".study-panel-toggle-action",
+        ".study-panel-toggle-summary",
+        "text-overflow: ellipsis",
         ".study-page.is-expanded",
         ".study-page:not(.is-expanded) .study-tabs",
         "env(safe-area-inset-bottom, 0px)",
@@ -275,6 +401,9 @@ def main() -> None:
     check_home_css()
     check_reader_pages_css()
     check_study_target_ui()
+    check_search_ui()
+    check_notes_ui()
+    check_study_ui()
     check_work_source_bundle_ui()
     print("layout contracts ok")
 

@@ -4,6 +4,7 @@ const corpusSelect = document.getElementById("notesCorpus");
 const workInput = document.getElementById("notesWork");
 const tagInput = document.getElementById("notesTag");
 const reviewSelect = document.getElementById("notesReview");
+const notesSubmit = document.getElementById("notesSubmit");
 const statusEl = document.getElementById("notesStatus");
 const resultsEl = document.getElementById("notesResults");
 const exportJson = document.getElementById("exportJson");
@@ -12,6 +13,8 @@ const exportMarkdown = document.getElementById("exportMarkdown");
 let lastNotes = [];
 let requestedCorpusId = "";
 let requestedTargetId = "";
+let activeNotesController = null;
+let activeNotesRequest = 0;
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -58,6 +61,48 @@ function updateUrl() {
   const params = currentParams("json");
   params.delete("format");
   history.replaceState(null, "", params.toString() ? `/notes?${params}` : "/notes");
+}
+
+function setNotesBusy(isBusy) {
+  form.classList.toggle("is-loading", isBusy);
+  resultsEl.setAttribute("aria-busy", isBusy ? "true" : "false");
+  if (notesSubmit) {
+    notesSubmit.disabled = isBusy;
+    notesSubmit.setAttribute("aria-busy", isBusy ? "true" : "false");
+  }
+}
+
+function setActionButtonBusy(button, isBusy) {
+  if (!button) return;
+  if (isBusy) {
+    button.dataset.wasDisabled = button.disabled ? "true" : "false";
+    button.disabled = true;
+    button.classList.add("is-working");
+    button.setAttribute("aria-busy", "true");
+    return;
+  }
+  button.classList.remove("is-working");
+  button.setAttribute("aria-busy", "false");
+  if (button.dataset.wasDisabled !== "true") {
+    button.disabled = false;
+  }
+  delete button.dataset.wasDisabled;
+}
+
+function renderNotesPending() {
+  statusEl.textContent = "Loading notes...";
+  resultsEl.innerHTML = `
+    <article class="note-card notes-skeleton" aria-hidden="true">
+      <span class="notes-skeleton-line title"></span>
+      <span class="notes-skeleton-line"></span>
+      <span class="notes-skeleton-line short"></span>
+    </article>
+    <article class="note-card notes-skeleton" aria-hidden="true">
+      <span class="notes-skeleton-line title"></span>
+      <span class="notes-skeleton-line"></span>
+      <span class="notes-skeleton-line short"></span>
+    </article>`;
+  setNotesBusy(true);
 }
 
 function renderNotes(notes) {
@@ -164,17 +209,41 @@ async function loadCorpora() {
 }
 
 async function loadNotes() {
+  const requestId = activeNotesRequest + 1;
+  activeNotesRequest = requestId;
+  if (activeNotesController) {
+    activeNotesController.abort();
+    activeNotesController = null;
+  }
   updateUrl();
   updateExportLinks();
-  statusEl.textContent = "Loading notes...";
-  resultsEl.innerHTML = "";
-  const response = await fetch(`/api/notes/export?${currentParams("json")}`);
-  if (!response.ok) {
-    statusEl.textContent = "Could not load notes.";
-    return;
+  const controller = new AbortController();
+  activeNotesController = controller;
+  renderNotesPending();
+  try {
+    const response = await fetch(`/api/notes/export?${currentParams("json")}`, { signal: controller.signal });
+    if (requestId !== activeNotesRequest) return;
+    if (!response.ok) {
+      statusEl.textContent = "Could not load notes.";
+      resultsEl.innerHTML = "";
+      return;
+    }
+    const payload = await response.json();
+    renderNotes(payload.notes || []);
+  } catch (error) {
+    if (error && error.name === "AbortError") {
+      return;
+    }
+    if (requestId === activeNotesRequest) {
+      statusEl.textContent = "Could not load notes.";
+      resultsEl.innerHTML = "";
+    }
+  } finally {
+    if (requestId === activeNotesRequest) {
+      activeNotesController = null;
+      setNotesBusy(false);
+    }
   }
-  const payload = await response.json();
-  renderNotes(payload.notes || []);
 }
 
 form.addEventListener("submit", (event) => {
@@ -195,9 +264,14 @@ resultsEl.addEventListener("click", async (event) => {
   }
   if (button.dataset.action === "mark-reviewed" || button.dataset.action === "mark-raw") {
     const nextState = button.dataset.action === "mark-reviewed" ? "reviewed" : "raw";
-    const ok = await updateReviewState(noteId, corpusId, nextState);
-    statusEl.textContent = ok ? "Review state updated." : "Could not update review state.";
-    await loadNotes();
+    setActionButtonBusy(button, true);
+    try {
+      const ok = await updateReviewState(noteId, corpusId, nextState);
+      statusEl.textContent = ok ? "Review state updated." : "Could not update review state.";
+      await loadNotes();
+    } finally {
+      setActionButtonBusy(button, false);
+    }
     return;
   }
   if (button.dataset.action === "cancel") {
@@ -212,9 +286,14 @@ resultsEl.addEventListener("click", async (event) => {
   }
   if (button.dataset.action === "delete") {
     if (!window.confirm("Delete this note?")) return;
-    const ok = await deleteNote(noteId, corpusId);
-    statusEl.textContent = ok ? "Note deleted." : "Could not delete note.";
-    await loadNotes();
+    setActionButtonBusy(button, true);
+    try {
+      const ok = await deleteNote(noteId, corpusId);
+      statusEl.textContent = ok ? "Note deleted." : "Could not delete note.";
+      await loadNotes();
+    } finally {
+      setActionButtonBusy(button, false);
+    }
   }
 });
 
@@ -230,9 +309,15 @@ resultsEl.addEventListener("submit", async (event) => {
     statusEl.textContent = "Note text is required.";
     return;
   }
-  const ok = await updateNote(noteId, corpusId, noteText, splitTags(editForm.elements.tags.value));
-  statusEl.textContent = ok ? "Note updated." : "Could not update note.";
-  await loadNotes();
+  const saveButton = editForm.querySelector("button[type='submit']");
+  setActionButtonBusy(saveButton, true);
+  try {
+    const ok = await updateNote(noteId, corpusId, noteText, splitTags(editForm.elements.tags.value));
+    statusEl.textContent = ok ? "Note updated." : "Could not update note.";
+    await loadNotes();
+  } finally {
+    setActionButtonBusy(saveButton, false);
+  }
 });
 
 for (const field of [queryInput, corpusSelect, workInput, tagInput, reviewSelect]) {
