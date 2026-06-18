@@ -476,6 +476,7 @@ def check_work_source_bundle_ui() -> None:
         "noteSort",
         "noteFilterClear",
         "function updateNoteFilterClearState",
+        "function clearNoteFilter",
         "Note filter cleared.",
         "noteListSummary",
         "function sortedNotes",
@@ -485,6 +486,8 @@ def check_work_source_bundle_ui() -> None:
         "Recently changed note",
         "Recently changed note is hidden by the current filter. Use Clear filter to show it.",
         "recentNote.focus({ preventScroll: true })",
+        "No notes match this filter.",
+        "data-notes-empty-action=\"clear-filter\"",
         "function noteTargetHref",
         "Open target",
         "notes-list-skeleton",
@@ -520,8 +523,8 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common52", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common42", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common53", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common43", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -685,6 +688,7 @@ def check_work_source_bundle_ui() -> None:
         ".note-list-summary",
         ".notes-list-skeleton",
         ".notes-empty",
+        ".notes-empty-actions",
         ".note-target-link",
         ".research-card .sentence-context-item",
         "overscroll-behavior: contain",

@@ -1008,6 +1008,17 @@ h1 {
   border: 1px solid #e0e0e0;
 }
 
+.notes-empty-actions {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 7px;
+}
+
+.notes-empty-actions button {
+  min-height: 24px;
+  padding: 3px 8px;
+}
+
 .note-item {
   padding-top: 8px;
   margin-top: 8px;

@@ -1385,6 +1385,17 @@ function updateNoteFilterClearState() {
   noteFilterClear.disabled = !noteFilter.value.trim();
 }
 
+function clearNoteFilter() {
+  if (!noteFilter) return;
+  noteFilter.value = "";
+  updateNoteFilterClearState();
+  if (noteStatus) {
+    noteStatus.textContent = "Note filter cleared.";
+  }
+  loadNotes();
+  noteFilter.focus();
+}
+
 function noteTargetHref(note) {
   const url = cleanText(note.url || "");
   if (url.startsWith("/work/") || url.startsWith("/read?") || url.startsWith("/source?")) {
@@ -1412,14 +1423,21 @@ function renderNotesPending() {
 
 function renderNotesList(notes) {
   const items = sortedNotes(notes);
+  const filter = noteFilter ? noteFilter.value.trim() : "";
   notesList.setAttribute("aria-busy", "false");
   if (noteListSummary) {
-    const filter = noteFilter ? noteFilter.value.trim() : "";
     const sortLabel = noteSort && noteSort.value === "target" ? "target order" : "recent first";
     noteListSummary.textContent = `${items.length} notes${filter ? " matching filter" : ""} / ${sortLabel}`;
   }
   if (!items.length) {
-    notesList.innerHTML = '<div class="notes-empty">No notes found for this work.</div>';
+    notesList.innerHTML = filter
+      ? `<div class="notes-empty">
+          <span>No notes match this filter.</span>
+          <div class="notes-empty-actions">
+            <button type="button" data-notes-empty-action="clear-filter">Clear filter</button>
+          </div>
+        </div>`
+      : '<div class="notes-empty">No notes found for this work.</div>';
     return;
   }
   notesList.innerHTML = items.map((note) => {
@@ -1777,11 +1795,7 @@ if (noteFilter) {
 
 if (noteFilterClear && noteFilter) {
   noteFilterClear.addEventListener("click", () => {
-    noteFilter.value = "";
-    updateNoteFilterClearState();
-    noteStatus.textContent = "Note filter cleared.";
-    loadNotes();
-    noteFilter.focus();
+    clearNoteFilter();
   });
 }
 
@@ -1795,6 +1809,13 @@ if (noteSort) {
 });
 
 notesList.addEventListener("click", async (event) => {
+  const emptyAction = event.target.closest("button[data-notes-empty-action]");
+  if (emptyAction) {
+    if (emptyAction.dataset.notesEmptyAction === "clear-filter") {
+      clearNoteFilter();
+    }
+    return;
+  }
   const button = event.target.closest("button[data-action]");
   if (!button) return;
   const noteId = button.dataset.noteId;
