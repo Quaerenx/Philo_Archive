@@ -378,10 +378,41 @@ async function checkGemmaRuntimeStatus(announce = false) {
   }
 }
 
-function setTranslationRecordsSummary(text, state = "empty") {
+function translationRecordSummaryChip(label, value, reviewState = "") {
+  return `<span class="translation-record-chip"${reviewState ? ` data-review-state="${escapeHtml(reviewState)}"` : ""}>
+    <span>${escapeHtml(label)}</span>
+    <strong>${Number(value || 0).toLocaleString()}</strong>
+  </span>`;
+}
+
+function setTranslationRecordsSummary(text, state = "empty", counts = null) {
   if (!translationRecordsSummary) return;
-  translationRecordsSummary.textContent = text;
   translationRecordsSummary.dataset.recordsState = state;
+  if (!counts) {
+    translationRecordsSummary.textContent = text;
+    translationRecordsSummary.removeAttribute("aria-label");
+    return;
+  }
+  const total = Number(counts.total || 0);
+  const sentenceCount = Number(counts.sentenceCount || 0);
+  const generated = Number(counts.generated || 0);
+  const reviewed = Number(counts.reviewed || 0);
+  const rejected = Number(counts.rejected || 0);
+  const reviewHint = generated ? `${generated} generated records need review.` : "No generated records need review.";
+  translationRecordsSummary.setAttribute(
+    "aria-label",
+    `${text}. ${total} total records, ${sentenceCount} sentences, ${generated} generated, ${reviewed} reviewed, ${rejected} rejected. ${reviewHint}`
+  );
+  translationRecordsSummary.innerHTML = `
+    <span class="translation-records-summary-main">${escapeHtml(text)}</span>
+    <span class="translation-records-summary-hint">${escapeHtml(reviewHint)}</span>
+    <span class="translation-record-counts" aria-hidden="true">
+      ${translationRecordSummaryChip("Total", total)}
+      ${translationRecordSummaryChip("Sentences", sentenceCount)}
+      ${translationRecordSummaryChip("Generated", generated, "generated")}
+      ${translationRecordSummaryChip("Reviewed", reviewed, "reviewed")}
+      ${translationRecordSummaryChip("Rejected", rejected, "rejected")}
+    </span>`;
 }
 
 function updateTranslationExportLinks(total, reviewed) {
@@ -597,10 +628,12 @@ async function loadTranslationRecordsSummary() {
     const generated = Number(counts.generated || 0);
     const reviewed = Number(counts.reviewed || 0);
     const rejected = Number(counts.rejected || 0);
+    const sentenceCount = Number(payload.sentence_state_count || 0);
     applySentenceTranslationStates(payload.sentence_states || []);
     setTranslationRecordsSummary(
-      `AI records: ${total} total / ${Number(payload.sentence_state_count || 0)} sentences / ${generated} generated / ${reviewed} reviewed / ${rejected} rejected`,
-      total ? "has-records" : "empty"
+      `AI records: ${sentenceCount} sentences tracked`,
+      generated ? "needs-review" : (total ? "has-records" : "empty"),
+      { total, sentenceCount, generated, reviewed, rejected }
     );
     updateTranslationExportLinks(total, reviewed);
   } catch (error) {

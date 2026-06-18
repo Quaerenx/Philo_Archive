@@ -389,6 +389,10 @@ def check_work_source_bundle_ui() -> None:
         "gemmaRuntimeCheckButton.addEventListener",
         "translationRecordsSummary",
         "function setTranslationRecordsSummary",
+        "function translationRecordSummaryChip",
+        "translation-records-summary-main",
+        "translation-record-counts",
+        "needs-review",
         "function updateTranslationExportLinks",
         "translationSentenceStates",
         "TRANSLATION_STATE_LABELS",
@@ -686,8 +690,8 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common80", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common66", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common81", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common67", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -811,6 +815,10 @@ def check_work_source_bundle_ui() -> None:
         ".runtime-status[data-runtime-state=\"offline\"]",
         ".translation-records-summary",
         ".translation-records-summary[data-records-state=\"has-records\"]",
+        ".translation-records-summary[data-records-state=\"needs-review\"]",
+        ".translation-record-counts",
+        ".translation-record-chip",
+        ".translation-record-chip[data-review-state=\"generated\"]",
         ".study-progress",
         ".study-progress[data-progress-state=\"active\"]",
         ".study-progress[data-progress-state=\"complete\"]",
