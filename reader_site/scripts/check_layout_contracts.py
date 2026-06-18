@@ -385,6 +385,9 @@ def check_work_source_bundle_ui() -> None:
         "preview-session",
         "function renderStudySessionPreviewPending",
         "function sessionPreviewItems",
+        "function sessionPreviewTargetId",
+        "function openSessionPreviewTarget",
+        "data-session-preview-target",
         "function renderStudySessionPreview",
         "function renderStudySessionPreviewError",
         "async function previewStudySession",
@@ -618,8 +621,8 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common71", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common57", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common72", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common58", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -757,6 +760,7 @@ def check_work_source_bundle_ui() -> None:
         ".study-session-preview-header",
         ".study-session-preview-counts",
         ".session-preview-list",
+        ".session-preview-list button",
         ".session-preview-empty",
         ".translation-result-toolbar",
         ".translation-result-meta",

@@ -988,6 +988,16 @@ h1 {
 }
 
 .session-preview-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px;
+  align-items: start;
+  min-width: 0;
+}
+
+.session-preview-list div,
+.session-preview-list strong,
+.session-preview-list span {
   min-width: 0;
 }
 
@@ -997,6 +1007,12 @@ h1 {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.session-preview-list button {
+  min-height: 22px;
+  margin: 0;
+  padding: 2px 7px;
 }
 
 .session-preview-empty {

@@ -1544,12 +1544,50 @@ function sessionPreviewItems(items, kind) {
       const body = cleanText(kind === "notes"
         ? (item.note || item.quote || "")
         : (item.translation || item.commentary || item.source_text_excerpt || ""));
+      const targetId = sessionPreviewTargetId(item);
       return `<li>
-        <strong>${escapeHtml(label)}</strong>
-        <span>${escapeHtml(body || "Reviewed study item")}</span>
+        <div>
+          <strong>${escapeHtml(label)}</strong>
+          <span>${escapeHtml(body || "Reviewed study item")}</span>
+        </div>
+        ${targetId ? `<button type="button" data-session-preview-target="${escapeHtml(targetId)}">Open</button>` : ""}
       </li>`;
     }).join("")}
   </ol>`;
+}
+
+function sessionPreviewTargetId(item) {
+  const directId = cleanText(item && (item.sentence_id || item.target_id || ""));
+  if (directId) return directId;
+  const url = cleanText(item && (item.target_url || item.url || ""));
+  const hashIndex = url.indexOf("#");
+  if (hashIndex === -1 || hashIndex === url.length - 1) return "";
+  return decodeURIComponent(url.slice(hashIndex + 1));
+}
+
+function openSessionPreviewTarget(targetId) {
+  const id = cleanText(targetId);
+  const node = id ? document.getElementById(id) : null;
+  if (!node) {
+    setTranslationStatus("Could not find that source target in this page.", true);
+    return;
+  }
+  if (node.classList.contains("reader-sentence")) {
+    selectSentence(node);
+    scrollSentenceIntoView(node);
+    setStudyPanel("translation");
+    setStudyPanelExpanded(true);
+    keepSentenceAboveStudyPanel(node);
+    requestSentenceTranslation(false);
+    return;
+  }
+  history.replaceState(null, "", `${location.pathname}${location.search}#${encodeURIComponent(id)}`);
+  node.scrollIntoView({
+    block: "center",
+    inline: "nearest",
+    behavior: prefersReducedMotion() ? "auto" : "smooth"
+  });
+  setTranslationStatus("Opened source target.");
 }
 
 function renderStudySessionPreview(payload) {
@@ -2318,6 +2356,11 @@ translationOutput.addEventListener("click", (event) => {
   const jump = event.target.closest("[data-translation-jump]");
   if (jump) {
     scrollTranslationSectionIntoView(jump.dataset.translationJump || "");
+    return;
+  }
+  const sessionTarget = event.target.closest("[data-session-preview-target]");
+  if (sessionTarget) {
+    openSessionPreviewTarget(sessionTarget.dataset.sessionPreviewTarget || "");
     return;
   }
   const toggle = event.target.closest(".commentary-toggle");
