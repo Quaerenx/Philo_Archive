@@ -1473,7 +1473,11 @@ async function loadNotes() {
     if (recentlyChangedNoteId) {
       const recentNote = Array.from(notesList.querySelectorAll(".note-item"))
         .find((item) => item.dataset.noteId === recentlyChangedNoteId);
-      revealRecentNote(recentNote);
+      if (recentNote) {
+        revealRecentNote(recentNote);
+      } else if (filter && noteStatus) {
+        noteStatus.textContent = "Recently changed note is hidden by the current filter. Clear the filter to show it.";
+      }
     }
   } catch (error) {
     notesList.setAttribute("aria-busy", "false");
