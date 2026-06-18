@@ -2,6 +2,7 @@ const form = document.getElementById("translationsForm");
 const queryInput = document.getElementById("translationsQuery");
 const corpusSelect = document.getElementById("translationsCorpus");
 const workInput = document.getElementById("translationsWork");
+const workOptionsList = document.getElementById("translationsWorkOptions");
 const reviewSelect = document.getElementById("translationsReview");
 const submitButton = document.getElementById("translationsSubmit");
 const clearButton = document.getElementById("translationsClear");
@@ -14,6 +15,7 @@ let lastRecords = [];
 let activeController = null;
 let activeRequest = 0;
 let recentlyChangedRecordId = "";
+let archiveCorpora = [];
 
 const DEFAULT_CORPUS = "nietzsche";
 const REVIEW_LABELS = {
@@ -38,6 +40,39 @@ function cleanText(value) {
 function selectedOptionText(select) {
   const option = select.options[select.selectedIndex];
   return option ? option.textContent.trim() : select.value;
+}
+
+function selectedCorpusArchive() {
+  const corpusId = corpusSelect.value || DEFAULT_CORPUS;
+  return archiveCorpora.find((corpus) => corpus.id === corpusId) || null;
+}
+
+function archiveWorkOptions(corpus) {
+  const seen = new Set();
+  const options = [];
+  (corpus?.sections || []).forEach((section) => {
+    (section.links || []).forEach((link) => {
+      const workId = cleanText(link.work_id || "");
+      if (!workId || seen.has(workId)) return;
+      seen.add(workId);
+      const label = cleanText(link.label || workId);
+      const meta = cleanText(link.meta || "");
+      options.push({
+        workId,
+        label: meta ? `${label} / ${meta}` : label
+      });
+    });
+  });
+  return options.sort((left, right) => left.workId.localeCompare(right.workId));
+}
+
+function updateWorkOptions() {
+  if (!workOptionsList) return;
+  const options = archiveWorkOptions(selectedCorpusArchive());
+  workOptionsList.innerHTML = options
+    .map((option) => `<option value="${escapeHtml(option.workId)}" label="${escapeHtml(option.label)}"></option>`)
+    .join("");
+  workInput.placeholder = options.length ? `${options.length.toLocaleString()} works` : "work id";
 }
 
 function fetchParams(format = "json") {
@@ -317,8 +352,9 @@ async function loadCorpora() {
     const response = await fetch("/api/archive");
     if (!response.ok) return;
     const payload = await response.json();
+    archiveCorpora = payload.corpora || [];
     const current = corpusSelect.value || DEFAULT_CORPUS;
-    corpusSelect.innerHTML = (payload.corpora || [])
+    corpusSelect.innerHTML = archiveCorpora
       .map((corpus) => `<option value="${escapeHtml(corpus.id)}">${escapeHtml(corpus.title || corpus.id)}</option>`)
       .join("");
     const hasCurrent = Array.from(corpusSelect.options).some((option) => option.value === current);
@@ -329,6 +365,7 @@ async function loadCorpora() {
       corpusSelect.appendChild(fallback);
     }
     corpusSelect.value = current;
+    updateWorkOptions();
   } catch {
     // The hard-coded corpus options remain usable without archive metadata.
   }
@@ -420,7 +457,12 @@ resultsEl.addEventListener("click", async (event) => {
   }
 });
 
-for (const field of [corpusSelect, workInput, reviewSelect]) {
+corpusSelect.addEventListener("change", () => {
+  updateWorkOptions();
+  loadRecords();
+});
+
+for (const field of [workInput, reviewSelect]) {
   field.addEventListener("change", loadRecords);
 }
 
