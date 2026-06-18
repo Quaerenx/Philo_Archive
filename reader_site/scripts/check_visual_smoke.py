@@ -126,8 +126,8 @@ def check_route_markup(route: str, html: str) -> None:
             "notesActiveFilters",
             "notesStatus",
             "aria-busy=\"false\"",
-            "notes.css?v=notes9",
-            "notes.js?v=notes10",
+            "notes.css?v=notes10",
+            "notes.js?v=notes11",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
     if route == "/search":

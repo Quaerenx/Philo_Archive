@@ -284,6 +284,10 @@ function noteById(noteId) {
   return lastNotes.find((note) => note.id === noteId);
 }
 
+function prefersReducedMotion() {
+  return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+}
+
 function revealRecentlyChangedNote() {
   if (!recentlyChangedNoteId) return;
   const recentNote = Array.from(resultsEl.querySelectorAll(".note-card"))
@@ -296,7 +300,7 @@ function revealRecentlyChangedNote() {
     recentNote.scrollIntoView({
       block: "center",
       inline: "nearest",
-      behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"
+      behavior: prefersReducedMotion() ? "auto" : "smooth"
     });
   }
   if (typeof recentNote.focus === "function") {
@@ -309,12 +313,52 @@ function revealRecentlyChangedNote() {
   recentlyChangedNoteId = "";
 }
 
+function focusNoteEditor(card) {
+  const formEl = card.querySelector(".note-edit-form");
+  if (!formEl || formEl.hidden) return;
+  const noteField = formEl.elements.note;
+  if (typeof formEl.scrollIntoView === "function") {
+    formEl.scrollIntoView({
+      block: "nearest",
+      inline: "nearest",
+      behavior: prefersReducedMotion() ? "auto" : "smooth"
+    });
+  }
+  if (noteField && typeof noteField.focus === "function") {
+    window.setTimeout(() => {
+      try {
+        noteField.focus({ preventScroll: true });
+      } catch {
+        noteField.focus();
+      }
+      if (typeof noteField.setSelectionRange === "function") {
+        const end = noteField.value.length;
+        noteField.setSelectionRange(end, end);
+      }
+    }, 0);
+  }
+}
+
+function resetNoteEditor(card) {
+  const noteId = card.dataset.noteId || "";
+  const note = noteById(noteId);
+  const formEl = card.querySelector(".note-edit-form");
+  if (note && formEl) {
+    formEl.elements.note.value = note.note || "";
+    formEl.elements.tags.value = (note.tags || []).join(", ");
+  }
+}
+
 function toggleEditor(card, forceOpen = null) {
   const formEl = card.querySelector(".note-edit-form");
   const actionsEl = card.querySelector(".note-actions");
   const nextOpen = forceOpen === null ? formEl.hidden : forceOpen;
   formEl.hidden = !nextOpen;
   actionsEl.hidden = nextOpen;
+  card.classList.toggle("is-editing", nextOpen);
+  if (nextOpen) {
+    focusNoteEditor(card);
+  }
 }
 
 async function updateNote(noteId, corpusId, noteText, tags) {
@@ -459,12 +503,7 @@ resultsEl.addEventListener("click", async (event) => {
     return;
   }
   if (button.dataset.action === "cancel") {
-    const note = noteById(noteId);
-    const formEl = card.querySelector(".note-edit-form");
-    if (note && formEl) {
-      formEl.elements.note.value = note.note || "";
-      formEl.elements.tags.value = (note.tags || []).join(", ");
-    }
+    resetNoteEditor(card);
     toggleEditor(card, false);
     return;
   }
@@ -481,6 +520,26 @@ resultsEl.addEventListener("click", async (event) => {
   }
 });
 
+resultsEl.addEventListener("keydown", (event) => {
+  const editForm = event.target.closest(".note-edit-form");
+  if (!editForm) return;
+  const card = editForm.closest(".note-card");
+  if (!card) return;
+  if (event.key === "Escape") {
+    event.preventDefault();
+    resetNoteEditor(card);
+    toggleEditor(card, false);
+    statusEl.textContent = "Edit cancelled.";
+    return;
+  }
+  if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+    event.preventDefault();
+    if (typeof editForm.requestSubmit === "function") {
+      editForm.requestSubmit();
+    }
+  }
+});
+
 resultsEl.addEventListener("submit", async (event) => {
   const editForm = event.target.closest(".note-edit-form");
   if (!editForm) return;
@@ -491,6 +550,7 @@ resultsEl.addEventListener("submit", async (event) => {
   const noteText = editForm.elements.note.value.trim();
   if (!noteText) {
     statusEl.textContent = "Note text is required.";
+    editForm.elements.note.focus();
     return;
   }
   const saveButton = editForm.querySelector("button[type='submit']");

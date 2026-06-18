@@ -220,8 +220,8 @@ def check_notes_ui() -> None:
     script = read_site_file("assets/notes.js")
     css = read_site_file("assets/notes.css")
     for needle in [
-        "/assets/notes.css?v=notes9",
-        "/assets/notes.js?v=notes10",
+        "/assets/notes.css?v=notes10",
+        "/assets/notes.js?v=notes11",
         'id="notesSubmit"',
         'id="notesClear"',
         'id="notesActiveFilters"',
@@ -246,6 +246,12 @@ def check_notes_ui() -> None:
         "Recently changed note is hidden by the current filters.",
         "recentNote.scrollIntoView",
         "recentNote.focus({ preventScroll: true })",
+        "function prefersReducedMotion",
+        "function focusNoteEditor",
+        "function resetNoteEditor",
+        "noteField.setSelectionRange",
+        "Edit cancelled.",
+        "editForm.requestSubmit",
         "function renderEmptyNotes",
         "function clearNotesFilters",
         "function updateNotesClearState",
@@ -272,6 +278,9 @@ def check_notes_ui() -> None:
         ".notes-summary-filter",
         ".note-card.is-recent",
         ".note-card.is-recent:focus",
+        ".note-card.is-editing",
+        ".note-edit-actions",
+        "grid-template-columns: repeat(2, minmax(0, 1fr))",
         "@keyframes archive-note-highlight",
         ".notes-form.is-loading #notesSubmit",
         ".empty-state",
