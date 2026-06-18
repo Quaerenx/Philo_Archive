@@ -350,7 +350,8 @@ h1 {
   margin: 0;
 }
 
-.sentence-controls button.needs-confirm {
+.sentence-controls button.needs-confirm,
+.translation-review-actions button.needs-confirm {
   background: #fffdf2;
   border-color: #b00000;
   box-shadow: inset 3px 0 0 #b00000;

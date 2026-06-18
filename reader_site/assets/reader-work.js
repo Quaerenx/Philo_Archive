@@ -52,11 +52,14 @@ let studyPanelDragState = null;
 let ignoreNextStudyPanelToggleClick = false;
 let regenerateConfirmArmed = false;
 let regenerateConfirmTimer = 0;
+let rejectConfirmArmed = false;
+let rejectConfirmTimer = 0;
 const visibleSentenceNodes = new Set();
 const COMMENTARY_COLLAPSE_LENGTH = 420;
 const STUDY_PANEL_STORAGE_KEY = "philo.reader.studyPanelExpanded";
 const STUDY_PANEL_DRAG_THRESHOLD = 36;
 const REGENERATE_CONFIRM_MS = 4500;
+const REJECT_CONFIRM_MS = 4500;
 const NOTE_DRAFT_STORAGE_KEY = [
   "philo.reader.noteDraft",
   researchData.corpus_id || researchData.author_id || "",
@@ -322,6 +325,40 @@ function handleRegenerateClick() {
   }
   clearRegenerateConfirmation();
   requestSentenceTranslation(true);
+}
+
+function clearRejectConfirmation() {
+  window.clearTimeout(rejectConfirmTimer);
+  rejectConfirmTimer = 0;
+  rejectConfirmArmed = false;
+  rejectTranslationButton.classList.remove("needs-confirm");
+  rejectTranslationButton.textContent = "Reject";
+  rejectTranslationButton.title = "Reject translation";
+  rejectTranslationButton.setAttribute("aria-label", "Reject translation");
+}
+
+function armRejectConfirmation() {
+  rejectConfirmArmed = true;
+  rejectTranslationButton.classList.add("needs-confirm");
+  rejectTranslationButton.textContent = "Confirm reject";
+  rejectTranslationButton.title = "Click again to mark this translation rejected";
+  rejectTranslationButton.setAttribute("aria-label", "Confirm reject translation");
+  setTranslationStatus("Click Confirm reject to exclude this cached translation.");
+  window.clearTimeout(rejectConfirmTimer);
+  rejectConfirmTimer = window.setTimeout(clearRejectConfirmation, REJECT_CONFIRM_MS);
+}
+
+function handleRejectClick() {
+  if (!selectedTranslationRecord || !selectedTranslationRecord.id) {
+    setTranslationStatus("No generated translation is selected.", true);
+    return;
+  }
+  if (!rejectConfirmArmed) {
+    armRejectConfirmation();
+    return;
+  }
+  clearRejectConfirmation();
+  updateTranslationReview("rejected");
 }
 
 function sentenceIndex(sentenceId) {
@@ -683,6 +720,7 @@ function selectSentence(node, updateHash = true) {
   if (!sameSentence) {
     selectedTranslationRecord = null;
     clearRegenerateConfirmation();
+    clearRejectConfirmation();
   }
   renderTranslationTarget();
   updateSentenceContext();
@@ -912,6 +950,7 @@ function renderTranslationRecord(record, cached) {
 
 async function requestSentenceTranslation(regenerate = false) {
   clearRegenerateConfirmation();
+  clearRejectConfirmation();
   if (!selectedSentence) {
     setTranslationStatus("Select a sentence first.", true);
     return;
@@ -985,6 +1024,7 @@ async function updateTranslationReview(reviewState) {
     setTranslationStatus("No generated translation is selected.", true);
     return;
   }
+  clearRejectConfirmation();
   const actionButton = reviewState === "reviewed" ? markTranslationReviewedButton : rejectTranslationButton;
   setActionButtonBusy(actionButton, true);
   setTranslationStatus(reviewState === "reviewed" ? "Marking reviewed..." : "Updating review state...", true);
@@ -1366,7 +1406,7 @@ regenerateSentenceButton.addEventListener("click", handleRegenerateClick);
 previousSentenceButton.addEventListener("click", () => navigateSentence(-1));
 nextSentenceButton.addEventListener("click", () => navigateSentence(1));
 markTranslationReviewedButton.addEventListener("click", () => updateTranslationReview("reviewed"));
-rejectTranslationButton.addEventListener("click", () => updateTranslationReview("rejected"));
+rejectTranslationButton.addEventListener("click", handleRejectClick);
 copyStudyCardButton.addEventListener("click", copyStudyCard);
 draftTranslationNoteButton.addEventListener("click", draftNoteFromTranslation);
 readingModeButton.addEventListener("click", () => setTranslationMode("reading"));

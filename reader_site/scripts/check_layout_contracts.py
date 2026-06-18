@@ -402,6 +402,12 @@ def check_work_source_bundle_ui() -> None:
         "Confirm regenerate",
         "Click Confirm regenerate to replace this translation.",
         "requestSentenceTranslation(true)",
+        "REJECT_CONFIRM_MS",
+        "clearRejectConfirmation",
+        "armRejectConfirmation",
+        "handleRejectClick",
+        "Confirm reject",
+        "Click Confirm reject to exclude this cached translation.",
         "isMobileStudyLayout",
         "studyPanelViewportHeight",
         "mobileSentenceSafeBottom",
@@ -476,8 +482,8 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common39", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common36", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common40", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common37", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -550,6 +556,7 @@ def check_work_source_bundle_ui() -> None:
         ".study-tab:focus-visible",
         ".study-tab.active::after",
         ".sentence-controls button.needs-confirm",
+        ".translation-review-actions button.needs-confirm",
         "min-height: 38px",
         "grid-template-columns: repeat(4, minmax(72px, 1fr))",
         "overscroll-behavior-x: contain",
