@@ -380,11 +380,17 @@ def check_work_source_bundle_ui() -> None:
         "function continueStudy",
         "Review generated",
         "review-generated",
-        "wantsExport",
-        "Export session",
-        "export-session",
-        "Opening study session export.",
-        "window.location.href = exportStudySession.href",
+        "wantsPreview",
+        "Preview session",
+        "preview-session",
+        "function renderStudySessionPreviewPending",
+        "function sessionPreviewItems",
+        "function renderStudySessionPreview",
+        "function renderStudySessionPreviewError",
+        "async function previewStudySession",
+        "Study session preview ready.",
+        "Study session preview unavailable",
+        "Open Markdown export",
         "need review",
         "All sentences have AI records.",
         "No unstudied sentence after current position.",
@@ -404,6 +410,7 @@ def check_work_source_bundle_ui() -> None:
         "translation_review_state",
         "studySessionSummary",
         "function setStudySessionSummary",
+        "function studySessionExportUrl",
         "function loadStudySessionSummary",
         "await loadStudySessionSummary();",
         "Session export:",
@@ -611,8 +618,8 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common70", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common56", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common71", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common57", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -746,6 +753,11 @@ def check_work_source_bundle_ui() -> None:
         ".translation-target.is-source-away",
         ".translation-target button",
         ".translation-result",
+        ".study-session-preview",
+        ".study-session-preview-header",
+        ".study-session-preview-counts",
+        ".session-preview-list",
+        ".session-preview-empty",
         ".translation-result-toolbar",
         ".translation-result-meta",
         ".translation-result-kicker",

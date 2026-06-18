@@ -934,6 +934,75 @@ h1 {
   gap: 12px;
 }
 
+.study-session-preview {
+  display: grid;
+  gap: 12px;
+}
+
+.study-session-preview-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 3px 8px;
+  align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.study-session-preview-header span {
+  grid-column: 1 / -1;
+  color: #777;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 9px;
+  text-transform: uppercase;
+}
+
+.study-session-preview-header strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #222;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 15px;
+  font-weight: normal;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.study-session-preview-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.study-session-preview-counts span {
+  padding: 3px 6px;
+  color: #444;
+  background: #f8f8f8;
+  border: 1px solid #e2e2e2;
+}
+
+.session-preview-list {
+  display: grid;
+  gap: 6px;
+  padding-left: 18px;
+  margin: 0;
+}
+
+.session-preview-list li {
+  min-width: 0;
+}
+
+.session-preview-list strong,
+.session-preview-list span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-preview-empty {
+  color: #666;
+}
+
 .translation-result-toolbar {
   position: sticky;
   top: 0;

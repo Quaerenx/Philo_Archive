@@ -427,15 +427,15 @@ function updateStudyProgress() {
   setStudyProgress(`Study progress: ${studied} of ${total} sentences have AI records / ${remaining} remaining${reviewText}`, state);
   if (continueStudyButton) {
     const wantsReview = remaining === 0 && pendingReview > 0;
-    const wantsExport = remaining === 0 && pendingReview === 0 && stateCounts.reviewed > 0;
+    const wantsPreview = remaining === 0 && pendingReview === 0 && stateCounts.reviewed > 0;
     const nextIndex = wantsReview ? nextGeneratedSentenceIndex() : continueStudySentenceIndex();
     const nextLabel = nextIndex >= 0 ? sentencePositionText(sentenceNodeId(sentenceNodes[nextIndex])) : "";
-    if (wantsExport) {
-      continueStudyButton.textContent = "Export session";
-      continueStudyButton.dataset.studyAction = "export-session";
+    if (wantsPreview) {
+      continueStudyButton.textContent = "Preview session";
+      continueStudyButton.dataset.studyAction = "preview-session";
       continueStudyButton.disabled = false;
-      continueStudyButton.title = "Export reviewed notes and reviewed Gemma translations";
-      continueStudyButton.setAttribute("aria-label", "Export reviewed study session");
+      continueStudyButton.title = "Preview reviewed notes and reviewed Gemma translations";
+      continueStudyButton.setAttribute("aria-label", "Preview reviewed study session");
     } else {
       continueStudyButton.textContent = wantsReview ? "Review generated" : "Continue study";
       continueStudyButton.dataset.studyAction = wantsReview ? "review-generated" : "continue";
@@ -524,17 +524,21 @@ function updateStudySessionExportLink(noteCount, translationCount) {
     : "No reviewed notes or reviewed translations for this session yet";
 }
 
-async function loadStudySessionSummary() {
-  if (!studySessionSummary) return;
+function studySessionExportUrl(format = "json") {
   const params = new URLSearchParams({
     corpus_id: researchData.corpus_id || researchData.author_id || "",
     work_id: researchData.work_id || "",
     notes_review_state: "reviewed",
     translation_review_state: "reviewed",
-    format: "json"
+    format
   });
+  return `/api/study-session/export?${params}`;
+}
+
+async function loadStudySessionSummary() {
+  if (!studySessionSummary) return;
   try {
-    const response = await fetch(`/api/study-session/export?${params}`);
+    const response = await fetch(studySessionExportUrl("json"));
     const payload = await response.json().catch(() => ({}));
     if (!response.ok || !payload.ok) {
       throw new Error(payload.error || "Study session unavailable");
@@ -1240,13 +1244,8 @@ function navigateToNextUnstudiedSentence() {
 
 function continueStudy() {
   const action = continueStudyButton?.dataset.studyAction || "continue";
-  if (action === "export-session") {
-    if (exportStudySession && exportStudySession.href) {
-      setTranslationStatus("Opening study session export.");
-      window.location.href = exportStudySession.href;
-    } else {
-      setTranslationStatus("Study session export is unavailable.", true);
-    }
+  if (action === "preview-session") {
+    previewStudySession();
     return;
   }
   const nextIndex = action === "review-generated"
@@ -1508,6 +1507,124 @@ function renderTranslationCancelled(message = "Translation request cancelled.") 
     </div>`;
   updateStudyPanelToggleLabel();
   updateSentenceControls();
+}
+
+function renderStudySessionPreviewPending() {
+  selectedTranslationRecord = null;
+  pendingTranslationRegenerate = false;
+  translationOutput.hidden = false;
+  translationOutput.classList.toggle("reading-mode", false);
+  translationOutput.classList.toggle("study-mode", true);
+  setTranslationBusy(true);
+  resetTranslationOutputScroll();
+  translationOutput.innerHTML = `
+    <div class="translation-loading" role="status" aria-live="polite" aria-label="Loading study session preview">
+      <span class="loading-spinner" aria-hidden="true"></span>
+      <span class="translation-loading-copy">
+        <strong>Loading study session preview</strong>
+        <span>Reviewed notes and Gemma translations</span>
+      </span>
+    </div>
+    <div class="translation-skeleton translation-study-skeleton" aria-hidden="true">
+      <div class="translation-skeleton-block primary">
+        <span class="translation-skeleton-heading"></span>
+        <span class="translation-skeleton-line wide"></span>
+        <span class="translation-skeleton-line"></span>
+      </div>
+    </div>`;
+}
+
+function sessionPreviewItems(items, kind) {
+  if (!Array.isArray(items) || !items.length) {
+    return `<p class="session-preview-empty">No reviewed ${escapeHtml(kind)} in this session.</p>`;
+  }
+  return `<ol class="session-preview-list">
+    ${items.slice(0, 3).map((item) => {
+      const label = cleanText(item.target_label || item.sentence_id || item.target_id || item.work_id || "Study item");
+      const body = cleanText(kind === "notes"
+        ? (item.note || item.quote || "")
+        : (item.translation || item.commentary || item.source_text_excerpt || ""));
+      return `<li>
+        <strong>${escapeHtml(label)}</strong>
+        <span>${escapeHtml(body || "Reviewed study item")}</span>
+      </li>`;
+    }).join("")}
+  </ol>`;
+}
+
+function renderStudySessionPreview(payload) {
+  selectedTranslationRecord = null;
+  pendingTranslationRegenerate = false;
+  setTranslationBusy(false);
+  translationOutput.hidden = false;
+  translationOutput.classList.toggle("reading-mode", false);
+  translationOutput.classList.toggle("study-mode", true);
+  resetTranslationOutputScroll();
+  const noteCount = Number(payload.note_count || 0);
+  const translationCount = Number(payload.translation_count || 0);
+  const exportUrl = studySessionExportUrl("markdown");
+  translationOutput.innerHTML = `
+    <div class="study-session-preview">
+      <div class="study-session-preview-header">
+        <span>Study session</span>
+        <strong>${escapeHtml(researchData.title || researchData.work_id || "Current work")}</strong>
+        <a href="${escapeHtml(exportUrl)}">Open Markdown export</a>
+      </div>
+      <div class="study-session-preview-counts" aria-label="Study session counts">
+        <span>${noteCount} reviewed notes</span>
+        <span>${translationCount} reviewed translations</span>
+      </div>
+      <section>
+        <h3>Reviewed notes</h3>
+        ${sessionPreviewItems(payload.notes, "notes")}
+      </section>
+      <section>
+        <h3>Reviewed translations</h3>
+        ${sessionPreviewItems(payload.translations, "translations")}
+      </section>
+    </div>`;
+  updateStudyPanelToggleLabel();
+  updateSentenceControls();
+}
+
+function renderStudySessionPreviewError(message) {
+  selectedTranslationRecord = null;
+  setTranslationBusy(false);
+  translationOutput.hidden = false;
+  resetTranslationOutputScroll();
+  translationOutput.innerHTML = `
+    <div class="translation-error" role="note">
+      <h3>Study session preview unavailable</h3>
+      <p>${escapeHtml(cleanText(message || "Could not load the reviewed study session."))}</p>
+      <div class="translation-error-actions">
+        <a href="${escapeHtml(studySessionExportUrl("markdown"))}">Open Markdown export</a>
+      </div>
+    </div>`;
+  updateStudyPanelToggleLabel();
+  updateSentenceControls();
+}
+
+async function previewStudySession() {
+  clearActionConfirmations();
+  renderStudySessionPreviewPending();
+  setTranslationStatus("Loading study session preview...", true);
+  setActionButtonBusy(continueStudyButton, true);
+  try {
+    const response = await fetch(studySessionExportUrl("json"));
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok || !payload.ok) {
+      throw new Error(payload.error || "Study session preview unavailable");
+    }
+    renderStudySessionPreview(payload);
+    setTranslationStatus("Study session preview ready.");
+  } catch (error) {
+    const message = cleanText(error && error.message ? error.message : "Study session preview unavailable.");
+    renderStudySessionPreviewError(message);
+    setTranslationStatus(message, true);
+  } finally {
+    setActionButtonBusy(continueStudyButton, false);
+    updateStudyProgress();
+  }
 }
 
 function renderTranslationRecord(record, cached) {
@@ -2425,15 +2542,8 @@ function initializeStudyCompanion() {
   if (exportAllTranslations) {
     exportAllTranslations.href = `/api/sentence-translations/export?${exportAllParams}`;
   }
-  const sessionExportParams = new URLSearchParams({
-    corpus_id: researchData.corpus_id || researchData.author_id || "",
-    work_id: researchData.work_id || "",
-    notes_review_state: "reviewed",
-    translation_review_state: "reviewed",
-    format: "markdown"
-  });
   if (exportStudySession) {
-    exportStudySession.href = `/api/study-session/export?${sessionExportParams}`;
+    exportStudySession.href = studySessionExportUrl("markdown");
     exportStudySession.title = "Export reviewed notes and reviewed Gemma translations for this work";
   }
   const conceptsPanel = document.querySelector('[data-study-panel="concepts"]');
