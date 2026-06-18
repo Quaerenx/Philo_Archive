@@ -11,7 +11,10 @@ sys.path.insert(0, str(SITE))
 from corpora.archive import build_archive  # noqa: E402
 from corpora.catalogs import bible_segments_payload_from_query  # noqa: E402
 from runtime_status import build_artifact_manifest, build_runtime_health  # noqa: E402
-from services.sentence_translations import sentence_translations_export_from_query  # noqa: E402
+from services.sentence_translations import (  # noqa: E402
+    sentence_translations_export_from_query,
+    sentence_translations_summary_from_query,
+)
 from services.source_targets import sha256_text, source_target_payload_from_query  # noqa: E402
 
 
@@ -229,6 +232,9 @@ def check_sentence_translation_export() -> None:
     )
     require(payload["kind"] == "json", "sentence translations json export should be json")
     require_keys(payload["payload"], {"count", "records"}, "sentence translations export")
+    summary = sentence_translations_summary_from_query({"corpus_id": ["nietzsche"], "work_id": ["GM"]})
+    require_keys(summary, {"ok", "count", "review_state_counts", "latest_generated_at", "latest_reviewed_at"}, "sentence translations summary")
+    require_keys(summary["review_state_counts"], {"generated", "reviewed", "rejected"}, "sentence translations review counts")
 
 
 def main() -> None:

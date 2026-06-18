@@ -162,10 +162,12 @@ def check_route_markup(route: str, html: str) -> None:
             "noteSort",
             "gemmaRuntimeStatus",
             "Gemma checking...",
+            "translationRecordsSummary",
+            "AI records: checking...",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common45",
-            "reader-work.js?v=common55",
+            "reader-work.css?v=common46",
+            "reader-work.js?v=common56",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
 

@@ -22,6 +22,7 @@ from services.sentence_translations import (  # noqa: E402
     normalized_model_output,
     public_record_id,
     public_translation_record,
+    sentence_translations_summary_from_query,
     update_sentence_translation_review,
 )
 from services.source_targets import sha256_text  # noqa: E402
@@ -151,11 +152,20 @@ def check_cache_and_review_compatibility(target: dict) -> None:
             path = sentence_translation_service.ai_record_path(target["corpus_id"])
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(json.dumps(legacy, ensure_ascii=False) + "\n", encoding="utf-8")
+            summary = sentence_translations_summary_from_query(
+                {"corpus_id": [target["corpus_id"]], "work_id": [target["work_id"]]}
+            )
+            require(summary["count"] == 1, "sentence translation summary count failed")
+            require(summary["review_state_counts"]["generated"] == 1, "sentence translation summary generated count failed")
             updated = update_sentence_translation_review(
                 {"corpus_id": target["corpus_id"], "review_state": "reviewed"},
                 public_legacy["id"],
             )
             require(updated["record"]["review_state"] == "reviewed", "legacy public id should support review updates")
+            summary = sentence_translations_summary_from_query(
+                {"corpus_id": [target["corpus_id"]], "work_id": [target["work_id"]]}
+            )
+            require(summary["review_state_counts"]["reviewed"] == 1, "sentence translation summary reviewed count failed")
             stored = json.loads(path.read_text(encoding="utf-8").splitlines()[0])
             require(stored["id"] == public_legacy["id"], "reviewing a legacy record should persist the stable id")
         finally:

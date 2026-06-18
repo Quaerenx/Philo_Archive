@@ -383,6 +383,41 @@ def sentence_translations_for_export(query: dict[str, list[str]]) -> list[dict[s
     )
 
 
+def sentence_translations_summary_from_query(query: dict[str, list[str]]) -> dict[str, Any]:
+    corpus_id = safe_corpus_id(str((query.get("corpus_id") or [""])[0]))
+    work_id = str((query.get("work_id") or [""])[0]).strip()
+    records = [
+        public_translation_record(record)
+        for record in iter_cached_records(ai_record_path(corpus_id))
+        if record.get("record_type") == "ai_sentence_translation"
+    ]
+    if work_id:
+        records = [record for record in records if record.get("work_id") == work_id]
+    review_counts = {"generated": 0, "reviewed": 0, "rejected": 0}
+    latest_generated_at = ""
+    latest_reviewed_at = ""
+    for record in records:
+        review_state = str(record.get("review_state") or "generated").strip().lower()
+        if review_state not in review_counts:
+            review_state = "generated"
+        review_counts[review_state] += 1
+        generated_at = str(record.get("generated_at") or record.get("created_at") or "")
+        reviewed_at = str(record.get("reviewed_at") or "")
+        if generated_at > latest_generated_at:
+            latest_generated_at = generated_at
+        if reviewed_at > latest_reviewed_at:
+            latest_reviewed_at = reviewed_at
+    return {
+        "ok": True,
+        "corpus_id": corpus_id,
+        "work_id": work_id,
+        "count": len(records),
+        "review_state_counts": review_counts,
+        "latest_generated_at": latest_generated_at,
+        "latest_reviewed_at": latest_reviewed_at,
+    }
+
+
 def export_sentence_translations_markdown(records: list[dict[str, Any]]) -> str:
     lines = ["# Reviewed Gemma Sentence Translations", "", f"{len(records)} records", ""]
     for record in records:

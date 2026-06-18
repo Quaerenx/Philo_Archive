@@ -31,6 +31,7 @@ const translationCard = document.querySelector(".translation-card");
 const studyPage = document.querySelector(".study-page");
 const studyPanelToggle = document.getElementById("studyPanelToggle");
 const studyPanelScrim = document.getElementById("studyPanelScrim");
+const translationRecordsSummary = document.getElementById("translationRecordsSummary");
 const exportReviewedTranslations = document.getElementById("exportReviewedTranslations");
 const noteTags = document.getElementById("noteTags");
 const noteText = document.getElementById("noteText");
@@ -332,6 +333,38 @@ async function checkGemmaRuntimeStatus(announce = false) {
       gemmaRuntimeCheckController = null;
       setActionButtonBusy(gemmaRuntimeCheckButton, false);
     }
+  }
+}
+
+function setTranslationRecordsSummary(text, state = "empty") {
+  if (!translationRecordsSummary) return;
+  translationRecordsSummary.textContent = text;
+  translationRecordsSummary.dataset.recordsState = state;
+}
+
+async function loadTranslationRecordsSummary() {
+  if (!translationRecordsSummary) return;
+  const params = new URLSearchParams({
+    corpus_id: researchData.corpus_id || researchData.author_id || "",
+    work_id: researchData.work_id || ""
+  });
+  try {
+    const response = await fetch(`/api/sentence-translations/summary?${params}`);
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok || !payload.ok) {
+      throw new Error(payload.error || "Translation records unavailable");
+    }
+    const counts = payload.review_state_counts || {};
+    const total = Number(payload.count || 0);
+    const generated = Number(counts.generated || 0);
+    const reviewed = Number(counts.reviewed || 0);
+    const rejected = Number(counts.rejected || 0);
+    setTranslationRecordsSummary(
+      `AI records: ${total} total / ${generated} generated / ${reviewed} reviewed / ${rejected} rejected`,
+      total ? "has-records" : "empty"
+    );
+  } catch (error) {
+    setTranslationRecordsSummary("AI records unavailable.", "unavailable");
   }
 }
 
@@ -1154,6 +1187,9 @@ async function requestSentenceTranslation(regenerate = false) {
       setGemmaRuntimeIndicator("ready", "Gemma ready", "Local Gemma runtime responded to this request.");
     }
     renderTranslationRecord(payload.record, payload.cached);
+    if (!payload.cached) {
+      loadTranslationRecordsSummary();
+    }
     setTranslationStatus(payload.cached ? "Loaded cached translation." : "Generated translation saved locally.");
   } catch (error) {
     if (error && error.name === "AbortError") {
@@ -1203,6 +1239,7 @@ async function updateTranslationReview(reviewState) {
       return;
     }
     renderTranslationRecord(payload.record, true);
+    loadTranslationRecordsSummary();
     setTranslationStatus(reviewState === "reviewed" ? "Translation marked reviewed." : "Translation rejected.");
   } catch (error) {
     const message = error && error.message ? error.message : "Could not update translation review.";
@@ -1960,6 +1997,7 @@ function initializeStudyCompanion() {
   syncTargetDependentViews();
   updateStudyPanelScrim();
   checkGemmaRuntimeStatus(false);
+  loadTranslationRecordsSummary();
 }
 
 initializeStudyCompanion();

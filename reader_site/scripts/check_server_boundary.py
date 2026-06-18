@@ -43,6 +43,7 @@ REQUIRED_IMPORTED_NAMES = {
     "search_payload_from_query",
     "sentence_translation_from_payload",
     "sentence_translations_export_from_query",
+    "sentence_translations_summary_from_query",
     "study_export_from_query",
     "study_payload_from_query",
     "update_sentence_translation_review",

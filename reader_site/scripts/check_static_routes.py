@@ -114,6 +114,8 @@ def check_routes(base_url: str) -> None:
     require("groups" in study and "count" in study, "study api shape invalid")
     translation_export = fetch_text(base_url, "/api/sentence-translations/export?corpus_id=nietzsche&work_id=GM&format=markdown")
     require("Reviewed Gemma Sentence Translations" in translation_export, "sentence translation export invalid")
+    translation_summary = fetch_json(base_url, "/api/sentence-translations/summary?corpus_id=nietzsche&work_id=GM")
+    require("count" in translation_summary and "review_state_counts" in translation_summary, "sentence translation summary invalid")
     target = fetch_json(base_url, "/api/source-target?corpus_id=nietzsche&work_id=GM&target_id=p-0023")
     target_record = target.get("target") or {}
     require(target_record.get("record_type") == "source_target_bundle", "source target api record_type invalid")

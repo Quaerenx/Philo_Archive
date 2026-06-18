@@ -357,6 +357,12 @@ def check_work_source_bundle_ui() -> None:
         "Gemma offline",
         "Gemma status unavailable",
         "gemmaRuntimeCheckButton.addEventListener",
+        "translationRecordsSummary",
+        "function setTranslationRecordsSummary",
+        "async function loadTranslationRecordsSummary",
+        "/api/sentence-translations/summary",
+        "AI records:",
+        "review_state_counts",
         "renderTranslationPending",
         "translation-loading-copy",
         "Source locked",
@@ -539,8 +545,8 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common55", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common45", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common56", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common46", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -555,6 +561,8 @@ def check_work_source_bundle_ui() -> None:
         "gemmaRuntimeStatusText",
         "gemmaRuntimeCheck",
         "Gemma checking...",
+        "translationRecordsSummary",
+        "AI records: checking...",
         "aria-label=\"Full study panel. Select a sentence\"",
         'aria-controls="studyCompanionPanel"',
         "readingPosition",
@@ -628,6 +636,8 @@ def check_work_source_bundle_ui() -> None:
         ".runtime-status-text",
         ".runtime-status[data-runtime-state=\"ready\"]",
         ".runtime-status[data-runtime-state=\"offline\"]",
+        ".translation-records-summary",
+        ".translation-records-summary[data-records-state=\"has-records\"]",
         ".sentence-controls button.needs-confirm",
         ".translation-review-actions button.needs-confirm",
         "min-height: 38px",

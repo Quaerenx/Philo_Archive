@@ -414,6 +414,31 @@ Request:
 
 Allowed `review_state` values are `generated`, `reviewed`, and `rejected`.
 
+## `GET /api/sentence-translations/summary`
+
+Returns local AI sentence translation counts without returning generated text.
+
+Query parameters:
+
+- `corpus_id`: required corpus id.
+- `work_id`: optional work id filter.
+
+Response:
+
+```json
+{
+  "ok": true,
+  "count": 3,
+  "review_state_counts": {
+    "generated": 1,
+    "reviewed": 2,
+    "rejected": 0
+  },
+  "latest_generated_at": "2026-06-19T00:00:00Z",
+  "latest_reviewed_at": "2026-06-19T00:00:00Z"
+}
+```
+
 ## `GET /api/sentence-translations/export`
 
 Exports local sentence translation records for study review.

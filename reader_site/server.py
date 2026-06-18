@@ -28,7 +28,11 @@ from services.notes import (
 )
 from services.search import search_payload_from_query
 from services.sentence_translations import sentence_translation_from_payload
-from services.sentence_translations import sentence_translations_export_from_query, update_sentence_translation_review
+from services.sentence_translations import (
+    sentence_translations_export_from_query,
+    sentence_translations_summary_from_query,
+    update_sentence_translation_review,
+)
 from services.source_targets import source_target_payload_from_query
 from services.sources import (
     build_read_response,
@@ -103,6 +107,9 @@ class Handler(BaseHTTPRequestHandler):
             return
         if parsed.path == "/api/sentence-translations/export":
             self.handle_sentence_translations_export_get(parse_qs(parsed.query))
+            return
+        if parsed.path == "/api/sentence-translations/summary":
+            self.handle_sentence_translations_summary_get(parse_qs(parsed.query))
             return
         if parsed.path == "/api/notes":
             self.handle_notes_get(parse_qs(parsed.query))
@@ -188,6 +195,14 @@ class Handler(BaseHTTPRequestHandler):
             self.send_text(result["body"], result["content_type"])
             return
         self.send_json(result["payload"])
+
+    def handle_sentence_translations_summary_get(self, query: dict[str, list[str]]) -> None:
+        try:
+            payload = sentence_translations_summary_from_query(query)
+        except ValueError as exc:
+            self.send_error(400, str(exc))
+            return
+        self.send_json(payload)
 
     def handle_notes_post(self) -> None:
         try:
