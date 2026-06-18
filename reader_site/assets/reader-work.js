@@ -394,30 +394,49 @@ function setStudyProgress(text, state = "loading") {
   }
 }
 
+function translationStateCountsFromSentences() {
+  const counts = { generated: 0, reviewed: 0, rejected: 0 };
+  translationSentenceStates.forEach((state) => {
+    const reviewState = normalizedTranslationReviewState(state.reviewState);
+    counts[reviewState] += 1;
+  });
+  return counts;
+}
+
 function updateStudyProgress() {
   if (!studyProgress) return;
   if (!translationSentenceStatesLoaded) {
     setStudyProgress("Study progress: checking...", "loading");
     if (continueStudyButton) {
+      continueStudyButton.textContent = "Continue study";
       continueStudyButton.disabled = true;
       continueStudyButton.title = "Translation states are loading";
+      continueStudyButton.dataset.studyAction = "continue";
     }
     return;
   }
   const studied = translationSentenceStates.size;
   const total = sentenceNodes.length;
   const remaining = Math.max(0, total - studied);
-  const state = total && remaining === 0 ? "complete" : (studied ? "active" : "empty");
-  setStudyProgress(`Study progress: ${studied} of ${total} sentences have AI records / ${remaining} remaining`, state);
+  const stateCounts = translationStateCountsFromSentences();
+  const pendingReview = stateCounts.generated;
+  const state = remaining > 0
+    ? (studied ? "active" : "empty")
+    : (pendingReview ? "review" : "complete");
+  const reviewText = pendingReview ? ` / ${pendingReview} need review` : "";
+  setStudyProgress(`Study progress: ${studied} of ${total} sentences have AI records / ${remaining} remaining${reviewText}`, state);
   if (continueStudyButton) {
-    const nextIndex = continueStudySentenceIndex();
+    const wantsReview = remaining === 0 && pendingReview > 0;
+    const nextIndex = wantsReview ? nextGeneratedSentenceIndex() : continueStudySentenceIndex();
+    continueStudyButton.textContent = wantsReview ? "Review generated" : "Continue study";
+    continueStudyButton.dataset.studyAction = wantsReview ? "review-generated" : "continue";
     continueStudyButton.disabled = nextIndex < 0;
     continueStudyButton.title = nextIndex >= 0
-      ? `Continue at ${sentencePositionText(sentenceNodeId(sentenceNodes[nextIndex]))}`
-      : "All sentences have AI records";
+      ? `${wantsReview ? "Review" : "Continue at"} ${sentencePositionText(sentenceNodeId(sentenceNodes[nextIndex]))}`
+      : (wantsReview ? "No generated translations need review" : "All sentences have AI records");
     continueStudyButton.setAttribute("aria-label", nextIndex >= 0
-      ? `Continue study at ${sentencePositionText(sentenceNodeId(sentenceNodes[nextIndex]))}`
-      : "Study progress complete");
+      ? `${wantsReview ? "Review generated translation at" : "Continue study at"} ${sentencePositionText(sentenceNodeId(sentenceNodes[nextIndex]))}`
+      : (wantsReview ? "No generated translations need review" : "Study progress complete"));
   }
 }
 
@@ -666,6 +685,12 @@ function sentenceHasTranslationState(node) {
   return Boolean(sentenceId && translationSentenceStates.has(sentenceId));
 }
 
+function sentenceTranslationState(node) {
+  const sentenceId = sentenceNodeId(node);
+  const state = sentenceId ? translationSentenceStates.get(sentenceId) : null;
+  return state ? normalizedTranslationReviewState(state.reviewState) : "";
+}
+
 function nextUnstudiedSentenceIndex() {
   if (!translationSentenceStatesLoaded || !sentenceNodes.length) return -1;
   const currentIndex = selectedSentence ? sentenceIndex(selectedSentence.sentenceId) : -1;
@@ -685,6 +710,17 @@ function firstUnstudiedSentenceIndex() {
 function continueStudySentenceIndex() {
   const nextIndex = nextUnstudiedSentenceIndex();
   return nextIndex >= 0 ? nextIndex : firstUnstudiedSentenceIndex();
+}
+
+function nextGeneratedSentenceIndex() {
+  if (!translationSentenceStatesLoaded || !sentenceNodes.length) return -1;
+  const currentIndex = selectedSentence ? sentenceIndex(selectedSentence.sentenceId) : -1;
+  for (let index = currentIndex + 1; index < sentenceNodes.length; index += 1) {
+    if (sentenceTranslationState(sentenceNodes[index]) === "generated") {
+      return index;
+    }
+  }
+  return sentenceNodes.findIndex((node) => sentenceTranslationState(node) === "generated");
 }
 
 function sentencePositionText(sentenceId) {
@@ -1193,11 +1229,14 @@ function navigateToNextUnstudiedSentence() {
 }
 
 function continueStudy() {
-  const nextIndex = continueStudySentenceIndex();
+  const action = continueStudyButton?.dataset.studyAction || "continue";
+  const nextIndex = action === "review-generated"
+    ? nextGeneratedSentenceIndex()
+    : continueStudySentenceIndex();
   if (nextIndex < 0) {
     setTranslationStatus(
       translationSentenceStatesLoaded
-        ? "All sentences have AI records."
+        ? (action === "review-generated" ? "No generated translations need review." : "All sentences have AI records.")
         : "Translation states are still loading.",
       true
     );

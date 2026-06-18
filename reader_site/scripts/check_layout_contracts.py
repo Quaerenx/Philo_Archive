@@ -368,13 +368,19 @@ def check_work_source_bundle_ui() -> None:
         "studyProgressText",
         "function setStudyProgress",
         "function updateStudyProgress",
+        "function translationStateCountsFromSentences",
         "translationSentenceStatesLoaded",
         "function sentenceHasTranslationState",
+        "function sentenceTranslationState",
         "function nextUnstudiedSentenceIndex",
         "function firstUnstudiedSentenceIndex",
         "function continueStudySentenceIndex",
+        "function nextGeneratedSentenceIndex",
         "function navigateToNextUnstudiedSentence",
         "function continueStudy",
+        "Review generated",
+        "review-generated",
+        "need review",
         "All sentences have AI records.",
         "No unstudied sentence after current position.",
         "function applySentenceTranslationStates",
@@ -600,8 +606,8 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common68", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common55", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common69", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common56", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -713,6 +719,7 @@ def check_work_source_bundle_ui() -> None:
         ".study-progress",
         ".study-progress[data-progress-state=\"active\"]",
         ".study-progress[data-progress-state=\"complete\"]",
+        ".study-progress[data-progress-state=\"review\"]",
         ".translation-export-links",
         ".translation-export-link",
         ".translation-export-link.is-empty",

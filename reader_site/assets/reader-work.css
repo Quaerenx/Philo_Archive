@@ -493,6 +493,10 @@ h1 {
   border-left: 3px solid #5a9a68;
 }
 
+.study-progress[data-progress-state="review"] {
+  border-left: 3px solid #b00000;
+}
+
 .study-progress span {
   min-width: 0;
   overflow: hidden;
