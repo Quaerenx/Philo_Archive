@@ -884,16 +884,50 @@ h1 {
   gap: 12px;
 }
 
-.translation-jump-nav {
+.translation-result-toolbar {
   position: sticky;
   top: 0;
   z-index: 1;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
+  display: grid;
+  gap: 7px;
   padding: 0 0 8px;
   background: #fff;
   border-bottom: 1px solid #eeeeee;
+}
+
+.translation-result-meta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 8px;
+  align-items: baseline;
+  min-width: 0;
+}
+
+.translation-result-kicker {
+  grid-column: 1 / -1;
+  color: #777;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 9px;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.translation-result-target {
+  min-width: 0;
+  overflow: hidden;
+  color: #222;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 14px;
+  font-weight: normal;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.translation-jump-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
 }
 
 .translation-jump-nav button {
@@ -909,11 +943,6 @@ h1 {
   min-width: 0;
   padding-top: 10px;
   border-top: 1px solid #eeeeee;
-}
-
-.translation-review-state + .translation-section {
-  padding-top: 0;
-  border-top: 0;
 }
 
 .translation-section-primary {
@@ -977,10 +1006,11 @@ h1 {
 }
 
 .translation-review-state {
-  margin: 0 0 8px;
   color: #555;
   font-family: Verdana, Arial, Helvetica, sans-serif;
   font-size: 10px;
+  line-height: 1.35;
+  white-space: nowrap;
 }
 
 .translation-error {

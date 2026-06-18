@@ -412,8 +412,13 @@ def check_work_source_bundle_ui() -> None:
         "setCommentaryExpanded",
         "syncTranslationModeDensity",
         "translationJumpNav",
+        "translationResultToolbar",
+        "translation-result-toolbar",
+        "translation-result-meta",
+        "translation-result-target",
         "translationOutputUsesInternalScroll",
         "scrollTranslationSectionIntoView",
+        "const toolbar = translationOutput.querySelector(\".translation-result-toolbar\")",
         "data-translation-jump",
         "data-translation-section=\"translation\"",
         "data-translation-section=\"commentary\"",
@@ -573,8 +578,8 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common64", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common51", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common65", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common52", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -694,6 +699,10 @@ def check_work_source_bundle_ui() -> None:
         ".translation-target.is-source-away",
         ".translation-target button",
         ".translation-result",
+        ".translation-result-toolbar",
+        ".translation-result-meta",
+        ".translation-result-kicker",
+        ".translation-result-target",
         ".translation-jump-nav",
         ".translation-section.is-jump-target",
         ".translation-section",

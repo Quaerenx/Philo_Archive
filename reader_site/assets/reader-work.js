@@ -1051,6 +1051,21 @@ function translationJumpNav(record) {
   </div>`;
 }
 
+function translationResultToolbar(record, cached, reviewState) {
+  const targetLabel = selectedSentence
+    ? selectedSentencePositionLabel()
+    : cleanText(record.sentence_id || "Selected sentence");
+  const stateLabel = `${cleanText(reviewState || "generated")}${cached ? " / cached" : " / generated"}`;
+  return `<div class="translation-result-toolbar">
+    <div class="translation-result-meta">
+      <span class="translation-result-kicker">Selected sentence</span>
+      <strong class="translation-result-target">${escapeHtml(targetLabel)}</strong>
+      <span class="translation-review-state">${escapeHtml(stateLabel)}</span>
+    </div>
+    ${translationJumpNav(record)}
+  </div>`;
+}
+
 function setTranslationBusy(isBusy) {
   if (translationCard) {
     translationCard.classList.toggle("is-loading", isBusy);
@@ -1133,8 +1148,8 @@ function scrollTranslationSectionIntoView(sectionName) {
   const section = Array.from(translationOutput.querySelectorAll("[data-translation-section]"))
     .find((item) => item.dataset.translationSection === sectionName);
   if (!section) return;
-  const nav = translationOutput.querySelector(".translation-jump-nav");
-  const stickyOffset = nav ? nav.offsetHeight + 8 : 8;
+  const toolbar = translationOutput.querySelector(".translation-result-toolbar");
+  const stickyOffset = toolbar ? toolbar.offsetHeight + 8 : 8;
   const behavior = prefersReducedMotion() ? "auto" : "smooth";
   if (translationOutputUsesInternalScroll()) {
     const top = Math.max(0, section.offsetTop - translationOutput.offsetTop - stickyOffset);
@@ -1250,8 +1265,7 @@ function renderTranslationRecord(record, cached) {
   resetTranslationOutputScroll();
   translationOutput.innerHTML = `
     <div class="translation-result">
-      <div class="translation-review-state">${escapeHtml(reviewState)}${cached ? " / cached" : ""}</div>
-      ${translationJumpNav(record)}
+      ${translationResultToolbar(record, cached, reviewState)}
       <section class="translation-section translation-extra" data-translation-section="source">
         <h3>Original source</h3>
         <p>${escapeHtml(cleanText(record.source_text_excerpt || selectedSentence?.text || ""))}</p>
