@@ -1538,14 +1538,16 @@ function sessionPreviewItems(items, kind) {
   if (!Array.isArray(items) || !items.length) {
     return `<p class="session-preview-empty">No reviewed ${escapeHtml(kind)} in this session.</p>`;
   }
-  return `<ol class="session-preview-list">
-    ${items.slice(0, 3).map((item) => {
+  const hasMore = items.length > 3;
+  return `<div class="session-preview-group${hasMore ? " is-collapsed" : ""}" data-session-preview-group>
+    <ol class="session-preview-list">
+    ${items.map((item, index) => {
       const label = cleanText(item.target_label || item.sentence_id || item.target_id || item.work_id || "Study item");
       const body = cleanText(kind === "notes"
         ? (item.note || item.quote || "")
         : (item.translation || item.commentary || item.source_text_excerpt || ""));
       const targetId = sessionPreviewTargetId(item);
-      return `<li>
+      return `<li${index >= 3 ? ' class="session-preview-extra"' : ""}>
         <div>
           <strong>${escapeHtml(label)}</strong>
           <span>${escapeHtml(body || "Reviewed study item")}</span>
@@ -1553,7 +1555,9 @@ function sessionPreviewItems(items, kind) {
         ${targetId ? `<button type="button" data-session-preview-target="${escapeHtml(targetId)}">Open</button>` : ""}
       </li>`;
     }).join("")}
-  </ol>`;
+    </ol>
+    ${hasMore ? `<button type="button" class="session-preview-toggle" data-session-preview-toggle aria-expanded="false">Show all ${items.length}</button>` : ""}
+  </div>`;
 }
 
 function sessionPreviewTargetId(item) {
@@ -1588,6 +1592,15 @@ function openSessionPreviewTarget(targetId) {
     behavior: prefersReducedMotion() ? "auto" : "smooth"
   });
   setTranslationStatus("Opened source target.");
+}
+
+function toggleSessionPreviewGroup(button) {
+  const group = button.closest("[data-session-preview-group]");
+  if (!group) return;
+  const expanded = group.classList.toggle("is-expanded");
+  group.classList.toggle("is-collapsed", !expanded);
+  button.setAttribute("aria-expanded", expanded ? "true" : "false");
+  button.textContent = expanded ? "Show less" : `Show all ${group.querySelectorAll("li").length}`;
 }
 
 function renderStudySessionPreview(payload) {
@@ -2361,6 +2374,11 @@ translationOutput.addEventListener("click", (event) => {
   const sessionTarget = event.target.closest("[data-session-preview-target]");
   if (sessionTarget) {
     openSessionPreviewTarget(sessionTarget.dataset.sessionPreviewTarget || "");
+    return;
+  }
+  const sessionToggle = event.target.closest("[data-session-preview-toggle]");
+  if (sessionToggle) {
+    toggleSessionPreviewGroup(sessionToggle);
     return;
   }
   const toggle = event.target.closest(".commentary-toggle");
