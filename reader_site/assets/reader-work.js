@@ -33,6 +33,9 @@ const studyPage = document.querySelector(".study-page");
 const studyPanelToggle = document.getElementById("studyPanelToggle");
 const studyPanelScrim = document.getElementById("studyPanelScrim");
 const translationRecordsSummary = document.getElementById("translationRecordsSummary");
+const studyProgress = document.getElementById("studyProgress");
+const studyProgressText = document.getElementById("studyProgressText");
+const continueStudyButton = document.getElementById("continueStudy");
 const exportReviewedTranslations = document.getElementById("exportReviewedTranslations");
 const exportAllTranslations = document.getElementById("exportAllTranslations");
 const exportStudySession = document.getElementById("exportStudySession");
@@ -382,6 +385,42 @@ function updateTranslationExportLinks(total, reviewed) {
   }
 }
 
+function setStudyProgress(text, state = "loading") {
+  if (studyProgressText) {
+    studyProgressText.textContent = text;
+  }
+  if (studyProgress) {
+    studyProgress.dataset.progressState = state;
+  }
+}
+
+function updateStudyProgress() {
+  if (!studyProgress) return;
+  if (!translationSentenceStatesLoaded) {
+    setStudyProgress("Study progress: checking...", "loading");
+    if (continueStudyButton) {
+      continueStudyButton.disabled = true;
+      continueStudyButton.title = "Translation states are loading";
+    }
+    return;
+  }
+  const studied = translationSentenceStates.size;
+  const total = sentenceNodes.length;
+  const remaining = Math.max(0, total - studied);
+  const state = total && remaining === 0 ? "complete" : (studied ? "active" : "empty");
+  setStudyProgress(`Study progress: ${studied} of ${total} sentences have AI records / ${remaining} remaining`, state);
+  if (continueStudyButton) {
+    const nextIndex = continueStudySentenceIndex();
+    continueStudyButton.disabled = nextIndex < 0;
+    continueStudyButton.title = nextIndex >= 0
+      ? `Continue at ${sentencePositionText(sentenceNodeId(sentenceNodes[nextIndex]))}`
+      : "All sentences have AI records";
+    continueStudyButton.setAttribute("aria-label", nextIndex >= 0
+      ? `Continue study at ${sentencePositionText(sentenceNodeId(sentenceNodes[nextIndex]))}`
+      : "Study progress complete");
+  }
+}
+
 function normalizedTranslationReviewState(value) {
   const state = cleanText(value).toLowerCase();
   return TRANSLATION_STATE_LABELS[state] ? state : "generated";
@@ -405,6 +444,7 @@ function clearSentenceTranslationStates(markLoaded = false) {
       delete node.dataset.originalTitle;
     }
   });
+  updateStudyProgress();
   updateSentenceControls();
 }
 
@@ -435,6 +475,7 @@ function applySentenceTranslationStates(states) {
     const originalTitle = node.dataset.originalTitle;
     node.setAttribute("title", `${originalTitle ? `${originalTitle} / ` : ""}${label}`);
   });
+  updateStudyProgress();
   updateSentenceControls();
 }
 
@@ -634,6 +675,16 @@ function nextUnstudiedSentenceIndex() {
     }
   }
   return -1;
+}
+
+function firstUnstudiedSentenceIndex() {
+  if (!translationSentenceStatesLoaded || !sentenceNodes.length) return -1;
+  return sentenceNodes.findIndex((node) => !sentenceHasTranslationState(node));
+}
+
+function continueStudySentenceIndex() {
+  const nextIndex = nextUnstudiedSentenceIndex();
+  return nextIndex >= 0 ? nextIndex : firstUnstudiedSentenceIndex();
 }
 
 function sentencePositionText(sentenceId) {
@@ -851,6 +902,7 @@ function updateSentenceControls() {
       ? `Next unstudied sentence, ${nextLabel}`
       : nextLabel);
   }
+  updateStudyProgress();
   regenerateSentenceButton.disabled = !hasSelection;
   const hasRecord = Boolean(selectedTranslationRecord && selectedTranslationRecord.id);
   markTranslationReviewedButton.disabled = !hasRecord || selectedTranslationRecord.review_state === "reviewed";
@@ -1125,6 +1177,27 @@ function navigateToNextUnstudiedSentence() {
     setTranslationStatus(
       translationSentenceStatesLoaded
         ? "No unstudied sentence after current position."
+        : "Translation states are still loading.",
+      true
+    );
+    return;
+  }
+  const nextNode = sentenceNodes[nextIndex];
+  if (!nextNode) return;
+  selectSentence(nextNode);
+  scrollSentenceIntoView(nextNode);
+  setStudyPanel("translation");
+  setStudyPanelExpanded(true);
+  keepSentenceAboveStudyPanel(nextNode);
+  requestSentenceTranslation(false);
+}
+
+function continueStudy() {
+  const nextIndex = continueStudySentenceIndex();
+  if (nextIndex < 0) {
+    setTranslationStatus(
+      translationSentenceStatesLoaded
+        ? "All sentences have AI records."
         : "Translation states are still loading.",
       true
     );
@@ -1977,6 +2050,9 @@ previousSentenceButton.addEventListener("click", () => navigateSentence(-1));
 nextSentenceButton.addEventListener("click", () => navigateSentence(1));
 if (nextUnstudiedSentenceButton) {
   nextUnstudiedSentenceButton.addEventListener("click", navigateToNextUnstudiedSentence);
+}
+if (continueStudyButton) {
+  continueStudyButton.addEventListener("click", continueStudy);
 }
 markTranslationReviewedButton.addEventListener("click", () => updateTranslationReview("reviewed"));
 rejectTranslationButton.addEventListener("click", () => handleConfirmedAction("reject"));

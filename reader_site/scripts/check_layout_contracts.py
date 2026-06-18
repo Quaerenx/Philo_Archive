@@ -364,10 +364,18 @@ def check_work_source_bundle_ui() -> None:
         "TRANSLATION_STATE_LABELS",
         "TRANSLATION_STATE_SHORT",
         "nextUnstudiedSentenceButton",
+        "continueStudyButton",
+        "studyProgressText",
+        "function setStudyProgress",
+        "function updateStudyProgress",
         "translationSentenceStatesLoaded",
         "function sentenceHasTranslationState",
         "function nextUnstudiedSentenceIndex",
+        "function firstUnstudiedSentenceIndex",
+        "function continueStudySentenceIndex",
         "function navigateToNextUnstudiedSentence",
+        "function continueStudy",
+        "All sentences have AI records.",
         "No unstudied sentence after current position.",
         "function applySentenceTranslationStates",
         "function clearSentenceTranslationStates",
@@ -592,8 +600,8 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common67", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common54", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common68", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common55", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -609,6 +617,10 @@ def check_work_source_bundle_ui() -> None:
         "gemmaRuntimeCheck",
         "Gemma checking...",
         "translationRecordsSummary",
+        "studyProgress",
+        "studyProgressText",
+        "continueStudy",
+        "Continue study",
         "AI records: checking...",
         "translation-export-links",
         "exportAllTranslations",
@@ -698,6 +710,9 @@ def check_work_source_bundle_ui() -> None:
         ".runtime-status[data-runtime-state=\"offline\"]",
         ".translation-records-summary",
         ".translation-records-summary[data-records-state=\"has-records\"]",
+        ".study-progress",
+        ".study-progress[data-progress-state=\"active\"]",
+        ".study-progress[data-progress-state=\"complete\"]",
         ".translation-export-links",
         ".translation-export-link",
         ".translation-export-link.is-empty",

@@ -471,6 +471,41 @@ h1 {
   border-left: 3px solid #b00000;
 }
 
+.study-progress {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px;
+  align-items: center;
+  margin-top: 6px;
+  padding: 6px;
+  color: #555;
+  background: #fbfbfb;
+  border: 1px solid #e6e6e6;
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.study-progress[data-progress-state="active"] {
+  border-left: 3px solid #c4a94a;
+}
+
+.study-progress[data-progress-state="complete"] {
+  border-left: 3px solid #5a9a68;
+}
+
+.study-progress span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.study-progress button {
+  min-height: 24px;
+  margin: 0;
+  padding: 2px 7px;
+  white-space: nowrap;
+}
+
 .translation-target,
 .translation-status,
 .translation-output {
