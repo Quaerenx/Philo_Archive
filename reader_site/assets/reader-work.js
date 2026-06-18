@@ -1033,6 +1033,18 @@ function sortedNotes(notes) {
   return items.sort((a, b) => noteTimestamp(b) - noteTimestamp(a));
 }
 
+function noteTargetHref(note) {
+  const url = cleanText(note.url || "");
+  if (url.startsWith("/work/") || url.startsWith("/read?") || url.startsWith("/source?")) {
+    return url;
+  }
+  const targetId = cleanText(note.target_id || "");
+  if (targetId && targetId !== "work") {
+    return `${location.pathname}${location.search}#${encodeURIComponent(targetId)}`;
+  }
+  return location.pathname + location.search;
+}
+
 function renderNotesPending() {
   notesList.setAttribute("aria-busy", "true");
   if (noteListSummary) {
@@ -1062,11 +1074,13 @@ function renderNotesList(notes) {
     const tags = (note.tags || []).join(", ");
     const updated = note.updated_at ? ` / edited ${cleanText(note.updated_at)}` : "";
     const recentClass = note.id === recentlyChangedNoteId ? " is-recent" : "";
+    const targetHref = noteTargetHref(note);
     return `<div class="note-item${recentClass}" data-note-id="${escapeHtml(note.id)}" data-note-tags="${escapeHtml(tags)}">
       <strong>${escapeHtml(cleanText(note.target_label))}</strong><br>
       <div class="note-text">${escapeHtml(cleanText(note.note))}</div>
       <small>${escapeHtml(cleanText(tags))}${escapeHtml(updated)}</small>
       <div class="note-actions">
+        <a class="note-target-link" href="${escapeHtml(targetHref)}">Open target</a>
         <button type="button" data-action="edit-note" data-note-id="${escapeHtml(note.id)}">Edit</button>
         <button type="button" data-action="delete-note" data-note-id="${escapeHtml(note.id)}">Delete</button>
       </div>

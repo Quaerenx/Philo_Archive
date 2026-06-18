@@ -355,6 +355,8 @@ def check_work_source_bundle_ui() -> None:
         "function sortedNotes",
         "function renderNotesPending",
         "function renderNotesList",
+        "function noteTargetHref",
+        "Open target",
         "notes-list-skeleton",
         "No notes found for this work.",
         "copyStudyCard",
@@ -368,8 +370,8 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common29", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common26", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common30", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common27", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -487,6 +489,7 @@ def check_work_source_bundle_ui() -> None:
         ".note-list-summary",
         ".notes-list-skeleton",
         ".notes-empty",
+        ".note-target-link",
         ".research-card .sentence-context-item",
         "overscroll-behavior: contain",
         "scrollbar-gutter: stable",
