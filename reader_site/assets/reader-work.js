@@ -551,7 +551,7 @@ function selectedSentenceIsVisible() {
   const node = selectedSentenceNode();
   if (!node) return false;
   const rect = node.getBoundingClientRect();
-  const safeTop = 0;
+  const safeTop = isMobileStudyLayout() ? visibleViewportTop() : 0;
   const safeBottom = isMobileStudyLayout() ? mobileSentenceSafeBottom() : window.innerHeight;
   return rect.bottom > safeTop && rect.top < safeBottom;
 }
@@ -597,7 +597,7 @@ function renderTranslationTarget() {
 
 function readingCueTargetLine() {
   if (isMobileStudyLayout()) {
-    return Math.max(120, window.innerHeight * 0.34);
+    return visibleViewportTop() + Math.max(120, visibleViewportHeight() * 0.34);
   }
   return window.innerHeight * 0.48;
 }
@@ -670,6 +670,13 @@ function scheduleReadingPositionRefresh() {
   readingPositionRefreshHandle = window.requestAnimationFrame(refreshReadingPosition);
 }
 
+function handleViewportLayoutChange() {
+  scheduleReadingPositionRefresh();
+  updateStudyPanelScrim();
+  keepSentenceAboveStudyPanel(selectedSentenceNode());
+  updateTranslationTargetViewState();
+}
+
 function initializeReadingPositionTracker() {
   if (!readingPosition || !sentenceNodes.length) return;
   if ("IntersectionObserver" in window) {
@@ -690,10 +697,10 @@ function initializeReadingPositionTracker() {
     sentenceNodes.forEach((node) => observer.observe(node));
   }
   window.addEventListener("scroll", scheduleReadingPositionRefresh, { passive: true });
-  window.addEventListener("resize", () => {
-    scheduleReadingPositionRefresh();
-    updateStudyPanelScrim();
-  });
+  window.addEventListener("resize", handleViewportLayoutChange);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", handleViewportLayoutChange);
+  }
   scheduleReadingPositionRefresh();
 }
 
@@ -926,13 +933,26 @@ function isMobileStudyLayout() {
   return Boolean(window.matchMedia && window.matchMedia("(max-width: 860px)").matches);
 }
 
+function visibleViewportTop() {
+  return window.visualViewport ? window.visualViewport.offsetTop : 0;
+}
+
+function visibleViewportHeight() {
+  return window.visualViewport ? window.visualViewport.height : window.innerHeight;
+}
+
+function visibleViewportBottom() {
+  return visibleViewportTop() + visibleViewportHeight();
+}
+
 function studyPanelViewportHeight() {
   if (!isMobileStudyLayout() || !studyPage) return 0;
   return Math.ceil(studyPage.getBoundingClientRect().height);
 }
 
 function mobileSentenceSafeBottom() {
-  return window.innerHeight - studyPanelViewportHeight() - 18;
+  const bottom = visibleViewportBottom() - studyPanelViewportHeight() - 18;
+  return Math.max(visibleViewportTop() + 96, bottom);
 }
 
 function adjustSentenceAboveStudyPanel(node) {

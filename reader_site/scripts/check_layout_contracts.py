@@ -463,10 +463,15 @@ def check_work_source_bundle_ui() -> None:
         "Pending action expired.",
         "setTranslationStatus(config.status, true)",
         "isMobileStudyLayout",
+        "function visibleViewportTop",
+        "function visibleViewportHeight",
+        "function visibleViewportBottom",
         "studyPanelViewportHeight",
         "mobileSentenceSafeBottom",
         "adjustSentenceAboveStudyPanel",
         "keepSentenceAboveStudyPanel",
+        "function handleViewportLayoutChange",
+        "window.visualViewport.addEventListener",
         "window.scrollBy",
         "window.setTimeout(() => adjustSentenceAboveStudyPanel(node)",
         "behavior: prefersReducedMotion() ? \"auto\" : \"smooth\"",
@@ -557,7 +562,7 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common60", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common61", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common49", "templates/work.html")
     for needle in [
         "reading-desk",
