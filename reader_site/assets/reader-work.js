@@ -77,6 +77,7 @@ const COMMENTARY_COLLAPSE_LENGTH = 420;
 const STUDY_PANEL_STORAGE_KEY = "philo.reader.studyPanelExpanded";
 const STUDY_PANEL_DRAG_THRESHOLD = 36;
 const ACTION_CONFIRM_MS = 4500;
+const GEMMA_RUNTIME_COMMAND = ".\\run_reader_with_gemma.ps1";
 const TRANSLATION_WAIT_PHASES = [
   [0, "Preparing local model request"],
   [12, "Gemma is still generating locally"],
@@ -1499,10 +1500,34 @@ function renderTranslationPending(regenerate = false) {
   updateSentenceControls();
 }
 
+function translationErrorIsRuntime(message) {
+  const text = cleanText(message).toLowerCase();
+  if (!text) return true;
+  return (
+    text.includes("gemma runtime") ||
+    text.includes("runtime is not") ||
+    text.includes("failed to fetch") ||
+    text.includes("networkerror") ||
+    text.includes("load failed")
+  );
+}
+
+function runtimeRecoveryMarkup(message) {
+  if (!translationErrorIsRuntime(message)) return "";
+  return `
+      <p class="translation-runtime-hint">Start the local Gemma runtime, then retry this sentence.</p>
+      <div class="translation-runtime-command-row">
+        <code class="translation-runtime-command">${escapeHtml(GEMMA_RUNTIME_COMMAND)}</code>
+        <button type="button" data-translation-copy-runtime>Copy command</button>
+      </div>`;
+}
+
 function renderTranslationError(message) {
   selectedTranslationRecord = null;
   const retryMode = pendingTranslationRegenerate ? "regenerate" : "translate";
   const retryLabel = pendingTranslationRegenerate ? "Regenerate again" : "Try again";
+  const cleanMessage = cleanText(message || "Gemma runtime is not running.");
+  const isRuntimeError = translationErrorIsRuntime(cleanMessage);
   pendingTranslationRegenerate = false;
   setTranslationBusy(false);
   translationOutput.hidden = false;
@@ -1510,11 +1535,11 @@ function renderTranslationError(message) {
   translationOutput.innerHTML = `
     <div class="translation-error" role="note">
       <h3>Translation unavailable</h3>
-      <p>${escapeHtml(cleanText(message || "Gemma runtime is not running."))}</p>
-      <p class="translation-runtime-hint">Start the local Gemma runtime, then retry this sentence.</p>
-      <code class="translation-runtime-command">.\\run_reader_with_gemma.ps1</code>
+      <p>${escapeHtml(cleanMessage)}</p>
+      ${runtimeRecoveryMarkup(cleanMessage)}
       <div class="translation-error-actions">
         <button type="button" data-translation-retry="${escapeHtml(retryMode)}">${escapeHtml(retryLabel)}</button>
+        ${isRuntimeError ? '<button type="button" data-translation-check-runtime>Check runtime</button>' : ""}
       </div>
     </div>`;
   updateStudyPanelToggleLabel();
@@ -2441,6 +2466,18 @@ translationOutput.addEventListener("click", (event) => {
   const retry = event.target.closest("[data-translation-retry]");
   if (retry) {
     requestSentenceTranslation(retry.dataset.translationRetry === "regenerate");
+    return;
+  }
+  const copyRuntime = event.target.closest("[data-translation-copy-runtime]");
+  if (copyRuntime) {
+    copyText(GEMMA_RUNTIME_COMMAND)
+      .then(() => setTranslationStatus("Gemma runtime command copied."))
+      .catch(() => setTranslationStatus("Could not copy Gemma runtime command.", true));
+    return;
+  }
+  const checkRuntime = event.target.closest("[data-translation-check-runtime]");
+  if (checkRuntime) {
+    checkGemmaRuntimeStatus(true);
     return;
   }
   const jump = event.target.closest("[data-translation-jump]");

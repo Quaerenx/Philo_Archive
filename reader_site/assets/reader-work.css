@@ -1197,7 +1197,7 @@ h1 {
   display: block;
   max-width: 100%;
   padding: 5px 6px;
-  margin: 0 0 8px;
+  margin: 0;
   overflow-x: auto;
   color: #3a1717;
   background: #fff;
@@ -1207,13 +1207,30 @@ h1 {
   white-space: nowrap;
 }
 
+.translation-runtime-command-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px;
+  align-items: stretch;
+  margin: 0 0 8px;
+}
+
+.translation-runtime-command-row button {
+  min-height: 26px;
+  margin: 0;
+  white-space: nowrap;
+}
+
 .translation-error-actions {
   display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
   justify-content: flex-start;
 }
 
 .translation-error-actions button {
   min-height: 25px;
+  margin: 0;
   padding: 3px 8px;
 }
 
