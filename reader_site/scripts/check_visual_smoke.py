@@ -111,9 +111,14 @@ def check_route_markup(route: str, html: str) -> None:
         for needle in [
             "reading-desk",
             "study-tabs",
+            "studyPanelToggle",
+            "sentenceContext",
             "previousSentence",
             "nextSentence",
             "markTranslationReviewed",
+            "role=\"status\"",
+            "aria-busy=\"false\"",
+            "noteStatus",
             "translation-output",
             "reader-sentence",
         ]:
