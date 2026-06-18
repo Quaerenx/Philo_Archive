@@ -1028,6 +1028,11 @@ h1 {
   border-left: 3px solid #b00000;
 }
 
+.note-item.is-recent:focus {
+  outline: 2px solid #b00000;
+  outline-offset: 2px;
+}
+
 .note-text {
   margin: 2px 0;
 }

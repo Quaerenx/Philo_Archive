@@ -478,6 +478,9 @@ def check_work_source_bundle_ui() -> None:
         "function sortedNotes",
         "function renderNotesPending",
         "function renderNotesList",
+        "function revealRecentNote",
+        "Recently changed note",
+        "recentNote.focus({ preventScroll: true })",
         "function noteTargetHref",
         "Open target",
         "notes-list-skeleton",
@@ -513,8 +516,8 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common49", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common40", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common50", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common41", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -637,6 +640,7 @@ def check_work_source_bundle_ui() -> None:
         ".translation-commentary.is-expanded p::after",
         ".commentary-toggle",
         ".note-item.is-recent",
+        ".note-item.is-recent:focus",
         "@keyframes archive-note-highlight",
         ".study-panel-toggle",
         ".study-panel-toggle::before",

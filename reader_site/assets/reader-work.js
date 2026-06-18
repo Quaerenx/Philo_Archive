@@ -1419,9 +1419,11 @@ function renderNotesList(notes) {
   notesList.innerHTML = items.map((note) => {
     const tags = (note.tags || []).join(", ");
     const updated = note.updated_at ? ` / edited ${cleanText(note.updated_at)}` : "";
-    const recentClass = note.id === recentlyChangedNoteId ? " is-recent" : "";
+    const isRecent = note.id === recentlyChangedNoteId;
+    const recentClass = isRecent ? " is-recent" : "";
+    const recentAttrs = isRecent ? ' tabindex="-1" aria-label="Recently changed note"' : "";
     const targetHref = noteTargetHref(note);
-    return `<div class="note-item${recentClass}" data-note-id="${escapeHtml(note.id)}" data-note-tags="${escapeHtml(tags)}">
+    return `<div class="note-item${recentClass}" data-note-id="${escapeHtml(note.id)}" data-note-tags="${escapeHtml(tags)}"${recentAttrs}>
       <strong>${escapeHtml(cleanText(note.target_label))}</strong><br>
       <div class="note-text">${escapeHtml(cleanText(note.note))}</div>
       <small>${escapeHtml(cleanText(tags))}${escapeHtml(updated)}</small>
@@ -1432,6 +1434,24 @@ function renderNotesList(notes) {
       </div>
     </div>`;
   }).join("");
+}
+
+function revealRecentNote(recentNote) {
+  if (!recentNote) return;
+  if (typeof recentNote.scrollIntoView === "function") {
+    recentNote.scrollIntoView({
+      block: isMobileStudyLayout() ? "center" : "nearest",
+      inline: "nearest",
+      behavior: prefersReducedMotion() ? "auto" : "smooth"
+    });
+  }
+  if (typeof recentNote.focus === "function") {
+    try {
+      recentNote.focus({ preventScroll: true });
+    } catch (error) {
+      recentNote.focus();
+    }
+  }
 }
 
 async function loadNotes() {
@@ -1453,9 +1473,7 @@ async function loadNotes() {
     if (recentlyChangedNoteId) {
       const recentNote = Array.from(notesList.querySelectorAll(".note-item"))
         .find((item) => item.dataset.noteId === recentlyChangedNoteId);
-      if (recentNote && typeof recentNote.scrollIntoView === "function") {
-        recentNote.scrollIntoView({ block: "nearest", inline: "nearest" });
-      }
+      revealRecentNote(recentNote);
     }
   } catch (error) {
     notesList.setAttribute("aria-busy", "false");
