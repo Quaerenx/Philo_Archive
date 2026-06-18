@@ -16,6 +16,7 @@ const sentenceContext = document.getElementById("sentenceContext");
 const previousSentenceButton = document.getElementById("previousSentence");
 const nextSentenceButton = document.getElementById("nextSentence");
 const nextUnstudiedSentenceButton = document.getElementById("nextUnstudiedSentence");
+const nextReviewSentenceButton = document.getElementById("nextReviewSentence");
 const regenerateSentenceButton = document.getElementById("regenerateSentence");
 const markTranslationReviewedButton = document.getElementById("markTranslationReviewed");
 const rejectTranslationButton = document.getElementById("rejectTranslation");
@@ -960,6 +961,7 @@ function updateSentenceControls() {
   const index = selectedSentence ? sentenceIndex(selectedSentence.sentenceId) : -1;
   const hasSelection = index >= 0;
   const nextUnstudiedIndex = nextUnstudiedSentenceIndex();
+  const nextReviewIndex = nextGeneratedSentenceIndex();
   previousSentenceButton.disabled = !hasSelection || index === 0;
   nextSentenceButton.disabled = !hasSelection || index === sentenceNodes.length - 1;
   if (nextUnstudiedSentenceButton) {
@@ -973,6 +975,18 @@ function updateSentenceControls() {
     nextUnstudiedSentenceButton.setAttribute("aria-label", nextUnstudiedIndex >= 0
       ? `Next unstudied sentence, ${nextLabel}`
       : nextLabel);
+  }
+  if (nextReviewSentenceButton) {
+    nextReviewSentenceButton.disabled = nextReviewIndex < 0;
+    const nextReviewLabel = nextReviewIndex >= 0
+      ? sentencePositionText(sentenceNodeId(sentenceNodes[nextReviewIndex]))
+      : (translationSentenceStatesLoaded ? "No generated translations need review" : "Translation states are loading");
+    nextReviewSentenceButton.title = nextReviewIndex >= 0
+      ? `Review ${nextReviewLabel}`
+      : nextReviewLabel;
+    nextReviewSentenceButton.setAttribute("aria-label", nextReviewIndex >= 0
+      ? `Next generated translation to review, ${nextReviewLabel}`
+      : nextReviewLabel);
   }
   updateStudyProgress();
   regenerateSentenceButton.disabled = !hasSelection;
@@ -1249,6 +1263,27 @@ function navigateToNextUnstudiedSentence() {
     setTranslationStatus(
       translationSentenceStatesLoaded
         ? "No unstudied sentence after current position."
+        : "Translation states are still loading.",
+      true
+    );
+    return;
+  }
+  const nextNode = sentenceNodes[nextIndex];
+  if (!nextNode) return;
+  selectSentence(nextNode);
+  scrollSentenceIntoView(nextNode);
+  setStudyPanel("translation");
+  setStudyPanelExpanded(true);
+  keepSentenceAboveStudyPanel(nextNode);
+  requestSentenceTranslation(false);
+}
+
+function navigateToNextReviewSentence() {
+  const nextIndex = nextGeneratedSentenceIndex();
+  if (nextIndex < 0) {
+    setTranslationStatus(
+      translationSentenceStatesLoaded
+        ? "No generated translations need review."
         : "Translation states are still loading.",
       true
     );
@@ -2446,6 +2481,9 @@ previousSentenceButton.addEventListener("click", () => navigateSentence(-1));
 nextSentenceButton.addEventListener("click", () => navigateSentence(1));
 if (nextUnstudiedSentenceButton) {
   nextUnstudiedSentenceButton.addEventListener("click", navigateToNextUnstudiedSentence);
+}
+if (nextReviewSentenceButton) {
+  nextReviewSentenceButton.addEventListener("click", navigateToNextReviewSentence);
 }
 if (continueStudyButton) {
   continueStudyButton.addEventListener("click", continueStudy);

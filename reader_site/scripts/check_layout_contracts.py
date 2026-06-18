@@ -364,6 +364,7 @@ def check_work_source_bundle_ui() -> None:
         "TRANSLATION_STATE_LABELS",
         "TRANSLATION_STATE_SHORT",
         "nextUnstudiedSentenceButton",
+        "nextReviewSentenceButton",
         "continueStudyButton",
         "studyProgressText",
         "function setStudyProgress",
@@ -377,6 +378,7 @@ def check_work_source_bundle_ui() -> None:
         "function continueStudySentenceIndex",
         "function nextGeneratedSentenceIndex",
         "function navigateToNextUnstudiedSentence",
+        "function navigateToNextReviewSentence",
         "function continueStudy",
         "Review generated",
         "review-generated",
@@ -650,8 +652,8 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common77", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common63", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common78", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common64", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -713,6 +715,8 @@ def check_work_source_bundle_ui() -> None:
         "previousSentence",
         "nextUnstudiedSentence",
         "Next unstudied",
+        "nextReviewSentence",
+        "Next review",
         "markTranslationReviewed",
         'title="Regenerate translation"',
         'aria-label="Reject translation"',
@@ -758,6 +762,7 @@ def check_work_source_bundle_ui() -> None:
         ".translation-review-state[data-review-state=\"reviewed\"]",
         ".translation-review-state[data-review-state=\"rejected\"]",
         "#nextUnstudiedSentence",
+        "#nextReviewSentence",
         ".study-tabs",
         ".study-tab:focus-visible",
         ".study-tab.active::after",

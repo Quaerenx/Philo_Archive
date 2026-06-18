@@ -430,6 +430,19 @@ h1 {
   border-left-color: #d4d4d4;
 }
 
+#nextReviewSentence {
+  min-width: 96px;
+  color: #243d2c;
+  background: #f6fbf6;
+  border-left: 3px solid #5a9a68;
+}
+
+#nextReviewSentence:disabled {
+  color: #888;
+  background: #f3f3f3;
+  border-left-color: #d4d4d4;
+}
+
 .sentence-controls button.needs-confirm,
 .translation-review-actions button.needs-confirm {
   background: #fffdf2;
