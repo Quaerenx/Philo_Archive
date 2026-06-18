@@ -353,6 +353,12 @@ def check_work_source_bundle_ui() -> None:
         "class=\"done\"",
         "selectedSentencePositionLabel()",
         "renderTranslationError",
+        "renderTranslationCancelled",
+        "cancelTranslationRequest",
+        "data-translation-cancel",
+        "data-translation-retry",
+        "Translation request cancelled.",
+        "No generated text was saved",
         "resetTranslationOutputScroll",
         "translationOutput.scrollTop = 0",
         "setActionButtonBusy",
@@ -495,8 +501,8 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common45", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common39", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common46", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common40", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -602,6 +608,8 @@ def check_work_source_bundle_ui() -> None:
         ".translation-progress-steps",
         ".translation-progress-steps li.done::before",
         ".translation-progress-steps li.active::before",
+        ".translation-loading-actions",
+        ".translation-loading-actions button",
         ".translation-study-skeleton",
         ".translation-skeleton-block",
         ".translation-skeleton-heading",
@@ -609,6 +617,8 @@ def check_work_source_bundle_ui() -> None:
         ".translation-card.is-loading::before",
         "@keyframes archive-loading-rail",
         "@keyframes archive-progress-dot",
+        ".translation-cancelled",
+        ".translation-cancelled button",
         ".research-card button.is-working",
         ".translation-commentary.is-collapsed",
         ".translation-commentary.is-expanded p::after",

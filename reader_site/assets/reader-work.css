@@ -695,6 +695,22 @@ h1 {
   animation: archive-progress-dot 1.1s ease-in-out infinite;
 }
 
+.translation-loading-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.translation-loading-actions button {
+  min-height: 22px;
+  margin: 0;
+  padding: 2px 7px;
+  color: #333;
+  background: #fff;
+  border-color: #bdbdbd;
+}
+
 .translation-skeleton {
   display: grid;
   gap: 9px;
@@ -858,6 +874,18 @@ h1 {
   background: #fff7f7;
   border: 1px solid #e3bcbc;
   padding: 8px 9px;
+}
+
+.translation-cancelled {
+  color: #333;
+  background: #f8f8f8;
+  border: 1px solid #d4d4d4;
+  border-left: 3px solid #999;
+  padding: 8px 9px;
+}
+
+.translation-cancelled button {
+  margin-top: 6px;
 }
 
 .translation-output h3 {

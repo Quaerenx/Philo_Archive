@@ -928,6 +928,9 @@ function renderTranslationPending(regenerate = false) {
       <li class="active">Generate</li>
       <li>Cache</li>
     </ol>
+    <div class="translation-loading-actions">
+      <button type="button" data-translation-cancel>Cancel request</button>
+    </div>
     <div class="translation-skeleton translation-study-skeleton" aria-hidden="true">
       <div class="translation-skeleton-block primary">
         <span class="translation-skeleton-heading"></span>
@@ -953,6 +956,22 @@ function renderTranslationError(message) {
     <div class="translation-error" role="note">
       <h3>Translation unavailable</h3>
       <p>${escapeHtml(cleanText(message || "Gemma runtime is not running."))}</p>
+    </div>`;
+  updateStudyPanelToggleLabel();
+  updateSentenceControls();
+}
+
+function renderTranslationCancelled(message = "Translation request cancelled.") {
+  selectedTranslationRecord = null;
+  setTranslationBusy(false);
+  translationOutput.hidden = false;
+  resetTranslationOutputScroll();
+  const position = selectedSentence ? selectedSentencePositionLabel() : "selected sentence";
+  translationOutput.innerHTML = `
+    <div class="translation-cancelled" role="note">
+      <h3>Translation cancelled</h3>
+      <p>${escapeHtml(cleanText(message))} No generated text was saved for ${escapeHtml(position)}.</p>
+      <button type="button" data-translation-retry>Try again</button>
     </div>`;
   updateStudyPanelToggleLabel();
   updateSentenceControls();
@@ -985,6 +1004,24 @@ function renderTranslationRecord(record, cached) {
   syncTranslationModeDensity();
   updateStudyPanelToggleLabel();
   updateSentenceControls();
+}
+
+function cancelTranslationRequest() {
+  if (!activeTranslationController) {
+    setTranslationStatus("No translation request is running.");
+    return;
+  }
+  const controller = activeTranslationController;
+  activeTranslationRequest += 1;
+  activeTranslationController = null;
+  activeTranslationTargetKey = "";
+  controller.abort();
+  const sentenceNode = selectedSentenceNode();
+  if (sentenceNode) {
+    sentenceNode.classList.remove("loading");
+  }
+  renderTranslationCancelled();
+  setTranslationStatus("Translation request cancelled.");
 }
 
 async function requestSentenceTranslation(regenerate = false) {
@@ -1516,6 +1553,16 @@ if (readingPosition) {
 }
 
 translationOutput.addEventListener("click", (event) => {
+  const cancel = event.target.closest("[data-translation-cancel]");
+  if (cancel) {
+    cancelTranslationRequest();
+    return;
+  }
+  const retry = event.target.closest("[data-translation-retry]");
+  if (retry) {
+    requestSentenceTranslation(false);
+    return;
+  }
   const jump = event.target.closest("[data-translation-jump]");
   if (jump) {
     scrollTranslationSectionIntoView(jump.dataset.translationJump || "");
