@@ -356,6 +356,7 @@ def check_work_source_bundle_ui() -> None:
         "setCommentaryExpanded",
         "syncTranslationModeDensity",
         "translationJumpNav",
+        "translationOutputUsesInternalScroll",
         "scrollTranslationSectionIntoView",
         "data-translation-jump",
         "data-translation-section=\"translation\"",
@@ -480,13 +481,16 @@ def check_work_source_bundle_ui() -> None:
         "ensureActiveStudyTabVisible",
         "scrollIntoView({",
         "inline: \"nearest\"",
+        "studyPage.scrollTop = 0",
+        "studyPage.scrollTo({ top, behavior })",
+        "section.scrollIntoView({ block: \"start\", inline: \"nearest\", behavior })",
         "aria-selected",
         "panel.hidden = !active",
         'event.key === "ArrowRight"',
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common43", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common44", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common38", "templates/work.html")
     for needle in [
         "reading-desk",

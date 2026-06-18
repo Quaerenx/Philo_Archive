@@ -867,8 +867,19 @@ function setTranslationBusy(isBusy) {
   updateStudyPanelToggleLabel();
 }
 
+function translationOutputUsesInternalScroll() {
+  if (!translationOutput) return false;
+  const styles = window.getComputedStyle ? window.getComputedStyle(translationOutput) : null;
+  const overflowY = styles ? styles.overflowY : "";
+  if (overflowY === "visible" || overflowY === "clip") return false;
+  return translationOutput.scrollHeight > translationOutput.clientHeight + 1;
+}
+
 function resetTranslationOutputScroll() {
   translationOutput.scrollTop = 0;
+  if (!translationOutputUsesInternalScroll() && studyPage) {
+    studyPage.scrollTop = 0;
+  }
 }
 
 function scrollTranslationSectionIntoView(sectionName) {
@@ -877,11 +888,18 @@ function scrollTranslationSectionIntoView(sectionName) {
   if (!section) return;
   const nav = translationOutput.querySelector(".translation-jump-nav");
   const stickyOffset = nav ? nav.offsetHeight + 8 : 8;
-  const top = Math.max(0, section.offsetTop - translationOutput.offsetTop - stickyOffset);
-  translationOutput.scrollTo({
-    top,
-    behavior: prefersReducedMotion() ? "auto" : "smooth"
-  });
+  const behavior = prefersReducedMotion() ? "auto" : "smooth";
+  if (translationOutputUsesInternalScroll()) {
+    const top = Math.max(0, section.offsetTop - translationOutput.offsetTop - stickyOffset);
+    translationOutput.scrollTo({ top, behavior });
+  } else if (studyPage) {
+    const containerRect = studyPage.getBoundingClientRect();
+    const sectionRect = section.getBoundingClientRect();
+    const top = Math.max(0, studyPage.scrollTop + sectionRect.top - containerRect.top - stickyOffset);
+    studyPage.scrollTo({ top, behavior });
+  } else {
+    section.scrollIntoView({ block: "start", inline: "nearest", behavior });
+  }
   section.classList.add("is-jump-target");
   window.setTimeout(() => section.classList.remove("is-jump-target"), prefersReducedMotion() ? 0 : 900);
 }
