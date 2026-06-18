@@ -131,8 +131,8 @@ h1 {
 
 .reading-desk {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
-  gap: 24px;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 20px;
   align-items: start;
 }
 
@@ -142,7 +142,7 @@ h1 {
 }
 
 .source-page {
-  padding-right: 24px;
+  padding-right: 20px;
   border-right: 1px solid #d4d4d4;
 }
 
@@ -183,12 +183,18 @@ h1 {
   border-color: #999;
 }
 
+.study-tab:focus-visible {
+  outline: 2px solid #b00000;
+  outline-offset: 2px;
+}
+
 .study-panel {
   display: none;
 }
 
 .study-panel.active {
   display: block;
+  animation: archive-panel-in 140ms ease-out both;
 }
 
 .study-panel-toggle {
@@ -401,7 +407,7 @@ h1 {
 }
 
 .translation-output {
-  max-height: clamp(180px, 38vh, 420px);
+  max-height: clamp(220px, 42vh, 520px);
   margin-top: 12px;
   padding-top: 12px;
   padding-right: 6px;
@@ -471,7 +477,7 @@ h1 {
 .translation-output .translation-primary {
   font-family: Georgia, "Times New Roman", serif;
   font-size: 15px;
-  line-height: 1.55;
+  line-height: 1.62;
 }
 
 .translation-commentary p {
@@ -479,7 +485,7 @@ h1 {
   margin: 0;
   color: #333;
   font-size: 13px;
-  line-height: 1.65;
+  line-height: 1.72;
 }
 
 .translation-commentary.is-collapsed p {
@@ -525,7 +531,7 @@ h1 {
 }
 
 .translation-output h3 {
-  margin: 10px 0 4px;
+  margin: 12px 0 5px;
   font-family: Verdana, Arial, Helvetica, sans-serif;
   font-size: 10px;
   line-height: 1.35;
@@ -533,7 +539,7 @@ h1 {
 
 .translation-output p,
 .translation-output ul {
-  margin: 0 0 8px;
+  margin: 0 0 10px;
 }
 
 .translation-output ul {
@@ -745,6 +751,15 @@ h1 {
   }
 }
 
+@keyframes archive-panel-in {
+  0% {
+    opacity: 0.65;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
 .segment-anchor {
   position: absolute;
   width: 18px;
@@ -804,6 +819,7 @@ h1 {
   .loading-spinner,
   .research-card button.is-working::after,
   .translation-skeleton-line,
+  .study-panel.active,
   .note-item.is-recent,
   .reader-sentence.loading {
     animation: none;
@@ -826,7 +842,7 @@ h1 {
   .reader {
     width: auto;
     margin: 0 10px 24px;
-    padding: 22px 18px 88px;
+    padding: 22px 18px calc(104px + env(safe-area-inset-bottom, 0px));
     overflow: hidden;
   }
 
@@ -866,31 +882,36 @@ h1 {
   .study-page {
     position: fixed;
     top: auto;
-    right: 10px;
+    right: max(10px, env(safe-area-inset-right, 0px));
     bottom: 0;
-    left: 10px;
+    left: max(10px, env(safe-area-inset-left, 0px));
     z-index: 4;
-    max-height: 52px;
-    padding: 8px 10px;
+    max-height: calc(56px + env(safe-area-inset-bottom, 0px));
+    padding: 8px 10px calc(8px + env(safe-area-inset-bottom, 0px));
     margin: 0 auto;
-    overflow: auto;
+    overflow: hidden;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
     background: #fff;
     border-right: 1px solid #d4d4d4;
     border-left: 1px solid #d4d4d4;
     border-top: 1px solid #d4d4d4;
     box-shadow: 0 -8px 20px rgba(0, 0, 0, 0.08);
-    transition: max-height 180ms ease;
+    transition: max-height 180ms ease, padding-bottom 180ms ease;
   }
 
   .study-page.is-expanded {
     max-height: 72vh;
+    max-height: min(72vh, calc(100dvh - 32px));
     padding: 10px 10px 0;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    overflow: auto;
   }
 
   .study-panel-toggle {
     display: block;
     width: 100%;
-    min-height: 28px;
+    min-height: 34px;
     margin: 0 0 8px;
     color: #000;
     font-family: Verdana, Arial, Helvetica, sans-serif;
@@ -898,6 +919,15 @@ h1 {
     background: #fff;
     border: 1px solid #bdbdbd;
     cursor: pointer;
+  }
+
+  .study-panel-toggle::before {
+    content: "";
+    display: block;
+    width: 34px;
+    height: 3px;
+    margin: 0 auto 6px;
+    background: #b8b8b8;
   }
 
   .study-page:not(.is-expanded) .study-tabs,

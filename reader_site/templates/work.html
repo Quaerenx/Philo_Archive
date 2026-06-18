@@ -6,7 +6,7 @@
   <title>{{TITLE}} / {{CORPUS_TITLE}}</title>
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
-  <link rel="stylesheet" href="/assets/reader-work.css?v=common13">
+  <link rel="stylesheet" href="/assets/reader-work.css?v=common17">
 </head>
 <body class="{{BODY_CLASS}}">
   <div class="page">
@@ -30,15 +30,15 @@
         <section class="source-page" aria-label="Original source">
           <article class="reading-body" dir="{{TEXT_DIRECTION}}" data-headings="{{HEADING_COUNT}}" data-segments="{{SEGMENT_COUNT}}">{{CONTENT}}</article>
         </section>
-        <aside class="study-page" aria-label="Study companion">
-          <button type="button" id="studyPanelToggle" class="study-panel-toggle" aria-expanded="false">Full study panel</button>
-          <nav class="study-tabs" aria-label="Study companion tools">
-            <button type="button" class="study-tab active" data-study-tab="translation">Translation</button>
-            <button type="button" class="study-tab" data-study-tab="notes">Notes</button>
-            <button type="button" class="study-tab" data-study-tab="citation">Citation</button>
-            <button type="button" class="study-tab" data-study-tab="concepts">Concepts</button>
+        <aside id="studyCompanionPanel" class="study-page" aria-label="Study companion">
+          <button type="button" id="studyPanelToggle" class="study-panel-toggle" aria-expanded="false" aria-controls="studyCompanionPanel">Full study panel</button>
+          <nav class="study-tabs" role="tablist" aria-label="Study companion tools" aria-orientation="horizontal">
+            <button type="button" id="study-tab-translation" class="study-tab active" role="tab" aria-selected="true" aria-controls="study-panel-translation" tabindex="0" data-study-tab="translation">Translation</button>
+            <button type="button" id="study-tab-notes" class="study-tab" role="tab" aria-selected="false" aria-controls="study-panel-notes" tabindex="-1" data-study-tab="notes">Notes</button>
+            <button type="button" id="study-tab-citation" class="study-tab" role="tab" aria-selected="false" aria-controls="study-panel-citation" tabindex="-1" data-study-tab="citation">Citation</button>
+            <button type="button" id="study-tab-concepts" class="study-tab" role="tab" aria-selected="false" aria-controls="study-panel-concepts" tabindex="-1" data-study-tab="concepts">Concepts</button>
           </nav>
-          <section class="study-panel active" data-study-panel="translation">
+          <section id="study-panel-translation" class="study-panel active" role="tabpanel" aria-labelledby="study-tab-translation" tabindex="0" data-study-panel="translation">
             <section class="research-card translation-card">
               <div class="translation-card-header">
                 <h2>Translation</h2>
@@ -50,13 +50,14 @@
               <div id="translationTarget" class="translation-target">Select a sentence in the source page.</div>
               <div id="sentenceContext" class="sentence-context" aria-label="Selected sentence context" hidden></div>
               <div class="sentence-controls" aria-label="Sentence navigation">
-                <button type="button" id="previousSentence" disabled>Previous</button>
-                <button type="button" id="nextSentence" disabled>Next</button>
+                <button type="button" id="previousSentence" aria-keyshortcuts="ArrowUp K" title="Previous sentence" disabled>Previous</button>
+                <button type="button" id="nextSentence" aria-keyshortcuts="ArrowDown J" title="Next sentence" disabled>Next</button>
                 <button type="button" id="regenerateSentence" disabled>Regenerate</button>
               </div>
               <div class="translation-review-actions" aria-label="Translation review actions">
                 <button type="button" id="markTranslationReviewed" disabled>Mark reviewed</button>
                 <button type="button" id="rejectTranslation" disabled>Reject</button>
+                <button type="button" id="copyStudyCard" disabled>Copy study card</button>
                 <button type="button" id="draftTranslationNote" disabled>Draft note</button>
               </div>
               <div id="translationStatus" class="translation-status" role="status" aria-live="polite" aria-atomic="true"></div>
@@ -64,7 +65,7 @@
               <a id="exportReviewedTranslations" class="reviewed-export-link" href="/api/sentence-translations/export?format=markdown">Export reviewed translations</a>
             </section>
           </section>
-          <section class="study-panel" data-study-panel="notes">
+          <section id="study-panel-notes" class="study-panel" role="tabpanel" aria-labelledby="study-tab-notes" tabindex="0" data-study-panel="notes" hidden>
             <section class="research-card notes-card">
               <h2>Notes</h2>
               <form id="noteForm">
@@ -77,7 +78,7 @@
               <div id="notesList" class="notes-list"></div>
             </section>
           </section>
-          <section class="study-panel" data-study-panel="citation">
+          <section id="study-panel-citation" class="study-panel" role="tabpanel" aria-labelledby="study-tab-citation" tabindex="0" data-study-panel="citation" hidden>
             <section class="research-card citation-card">
               <h2>Citation</h2>
               <div id="citationPreview" class="citation-preview"></div>
@@ -86,7 +87,7 @@
               <button type="button" id="copySourceBundle">Copy source bundle</button>
             </section>
           </section>
-          <section class="study-panel" data-study-panel="concepts">
+          <section id="study-panel-concepts" class="study-panel" role="tabpanel" aria-labelledby="study-tab-concepts" tabindex="0" data-study-panel="concepts" hidden>
             {{CONCEPTS}}
           </section>
         </aside>
@@ -94,6 +95,6 @@
     </main>
   </div>
   <script id="researchData" type="application/json">{{RESEARCH_JSON}}</script>
-  <script src="/assets/reader-work.js?v=common14"></script>
+  <script src="/assets/reader-work.js?v=common18"></script>
 </body>
 </html>

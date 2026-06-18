@@ -80,7 +80,7 @@ def check_reader_css(relative_path: str, css: str) -> None:
         require_contains(css, needle, relative_path)
     if relative_path == "assets/reader-work.css":
         require_contains(css, "width: calc(100% - 64px);", relative_path)
-        require_contains(css, "grid-template-columns: minmax(0, 1fr) 320px;", relative_path)
+        require_contains(css, "grid-template-columns: minmax(0, 1fr) 340px;", relative_path)
     else:
         require_contains(css, "width: var(--reader-column-width", relative_path)
 
@@ -168,24 +168,52 @@ def check_work_source_bundle_ui() -> None:
         "Full study panel",
         "prefersReducedMotion",
         "sentenceScrollBlock",
+        "isMobileStudyLayout",
+        "studyPanelViewportHeight",
+        "mobileSentenceSafeBottom",
+        "adjustSentenceAboveStudyPanel",
+        "keepSentenceAboveStudyPanel",
+        "window.scrollBy",
+        "window.setTimeout(() => adjustSentenceAboveStudyPanel(node)",
         "behavior: prefersReducedMotion() ? \"auto\" : \"smooth\"",
         "STUDY_PANEL_STORAGE_KEY",
         "storedStudyPanelExpanded",
         "rememberStudyPanelExpanded",
         "updateSentenceContext",
         "sentence-context-item",
+        "copyStudyCard",
+        "translationStudyCardText",
+        "Clipboard copy failed",
+        'target?.closest?.(".study-page")',
+        "activateStudyTabByIndex",
+        "aria-selected",
+        "panel.hidden = !active",
+        'event.key === "ArrowRight"',
+        'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common14", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common13", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common18", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common17", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
         "study-page",
+        "studyCompanionPanel",
         "studyPanelToggle",
+        'aria-controls="studyCompanionPanel"',
         "sentenceContext",
+        'role="tablist"',
+        'role="tab"',
+        'role="tabpanel"',
+        'aria-controls="study-panel-translation"',
+        'aria-labelledby="study-tab-translation"',
+        'aria-selected="true"',
+        'tabindex="-1"',
         "aria-label=\"Translation result\"",
         "tabindex=\"0\"",
+        "aria-keyshortcuts=\"ArrowUp K\"",
+        "aria-keyshortcuts=\"ArrowDown J\"",
+        "copyStudyCard",
         "translation-card",
         "study-tabs",
         "previousSentence",
@@ -196,14 +224,24 @@ def check_work_source_bundle_ui() -> None:
     css = read_site_file("assets/reader-work.css")
     for needle in [
         ".reading-desk",
+        "grid-template-columns: minmax(0, 1fr) 340px",
+        "gap: 20px",
         ".source-page",
+        "padding-right: 20px",
         ".study-page",
         "position: sticky;",
         "position: fixed;",
         "top: auto;",
         ".reader-sentence.loading",
         ".study-tabs",
+        ".study-tab:focus-visible",
+        "@keyframes archive-panel-in",
+        ".study-panel.active",
+        "animation: archive-panel-in 140ms ease-out both",
         ".translation-output.reading-mode .translation-extra",
+        "max-height: clamp(220px, 42vh, 520px)",
+        "line-height: 1.62",
+        "line-height: 1.72",
         ".translation-loading",
         ".translation-skeleton-line",
         ".research-card button.is-working",
@@ -212,8 +250,14 @@ def check_work_source_bundle_ui() -> None:
         ".note-item.is-recent",
         "@keyframes archive-note-highlight",
         ".study-panel-toggle",
+        ".study-panel-toggle::before",
         ".study-page.is-expanded",
         ".study-page:not(.is-expanded) .study-tabs",
+        "env(safe-area-inset-bottom, 0px)",
+        "overscroll-behavior: contain",
+        "touch-action: pan-y",
+        "max(10px, env(safe-area-inset-right, 0px))",
+        "max-height: min(72vh, calc(100dvh - 32px))",
         "scroll-margin-block",
         ".sentence-context",
         ".research-card .sentence-context-item",

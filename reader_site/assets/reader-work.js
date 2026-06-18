@@ -12,6 +12,7 @@ const nextSentenceButton = document.getElementById("nextSentence");
 const regenerateSentenceButton = document.getElementById("regenerateSentence");
 const markTranslationReviewedButton = document.getElementById("markTranslationReviewed");
 const rejectTranslationButton = document.getElementById("rejectTranslation");
+const copyStudyCardButton = document.getElementById("copyStudyCard");
 const draftTranslationNoteButton = document.getElementById("draftTranslationNote");
 const readingModeButton = document.getElementById("readingMode");
 const studyModeButton = document.getElementById("studyMode");
@@ -24,6 +25,7 @@ const exportReviewedTranslations = document.getElementById("exportReviewedTransl
 const noteTags = document.getElementById("noteTags");
 const noteText = document.getElementById("noteText");
 const noteSaveButton = noteForm.querySelector("button[type='submit']");
+const studyTabsContainer = document.querySelector(".study-tabs");
 const studyTabs = Array.from(document.querySelectorAll(".study-tab"));
 const studyPanels = Array.from(document.querySelectorAll(".study-panel"));
 const sentenceNodes = Array.from(document.querySelectorAll(".reader-sentence"));
@@ -49,13 +51,29 @@ function escapeHtml(value) {
     .replaceAll('"', "&quot;");
 }
 
-function setStudyPanel(name) {
+function setStudyPanel(name, focusTab = false) {
   studyTabs.forEach((tab) => {
-    tab.classList.toggle("active", tab.dataset.studyTab === name);
+    const active = tab.dataset.studyTab === name;
+    tab.classList.toggle("active", active);
+    tab.setAttribute("aria-selected", active ? "true" : "false");
+    tab.tabIndex = active ? 0 : -1;
+    if (active && focusTab) {
+      tab.focus();
+    }
   });
   studyPanels.forEach((panel) => {
-    panel.classList.toggle("active", panel.dataset.studyPanel === name);
+    const active = panel.dataset.studyPanel === name;
+    panel.classList.toggle("active", active);
+    panel.hidden = !active;
   });
+}
+
+function activateStudyTabByIndex(index) {
+  if (!studyTabs.length) return;
+  const nextIndex = (index + studyTabs.length) % studyTabs.length;
+  const nextTab = studyTabs[nextIndex];
+  setStudyPanel(nextTab.dataset.studyTab || "translation", true);
+  setStudyPanelExpanded(true);
 }
 
 function storedStudyPanelExpanded() {
@@ -165,6 +183,7 @@ function updateSentenceControls() {
   const hasRecord = Boolean(selectedTranslationRecord && selectedTranslationRecord.id);
   markTranslationReviewedButton.disabled = !hasRecord || selectedTranslationRecord.review_state === "reviewed";
   rejectTranslationButton.disabled = !hasRecord || selectedTranslationRecord.review_state === "rejected";
+  copyStudyCardButton.disabled = !hasRecord;
   draftTranslationNoteButton.disabled = !hasRecord;
 }
 
@@ -257,6 +276,37 @@ function sentenceScrollBlock() {
   return window.matchMedia && window.matchMedia("(max-width: 860px)").matches ? "start" : "center";
 }
 
+function isMobileStudyLayout() {
+  return Boolean(window.matchMedia && window.matchMedia("(max-width: 860px)").matches);
+}
+
+function studyPanelViewportHeight() {
+  if (!isMobileStudyLayout() || !studyPage) return 0;
+  return Math.ceil(studyPage.getBoundingClientRect().height);
+}
+
+function mobileSentenceSafeBottom() {
+  return window.innerHeight - studyPanelViewportHeight() - 18;
+}
+
+function adjustSentenceAboveStudyPanel(node) {
+  const rect = node.getBoundingClientRect();
+  const safeBottom = mobileSentenceSafeBottom();
+  if (rect.bottom > safeBottom) {
+    window.scrollBy({
+      top: rect.bottom - safeBottom,
+      left: 0,
+      behavior: prefersReducedMotion() ? "auto" : "smooth"
+    });
+  }
+}
+
+function keepSentenceAboveStudyPanel(node) {
+  if (!node || !isMobileStudyLayout()) return;
+  window.requestAnimationFrame(() => adjustSentenceAboveStudyPanel(node));
+  window.setTimeout(() => adjustSentenceAboveStudyPanel(node), prefersReducedMotion() ? 0 : 230);
+}
+
 function scrollSentenceIntoView(node) {
   if (!node || typeof node.scrollIntoView !== "function") return;
   node.scrollIntoView({
@@ -264,18 +314,23 @@ function scrollSentenceIntoView(node) {
     inline: "nearest",
     behavior: prefersReducedMotion() ? "auto" : "smooth"
   });
+  keepSentenceAboveStudyPanel(node);
 }
 
 function navigateSentence(delta) {
   if (!sentenceNodes.length) return;
   const currentIndex = selectedSentence ? sentenceIndex(selectedSentence.sentenceId) : -1;
-  const nextIndex = Math.min(sentenceNodes.length - 1, Math.max(0, currentIndex + delta));
-  const nextNode = sentenceNodes[nextIndex >= 0 ? nextIndex : 0];
+  const initialIndex = delta < 0 ? sentenceNodes.length - 1 : 0;
+  const nextIndex = currentIndex < 0
+    ? initialIndex
+    : Math.min(sentenceNodes.length - 1, Math.max(0, currentIndex + delta));
+  const nextNode = sentenceNodes[nextIndex];
   if (!nextNode) return;
   selectSentence(nextNode);
   scrollSentenceIntoView(nextNode);
   setStudyPanel("translation");
   setStudyPanelExpanded(true);
+  keepSentenceAboveStudyPanel(nextNode);
   requestSentenceTranslation(false);
 }
 
@@ -467,21 +522,68 @@ function draftNoteFromTranslation() {
   setTranslationStatus("Translation drafted into Notes.");
 }
 
+function translationStudyCardText(record) {
+  if (!record) return "";
+  const lines = [];
+  const source = cleanText(record.source_text_excerpt || selectedSentence?.text || "");
+  const translation = cleanText(record.translation || "");
+  const commentary = cleanText(record.commentary || record.interpretation || "");
+  if (source) {
+    lines.push("Original", source);
+  }
+  if (translation) {
+    lines.push("Translation", translation);
+  }
+  if (commentary) {
+    lines.push("Commentary", commentary);
+  }
+  return lines.join("\n");
+}
+
+async function copyStudyCard() {
+  if (!selectedTranslationRecord) {
+    setTranslationStatus("No generated translation is selected.", true);
+    return;
+  }
+  setActionButtonBusy(copyStudyCardButton, true);
+  try {
+    await copyText(translationStudyCardText(selectedTranslationRecord));
+    setTranslationStatus("Study card copied.");
+  } catch (error) {
+    setTranslationStatus("Could not copy study card.", true);
+  } finally {
+    setActionButtonBusy(copyStudyCardButton, false);
+    updateSentenceControls();
+  }
+}
+
 function updateCitationPreview() {
   citationPreview.textContent = citationText();
 }
 
 async function copyText(value) {
   if (navigator.clipboard && navigator.clipboard.writeText) {
-    await navigator.clipboard.writeText(value);
-    return;
+    try {
+      await navigator.clipboard.writeText(value);
+      return;
+    } catch (error) {
+      // Fall through to the legacy copy path when browser permissions are strict.
+    }
   }
   const area = document.createElement("textarea");
   area.value = value;
+  area.setAttribute("readonly", "");
+  area.style.position = "fixed";
+  area.style.top = "-9999px";
+  area.style.left = "-9999px";
   document.body.appendChild(area);
+  area.focus();
   area.select();
-  document.execCommand("copy");
+  const copied = document.execCommand("copy");
   area.remove();
+  if (!copied) {
+    throw new Error("Clipboard copy failed");
+  }
 }
 
 async function loadNotes() {
@@ -582,6 +684,7 @@ previousSentenceButton.addEventListener("click", () => navigateSentence(-1));
 nextSentenceButton.addEventListener("click", () => navigateSentence(1));
 markTranslationReviewedButton.addEventListener("click", () => updateTranslationReview("reviewed"));
 rejectTranslationButton.addEventListener("click", () => updateTranslationReview("rejected"));
+copyStudyCardButton.addEventListener("click", copyStudyCard);
 draftTranslationNoteButton.addEventListener("click", draftNoteFromTranslation);
 readingModeButton.addEventListener("click", () => setTranslationMode("reading"));
 studyModeButton.addEventListener("click", () => setTranslationMode("study"));
@@ -603,6 +706,7 @@ if (sentenceContext) {
     scrollSentenceIntoView(node);
     setStudyPanel("translation");
     setStudyPanelExpanded(true);
+    keepSentenceAboveStudyPanel(node);
     if (!wasSelected) {
       requestSentenceTranslation(false);
     }
@@ -627,12 +731,36 @@ studyTabs.forEach((tab) => {
   });
 });
 
+if (studyTabsContainer) {
+  studyTabsContainer.addEventListener("keydown", (event) => {
+    const currentIndex = studyTabs.indexOf(event.target);
+    if (currentIndex < 0) return;
+    if (event.key === "ArrowRight") {
+      event.preventDefault();
+      activateStudyTabByIndex(currentIndex + 1);
+    }
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      activateStudyTabByIndex(currentIndex - 1);
+    }
+    if (event.key === "Home") {
+      event.preventDefault();
+      activateStudyTabByIndex(0);
+    }
+    if (event.key === "End") {
+      event.preventDefault();
+      activateStudyTabByIndex(studyTabs.length - 1);
+    }
+  });
+}
+
 document.querySelector(".reading-body").addEventListener("click", (event) => {
   const sentence = event.target.closest(".reader-sentence");
   if (sentence) {
     selectSentence(sentence);
     setStudyPanel("translation");
     setStudyPanelExpanded(true);
+    keepSentenceAboveStudyPanel(sentence);
     requestSentenceTranslation(false);
   }
 });
@@ -646,6 +774,12 @@ document.addEventListener("keydown", (event) => {
     target.isContentEditable
   );
   if (isTyping || event.altKey || event.ctrlKey || event.metaKey) return;
+  if (
+    (event.key === "ArrowDown" || event.key === "ArrowUp" || event.key === "j" || event.key === "k") &&
+    target?.closest?.(".study-page")
+  ) {
+    return;
+  }
   if (event.key === "ArrowDown" || event.key === "j") {
     event.preventDefault();
     navigateSentence(1);
