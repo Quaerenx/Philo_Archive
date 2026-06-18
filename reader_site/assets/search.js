@@ -43,6 +43,56 @@ function updateUrl(query, corpusId, workId, variantId) {
   history.replaceState(null, "", params.toString() ? `/search?${params}` : "/search");
 }
 
+function searchHasActiveFilters() {
+  return Boolean(
+    queryInput.value.trim() ||
+    corpusSelect.value ||
+    (!workSelect.disabled && workSelect.value) ||
+    (!variantSelect.disabled && variantSelect.value)
+  );
+}
+
+function notesSearchHref(query) {
+  const params = new URLSearchParams();
+  if (query) params.set("q", query);
+  if (corpusSelect.value) params.set("corpus_id", corpusSelect.value);
+  if (!workSelect.disabled && workSelect.value) params.set("work_id", workSelect.value);
+  return params.toString() ? `/notes?${params}` : "/notes";
+}
+
+function renderEmptySearch(query) {
+  const filtered = searchHasActiveFilters();
+  const title = query ? "No matching results." : "Enter a search query.";
+  const body = query
+    ? "Try a broader word, clear corpus/work filters, or continue through the notes and archive index."
+    : "Search across works, source segments, and personal notes in the archive.";
+  const clearAction = filtered
+    ? '<button type="button" data-empty-action="clear-search">Clear search</button>'
+    : "";
+  return `<section class="empty-state">
+    <h2>${escapeHtml(title)}</h2>
+    <p>${escapeHtml(body)}</p>
+    <div class="empty-actions">
+      ${clearAction}
+      <a href="${escapeHtml(notesSearchHref(query))}">Search notes</a>
+      <a href="/">Archive index</a>
+    </div>
+  </section>`;
+}
+
+async function clearSearchFilters() {
+  queryInput.value = "";
+  corpusSelect.value = "";
+  workSelect.value = "";
+  variantSelect.value = "";
+  await populateFilters();
+  updateUrl("", "", "", "");
+  statusEl.textContent = "";
+  resultsEl.innerHTML = "";
+  setSearchBusy(false);
+  queryInput.focus();
+}
+
 function notesHref(result) {
   const params = new URLSearchParams();
   if (result.corpus_id) params.set("corpus_id", result.corpus_id);
@@ -165,7 +215,7 @@ function renderResults(payload, query) {
   if (noteMarkup) {
     sections.push(`<section class="result-group"><h2>Notes</h2>${noteMarkup}</section>`);
   }
-  resultsEl.innerHTML = sections.join("");
+  resultsEl.innerHTML = sections.length ? sections.join("") : renderEmptySearch(query);
 }
 
 async function loadMetadata(corpusId) {
@@ -281,6 +331,14 @@ async function runSearch() {
 form.addEventListener("submit", (event) => {
   event.preventDefault();
   runSearch();
+});
+
+resultsEl.addEventListener("click", async (event) => {
+  const emptyAction = event.target.closest("[data-empty-action]");
+  if (!emptyAction) return;
+  if (emptyAction.dataset.emptyAction === "clear-search") {
+    await clearSearchFilters();
+  }
 });
 
 corpusSelect.addEventListener("change", async () => {

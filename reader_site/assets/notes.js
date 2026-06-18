@@ -63,6 +63,48 @@ function updateUrl() {
   history.replaceState(null, "", params.toString() ? `/notes?${params}` : "/notes");
 }
 
+function hasActiveFilters() {
+  return Boolean(
+    queryInput.value.trim() ||
+    corpusSelect.value ||
+    workInput.value.trim() ||
+    tagInput.value.trim() ||
+    reviewSelect.value ||
+    requestedTargetId
+  );
+}
+
+function renderEmptyNotes() {
+  const filtered = hasActiveFilters();
+  const title = filtered ? "No notes match these filters." : "No research notes yet.";
+  const body = filtered
+    ? "Try clearing the filters, or broaden the work, tag, and review fields."
+    : "Create notes from a work page while reading original sources, then return here to review and export them.";
+  const clearAction = filtered
+    ? '<button type="button" data-empty-action="clear-filters">Clear filters</button>'
+    : "";
+  return `<section class="empty empty-state">
+    <h2>${escapeHtml(title)}</h2>
+    <p>${escapeHtml(body)}</p>
+    <div class="empty-actions">
+      ${clearAction}
+      <a href="/search">Search works</a>
+      <a href="/study">Study reviewed notes</a>
+    </div>
+  </section>`;
+}
+
+function clearNotesFilters() {
+  queryInput.value = "";
+  corpusSelect.value = "";
+  workInput.value = "";
+  tagInput.value = "";
+  reviewSelect.value = "";
+  requestedCorpusId = "";
+  requestedTargetId = "";
+  loadNotes();
+}
+
 function setNotesBusy(isBusy) {
   form.classList.toggle("is-loading", isBusy);
   resultsEl.setAttribute("aria-busy", isBusy ? "true" : "false");
@@ -146,7 +188,7 @@ function renderNotes(notes) {
         </form>
       </article>`;
     }).join("")
-    : `<div class="empty">Create notes from a work page, then return here to review and export them.</div>`;
+    : renderEmptyNotes();
 }
 
 function noteById(noteId) {
@@ -252,6 +294,13 @@ form.addEventListener("submit", (event) => {
 });
 
 resultsEl.addEventListener("click", async (event) => {
+  const emptyAction = event.target.closest("[data-empty-action]");
+  if (emptyAction) {
+    if (emptyAction.dataset.emptyAction === "clear-filters") {
+      clearNotesFilters();
+    }
+    return;
+  }
   const button = event.target.closest("button[data-action]");
   if (!button) return;
   const card = button.closest(".note-card");

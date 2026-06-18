@@ -150,8 +150,8 @@ def check_search_ui() -> None:
     script = read_site_file("assets/search.js")
     css = read_site_file("assets/search.css")
     for needle in [
-        "/assets/search.css?v=phase7",
-        "/assets/search.js?v=phase7",
+        "/assets/search.css?v=phase8",
+        "/assets/search.js?v=phase8",
         'id="searchSubmit"',
         'role="status"',
         'aria-busy="false"',
@@ -162,6 +162,9 @@ def check_search_ui() -> None:
         "activeSearchRequest",
         "setSearchBusy",
         "renderSearchPending",
+        "function renderEmptySearch",
+        "function clearSearchFilters",
+        "data-empty-action=\"clear-search\"",
         "search-skeleton",
         "activeSearchController.abort()",
         "signal: controller.signal",
@@ -170,6 +173,9 @@ def check_search_ui() -> None:
         require_contains(script, needle, "assets/search.js")
     for needle in [
         ".search-form.is-searching",
+        ".empty-state",
+        ".empty-actions",
+        ".empty-actions a",
         ".search-skeleton-line",
         "@keyframes archive-spin",
         "@keyframes archive-skeleton",
@@ -183,8 +189,8 @@ def check_notes_ui() -> None:
     script = read_site_file("assets/notes.js")
     css = read_site_file("assets/notes.css")
     for needle in [
-        "/assets/notes.css?v=notes4",
-        "/assets/notes.js?v=notes5",
+        "/assets/notes.css?v=notes5",
+        "/assets/notes.js?v=notes6",
         'id="notesSubmit"',
         'role="status"',
         'aria-busy="false"',
@@ -196,6 +202,9 @@ def check_notes_ui() -> None:
         "setNotesBusy",
         "setActionButtonBusy",
         "renderNotesPending",
+        "function renderEmptyNotes",
+        "function clearNotesFilters",
+        "data-empty-action=\"clear-filters\"",
         "notes-skeleton",
         "activeNotesController.abort()",
         "signal: controller.signal",
@@ -204,6 +213,9 @@ def check_notes_ui() -> None:
         require_contains(script, needle, "assets/notes.js")
     for needle in [
         ".notes-form.is-loading",
+        ".empty-state",
+        ".empty-actions",
+        ".empty-actions a",
         ".notes-skeleton-line",
         ".note-actions button.is-working",
         "@keyframes archive-spin",
@@ -218,8 +230,8 @@ def check_study_ui() -> None:
     script = read_site_file("assets/study.js")
     css = read_site_file("assets/study.css")
     for needle in [
-        "/assets/study.css?v=study5",
-        "/assets/study.js?v=study5",
+        "/assets/study.css?v=study6",
+        "/assets/study.js?v=study6",
         'id="studySubmit"',
         'role="status"',
         'aria-busy="false"',
@@ -230,6 +242,9 @@ def check_study_ui() -> None:
         "activeStudyRequest",
         "setStudyBusy",
         "renderStudyPending",
+        "function renderEmptyStudy",
+        "function clearStudyFilters",
+        "data-empty-action=\"clear-filters\"",
         "study-skeleton",
         "activeStudyController.abort()",
         "signal: controller.signal",
@@ -238,6 +253,9 @@ def check_study_ui() -> None:
         require_contains(script, needle, "assets/study.js")
     for needle in [
         ".study-form.is-loading",
+        ".empty-state",
+        ".empty-actions",
+        ".empty-actions a",
         ".study-skeleton-line",
         "@keyframes archive-spin",
         "@keyframes archive-skeleton",

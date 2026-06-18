@@ -52,6 +52,44 @@ function updateUrl() {
   history.replaceState(null, "", params.toString() ? `/study?${params}` : "/study");
 }
 
+function hasActiveFilters() {
+  return Boolean(
+    queryInput.value.trim() ||
+    corpusSelect.value ||
+    workInput.value.trim() ||
+    tagInput.value.trim()
+  );
+}
+
+function renderEmptyStudy() {
+  const filtered = hasActiveFilters();
+  const title = filtered ? "No reviewed notes match these filters." : "No reviewed study notes yet.";
+  const body = filtered
+    ? "Clear the filters, or manage research notes and mark the strongest ones as reviewed."
+    : "Mark research notes as reviewed when they are ready for focused study; they will appear here as a reading bundle.";
+  const clearAction = filtered
+    ? '<button type="button" data-empty-action="clear-filters">Clear filters</button>'
+    : "";
+  return `<section class="empty empty-state">
+    <h2>${escapeHtml(title)}</h2>
+    <p>${escapeHtml(body)}</p>
+    <div class="empty-actions">
+      ${clearAction}
+      <a href="/notes?review_state=raw">Review raw notes</a>
+      <a href="/search">Search works</a>
+    </div>
+  </section>`;
+}
+
+function clearStudyFilters() {
+  queryInput.value = "";
+  corpusSelect.value = "";
+  workInput.value = "";
+  tagInput.value = "";
+  requestedCorpusId = "";
+  loadStudy();
+}
+
 function setStudyBusy(isBusy) {
   form.classList.toggle("is-loading", isBusy);
   resultsEl.setAttribute("aria-busy", isBusy ? "true" : "false");
@@ -159,8 +197,16 @@ function renderStudy(payload) {
         ${group.notes.map(renderNote).join("")}
       </section>`;
     }).join("")
-    : `<div class="empty">No reviewed notes.</div>`;
+    : renderEmptyStudy();
 }
+
+resultsEl.addEventListener("click", (event) => {
+  const emptyAction = event.target.closest("[data-empty-action]");
+  if (!emptyAction) return;
+  if (emptyAction.dataset.emptyAction === "clear-filters") {
+    clearStudyFilters();
+  }
+});
 
 async function loadCorpora() {
   try {

@@ -112,8 +112,8 @@ def check_route_markup(route: str, html: str) -> None:
             "studySubmit",
             "studyStatus",
             "aria-busy=\"false\"",
-            "study.css?v=study5",
-            "study.js?v=study5",
+            "study.css?v=study6",
+            "study.js?v=study6",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
     if route == "/notes":
@@ -121,8 +121,8 @@ def check_route_markup(route: str, html: str) -> None:
             "notesSubmit",
             "notesStatus",
             "aria-busy=\"false\"",
-            "notes.css?v=notes4",
-            "notes.js?v=notes5",
+            "notes.css?v=notes5",
+            "notes.js?v=notes6",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
     if route == "/search":
@@ -130,8 +130,8 @@ def check_route_markup(route: str, html: str) -> None:
             "searchSubmit",
             "searchStatus",
             "aria-busy=\"false\"",
-            "search.css?v=phase7",
-            "search.js?v=phase7",
+            "search.css?v=phase8",
+            "search.js?v=phase8",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
     if route.startswith("/work/"):
