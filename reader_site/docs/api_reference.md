@@ -713,3 +713,19 @@ format=markdown|json
 ```
 
 `format=markdown` returns a grouped Markdown study-note bundle including deterministic group summaries, tag counts, and reviewed date ranges. `format=json` returns the same grouped payload as `/api/study`.
+
+## `GET /api/study-session/export`
+
+Exports one work-level study session by combining personal notes and generated Gemma sentence translations. By default this is a reviewed-study bundle: reviewed notes plus reviewed translations.
+
+Query parameters:
+
+```text
+corpus_id=<required corpus id>
+work_id=<optional work id>
+notes_review_state=reviewed|raw|all
+translation_review_state=reviewed|generated|rejected|all
+format=markdown|json
+```
+
+`format=markdown` returns a single study document with separate Notes and Generated Translation & Commentary sections. The generated translation section is explicitly labeled as AI output and not source text.

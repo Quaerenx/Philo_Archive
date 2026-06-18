@@ -39,6 +39,7 @@ from services.sources import (
     build_source_response,
 )
 from services.static_files import build_file_payload, resolve_static_file
+from services.study_sessions import study_session_export_from_query
 from services.work_pages import build_work_page_html
 
 
@@ -101,6 +102,9 @@ class Handler(BaseHTTPRequestHandler):
             return
         if parsed.path == "/api/study/export":
             self.handle_study_export_get(parse_qs(parsed.query))
+            return
+        if parsed.path == "/api/study-session/export":
+            self.handle_study_session_export_get(parse_qs(parsed.query))
             return
         if parsed.path == "/api/notes/export":
             self.handle_notes_export_get(parse_qs(parsed.query))
@@ -180,6 +184,17 @@ class Handler(BaseHTTPRequestHandler):
 
     def handle_study_export_get(self, query: dict[str, list[str]]) -> None:
         result = study_export_from_query(query)
+        if result["kind"] == "text":
+            self.send_text(result["body"], result["content_type"])
+            return
+        self.send_json(result["payload"])
+
+    def handle_study_session_export_get(self, query: dict[str, list[str]]) -> None:
+        try:
+            result = study_session_export_from_query(query)
+        except ValueError as exc:
+            self.send_error(400, str(exc))
+            return
         if result["kind"] == "text":
             self.send_text(result["body"], result["content_type"])
             return

@@ -34,6 +34,7 @@ const studyPanelScrim = document.getElementById("studyPanelScrim");
 const translationRecordsSummary = document.getElementById("translationRecordsSummary");
 const exportReviewedTranslations = document.getElementById("exportReviewedTranslations");
 const exportAllTranslations = document.getElementById("exportAllTranslations");
+const exportStudySession = document.getElementById("exportStudySession");
 const noteTags = document.getElementById("noteTags");
 const noteText = document.getElementById("noteText");
 const noteSaveButton = noteForm.querySelector("button[type='submit']");
@@ -2009,6 +2010,17 @@ function initializeStudyCompanion() {
   exportAllParams.set("review_state", "all");
   if (exportAllTranslations) {
     exportAllTranslations.href = `/api/sentence-translations/export?${exportAllParams}`;
+  }
+  const sessionExportParams = new URLSearchParams({
+    corpus_id: researchData.corpus_id || researchData.author_id || "",
+    work_id: researchData.work_id || "",
+    notes_review_state: "reviewed",
+    translation_review_state: "reviewed",
+    format: "markdown"
+  });
+  if (exportStudySession) {
+    exportStudySession.href = `/api/study-session/export?${sessionExportParams}`;
+    exportStudySession.title = "Export reviewed notes and reviewed Gemma translations for this work";
   }
   const conceptsPanel = document.querySelector('[data-study-panel="concepts"]');
   if (conceptsPanel && !conceptsPanel.textContent.trim()) {

@@ -365,6 +365,10 @@ def check_work_source_bundle_ui() -> None:
         "AI records:",
         "review_state_counts",
         "exportAllTranslations",
+        "exportStudySession",
+        "/api/study-session/export",
+        "notes_review_state",
+        "translation_review_state",
         "review_state\", \"all\"",
         "renderTranslationPending",
         "translation-loading-copy",
@@ -548,8 +552,8 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common57", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common47", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common58", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common48", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -569,6 +573,8 @@ def check_work_source_bundle_ui() -> None:
         "translation-export-links",
         "exportAllTranslations",
         "Export all",
+        "exportStudySession",
+        "Export session",
         "aria-label=\"Full study panel. Select a sentence\"",
         'aria-controls="studyCompanionPanel"',
         "readingPosition",

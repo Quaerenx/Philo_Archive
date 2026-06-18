@@ -16,6 +16,7 @@ from services.sentence_translations import (  # noqa: E402
     sentence_translations_summary_from_query,
 )
 from services.source_targets import sha256_text, source_target_payload_from_query  # noqa: E402
+from services.study_sessions import study_session_export_from_query  # noqa: E402
 
 
 SOURCE_TARGET_BUNDLE_KEYS = {
@@ -237,6 +238,20 @@ def check_sentence_translation_export() -> None:
     require_keys(summary["review_state_counts"], {"generated", "reviewed", "rejected"}, "sentence translations review counts")
 
 
+def check_study_session_export() -> None:
+    markdown = study_session_export_from_query(
+        {"corpus_id": ["nietzsche"], "work_id": ["GM"], "format": ["markdown"]}
+    )
+    require(markdown["kind"] == "text", "study session markdown export should be text")
+    require("Study Session Export" in markdown["body"], "study session export heading missing")
+    require("Generated Translation & Commentary" in markdown["body"], "study session export AI section missing")
+    payload = study_session_export_from_query(
+        {"corpus_id": ["nietzsche"], "work_id": ["GM"], "format": ["json"]}
+    )
+    require(payload["kind"] == "json", "study session json export should be json")
+    require_keys(payload["payload"], {"note_count", "translation_count", "notes", "translations"}, "study session export")
+
+
 def main() -> None:
     check_archive(build_archive())
     check_health(build_runtime_health())
@@ -244,6 +259,7 @@ def main() -> None:
     check_bible_segments_payload()
     check_source_target_payload()
     check_sentence_translation_export()
+    check_study_session_export()
     print("api contracts ok")
 
 
