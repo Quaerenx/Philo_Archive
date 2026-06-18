@@ -6,7 +6,7 @@
   <title>Research Notes / Personal Archive of Literature</title>
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
-  <link rel="stylesheet" href="/assets/notes.css?v=notes5">
+  <link rel="stylesheet" href="/assets/notes.css?v=notes7">
 </head>
 <body>
   <div class="page">
@@ -49,8 +49,12 @@
             <option value="reviewed">Reviewed</option>
           </select>
         </label>
-        <button id="notesSubmit" type="submit">Filter</button>
+        <div class="form-actions">
+          <button id="notesSubmit" type="submit">Filter</button>
+          <button id="notesClear" type="button" class="secondary-action" disabled>Clear</button>
+        </div>
       </form>
+      <div id="notesActiveFilters" class="active-filters" aria-live="polite" aria-label="Active notes filters"></div>
 
       <div class="export-row" aria-label="Export notes">
         <a id="exportJson" href="/api/notes/export?format=json">JSON</a>
@@ -62,6 +66,6 @@
       <section id="notesResults" class="notes-results" aria-live="polite" aria-busy="false"></section>
     </main>
   </div>
-  <script src="/assets/notes.js?v=notes6"></script>
+  <script src="/assets/notes.js?v=notes8"></script>
 </body>
 </html>

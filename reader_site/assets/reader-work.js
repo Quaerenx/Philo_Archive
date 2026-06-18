@@ -346,8 +346,26 @@ function updateReadingPosition(node) {
   activeReadingCueNode.classList.add("reading-cue");
   const sentenceId = node.dataset.sentenceId || node.id || "";
   const label = sentencePositionText(sentenceId);
-  readingPosition.innerHTML = `<span>Reading near</span> <strong>${escapeHtml(label)}</strong>`;
+  const isSelected = Boolean(selectedSentence && selectedSentence.sentenceId === sentenceId);
+  const action = isSelected
+    ? '<span class="reading-position-current">Selected</span>'
+    : '<button type="button" data-reading-cue-select>Study this</button>';
+  readingPosition.innerHTML = `<span>Reading near</span> <strong>${escapeHtml(label)}</strong> ${action}`;
   readingPosition.setAttribute("aria-label", `Current reading position: ${label}`);
+}
+
+function studyReadingCueSentence() {
+  const node = activeReadingCueNode;
+  if (!node || !node.classList.contains("reader-sentence")) return;
+  const sentenceId = node.dataset.sentenceId || node.id || "";
+  const wasSelected = selectedSentence && selectedSentence.sentenceId === sentenceId;
+  selectSentence(node);
+  setStudyPanel("translation");
+  setStudyPanelExpanded(true);
+  keepSentenceAboveStudyPanel(node);
+  if (!wasSelected || !selectedTranslationRecord) {
+    requestSentenceTranslation(false);
+  }
 }
 
 function refreshReadingPosition() {
@@ -1341,6 +1359,14 @@ if (translationTarget) {
     scrollSentenceIntoView(node);
     updateReadingPosition(node);
     updateTranslationTargetViewState();
+  });
+}
+
+if (readingPosition) {
+  readingPosition.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-reading-cue-select]");
+    if (!button) return;
+    studyReadingCueSentence();
   });
 }
 

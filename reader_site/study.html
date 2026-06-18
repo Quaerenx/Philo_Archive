@@ -6,7 +6,7 @@
   <title>Study Notes / Personal Archive of Literature</title>
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
-  <link rel="stylesheet" href="/assets/study.css?v=study6">
+  <link rel="stylesheet" href="/assets/study.css?v=study8">
 </head>
 <body>
   <div class="page">
@@ -41,8 +41,12 @@
           Tag
           <input id="studyTag" name="tag" autocomplete="off">
         </label>
-        <button id="studySubmit" type="submit">Filter</button>
+        <div class="form-actions">
+          <button id="studySubmit" type="submit">Filter</button>
+          <button id="studyClear" type="button" class="secondary-action" disabled>Clear</button>
+        </div>
       </form>
+      <div id="studyActiveFilters" class="active-filters" aria-live="polite" aria-label="Active study filters"></div>
 
       <div class="export-row" aria-label="Export reviewed notes">
         <a id="studyExportMarkdown" href="/api/study/export?format=markdown">Markdown</a>
@@ -53,6 +57,6 @@
       <section id="studyResults" class="study-results" aria-live="polite" aria-busy="false"></section>
     </main>
   </div>
-  <script src="/assets/study.js?v=study6"></script>
+  <script src="/assets/study.js?v=study8"></script>
 </body>
 </html>

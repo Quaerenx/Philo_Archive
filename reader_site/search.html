@@ -6,7 +6,7 @@
   <title>Research Search / Personal Archive of Literature</title>
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
-  <link rel="stylesheet" href="/assets/search.css?v=phase8">
+  <link rel="stylesheet" href="/assets/search.css?v=phase11">
 </head>
 <body>
   <div class="page">
@@ -49,13 +49,17 @@
             <option value="">All variants</option>
           </select>
         </label>
-        <button id="searchSubmit" type="submit">Search</button>
+        <div class="form-actions">
+          <button id="searchSubmit" type="submit">Search</button>
+          <button id="searchClear" type="button" class="secondary-action" disabled>Clear</button>
+        </div>
       </form>
+      <div id="searchActiveFilters" class="active-filters" aria-live="polite" aria-label="Active search filters"></div>
 
       <div id="searchStatus" class="search-status" role="status" aria-live="polite" aria-atomic="true"></div>
       <section id="results" class="results" aria-live="polite" aria-busy="false"></section>
     </main>
   </div>
-  <script src="/assets/search.js?v=phase8"></script>
+  <script src="/assets/search.js?v=phase11"></script>
 </body>
 </html>

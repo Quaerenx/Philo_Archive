@@ -110,28 +110,34 @@ def check_route_markup(route: str, html: str) -> None:
     if route == "/study":
         for needle in [
             "studySubmit",
+            "studyClear",
+            "studyActiveFilters",
             "studyStatus",
             "aria-busy=\"false\"",
-            "study.css?v=study6",
-            "study.js?v=study6",
+            "study.css?v=study8",
+            "study.js?v=study8",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
     if route == "/notes":
         for needle in [
             "notesSubmit",
+            "notesClear",
+            "notesActiveFilters",
             "notesStatus",
             "aria-busy=\"false\"",
-            "notes.css?v=notes5",
-            "notes.js?v=notes6",
+            "notes.css?v=notes7",
+            "notes.js?v=notes8",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
     if route == "/search":
         for needle in [
             "searchSubmit",
+            "searchClear",
+            "searchActiveFilters",
             "searchStatus",
             "aria-busy=\"false\"",
-            "search.css?v=phase8",
-            "search.js?v=phase8",
+            "search.css?v=phase11",
+            "search.js?v=phase11",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
     if route.startswith("/work/"):
@@ -156,8 +162,8 @@ def check_route_markup(route: str, html: str) -> None:
             "noteSort",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common32",
-            "reader-work.js?v=common35",
+            "reader-work.css?v=common33",
+            "reader-work.js?v=common36",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
 

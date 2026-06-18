@@ -4,6 +4,8 @@ const corpusSelect = document.getElementById("studyCorpus");
 const workInput = document.getElementById("studyWork");
 const tagInput = document.getElementById("studyTag");
 const studySubmit = document.getElementById("studySubmit");
+const studyClear = document.getElementById("studyClear");
+const activeFiltersEl = document.getElementById("studyActiveFilters");
 const statusEl = document.getElementById("studyStatus");
 const resultsEl = document.getElementById("studyResults");
 const exportMarkdown = document.getElementById("studyExportMarkdown");
@@ -50,6 +52,12 @@ function updateUrl() {
   const params = currentParams("json");
   params.delete("format");
   history.replaceState(null, "", params.toString() ? `/study?${params}` : "/study");
+  updateStudyClearState();
+}
+
+function selectedOptionText(select) {
+  const option = select.options[select.selectedIndex];
+  return option ? option.textContent.trim() : select.value;
 }
 
 function hasActiveFilters() {
@@ -59,6 +67,35 @@ function hasActiveFilters() {
     workInput.value.trim() ||
     tagInput.value.trim()
   );
+}
+
+function renderFilterChip(filterName, label, value) {
+  return `<button type="button" class="filter-chip" data-filter="${escapeHtml(filterName)}" aria-label="Remove ${escapeHtml(label)} filter">
+    <span>${escapeHtml(label)}: ${escapeHtml(value)}</span>
+    <span aria-hidden="true">x</span>
+  </button>`;
+}
+
+function updateStudyFilterSummary() {
+  if (!activeFiltersEl) return;
+  const chips = [];
+  const query = queryInput.value.trim();
+  const workId = workInput.value.trim();
+  const tag = tagInput.value.trim().replace(/^#/, "");
+  if (query) chips.push(renderFilterChip("query", "Query", query));
+  if (corpusSelect.value) chips.push(renderFilterChip("corpus", "Corpus", selectedOptionText(corpusSelect)));
+  if (workId) chips.push(renderFilterChip("work", "Work", workId));
+  if (tag) chips.push(renderFilterChip("tag", "Tag", tag));
+  activeFiltersEl.classList.toggle("has-filters", chips.length > 0);
+  activeFiltersEl.innerHTML = chips.length
+    ? `<span class="active-filters-label">Filters</span>${chips.join("")}`
+    : "";
+}
+
+function updateStudyClearState(isBusy = form.classList.contains("is-loading")) {
+  if (!studyClear) return;
+  studyClear.disabled = isBusy || !hasActiveFilters();
+  updateStudyFilterSummary();
 }
 
 function renderEmptyStudy() {
@@ -90,6 +127,20 @@ function clearStudyFilters() {
   loadStudy();
 }
 
+function removeStudyFilter(filterName) {
+  if (filterName === "query") {
+    queryInput.value = "";
+  } else if (filterName === "corpus") {
+    corpusSelect.value = "";
+    requestedCorpusId = "";
+  } else if (filterName === "work") {
+    workInput.value = "";
+  } else if (filterName === "tag") {
+    tagInput.value = "";
+  }
+  loadStudy();
+}
+
 function setStudyBusy(isBusy) {
   form.classList.toggle("is-loading", isBusy);
   resultsEl.setAttribute("aria-busy", isBusy ? "true" : "false");
@@ -97,6 +148,7 @@ function setStudyBusy(isBusy) {
     studySubmit.disabled = isBusy;
     studySubmit.setAttribute("aria-busy", isBusy ? "true" : "false");
   }
+  updateStudyClearState(isBusy);
 }
 
 function renderStudyPending() {
@@ -266,9 +318,27 @@ form.addEventListener("submit", (event) => {
   loadStudy();
 });
 
+if (studyClear) {
+  studyClear.addEventListener("click", clearStudyFilters);
+}
+
+if (activeFiltersEl) {
+  activeFiltersEl.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-filter]");
+    if (!button) return;
+    removeStudyFilter(button.dataset.filter || "");
+  });
+}
+
 for (const field of [queryInput, corpusSelect, workInput, tagInput]) {
   field.addEventListener("change", loadStudy);
 }
+
+for (const field of [queryInput, workInput, tagInput]) {
+  field.addEventListener("input", updateStudyClearState);
+}
+
+corpusSelect.addEventListener("change", updateStudyClearState);
 
 const initialParams = new URLSearchParams(location.search);
 queryInput.value = initialParams.get("q") || "";
@@ -277,4 +347,5 @@ tagInput.value = initialParams.get("tag") || "";
 requestedCorpusId = initialParams.get("corpus_id") || "";
 corpusSelect.value = requestedCorpusId;
 
+updateStudyClearState();
 loadCorpora().then(loadStudy);

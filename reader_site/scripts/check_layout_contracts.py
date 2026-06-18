@@ -150,9 +150,12 @@ def check_search_ui() -> None:
     script = read_site_file("assets/search.js")
     css = read_site_file("assets/search.css")
     for needle in [
-        "/assets/search.css?v=phase8",
-        "/assets/search.js?v=phase8",
+        "/assets/search.css?v=phase11",
+        "/assets/search.js?v=phase11",
         'id="searchSubmit"',
+        'id="searchClear"',
+        'id="searchActiveFilters"',
+        'class="form-actions"',
         'role="status"',
         'aria-busy="false"',
     ]:
@@ -164,6 +167,16 @@ def check_search_ui() -> None:
         "renderSearchPending",
         "function renderEmptySearch",
         "function clearSearchFilters",
+        "function updateSearchClearState",
+        "function updateSearchFilterSummary",
+        "function removeSearchFilter",
+        "function resultGroupHeader",
+        "function resultKind",
+        "result-group-count",
+        "result-kind",
+        "searchClear.addEventListener",
+        "activeFiltersEl.addEventListener",
+        "filter-chip",
         "data-empty-action=\"clear-search\"",
         "search-skeleton",
         "activeSearchController.abort()",
@@ -173,6 +186,18 @@ def check_search_ui() -> None:
         require_contains(script, needle, "assets/search.js")
     for needle in [
         ".search-form.is-searching",
+        ".form-actions",
+        ".secondary-action",
+        ".active-filters",
+        ".active-filters.has-filters",
+        ".filter-chip",
+        ".result-group-header",
+        ".result-group-count",
+        ".result-kind",
+        ".result-kind.work",
+        ".result-kind.segment",
+        ".result-kind.note",
+        ".search-form.is-searching #searchSubmit",
         ".empty-state",
         ".empty-actions",
         ".empty-actions a",
@@ -189,9 +214,12 @@ def check_notes_ui() -> None:
     script = read_site_file("assets/notes.js")
     css = read_site_file("assets/notes.css")
     for needle in [
-        "/assets/notes.css?v=notes5",
-        "/assets/notes.js?v=notes6",
+        "/assets/notes.css?v=notes7",
+        "/assets/notes.js?v=notes8",
         'id="notesSubmit"',
+        'id="notesClear"',
+        'id="notesActiveFilters"',
+        'class="form-actions"',
         'role="status"',
         'aria-busy="false"',
     ]:
@@ -204,6 +232,12 @@ def check_notes_ui() -> None:
         "renderNotesPending",
         "function renderEmptyNotes",
         "function clearNotesFilters",
+        "function updateNotesClearState",
+        "function updateNotesFilterSummary",
+        "function removeNotesFilter",
+        "notesClear.addEventListener",
+        "activeFiltersEl.addEventListener",
+        "filter-chip",
         "data-empty-action=\"clear-filters\"",
         "notes-skeleton",
         "activeNotesController.abort()",
@@ -213,6 +247,12 @@ def check_notes_ui() -> None:
         require_contains(script, needle, "assets/notes.js")
     for needle in [
         ".notes-form.is-loading",
+        ".form-actions",
+        ".secondary-action",
+        ".active-filters",
+        ".active-filters.has-filters",
+        ".filter-chip",
+        ".notes-form.is-loading #notesSubmit",
         ".empty-state",
         ".empty-actions",
         ".empty-actions a",
@@ -230,9 +270,12 @@ def check_study_ui() -> None:
     script = read_site_file("assets/study.js")
     css = read_site_file("assets/study.css")
     for needle in [
-        "/assets/study.css?v=study6",
-        "/assets/study.js?v=study6",
+        "/assets/study.css?v=study8",
+        "/assets/study.js?v=study8",
         'id="studySubmit"',
+        'id="studyClear"',
+        'id="studyActiveFilters"',
+        'class="form-actions"',
         'role="status"',
         'aria-busy="false"',
     ]:
@@ -244,6 +287,12 @@ def check_study_ui() -> None:
         "renderStudyPending",
         "function renderEmptyStudy",
         "function clearStudyFilters",
+        "function updateStudyClearState",
+        "function updateStudyFilterSummary",
+        "function removeStudyFilter",
+        "studyClear.addEventListener",
+        "activeFiltersEl.addEventListener",
+        "filter-chip",
         "data-empty-action=\"clear-filters\"",
         "study-skeleton",
         "activeStudyController.abort()",
@@ -253,6 +302,12 @@ def check_study_ui() -> None:
         require_contains(script, needle, "assets/study.js")
     for needle in [
         ".study-form.is-loading",
+        ".form-actions",
+        ".secondary-action",
+        ".active-filters",
+        ".active-filters.has-filters",
+        ".filter-chip",
+        ".study-form.is-loading #studySubmit",
         ".empty-state",
         ".empty-actions",
         ".empty-actions a",
@@ -357,6 +412,9 @@ def check_work_source_bundle_ui() -> None:
         "requestAnimationFrame(refreshReadingPosition)",
         "readingCueTargetLine",
         "updateReadingPosition(node)",
+        "function studyReadingCueSentence",
+        "data-reading-cue-select",
+        "readingPosition.addEventListener",
         "function renderTranslationTarget",
         "function selectedSentenceIsVisible",
         "function updateTranslationTargetViewState",
@@ -404,8 +462,8 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common35", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common32", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common36", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common33", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -533,6 +591,8 @@ def check_work_source_bundle_ui() -> None:
         "scroll-margin-block",
         ".sentence-context",
         ".reading-position",
+        ".reading-position button",
+        ".reading-position-current",
         ".reader-sentence.reading-cue",
         ".note-target-tools",
         ".note-target-preview",

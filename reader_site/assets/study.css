@@ -107,7 +107,7 @@ h1 {
 
 .study-form {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 130px 120px 110px auto;
+  grid-template-columns: minmax(0, 1fr) 130px 120px 110px 126px;
   gap: 10px;
   align-items: end;
   margin-bottom: 12px;
@@ -145,19 +145,82 @@ h1 {
   cursor: pointer;
 }
 
+.form-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.form-actions button {
+  width: 100%;
+}
+
+.form-actions .secondary-action {
+  color: #555;
+  background: #fafafa;
+}
+
+.active-filters {
+  display: none;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin: -2px 0 14px;
+  color: #555;
+  line-height: 1.35;
+}
+
+.active-filters.has-filters {
+  display: flex;
+}
+
+.active-filters-label {
+  margin-right: 2px;
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  min-height: 24px;
+  gap: 5px;
+  padding: 2px 7px;
+  color: #000;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  background: #fafafa;
+  border: 1px solid #d4d4d4;
+  cursor: pointer;
+}
+
+.filter-chip:hover,
+.filter-chip:focus-visible {
+  background: #fff;
+  border-color: #999;
+}
+
+.filter-chip span:first-child {
+  overflow-wrap: anywhere;
+}
+
+.filter-chip span[aria-hidden="true"] {
+  color: #b00000;
+  font-weight: bold;
+}
+
 .study-form button:disabled {
   color: #777;
   cursor: default;
   background: #f3f3f3;
 }
 
-.study-form.is-loading button {
+.study-form.is-loading #studySubmit {
   padding-right: 28px;
   background: #fffaf0;
   border-color: #c8b86a;
 }
 
-.study-form.is-loading button::after {
+.study-form.is-loading #studySubmit::after {
   content: "";
   position: absolute;
   top: 50%;
@@ -356,7 +419,7 @@ h1 {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .study-form.is-loading button::after,
+  .study-form.is-loading #studySubmit::after,
   .study-skeleton-line {
     animation: none;
   }
@@ -377,6 +440,10 @@ h1 {
 
   .study-form {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .form-actions button {
+    min-height: 32px;
   }
 
   .empty-actions {

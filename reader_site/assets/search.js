@@ -4,6 +4,8 @@ const corpusSelect = document.getElementById("corpusSelect");
 const workSelect = document.getElementById("workSelect");
 const variantSelect = document.getElementById("variantSelect");
 const searchSubmit = document.getElementById("searchSubmit");
+const searchClear = document.getElementById("searchClear");
+const activeFiltersEl = document.getElementById("searchActiveFilters");
 const statusEl = document.getElementById("searchStatus");
 const resultsEl = document.getElementById("results");
 const metadataCache = {};
@@ -43,6 +45,18 @@ function updateUrl(query, corpusId, workId, variantId) {
   history.replaceState(null, "", params.toString() ? `/search?${params}` : "/search");
 }
 
+function selectedOptionText(select) {
+  const option = select.options[select.selectedIndex];
+  return option ? option.textContent.trim() : select.value;
+}
+
+function renderFilterChip(filterName, label, value) {
+  return `<button type="button" class="filter-chip" data-filter="${escapeHtml(filterName)}" aria-label="Remove ${escapeHtml(label)} filter">
+    <span>${escapeHtml(label)}: ${escapeHtml(value)}</span>
+    <span aria-hidden="true">x</span>
+  </button>`;
+}
+
 function searchHasActiveFilters() {
   return Boolean(
     queryInput.value.trim() ||
@@ -50,6 +64,26 @@ function searchHasActiveFilters() {
     (!workSelect.disabled && workSelect.value) ||
     (!variantSelect.disabled && variantSelect.value)
   );
+}
+
+function updateSearchFilterSummary() {
+  if (!activeFiltersEl) return;
+  const chips = [];
+  const query = queryInput.value.trim();
+  if (query) chips.push(renderFilterChip("query", "Query", query));
+  if (corpusSelect.value) chips.push(renderFilterChip("corpus", "Corpus", selectedOptionText(corpusSelect)));
+  if (!workSelect.disabled && workSelect.value) chips.push(renderFilterChip("work", "Work", selectedOptionText(workSelect)));
+  if (!variantSelect.disabled && variantSelect.value) chips.push(renderFilterChip("variant", "Variant", selectedOptionText(variantSelect)));
+  activeFiltersEl.classList.toggle("has-filters", chips.length > 0);
+  activeFiltersEl.innerHTML = chips.length
+    ? `<span class="active-filters-label">Filters</span>${chips.join("")}`
+    : "";
+}
+
+function updateSearchClearState(isBusy = form.classList.contains("is-searching")) {
+  if (!searchClear) return;
+  searchClear.disabled = isBusy || !searchHasActiveFilters();
+  updateSearchFilterSummary();
 }
 
 function notesSearchHref(query) {
@@ -81,6 +115,11 @@ function renderEmptySearch(query) {
 }
 
 async function clearSearchFilters() {
+  activeSearchRequest += 1;
+  if (activeSearchController) {
+    activeSearchController.abort();
+    activeSearchController = null;
+  }
   queryInput.value = "";
   corpusSelect.value = "";
   workSelect.value = "";
@@ -90,6 +129,7 @@ async function clearSearchFilters() {
   statusEl.textContent = "";
   resultsEl.innerHTML = "";
   setSearchBusy(false);
+  updateSearchClearState();
   queryInput.focus();
 }
 
@@ -101,6 +141,21 @@ function notesHref(result) {
   return `/notes?${params}`;
 }
 
+function pluralize(count, singular, plural = `${singular}s`) {
+  return `${Number(count || 0).toLocaleString()} ${count === 1 ? singular : plural} shown`;
+}
+
+function resultGroupHeader(label, count, noun) {
+  return `<div class="result-group-header">
+    <h2>${escapeHtml(label)}</h2>
+    <span class="result-group-count">${escapeHtml(pluralize(count, noun))}</span>
+  </div>`;
+}
+
+function resultKind(label, className) {
+  return `<span class="result-kind ${escapeHtml(className)}">${escapeHtml(label)}</span>`;
+}
+
 function setSearchBusy(isBusy) {
   form.classList.toggle("is-searching", isBusy);
   resultsEl.setAttribute("aria-busy", isBusy ? "true" : "false");
@@ -108,6 +163,7 @@ function setSearchBusy(isBusy) {
     searchSubmit.disabled = isBusy;
     searchSubmit.setAttribute("aria-busy", isBusy ? "true" : "false");
   }
+  updateSearchClearState(isBusy);
 }
 
 function renderSearchPending(query) {
@@ -131,6 +187,9 @@ function renderResults(payload, query) {
   const workCount = Number(payload.work_count || 0);
   const segmentCount = Number(payload.count || 0);
   const noteCount = Number(payload.note_count || 0);
+  const workResults = payload.work_results || [];
+  const segmentResults = payload.results || [];
+  const noteResults = payload.note_results || [];
   if (payload.direct && payload.results && payload.results.length) {
     statusEl.textContent = `Direct Bible reference - ${workCount.toLocaleString()} matching works, ${segmentCount.toLocaleString()} matching segments, ${noteCount.toLocaleString()} matching notes`;
   } else {
@@ -148,6 +207,7 @@ function renderResults(payload, query) {
       const variants = (result.variant_ids || []).slice(0, 8).map((variantId) => `<span class="tag">${escapeHtml(variantLabel(variantId))}</span>`).join("");
       return `<article class="result work-result">
         <div class="result-title">
+          ${resultKind("Work", "work")}
           <a href="${escapeHtml(result.url)}">${escapeHtml(result.title || result.work_id)}</a>
           <span class="result-meta">${escapeHtml(meta)}</span>
         </div>
@@ -160,7 +220,7 @@ function renderResults(payload, query) {
       </article>`;
     })
     .join("");
-  const segmentMarkup = (payload.results || [])
+  const segmentMarkup = segmentResults
     .map((result) => {
       const meta = [
         result.corpus_id,
@@ -170,6 +230,7 @@ function renderResults(payload, query) {
       ].filter(Boolean).join(" / ");
       return `<article class="result">
         <div class="result-title">
+          ${resultKind("Segment", "segment")}
           <a href="${escapeHtml(result.url)}">${escapeHtml(result.title || result.work_id)}</a>
           <span class="result-meta">${escapeHtml(meta)}</span>
         </div>
@@ -181,7 +242,7 @@ function renderResults(payload, query) {
       </article>`;
     })
     .join("");
-  const noteMarkup = (payload.note_results || [])
+  const noteMarkup = noteResults
     .map((result) => {
       const meta = [
         result.corpus_id,
@@ -193,6 +254,7 @@ function renderResults(payload, query) {
       const targetLink = result.url ? `<a href="${escapeHtml(result.url)}">Open target</a>` : "";
       return `<article class="result note-result">
         <div class="result-title">
+          ${resultKind("Note", "note")}
           <a href="${escapeHtml(result.manage_url || notesHref(result))}">${escapeHtml(result.title || "Research note")}</a>
           <span class="result-meta">${escapeHtml(meta)}</span>
         </div>
@@ -207,13 +269,13 @@ function renderResults(payload, query) {
     .join("");
   const sections = [];
   if (workMarkup) {
-    sections.push(`<section class="result-group"><h2>Works</h2>${workMarkup}</section>`);
+    sections.push(`<section class="result-group">${resultGroupHeader("Works", workResults.length, "work")}${workMarkup}</section>`);
   }
   if (segmentMarkup) {
-    sections.push(`<section class="result-group"><h2>Segments</h2>${segmentMarkup}</section>`);
+    sections.push(`<section class="result-group">${resultGroupHeader("Segments", segmentResults.length, "segment")}${segmentMarkup}</section>`);
   }
   if (noteMarkup) {
-    sections.push(`<section class="result-group"><h2>Notes</h2>${noteMarkup}</section>`);
+    sections.push(`<section class="result-group">${resultGroupHeader("Notes", noteResults.length, "note")}${noteMarkup}</section>`);
   }
   resultsEl.innerHTML = sections.length ? sections.join("") : renderEmptySearch(query);
 }
@@ -276,6 +338,23 @@ async function populateFilters(preserveWork = "", preserveVariant = "") {
   }
   workSelect.value = preserveWork;
   variantSelect.value = preserveVariant;
+  updateSearchFilterSummary();
+}
+
+async function removeSearchFilter(filterName) {
+  if (filterName === "query") {
+    queryInput.value = "";
+  } else if (filterName === "corpus") {
+    corpusSelect.value = "";
+    workSelect.value = "";
+    variantSelect.value = "";
+    await populateFilters();
+  } else if (filterName === "work") {
+    workSelect.value = "";
+  } else if (filterName === "variant") {
+    variantSelect.value = "";
+  }
+  runSearch();
 }
 
 async function runSearch() {
@@ -290,6 +369,7 @@ async function runSearch() {
     activeSearchController = null;
   }
   updateUrl(query, corpusId, workId, variantId);
+  updateSearchClearState();
   if (!query) {
     statusEl.textContent = "";
     resultsEl.innerHTML = "";
@@ -333,6 +413,18 @@ form.addEventListener("submit", (event) => {
   runSearch();
 });
 
+if (searchClear) {
+  searchClear.addEventListener("click", clearSearchFilters);
+}
+
+if (activeFiltersEl) {
+  activeFiltersEl.addEventListener("click", async (event) => {
+    const button = event.target.closest("button[data-filter]");
+    if (!button) return;
+    await removeSearchFilter(button.dataset.filter || "");
+  });
+}
+
 resultsEl.addEventListener("click", async (event) => {
   const emptyAction = event.target.closest("[data-empty-action]");
   if (!emptyAction) return;
@@ -348,6 +440,7 @@ corpusSelect.addEventListener("change", async () => {
 
 workSelect.addEventListener("change", runSearch);
 variantSelect.addEventListener("change", runSearch);
+queryInput.addEventListener("input", updateSearchClearState);
 
 const initialParams = new URLSearchParams(location.search);
 queryInput.value = initialParams.get("q") || "";
@@ -355,6 +448,7 @@ corpusSelect.value = initialParams.get("corpus_id") || "";
 const initialWorkId = initialParams.get("work_id") || "";
 const initialVariantId = initialParams.get("variant_id") || "";
 populateFilters(initialWorkId, initialVariantId).then(() => {
+  updateSearchClearState();
   if (queryInput.value) {
     runSearch();
   }
