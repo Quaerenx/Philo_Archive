@@ -361,6 +361,15 @@ function handleRejectClick() {
   updateTranslationReview("rejected");
 }
 
+function hasPendingActionConfirmation() {
+  return regenerateConfirmArmed || rejectConfirmArmed;
+}
+
+function clearActionConfirmations() {
+  clearRegenerateConfirmation();
+  clearRejectConfirmation();
+}
+
 function sentenceIndex(sentenceId) {
   return sentenceNodes.findIndex((node) => (node.dataset.sentenceId || node.id) === sentenceId);
 }
@@ -719,8 +728,7 @@ function selectSentence(node, updateHash = true) {
   selectedSentence = sentence;
   if (!sameSentence) {
     selectedTranslationRecord = null;
-    clearRegenerateConfirmation();
-    clearRejectConfirmation();
+    clearActionConfirmations();
   }
   renderTranslationTarget();
   updateSentenceContext();
@@ -949,8 +957,7 @@ function renderTranslationRecord(record, cached) {
 }
 
 async function requestSentenceTranslation(regenerate = false) {
-  clearRegenerateConfirmation();
-  clearRejectConfirmation();
+  clearActionConfirmations();
   if (!selectedSentence) {
     setTranslationStatus("Select a sentence first.", true);
     return;
@@ -1024,7 +1031,7 @@ async function updateTranslationReview(reviewState) {
     setTranslationStatus("No generated translation is selected.", true);
     return;
   }
-  clearRejectConfirmation();
+  clearActionConfirmations();
   const actionButton = reviewState === "reviewed" ? markTranslationReviewedButton : rejectTranslationButton;
   setActionButtonBusy(actionButton, true);
   setTranslationStatus(reviewState === "reviewed" ? "Marking reviewed..." : "Updating review state...", true);
@@ -1544,6 +1551,12 @@ document.addEventListener("keydown", (event) => {
     target.isContentEditable
   );
   if (isTyping || event.altKey || event.ctrlKey || event.metaKey) return;
+  if (event.key === "Escape" && hasPendingActionConfirmation()) {
+    event.preventDefault();
+    clearActionConfirmations();
+    setTranslationStatus("Pending action cancelled.");
+    return;
+  }
   if (event.key === "Escape" && isMobileStudyLayout() && studyPage?.classList.contains("is-expanded")) {
     event.preventDefault();
     setStudyPanelExpanded(false, true);

@@ -54,13 +54,13 @@
               <div class="sentence-controls" aria-label="Sentence navigation">
                 <button type="button" id="previousSentence" aria-keyshortcuts="ArrowUp K" title="Previous sentence" disabled>Previous</button>
                 <button type="button" id="nextSentence" aria-keyshortcuts="ArrowDown J" title="Next sentence" disabled>Next</button>
-                <button type="button" id="regenerateSentence" disabled>Regenerate</button>
+                <button type="button" id="regenerateSentence" title="Regenerate translation" aria-label="Regenerate translation" disabled>Regenerate</button>
               </div>
               <div class="translation-review-actions" aria-label="Translation review actions">
-                <button type="button" id="markTranslationReviewed" disabled>Mark reviewed</button>
-                <button type="button" id="rejectTranslation" disabled>Reject</button>
-                <button type="button" id="copyStudyCard" disabled>Copy study card</button>
-                <button type="button" id="draftTranslationNote" disabled>Draft note</button>
+                <button type="button" id="markTranslationReviewed" title="Mark translation reviewed" aria-label="Mark translation reviewed" disabled>Mark reviewed</button>
+                <button type="button" id="rejectTranslation" title="Reject translation" aria-label="Reject translation" disabled>Reject</button>
+                <button type="button" id="copyStudyCard" title="Copy study card" aria-label="Copy study card" disabled>Copy study card</button>
+                <button type="button" id="draftTranslationNote" title="Draft note from translation" aria-label="Draft note from translation" disabled>Draft note</button>
               </div>
               <div id="translationStatus" class="translation-status" role="status" aria-live="polite" aria-atomic="true"></div>
               <div id="translationOutput" class="translation-output reading-mode" aria-label="Translation result" aria-busy="false" tabindex="0" hidden></div>
@@ -108,6 +108,6 @@
     </main>
   </div>
   <script id="researchData" type="application/json">{{RESEARCH_JSON}}</script>
-  <script src="/assets/reader-work.js?v=common40"></script>
+  <script src="/assets/reader-work.js?v=common41"></script>
 </body>
 </html>

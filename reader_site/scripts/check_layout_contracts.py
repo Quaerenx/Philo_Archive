@@ -408,6 +408,9 @@ def check_work_source_bundle_ui() -> None:
         "handleRejectClick",
         "Confirm reject",
         "Click Confirm reject to exclude this cached translation.",
+        "hasPendingActionConfirmation",
+        "clearActionConfirmations",
+        "Pending action cancelled.",
         "isMobileStudyLayout",
         "studyPanelViewportHeight",
         "mobileSentenceSafeBottom",
@@ -482,7 +485,7 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common40", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common41", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common37", "templates/work.html")
     for needle in [
         "reading-desk",
@@ -524,6 +527,10 @@ def check_work_source_bundle_ui() -> None:
         "study-tabs",
         "previousSentence",
         "markTranslationReviewed",
+        'title="Regenerate translation"',
+        'aria-label="Reject translation"',
+        'aria-label="Copy study card"',
+        'aria-label="Draft note from translation"',
     ]:
         require_contains(template, needle, "templates/work.html")
 
