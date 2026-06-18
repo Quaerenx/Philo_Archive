@@ -340,6 +340,60 @@ h1 {
   padding: 2px 7px;
 }
 
+.runtime-status {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 6px;
+  align-items: center;
+  min-height: 26px;
+  margin-top: 8px;
+  padding: 4px 6px;
+  color: #4b4b4b;
+  background: #f8f8f8;
+  border: 1px solid #dfdfdf;
+}
+
+.runtime-status-dot {
+  width: 7px;
+  height: 7px;
+  background: #b8a13b;
+  border-radius: 50%;
+}
+
+.runtime-status-text {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.runtime-status button {
+  min-height: 22px;
+  margin: 0;
+  padding: 2px 7px;
+}
+
+.runtime-status[data-runtime-state="ready"] {
+  background: #f6fbf6;
+  border-color: #c8dec8;
+}
+
+.runtime-status[data-runtime-state="ready"] .runtime-status-dot {
+  background: #3f8f4f;
+}
+
+.runtime-status[data-runtime-state="offline"],
+.runtime-status[data-runtime-state="unavailable"] {
+  background: #fff7f7;
+  border-color: #e3bcbc;
+}
+
+.runtime-status[data-runtime-state="offline"] .runtime-status-dot,
+.runtime-status[data-runtime-state="unavailable"] .runtime-status-dot {
+  background: #b00000;
+}
+
 .sentence-controls,
 .translation-review-actions {
   display: flex;

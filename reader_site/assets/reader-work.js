@@ -23,6 +23,9 @@ const draftTranslationNoteButton = document.getElementById("draftTranslationNote
 const readingModeButton = document.getElementById("readingMode");
 const studyModeButton = document.getElementById("studyMode");
 const translationStatus = document.getElementById("translationStatus");
+const gemmaRuntimeStatus = document.getElementById("gemmaRuntimeStatus");
+const gemmaRuntimeStatusText = document.getElementById("gemmaRuntimeStatusText");
+const gemmaRuntimeCheckButton = document.getElementById("gemmaRuntimeCheck");
 const translationOutput = document.getElementById("translationOutput");
 const translationCard = document.querySelector(".translation-card");
 const studyPage = document.querySelector(".study-page");
@@ -45,6 +48,7 @@ let activeTranslationTargetKey = "";
 let pendingTranslationRegenerate = false;
 let translationMode = "reading";
 let translationStatusTimer = null;
+let gemmaRuntimeCheckController = null;
 let recentlyChangedNoteId = "";
 let activeReadingCueNode = null;
 let readingPositionRefreshHandle = 0;
@@ -272,6 +276,62 @@ function setTranslationStatus(message, persistent = false) {
       translationStatus.textContent = "";
       translationStatus.classList.remove("visible");
     }, 3200);
+  }
+}
+
+function setGemmaRuntimeIndicator(state, text, title = "") {
+  if (!gemmaRuntimeStatus || !gemmaRuntimeStatusText) return;
+  gemmaRuntimeStatus.dataset.runtimeState = state;
+  gemmaRuntimeStatusText.textContent = text;
+  gemmaRuntimeStatus.title = title || text;
+}
+
+async function checkGemmaRuntimeStatus(announce = false) {
+  if (!gemmaRuntimeStatus) return;
+  if (gemmaRuntimeCheckController) {
+    gemmaRuntimeCheckController.abort();
+  }
+  const controller = new AbortController();
+  gemmaRuntimeCheckController = controller;
+  const timeout = window.setTimeout(() => controller.abort(), 2500);
+  setGemmaRuntimeIndicator("checking", "Gemma checking...", "Checking local Gemma runtime");
+  setActionButtonBusy(gemmaRuntimeCheckButton, true);
+  try {
+    const response = await fetch("/api/health", { signal: controller.signal });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error("Runtime status unavailable");
+    }
+    const gemma = payload.gemma || {};
+    if (gemma.reachable) {
+      const model = Array.isArray(gemma.models) ? cleanText(gemma.models[0] || "") : "";
+      const label = model ? `Gemma ready: ${model}` : "Gemma ready";
+      setGemmaRuntimeIndicator("ready", label, label);
+      if (announce) {
+        setTranslationStatus("Gemma runtime is ready.");
+      }
+      return;
+    }
+    const error = cleanText(gemma.error || "Start .\\run_reader_with_gemma.ps1, then check again.");
+    setGemmaRuntimeIndicator("offline", "Gemma offline", error);
+    if (announce) {
+      setTranslationStatus("Gemma runtime is not reachable.", true);
+    }
+  } catch (error) {
+    if (error && error.name === "AbortError" && gemmaRuntimeCheckController !== controller) {
+      return;
+    }
+    const label = error && error.name === "AbortError" ? "Gemma check timed out" : "Gemma status unavailable";
+    setGemmaRuntimeIndicator("unavailable", label, "Check whether the reader server and Gemma runtime are running.");
+    if (announce) {
+      setTranslationStatus(label, true);
+    }
+  } finally {
+    window.clearTimeout(timeout);
+    if (gemmaRuntimeCheckController === controller) {
+      gemmaRuntimeCheckController = null;
+      setActionButtonBusy(gemmaRuntimeCheckButton, false);
+    }
   }
 }
 
@@ -1082,9 +1142,16 @@ async function requestSentenceTranslation(regenerate = false) {
     const payload = await response.json().catch(() => ({}));
     if (requestId !== activeTranslationRequest) return;
     if (!response.ok || !payload.ok) {
-      setTranslationStatus(payload.error || "Gemma runtime is not running.", true);
-      renderTranslationError(payload.error || "Gemma runtime is not running.");
+      const message = cleanText(payload.error || "Gemma runtime is not running.");
+      if (message.includes("Gemma runtime")) {
+        setGemmaRuntimeIndicator("offline", "Gemma offline", "Start .\\run_reader_with_gemma.ps1, then retry.");
+      }
+      setTranslationStatus(message, true);
+      renderTranslationError(message);
       return;
+    }
+    if (!payload.cached) {
+      setGemmaRuntimeIndicator("ready", "Gemma ready", "Local Gemma runtime responded to this request.");
     }
     renderTranslationRecord(payload.record, payload.cached);
     setTranslationStatus(payload.cached ? "Loaded cached translation." : "Generated translation saved locally.");
@@ -1093,7 +1160,10 @@ async function requestSentenceTranslation(regenerate = false) {
       return;
     }
     if (requestId === activeTranslationRequest) {
-      const message = error && error.message ? error.message : "Gemma runtime is not running.";
+      const message = cleanText(error && error.message ? error.message : "Gemma runtime is not running.");
+      if (message.includes("Gemma runtime")) {
+        setGemmaRuntimeIndicator("offline", "Gemma offline", "Start .\\run_reader_with_gemma.ps1, then retry.");
+      }
       setTranslationStatus(message, true);
       renderTranslationError(message);
     }
@@ -1579,6 +1649,9 @@ copyStudyCardButton.addEventListener("click", copyStudyCard);
 draftTranslationNoteButton.addEventListener("click", draftNoteFromTranslation);
 readingModeButton.addEventListener("click", () => setTranslationMode("reading"));
 studyModeButton.addEventListener("click", () => setTranslationMode("study"));
+if (gemmaRuntimeCheckButton) {
+  gemmaRuntimeCheckButton.addEventListener("click", () => checkGemmaRuntimeStatus(true));
+}
 lockNoteTargetButton.addEventListener("click", () => {
   if (lockedNoteTarget) {
     unlockNoteTarget();
@@ -1886,6 +1959,7 @@ function initializeStudyCompanion() {
   updateSentenceControls();
   syncTargetDependentViews();
   updateStudyPanelScrim();
+  checkGemmaRuntimeStatus(false);
 }
 
 initializeStudyCompanion();

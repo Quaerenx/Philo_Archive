@@ -6,7 +6,7 @@
   <title>{{TITLE}} / {{CORPUS_TITLE}}</title>
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
-  <link rel="stylesheet" href="/assets/reader-work.css?v=common44">
+  <link rel="stylesheet" href="/assets/reader-work.css?v=common45">
 </head>
 <body class="{{BODY_CLASS}}">
   <div class="page">
@@ -47,6 +47,11 @@
                   <button type="button" id="readingMode" class="active">Reading</button>
                   <button type="button" id="studyMode">Study</button>
                 </div>
+              </div>
+              <div id="gemmaRuntimeStatus" class="runtime-status" data-runtime-state="checking" title="Checking local Gemma runtime">
+                <span class="runtime-status-dot" aria-hidden="true"></span>
+                <span id="gemmaRuntimeStatusText" class="runtime-status-text" role="status" aria-live="polite" aria-atomic="true">Gemma checking...</span>
+                <button type="button" id="gemmaRuntimeCheck" title="Check Gemma runtime">Check</button>
               </div>
               <div id="translationTarget" class="translation-target">Select a sentence in the source page.</div>
               <div id="readingPosition" class="reading-position" aria-label="Current reading position">Reading position</div>
@@ -109,6 +114,6 @@
     </main>
   </div>
   <script id="researchData" type="application/json">{{RESEARCH_JSON}}</script>
-  <script src="/assets/reader-work.js?v=common54"></script>
+  <script src="/assets/reader-work.js?v=common55"></script>
 </body>
 </html>

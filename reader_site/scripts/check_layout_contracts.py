@@ -346,6 +346,17 @@ def check_work_source_bundle_ui() -> None:
         "navigateSentence(1)",
         "updateTranslationReview(\"reviewed\")",
         "setTranslationMode(\"reading\")",
+        "gemmaRuntimeStatus",
+        "gemmaRuntimeStatusText",
+        "gemmaRuntimeCheckButton",
+        "function setGemmaRuntimeIndicator",
+        "async function checkGemmaRuntimeStatus",
+        "/api/health",
+        "Gemma checking...",
+        "Gemma ready",
+        "Gemma offline",
+        "Gemma status unavailable",
+        "gemmaRuntimeCheckButton.addEventListener",
         "renderTranslationPending",
         "translation-loading-copy",
         "Source locked",
@@ -528,8 +539,8 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common54", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common44", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common55", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common45", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -540,6 +551,10 @@ def check_work_source_bundle_ui() -> None:
         "Close study panel",
         "study-panel-toggle-action",
         "study-panel-toggle-summary",
+        "gemmaRuntimeStatus",
+        "gemmaRuntimeStatusText",
+        "gemmaRuntimeCheck",
+        "Gemma checking...",
         "aria-label=\"Full study panel. Select a sentence\"",
         'aria-controls="studyCompanionPanel"',
         "readingPosition",
@@ -608,6 +623,11 @@ def check_work_source_bundle_ui() -> None:
         ".study-tabs",
         ".study-tab:focus-visible",
         ".study-tab.active::after",
+        ".runtime-status",
+        ".runtime-status-dot",
+        ".runtime-status-text",
+        ".runtime-status[data-runtime-state=\"ready\"]",
+        ".runtime-status[data-runtime-state=\"offline\"]",
         ".sentence-controls button.needs-confirm",
         ".translation-review-actions button.needs-confirm",
         "min-height: 38px",
