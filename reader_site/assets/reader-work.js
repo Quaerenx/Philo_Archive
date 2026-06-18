@@ -50,16 +50,13 @@ let noteDraftSaveTimer = 0;
 let lockedNoteTarget = null;
 let studyPanelDragState = null;
 let ignoreNextStudyPanelToggleClick = false;
-let regenerateConfirmArmed = false;
-let regenerateConfirmTimer = 0;
-let rejectConfirmArmed = false;
-let rejectConfirmTimer = 0;
+let pendingActionConfirmation = "";
+let actionConfirmationTimer = 0;
 const visibleSentenceNodes = new Set();
 const COMMENTARY_COLLAPSE_LENGTH = 420;
 const STUDY_PANEL_STORAGE_KEY = "philo.reader.studyPanelExpanded";
 const STUDY_PANEL_DRAG_THRESHOLD = 36;
-const REGENERATE_CONFIRM_MS = 4500;
-const REJECT_CONFIRM_MS = 4500;
+const ACTION_CONFIRM_MS = 4500;
 const NOTE_DRAFT_STORAGE_KEY = [
   "philo.reader.noteDraft",
   researchData.corpus_id || researchData.author_id || "",
@@ -293,81 +290,84 @@ function setActionButtonBusy(button, isBusy) {
   delete button.dataset.wasDisabled;
 }
 
-function clearRegenerateConfirmation() {
-  window.clearTimeout(regenerateConfirmTimer);
-  regenerateConfirmTimer = 0;
-  regenerateConfirmArmed = false;
-  regenerateSentenceButton.classList.remove("needs-confirm");
-  regenerateSentenceButton.textContent = "Regenerate";
-  regenerateSentenceButton.title = "Regenerate translation";
-  regenerateSentenceButton.setAttribute("aria-label", "Regenerate translation");
-}
-
-function armRegenerateConfirmation() {
-  regenerateConfirmArmed = true;
-  regenerateSentenceButton.classList.add("needs-confirm");
-  regenerateSentenceButton.textContent = "Confirm regenerate";
-  regenerateSentenceButton.title = "Click again to replace this generated translation";
-  regenerateSentenceButton.setAttribute("aria-label", "Confirm regenerate translation");
-  setTranslationStatus("Click Confirm regenerate to replace this translation.");
-  window.clearTimeout(regenerateConfirmTimer);
-  regenerateConfirmTimer = window.setTimeout(clearRegenerateConfirmation, REGENERATE_CONFIRM_MS);
-}
-
-function handleRegenerateClick() {
-  if (!selectedSentence) {
-    setTranslationStatus("Select a sentence first.", true);
-    return;
+function actionConfirmationConfig(action) {
+  if (action === "regenerate") {
+    return {
+      button: regenerateSentenceButton,
+      defaultText: "Regenerate",
+      defaultTitle: "Regenerate translation",
+      defaultAria: "Regenerate translation",
+      confirmText: "Confirm regenerate",
+      confirmTitle: "Click again to replace this generated translation",
+      confirmAria: "Confirm regenerate translation",
+      status: "Click Confirm regenerate to replace this translation.",
+      blockMessage: selectedSentence ? "" : "Select a sentence first.",
+      run: () => requestSentenceTranslation(true)
+    };
   }
-  if (!regenerateConfirmArmed) {
-    armRegenerateConfirmation();
-    return;
+  if (action === "reject") {
+    return {
+      button: rejectTranslationButton,
+      defaultText: "Reject",
+      defaultTitle: "Reject translation",
+      defaultAria: "Reject translation",
+      confirmText: "Confirm reject",
+      confirmTitle: "Click again to mark this translation rejected",
+      confirmAria: "Confirm reject translation",
+      status: "Click Confirm reject to exclude this cached translation.",
+      blockMessage: selectedTranslationRecord && selectedTranslationRecord.id ? "" : "No generated translation is selected.",
+      run: () => updateTranslationReview("rejected")
+    };
   }
-  clearRegenerateConfirmation();
-  requestSentenceTranslation(true);
+  return null;
 }
 
-function clearRejectConfirmation() {
-  window.clearTimeout(rejectConfirmTimer);
-  rejectConfirmTimer = 0;
-  rejectConfirmArmed = false;
-  rejectTranslationButton.classList.remove("needs-confirm");
-  rejectTranslationButton.textContent = "Reject";
-  rejectTranslationButton.title = "Reject translation";
-  rejectTranslationButton.setAttribute("aria-label", "Reject translation");
-}
-
-function armRejectConfirmation() {
-  rejectConfirmArmed = true;
-  rejectTranslationButton.classList.add("needs-confirm");
-  rejectTranslationButton.textContent = "Confirm reject";
-  rejectTranslationButton.title = "Click again to mark this translation rejected";
-  rejectTranslationButton.setAttribute("aria-label", "Confirm reject translation");
-  setTranslationStatus("Click Confirm reject to exclude this cached translation.");
-  window.clearTimeout(rejectConfirmTimer);
-  rejectConfirmTimer = window.setTimeout(clearRejectConfirmation, REJECT_CONFIRM_MS);
-}
-
-function handleRejectClick() {
-  if (!selectedTranslationRecord || !selectedTranslationRecord.id) {
-    setTranslationStatus("No generated translation is selected.", true);
-    return;
-  }
-  if (!rejectConfirmArmed) {
-    armRejectConfirmation();
-    return;
-  }
-  clearRejectConfirmation();
-  updateTranslationReview("rejected");
-}
-
-function hasPendingActionConfirmation() {
-  return regenerateConfirmArmed || rejectConfirmArmed;
+function resetActionConfirmationButton(config) {
+  if (!config || !config.button) return;
+  config.button.classList.remove("needs-confirm");
+  config.button.textContent = config.defaultText;
+  config.button.title = config.defaultTitle;
+  config.button.setAttribute("aria-label", config.defaultAria);
 }
 
 function clearActionConfirmations() {
-  clearRegenerateConfirmation();
-  clearRejectConfirmation();
+  window.clearTimeout(actionConfirmationTimer);
+  actionConfirmationTimer = 0;
+  pendingActionConfirmation = "";
+  resetActionConfirmationButton(actionConfirmationConfig("regenerate"));
+  resetActionConfirmationButton(actionConfirmationConfig("reject"));
+}
+
+function hasPendingActionConfirmation() {
+  return Boolean(pendingActionConfirmation);
+}
+
+function armActionConfirmation(action) {
+  const config = actionConfirmationConfig(action);
+  if (!config) return;
+  clearActionConfirmations();
+  pendingActionConfirmation = action;
+  config.button.classList.add("needs-confirm");
+  config.button.textContent = config.confirmText;
+  config.button.title = config.confirmTitle;
+  config.button.setAttribute("aria-label", config.confirmAria);
+  setTranslationStatus(config.status);
+  actionConfirmationTimer = window.setTimeout(clearActionConfirmations, ACTION_CONFIRM_MS);
+}
+
+function handleConfirmedAction(action) {
+  const config = actionConfirmationConfig(action);
+  if (!config) return;
+  if (config.blockMessage) {
+    setTranslationStatus(config.blockMessage, true);
+    return;
+  }
+  if (pendingActionConfirmation !== action) {
+    armActionConfirmation(action);
+    return;
+  }
+  clearActionConfirmations();
+  config.run();
 }
 
 function sentenceIndex(sentenceId) {
@@ -1409,11 +1409,11 @@ copySourceBundleButton.addEventListener("click", async () => {
   noteStatus.textContent = "Source bundle URL copied.";
 });
 
-regenerateSentenceButton.addEventListener("click", handleRegenerateClick);
+regenerateSentenceButton.addEventListener("click", () => handleConfirmedAction("regenerate"));
 previousSentenceButton.addEventListener("click", () => navigateSentence(-1));
 nextSentenceButton.addEventListener("click", () => navigateSentence(1));
 markTranslationReviewedButton.addEventListener("click", () => updateTranslationReview("reviewed"));
-rejectTranslationButton.addEventListener("click", handleRejectClick);
+rejectTranslationButton.addEventListener("click", () => handleConfirmedAction("reject"));
 copyStudyCardButton.addEventListener("click", copyStudyCard);
 draftTranslationNoteButton.addEventListener("click", draftNoteFromTranslation);
 readingModeButton.addEventListener("click", () => setTranslationMode("reading"));

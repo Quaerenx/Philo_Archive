@@ -395,17 +395,16 @@ def check_work_source_bundle_ui() -> None:
         "activeTranslationController.abort()",
         "signal: controller.signal",
         'error.name === "AbortError"',
-        "REGENERATE_CONFIRM_MS",
-        "clearRegenerateConfirmation",
-        "armRegenerateConfirmation",
-        "handleRegenerateClick",
+        "ACTION_CONFIRM_MS",
+        "pendingActionConfirmation",
+        "actionConfirmationConfig",
+        "armActionConfirmation",
+        "handleConfirmedAction",
+        'handleConfirmedAction("regenerate")',
         "Confirm regenerate",
         "Click Confirm regenerate to replace this translation.",
         "requestSentenceTranslation(true)",
-        "REJECT_CONFIRM_MS",
-        "clearRejectConfirmation",
-        "armRejectConfirmation",
-        "handleRejectClick",
+        'handleConfirmedAction("reject")',
         "Confirm reject",
         "Click Confirm reject to exclude this cached translation.",
         "hasPendingActionConfirmation",
@@ -485,7 +484,7 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common41", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common42", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common37", "templates/work.html")
     for needle in [
         "reading-desk",
