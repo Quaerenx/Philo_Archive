@@ -6,7 +6,7 @@
   <title>{{TITLE}} / {{CORPUS_TITLE}}</title>
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
-  <link rel="stylesheet" href="/assets/reader-work.css?v=common53">
+  <link rel="stylesheet" href="/assets/reader-work.css?v=common54">
 </head>
 <body class="{{BODY_CLASS}}">
   <div class="page">
@@ -59,6 +59,7 @@
               <div class="sentence-controls" aria-label="Sentence navigation">
                 <button type="button" id="previousSentence" aria-keyshortcuts="ArrowUp K" title="Previous sentence" disabled>Previous</button>
                 <button type="button" id="nextSentence" aria-keyshortcuts="ArrowDown J" title="Next sentence" disabled>Next</button>
+                <button type="button" id="nextUnstudiedSentence" title="Next sentence without a translation" aria-label="Next unstudied sentence" disabled>Next unstudied</button>
                 <button type="button" id="regenerateSentence" title="Regenerate translation" aria-label="Regenerate translation" disabled>Regenerate</button>
               </div>
               <div class="translation-review-actions" aria-label="Translation review actions">
@@ -120,6 +121,6 @@
     </main>
   </div>
   <script id="researchData" type="application/json">{{RESEARCH_JSON}}</script>
-  <script src="/assets/reader-work.js?v=common66"></script>
+  <script src="/assets/reader-work.js?v=common67"></script>
 </body>
 </html>

@@ -407,6 +407,17 @@ h1 {
   margin: 0;
 }
 
+#nextUnstudiedSentence {
+  min-width: 112px;
+  color: #333;
+  background: #fffdf5;
+  border-left: 3px solid #c4a94a;
+}
+
+#nextUnstudiedSentence:disabled {
+  border-left-color: #d4d4d4;
+}
+
 .sentence-controls button.needs-confirm,
 .translation-review-actions button.needs-confirm {
   background: #fffdf2;

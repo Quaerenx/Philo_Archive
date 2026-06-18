@@ -15,6 +15,7 @@ const readingPosition = document.getElementById("readingPosition");
 const sentenceContext = document.getElementById("sentenceContext");
 const previousSentenceButton = document.getElementById("previousSentence");
 const nextSentenceButton = document.getElementById("nextSentence");
+const nextUnstudiedSentenceButton = document.getElementById("nextUnstudiedSentence");
 const regenerateSentenceButton = document.getElementById("regenerateSentence");
 const markTranslationReviewedButton = document.getElementById("markTranslationReviewed");
 const rejectTranslationButton = document.getElementById("rejectTranslation");
@@ -55,6 +56,7 @@ let translationStatusTimer = null;
 let translationElapsedTimer = 0;
 let translationStartedAt = 0;
 let translationSentenceStates = new Map();
+let translationSentenceStatesLoaded = false;
 let gemmaRuntimeCheckController = null;
 let recentlyChangedNoteId = "";
 let activeReadingCueNode = null;
@@ -385,8 +387,9 @@ function normalizedTranslationReviewState(value) {
   return TRANSLATION_STATE_LABELS[state] ? state : "generated";
 }
 
-function clearSentenceTranslationStates() {
+function clearSentenceTranslationStates(markLoaded = false) {
   translationSentenceStates = new Map();
+  translationSentenceStatesLoaded = markLoaded;
   sentenceNodes.forEach((node) => {
     node.classList.remove("has-translation-state");
     node.removeAttribute("data-translation-state");
@@ -402,10 +405,12 @@ function clearSentenceTranslationStates() {
       delete node.dataset.originalTitle;
     }
   });
+  updateSentenceControls();
 }
 
 function applySentenceTranslationStates(states) {
   clearSentenceTranslationStates();
+  translationSentenceStatesLoaded = true;
   if (!Array.isArray(states)) return;
   states.forEach((item) => {
     const sentenceId = cleanText(item && item.sentence_id);
@@ -430,6 +435,7 @@ function applySentenceTranslationStates(states) {
     const originalTitle = node.dataset.originalTitle;
     node.setAttribute("title", `${originalTitle ? `${originalTitle} / ` : ""}${label}`);
   });
+  updateSentenceControls();
 }
 
 function setStudySessionSummary(text, state = "empty") {
@@ -500,7 +506,7 @@ async function loadTranslationRecordsSummary() {
     );
     updateTranslationExportLinks(total, reviewed);
   } catch (error) {
-    clearSentenceTranslationStates();
+    clearSentenceTranslationStates(false);
     setTranslationRecordsSummary("AI records unavailable.", "unavailable");
     updateTranslationExportLinks(0, 0);
   }
@@ -608,6 +614,26 @@ function handleConfirmedAction(action) {
 
 function sentenceIndex(sentenceId) {
   return sentenceNodes.findIndex((node) => (node.dataset.sentenceId || node.id) === sentenceId);
+}
+
+function sentenceNodeId(node) {
+  return node ? (node.dataset.sentenceId || node.id || "") : "";
+}
+
+function sentenceHasTranslationState(node) {
+  const sentenceId = sentenceNodeId(node);
+  return Boolean(sentenceId && translationSentenceStates.has(sentenceId));
+}
+
+function nextUnstudiedSentenceIndex() {
+  if (!translationSentenceStatesLoaded || !sentenceNodes.length) return -1;
+  const currentIndex = selectedSentence ? sentenceIndex(selectedSentence.sentenceId) : -1;
+  for (let index = currentIndex + 1; index < sentenceNodes.length; index += 1) {
+    if (!sentenceHasTranslationState(sentenceNodes[index])) {
+      return index;
+    }
+  }
+  return -1;
 }
 
 function sentencePositionText(sentenceId) {
@@ -810,8 +836,21 @@ function updateSentenceContext() {
 function updateSentenceControls() {
   const index = selectedSentence ? sentenceIndex(selectedSentence.sentenceId) : -1;
   const hasSelection = index >= 0;
+  const nextUnstudiedIndex = nextUnstudiedSentenceIndex();
   previousSentenceButton.disabled = !hasSelection || index === 0;
   nextSentenceButton.disabled = !hasSelection || index === sentenceNodes.length - 1;
+  if (nextUnstudiedSentenceButton) {
+    nextUnstudiedSentenceButton.disabled = nextUnstudiedIndex < 0;
+    const nextLabel = nextUnstudiedIndex >= 0
+      ? sentencePositionText(sentenceNodeId(sentenceNodes[nextUnstudiedIndex]))
+      : (translationSentenceStatesLoaded ? "No unstudied sentence after current position" : "Translation states are loading");
+    nextUnstudiedSentenceButton.title = nextUnstudiedIndex >= 0
+      ? `Jump to ${nextLabel}`
+      : nextLabel;
+    nextUnstudiedSentenceButton.setAttribute("aria-label", nextUnstudiedIndex >= 0
+      ? `Next unstudied sentence, ${nextLabel}`
+      : nextLabel);
+  }
   regenerateSentenceButton.disabled = !hasSelection;
   const hasRecord = Boolean(selectedTranslationRecord && selectedTranslationRecord.id);
   markTranslationReviewedButton.disabled = !hasRecord || selectedTranslationRecord.review_state === "reviewed";
@@ -1078,6 +1117,27 @@ function navigateSentence(delta) {
   if (!wasSelected || !selectedTranslationRecord) {
     requestSentenceTranslation(false);
   }
+}
+
+function navigateToNextUnstudiedSentence() {
+  const nextIndex = nextUnstudiedSentenceIndex();
+  if (nextIndex < 0) {
+    setTranslationStatus(
+      translationSentenceStatesLoaded
+        ? "No unstudied sentence after current position."
+        : "Translation states are still loading.",
+      true
+    );
+    return;
+  }
+  const nextNode = sentenceNodes[nextIndex];
+  if (!nextNode) return;
+  selectSentence(nextNode);
+  scrollSentenceIntoView(nextNode);
+  setStudyPanel("translation");
+  setStudyPanelExpanded(true);
+  keepSentenceAboveStudyPanel(nextNode);
+  requestSentenceTranslation(false);
 }
 
 function renderList(values) {
@@ -1915,6 +1975,9 @@ copySourceBundleButton.addEventListener("click", async () => {
 regenerateSentenceButton.addEventListener("click", () => handleConfirmedAction("regenerate"));
 previousSentenceButton.addEventListener("click", () => navigateSentence(-1));
 nextSentenceButton.addEventListener("click", () => navigateSentence(1));
+if (nextUnstudiedSentenceButton) {
+  nextUnstudiedSentenceButton.addEventListener("click", navigateToNextUnstudiedSentence);
+}
 markTranslationReviewedButton.addEventListener("click", () => updateTranslationReview("reviewed"));
 rejectTranslationButton.addEventListener("click", () => handleConfirmedAction("reject"));
 copyStudyCardButton.addEventListener("click", copyStudyCard);

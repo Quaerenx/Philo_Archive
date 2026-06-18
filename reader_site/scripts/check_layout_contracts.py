@@ -363,6 +363,12 @@ def check_work_source_bundle_ui() -> None:
         "translationSentenceStates",
         "TRANSLATION_STATE_LABELS",
         "TRANSLATION_STATE_SHORT",
+        "nextUnstudiedSentenceButton",
+        "translationSentenceStatesLoaded",
+        "function sentenceHasTranslationState",
+        "function nextUnstudiedSentenceIndex",
+        "function navigateToNextUnstudiedSentence",
+        "No unstudied sentence after current position.",
         "function applySentenceTranslationStates",
         "function clearSentenceTranslationStates",
         "data-translation-state-short",
@@ -586,8 +592,8 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common66", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common53", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common67", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common54", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -643,6 +649,8 @@ def check_work_source_bundle_ui() -> None:
         "translation-card",
         "study-tabs",
         "previousSentence",
+        "nextUnstudiedSentence",
+        "Next unstudied",
         "markTranslationReviewed",
         'title="Regenerate translation"',
         'aria-label="Reject translation"',
@@ -679,6 +687,7 @@ def check_work_source_bundle_ui() -> None:
         ".reader-sentence.has-translation-state::after",
         ".reader-sentence[data-translation-state=\"reviewed\"]::after",
         ".reader-sentence[data-translation-state=\"rejected\"]::after",
+        "#nextUnstudiedSentence",
         ".study-tabs",
         ".study-tab:focus-visible",
         ".study-tab.active::after",
