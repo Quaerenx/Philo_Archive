@@ -205,13 +205,40 @@ function renderNotesPending() {
   setNotesBusy(true);
 }
 
+function notesSummaryCounts(notes) {
+  return notes.reduce((counts, note) => {
+    const reviewState = note.review_state === "reviewed" ? "reviewed" : "raw";
+    counts.total += 1;
+    counts[reviewState] += 1;
+    return counts;
+  }, { total: 0, raw: 0, reviewed: 0 });
+}
+
+function notesSummaryButton(filter, label, count) {
+  const selected = (filter || "") === reviewSelect.value;
+  return `<button type="button" class="notes-summary-filter${selected ? " active" : ""}" data-notes-summary-filter="${escapeHtml(filter)}" aria-pressed="${selected ? "true" : "false"}">
+    <span>${escapeHtml(label)}</span>
+    <strong>${Number(count || 0).toLocaleString()}</strong>
+  </button>`;
+}
+
+function renderNotesSummary(notes) {
+  if (!notes.length) return "";
+  const counts = notesSummaryCounts(notes);
+  return `<nav class="notes-summary-nav" aria-label="Visible notes by review state">
+    ${notesSummaryButton("", "All", counts.total)}
+    ${notesSummaryButton("raw", "Raw", counts.raw)}
+    ${notesSummaryButton("reviewed", "Reviewed", counts.reviewed)}
+  </nav>`;
+}
+
 function renderNotes(notes) {
   lastNotes = notes;
   statusEl.textContent = notes.length
     ? `${notes.length.toLocaleString()} notes`
     : "No notes found.";
   resultsEl.innerHTML = notes.length
-    ? notes.map((note) => {
+    ? renderNotesSummary(notes) + notes.map((note) => {
       const titleParts = [note.corpus_id, note.work_id, note.target_label || note.target_id].filter(Boolean);
       const title = titleParts.join(" / ");
       const tags = (note.tags || []).join(", ");
@@ -364,6 +391,12 @@ if (activeFiltersEl) {
 }
 
 resultsEl.addEventListener("click", async (event) => {
+  const summaryFilter = event.target.closest("[data-notes-summary-filter]");
+  if (summaryFilter) {
+    reviewSelect.value = summaryFilter.dataset.notesSummaryFilter || "";
+    loadNotes();
+    return;
+  }
   const emptyAction = event.target.closest("[data-empty-action]");
   if (emptyAction) {
     if (emptyAction.dataset.emptyAction === "clear-filters") {

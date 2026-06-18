@@ -296,6 +296,45 @@ h1 {
   margin-top: 14px;
 }
 
+.notes-summary-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  padding: 8px;
+  background: #fbfbfb;
+  border: 1px solid #e0e0e0;
+}
+
+.notes-summary-filter {
+  display: inline-flex;
+  min-height: 26px;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 7px;
+  color: #333;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  background: #fff;
+  border: 1px solid #d4d4d4;
+  cursor: pointer;
+}
+
+.notes-summary-filter:hover,
+.notes-summary-filter:focus-visible,
+.notes-summary-filter.active {
+  border-color: #999;
+}
+
+.notes-summary-filter.active {
+  background: #f1f1f1;
+}
+
+.notes-summary-filter strong {
+  color: #555;
+  font-weight: normal;
+}
+
 .note-card {
   padding-top: 12px;
   border-top: 1px solid #d4d4d4;

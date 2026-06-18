@@ -220,8 +220,8 @@ def check_notes_ui() -> None:
     script = read_site_file("assets/notes.js")
     css = read_site_file("assets/notes.css")
     for needle in [
-        "/assets/notes.css?v=notes7",
-        "/assets/notes.js?v=notes8",
+        "/assets/notes.css?v=notes8",
+        "/assets/notes.js?v=notes9",
         'id="notesSubmit"',
         'id="notesClear"',
         'id="notesActiveFilters"',
@@ -236,6 +236,10 @@ def check_notes_ui() -> None:
         "setNotesBusy",
         "setActionButtonBusy",
         "renderNotesPending",
+        "function notesSummaryCounts",
+        "function notesSummaryButton",
+        "function renderNotesSummary",
+        "data-notes-summary-filter",
         "function renderEmptyNotes",
         "function clearNotesFilters",
         "function updateNotesClearState",
@@ -258,6 +262,8 @@ def check_notes_ui() -> None:
         ".active-filters",
         ".active-filters.has-filters",
         ".filter-chip",
+        ".notes-summary-nav",
+        ".notes-summary-filter",
         ".notes-form.is-loading #notesSubmit",
         ".empty-state",
         ".empty-actions",
