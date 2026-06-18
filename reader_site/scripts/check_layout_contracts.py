@@ -431,6 +431,8 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Escape"',
         "selectedSentencePositionLabel",
         "sentencePositionText",
+        "function selectSentenceFromHash",
+        "setStudyPanelExpanded(true)",
         "studyPanelToggleSummary",
         "updateStudyPanelToggleLabel",
         "translation ready",
@@ -563,7 +565,7 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common62", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common63", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common50", "templates/work.html")
     for needle in [
         "reading-desk",

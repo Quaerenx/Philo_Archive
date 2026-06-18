@@ -21,12 +21,13 @@ from services.sources import CORPUS_ROOTS, relative_source_path  # noqa: E402
 DEFAULT_OUTPUT = SITE / "data" / "visual_qa.local"
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 ROUTES = [
-    ("home", "/"),
-    ("nietzsche-category", "/category/nietzsche"),
-    ("nietzsche-work", "/work/nietzsche/GM"),
-    ("search", "/search"),
-    ("notes", "/notes"),
-    ("study", "/study"),
+    ("home", "/", True),
+    ("nietzsche-category", "/category/nietzsche", True),
+    ("nietzsche-work", "/work/nietzsche/GM", True),
+    ("nietzsche-work-selected", "/work/nietzsche/GM#p-0023.s001", False),
+    ("search", "/search", True),
+    ("notes", "/notes", True),
+    ("study", "/study", True),
 ]
 VIEWPORTS = [
     ("desktop", 1365, 768),
@@ -70,7 +71,7 @@ def find_browser(explicit: str = "") -> str:
     raise SystemExit("No headless browser found. Set MSEDGE, CHROME, CHROMIUM, or pass --browser.")
 
 
-def discover_source_routes() -> list[tuple[str, str]]:
+def discover_source_routes() -> list[tuple[str, str, bool]]:
     for root in CORPUS_ROOTS:
         if not root.exists():
             continue
@@ -78,8 +79,8 @@ def discover_source_routes() -> list[tuple[str, str]]:
         if sample:
             relative = quote(relative_source_path(sample), safe="")
             return [
-                ("reader", f"/read?path={relative}"),
-                ("source", f"/source?path={relative}"),
+                ("reader", f"/read?path={relative}", True),
+                ("source", f"/source?path={relative}", True),
             ]
     return []
 
@@ -173,7 +174,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common50",
-            "reader-work.js?v=common62",
+            "reader-work.js?v=common63",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
 
@@ -202,8 +203,8 @@ def capture(browser: str, url: str, output_path: Path, width: int, height: int) 
             f"--user-data-dir={profile_dir.resolve().as_posix()}",
             f"--window-size={width},{height}",
             f"--screenshot={output_path}",
-            url,
         ]
+        command.append(url)
         try:
             result = subprocess.run(
                 command,
@@ -251,14 +252,14 @@ def main() -> None:
         html_count = 0
         screenshot_count = 0
         screenshot_failures = []
-        for route_label, route in routes:
+        for route_label, route, should_capture in routes:
             url = f"{base_url}{route}"
             html = fetch_html(url)
             require("<html" in html.lower(), f"{route} response does not look like a page")
             require("Personal Archive of Literature" in html or "Archive" in html, f"{route} is missing archive identity text")
             check_route_markup(route, html)
             html_count += 1
-            if args.html_only:
+            if args.html_only or not should_capture:
                 continue
             for viewport_label, width, height in VIEWPORTS:
                 output_path = args.output / f"{route_label}-{viewport_label}.png"

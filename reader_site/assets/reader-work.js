@@ -918,6 +918,10 @@ function selectSentenceFromHash() {
   const node = document.getElementById(id);
   if (node && node.classList.contains("reader-sentence")) {
     selectSentence(node, false);
+    setStudyPanel("translation");
+    setStudyPanelExpanded(true);
+    scrollSentenceIntoView(node);
+    keepSentenceAboveStudyPanel(node);
   }
 }
 
