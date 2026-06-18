@@ -390,6 +390,10 @@ def check_work_source_bundle_ui() -> None:
         "data-session-preview-target",
         "data-session-preview-toggle",
         "function toggleSessionPreviewGroup",
+        "data-session-preview-copy",
+        "async function copyStudySessionMarkdown",
+        "Copy Markdown",
+        "Study session Markdown copied.",
         "Show less",
         "Show all ${group.querySelectorAll(\"li\").length}",
         "function renderStudySessionPreview",
@@ -625,8 +629,8 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common73", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common59", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common74", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common60", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -762,6 +766,7 @@ def check_work_source_bundle_ui() -> None:
         ".translation-result",
         ".study-session-preview",
         ".study-session-preview-header",
+        ".study-session-preview-actions",
         ".study-session-preview-counts",
         ".session-preview-group",
         ".session-preview-group.is-collapsed .session-preview-extra",

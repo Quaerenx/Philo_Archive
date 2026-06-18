@@ -967,6 +967,19 @@ h1 {
   white-space: nowrap;
 }
 
+.study-session-preview-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  justify-content: flex-end;
+}
+
+.study-session-preview-actions button {
+  min-height: 22px;
+  margin: 0;
+  padding: 2px 7px;
+}
+
 .study-session-preview-counts {
   display: flex;
   flex-wrap: wrap;

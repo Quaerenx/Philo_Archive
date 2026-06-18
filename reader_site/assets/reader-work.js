@@ -1603,6 +1603,25 @@ function toggleSessionPreviewGroup(button) {
   button.textContent = expanded ? "Show less" : `Show all ${group.querySelectorAll("li").length}`;
 }
 
+async function copyStudySessionMarkdown(button) {
+  setActionButtonBusy(button, true);
+  setTranslationStatus("Copying study session Markdown...", true);
+  try {
+    const response = await fetch(studySessionExportUrl("markdown"));
+    if (!response.ok) {
+      throw new Error("Could not load study session Markdown.");
+    }
+    const markdown = await response.text();
+    await copyText(markdown);
+    setTranslationStatus("Study session Markdown copied.");
+  } catch (error) {
+    const message = cleanText(error && error.message ? error.message : "Could not copy study session Markdown.");
+    setTranslationStatus(message, true);
+  } finally {
+    setActionButtonBusy(button, false);
+  }
+}
+
 function renderStudySessionPreview(payload) {
   selectedTranslationRecord = null;
   pendingTranslationRegenerate = false;
@@ -1619,7 +1638,10 @@ function renderStudySessionPreview(payload) {
       <div class="study-session-preview-header">
         <span>Study session</span>
         <strong>${escapeHtml(researchData.title || researchData.work_id || "Current work")}</strong>
-        <a href="${escapeHtml(exportUrl)}">Open Markdown export</a>
+        <div class="study-session-preview-actions">
+          <button type="button" data-session-preview-copy>Copy Markdown</button>
+          <a href="${escapeHtml(exportUrl)}">Open Markdown export</a>
+        </div>
       </div>
       <div class="study-session-preview-counts" aria-label="Study session counts">
         <span>${noteCount} reviewed notes</span>
@@ -2379,6 +2401,11 @@ translationOutput.addEventListener("click", (event) => {
   const sessionToggle = event.target.closest("[data-session-preview-toggle]");
   if (sessionToggle) {
     toggleSessionPreviewGroup(sessionToggle);
+    return;
+  }
+  const sessionCopy = event.target.closest("[data-session-preview-copy]");
+  if (sessionCopy) {
+    copyStudySessionMarkdown(sessionCopy);
     return;
   }
   const toggle = event.target.closest(".commentary-toggle");
