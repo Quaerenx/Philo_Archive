@@ -14,6 +14,7 @@ STATIC_ENTRYPOINTS = {
     "/search": "search.html",
     "/notes": "notes.html",
     "/study": "study.html",
+    "/translations": "translations.html",
 }
 
 

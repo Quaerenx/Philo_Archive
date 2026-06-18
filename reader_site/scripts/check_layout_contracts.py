@@ -11,6 +11,7 @@ HTML_ENTRYPOINTS = [
     "search.html",
     "notes.html",
     "study.html",
+    "translations.html",
     "templates/work.html",
     "templates/reading.html",
     "templates/source.html",
@@ -293,6 +294,60 @@ def check_notes_ui() -> None:
         "@media (prefers-reduced-motion: reduce)",
     ]:
         require_contains(css, needle, "assets/notes.css")
+
+
+def check_translations_ui() -> None:
+    html = read_site_file("translations.html")
+    script = read_site_file("assets/translations.js")
+    css = read_site_file("assets/translations.css")
+    for needle in [
+        "/assets/notes.css?v=notes10",
+        "/assets/translations.css?v=trans1",
+        "/assets/translations.js?v=trans1",
+        'id="translationsSubmit"',
+        'id="translationsClear"',
+        'id="translationsActiveFilters"',
+        'id="translationsExportMarkdown"',
+        'id="translationsExportJson"',
+        'role="status"',
+        'aria-busy="false"',
+    ]:
+        require_contains(html, needle, "translations.html")
+    for needle in [
+        "activeController",
+        "activeRequest",
+        "setBusy",
+        "renderPending",
+        "function renderEmptyRecords",
+        "function clearFilters",
+        "function updateFilterSummary",
+        "function removeFilter",
+        "function renderSummary",
+        "function renderRecord",
+        "function updateRecordReview",
+        "data-translation-summary-filter",
+        "review_state: reviewState",
+        "/api/sentence-translations/export",
+        "/api/sentence-translations/",
+        "AI translation review state updated.",
+        "translationsExportMarkdown",
+        "translationsExportJson",
+    ]:
+        require_contains(script, needle, "assets/translations.js")
+    for needle in [
+        ".translations-form",
+        ".translation-record-summary",
+        ".translation-record-card",
+        ".translation-record-card[data-review-state=\"generated\"]",
+        ".translation-source",
+        ".translation-text",
+        ".translation-commentary",
+        ".translation-actions",
+        ".translation-actions button.is-working",
+        "@media (prefers-reduced-motion: reduce)",
+        "@media (max-width: 860px)",
+    ]:
+        require_contains(css, needle, "assets/translations.css")
 
 
 def check_study_ui() -> None:
@@ -964,6 +1019,7 @@ def main() -> None:
     check_study_target_ui()
     check_search_ui()
     check_notes_ui()
+    check_translations_ui()
     check_study_ui()
     check_work_source_bundle_ui()
     print("layout contracts ok")

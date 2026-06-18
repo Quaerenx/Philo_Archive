@@ -71,6 +71,7 @@ def check_routes(base_url: str) -> None:
         "/search": "Search",
         "/notes": "Notes",
         "/study": "Study",
+        "/translations": "AI Translations",
     }
     for path, expected in static_cases.items():
         body = fetch_text(base_url, path)
@@ -116,6 +117,8 @@ def check_routes(base_url: str) -> None:
     require("Reviewed Gemma Sentence Translations" in translation_export, "sentence translation export invalid")
     translation_summary = fetch_json(base_url, "/api/sentence-translations/summary?corpus_id=nietzsche&work_id=GM")
     require("count" in translation_summary and "review_state_counts" in translation_summary, "sentence translation summary invalid")
+    translation_page = fetch_text(base_url, "/translations?corpus_id=nietzsche&work_id=GM")
+    require("translationsSubmit" in translation_page and "translationsResults" in translation_page, "translations page invalid")
     session_export = fetch_text(base_url, "/api/study-session/export?corpus_id=nietzsche&work_id=GM&format=markdown")
     require("Study Session Export" in session_export, "study session export invalid")
     target = fetch_json(base_url, "/api/source-target?corpus_id=nietzsche&work_id=GM&target_id=p-0023")
