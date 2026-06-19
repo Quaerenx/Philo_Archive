@@ -91,6 +91,8 @@ def check_html_entrypoints() -> None:
         html = read_site_file(relative_path)
         require_contains(html, "/assets/design-tokens.css", relative_path)
         require_contains(html, 'class="page"', relative_path)
+        if relative_path == "index.html":
+            require_contains(html, "Saved translations", relative_path)
 
 
 def check_page_frame_css(relative_path: str, css: str) -> None:

@@ -109,6 +109,14 @@ def fetch_html(url: str) -> str:
 
 
 def check_route_markup(route: str, html: str) -> None:
+    if route == "/":
+        for needle in [
+            "Research search",
+            "Research notes",
+            "Study notes",
+            "Saved translations",
+        ]:
+            require(needle in html, f"{route} missing visual smoke marker {needle!r}")
     if route == "/study":
         for needle in [
             "studySubmit",
