@@ -4,20 +4,24 @@ Personal archive index for collected primary texts.
 
 ## Run
 
+Recommended daily start with local Gemma sentence translation:
+
 ```powershell
-python .\reader_site\server.py --port 8793
+.\reader_site\run_reader_with_gemma.ps1
 ```
 
 Then open:
 
 ```text
-http://127.0.0.1:8793
+http://127.0.0.1:8793/
 ```
 
-To run the reader with local Gemma 4 on-demand sentence translation:
+This starts Philo Archive on port `8793` and a local-only llama.cpp sidecar at `http://127.0.0.1:8794`. The default model path is `C:\Users\PP\Downloads\gemma-4-26B-A4B-it-Q4_K_M.gguf`.
+
+If you only need the reader without local translation:
 
 ```powershell
-.\reader_site\run_reader_with_gemma.ps1
+python .\reader_site\server.py --port 8793
 ```
 
 Check the running local reader and Gemma sidecar:
@@ -26,8 +30,6 @@ Check the running local reader and Gemma sidecar:
 cd .\reader_site
 python .\scripts\check_local_runtime.py
 ```
-
-This starts Philo Archive on port `8793` and a local-only llama.cpp sidecar at `http://127.0.0.1:8794`. The default model path is `C:\Users\PP\Downloads\gemma-4-26B-A4B-it-Q4_K_M.gguf`.
 
 The source corpus root defaults to the parent directory of `reader_site`. On another machine, either keep the same sibling-folder layout or set:
 

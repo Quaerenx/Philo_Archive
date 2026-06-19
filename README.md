@@ -14,6 +14,34 @@ The reader app is split by responsibility:
 - `reader_site/rendering/`: common work, reading, source, and document HTML rendering.
 - `reader_site/services/`: search, notes storage, source/read page services, source target resolution, and local sentence translation services.
 
+## Daily Use
+
+For normal reading and sentence-by-sentence Gemma study, run:
+
+```powershell
+cd .\reader_site
+.\run_reader_with_gemma.ps1
+```
+
+Then open:
+
+```text
+http://127.0.0.1:8793/
+```
+
+If you only need the reader without local translation:
+
+```powershell
+cd .\reader_site
+python .\server.py --port 8793
+```
+
+To confirm that the reader and local translator are reachable:
+
+```powershell
+python .\scripts\check_local_runtime.py
+```
+
 ## Expected Local Layout
 
 By default the app expects the source corpus folders next to `reader_site`:
