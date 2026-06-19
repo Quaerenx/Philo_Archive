@@ -340,6 +340,66 @@ h1 {
   justify-content: space-between;
 }
 
+.translation-utility {
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid #eeeeee;
+}
+
+.translation-utility summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 8px;
+  align-items: center;
+  min-height: 30px;
+  color: #555;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  line-height: 1.35;
+  cursor: pointer;
+  list-style: none;
+}
+
+.translation-utility summary::-webkit-details-marker {
+  display: none;
+}
+
+.translation-utility summary::after {
+  grid-row: 1 / span 2;
+  grid-column: 2;
+  color: #777;
+  content: "+";
+}
+
+.translation-utility[open] summary::after {
+  content: "-";
+}
+
+.translation-utility summary span {
+  min-width: 0;
+  overflow: hidden;
+  color: #333;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.translation-utility summary small {
+  grid-column: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: #777;
+  font-size: 9px;
+  font-weight: normal;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.translation-utility-body {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+
 .mode-toggle {
   display: inline-flex;
   flex: 0 0 auto;

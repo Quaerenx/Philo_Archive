@@ -781,7 +781,7 @@ def check_work_source_bundle_ui() -> None:
     ]:
         require_contains(script, needle, "assets/reader-work.js")
     require_contains(template, "/assets/reader-work.js?v=common82", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common69", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common70", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -839,6 +839,9 @@ def check_work_source_bundle_ui() -> None:
         "aria-keyshortcuts=\"ArrowDown J\"",
         "copyStudyCard",
         "translation-card",
+        "translation-utility",
+        "Context & controls",
+        "Runtime, source, review, export",
         "study-tabs",
         "previousSentence",
         "nextUnstudiedSentence",
@@ -886,6 +889,12 @@ def check_work_source_bundle_ui() -> None:
         ".translation-card[data-review-state=\"reviewed\"]",
         ".translation-card[data-review-state=\"rejected\"]",
         ".translation-card.review-state-changed",
+        ".translation-utility",
+        ".translation-utility summary",
+        ".translation-utility summary::-webkit-details-marker",
+        ".translation-utility summary::after",
+        ".translation-utility[open] summary::after",
+        ".translation-utility-body",
         ".translation-review-state[data-review-state=\"generated\"]",
         ".translation-review-state[data-review-state=\"reviewed\"]",
         ".translation-review-state[data-review-state=\"rejected\"]",
