@@ -321,10 +321,10 @@ function renderRecord(record) {
     ${translation ? `<p class="translation-text">${escapeHtml(translation)}</p>` : ""}
     ${commentary ? `<details class="translation-commentary"><summary>Commentary</summary><p>${escapeHtml(commentary)}</p></details>` : ""}
     <div class="translation-actions">
-      ${targetUrl ? `<a href="${escapeHtml(targetUrl)}">Open source</a>` : ""}
-      <button type="button" data-review-state="reviewed" ${reviewState === "reviewed" ? "disabled" : ""}>Mark reviewed</button>
-      <button type="button" data-review-state="generated" ${reviewState === "generated" ? "disabled" : ""}>Mark generated</button>
-      <button type="button" data-review-state="rejected" ${reviewState === "rejected" ? "disabled" : ""}>Reject</button>
+      ${targetUrl ? `<a href="${escapeHtml(targetUrl)}" data-open-source aria-keyshortcuts="O" title="Open source">Open source</a>` : ""}
+      <button type="button" data-review-state="reviewed" aria-keyshortcuts="R" title="Mark reviewed" ${reviewState === "reviewed" ? "disabled" : ""}>Mark reviewed</button>
+      <button type="button" data-review-state="generated" aria-keyshortcuts="G" title="Mark generated" ${reviewState === "generated" ? "disabled" : ""}>Mark generated</button>
+      <button type="button" data-review-state="rejected" aria-keyshortcuts="X" title="Reject" ${reviewState === "rejected" ? "disabled" : ""}>Reject</button>
     </div>
   </article>`;
 }
@@ -354,6 +354,33 @@ function renderRecords(records) {
 function focusFirstReviewQueueRecord() {
   const card = resultsEl.querySelector('.translation-record-card[data-review-state="generated"]');
   if (!card) return false;
+  return focusRecordCard(card);
+}
+
+function openReviewQueue() {
+  if (!generatedRecords(lastRecords).length) {
+    statusEl.textContent = "No generated translations need review.";
+    return;
+  }
+  queryInput.value = "";
+  reviewSelect.value = "generated";
+  pendingReviewQueueFocus = true;
+  updateUrl();
+  updateExportLinks();
+  updateClearState();
+  renderRecords(lastRecords);
+}
+
+function visibleRecordCards() {
+  return Array.from(resultsEl.querySelectorAll(".translation-record-card:not(.notes-skeleton)"));
+}
+
+function focusedRecordCard() {
+  return document.activeElement?.closest?.(".translation-record-card") || null;
+}
+
+function focusRecordCard(card) {
+  if (!card) return false;
   if (typeof card.scrollIntoView === "function") {
     card.scrollIntoView({
       block: "center",
@@ -371,18 +398,46 @@ function focusFirstReviewQueueRecord() {
   return true;
 }
 
-function openReviewQueue() {
-  if (!generatedRecords(lastRecords).length) {
-    statusEl.textContent = "No generated translations need review.";
-    return;
+function navigateRecordFocus(delta) {
+  const cards = visibleRecordCards();
+  if (!cards.length) return false;
+  const current = focusedRecordCard();
+  const currentIndex = current ? cards.indexOf(current) : -1;
+  const nextIndex = currentIndex < 0
+    ? (delta < 0 ? cards.length - 1 : 0)
+    : Math.min(cards.length - 1, Math.max(0, currentIndex + delta));
+  const moved = focusRecordCard(cards[nextIndex]);
+  if (moved) {
+    statusEl.textContent = `Selected AI translation record ${nextIndex + 1} of ${cards.length}.`;
   }
-  queryInput.value = "";
-  reviewSelect.value = "generated";
-  pendingReviewQueueFocus = true;
-  updateUrl();
-  updateExportLinks();
-  updateClearState();
-  renderRecords(lastRecords);
+  return moved;
+}
+
+function triggerFocusedReviewAction(reviewState) {
+  const card = focusedRecordCard();
+  if (!card) return false;
+  const button = card.querySelector(`button[data-review-state="${reviewState}"]`);
+  if (!button || button.disabled) return false;
+  button.click();
+  return true;
+}
+
+function openFocusedSource() {
+  const card = focusedRecordCard();
+  if (!card) return false;
+  const sourceLink = card.querySelector("[data-open-source]");
+  if (!sourceLink) return false;
+  sourceLink.click();
+  return true;
+}
+
+function isTypingTarget(target) {
+  return Boolean(target && (
+    target.tagName === "INPUT" ||
+    target.tagName === "TEXTAREA" ||
+    target.tagName === "SELECT" ||
+    target.isContentEditable
+  ));
 }
 
 function clearFilters() {
@@ -485,6 +540,38 @@ clearButton.addEventListener("click", clearFilters);
 if (reviewQueueButton) {
   reviewQueueButton.addEventListener("click", openReviewQueue);
 }
+
+document.addEventListener("keydown", (event) => {
+  if (isTypingTarget(event.target) || event.altKey || event.ctrlKey || event.metaKey) return;
+  const key = event.key.toLowerCase();
+  if (key === "q") {
+    event.preventDefault();
+    openReviewQueue();
+    return;
+  }
+  if (key === "j" || event.key === "ArrowDown") {
+    if (navigateRecordFocus(1)) {
+      event.preventDefault();
+    }
+    return;
+  }
+  if (key === "k" || event.key === "ArrowUp") {
+    if (navigateRecordFocus(-1)) {
+      event.preventDefault();
+    }
+    return;
+  }
+  if (key === "r" || key === "x" || key === "g") {
+    const state = key === "r" ? "reviewed" : (key === "x" ? "rejected" : "generated");
+    if (triggerFocusedReviewAction(state)) {
+      event.preventDefault();
+    }
+    return;
+  }
+  if (key === "o" && openFocusedSource()) {
+    event.preventDefault();
+  }
+});
 
 activeFiltersEl.addEventListener("click", (event) => {
   const button = event.target.closest("button[data-filter]");
