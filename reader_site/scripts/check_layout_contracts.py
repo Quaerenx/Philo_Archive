@@ -608,6 +608,7 @@ def check_work_source_bundle_ui() -> None:
         "Still generating locally",
         "Source locked",
         "translation-progress-steps",
+        "Generation details",
         "class=\"done\"",
         "selectedSentencePositionLabel()",
         "renderTranslationError",
@@ -856,7 +857,7 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common90", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common91", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common81", "templates/work.html")
     for needle in [
         "reading-desk",

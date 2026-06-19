@@ -1677,20 +1677,27 @@ function renderTranslationPending(regenerate = false) {
           </div>
         </div>
       </section>
-      <div class="translation-loading" aria-label="Translation progress">
-        <span class="loading-spinner" aria-hidden="true"></span>
-        <span class="translation-loading-copy">
-          <strong>${escapeHtml(position)}</strong>
-          <span class="translation-phase-note" data-translation-phase-note>Preparing local model request</span>
-        </span>
-        <span class="translation-elapsed" data-translation-elapsed aria-hidden="true">Elapsed 0s</span>
-      </div>
-      <p class="translation-pending-source"><span>Source locked</span>${escapeHtml(sourceText)}</p>
-      <ol class="translation-progress-steps" aria-label="Translation progress">
-        <li class="done" data-translation-step="source">Source</li>
-        <li class="active" data-translation-step="request" aria-current="step">Request</li>
-        <li data-translation-step="generate" aria-current="false">Generate</li>
-      </ol>
+      <details class="translation-result-toolbar translation-generation-details">
+        <summary>
+          <span>Generation details</span>
+        </summary>
+        <div class="translation-result-detail-body">
+          <div class="translation-loading" aria-label="Translation progress">
+            <span class="loading-spinner" aria-hidden="true"></span>
+            <span class="translation-loading-copy">
+              <strong>${escapeHtml(position)}</strong>
+              <span class="translation-phase-note" data-translation-phase-note>Preparing local model request</span>
+            </span>
+            <span class="translation-elapsed" data-translation-elapsed aria-hidden="true">Elapsed 0s</span>
+          </div>
+          <p class="translation-pending-source"><span>Source locked</span>${escapeHtml(sourceText)}</p>
+          <ol class="translation-progress-steps" aria-label="Translation progress">
+            <li class="done" data-translation-step="source">Source</li>
+            <li class="active" data-translation-step="request" aria-current="step">Request</li>
+            <li data-translation-step="generate" aria-current="false">Generate</li>
+          </ol>
+        </div>
+      </details>
       <div class="translation-loading-actions">
         <button type="button" data-translation-cancel>Cancel request</button>
       </div>
