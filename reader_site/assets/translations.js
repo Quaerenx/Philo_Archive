@@ -354,7 +354,7 @@ function renderRecords(records) {
 function focusFirstReviewQueueRecord() {
   const card = resultsEl.querySelector('.translation-record-card[data-review-state="generated"]');
   if (!card) return false;
-  return focusRecordCard(card);
+  return focusRecordCard(card, true);
 }
 
 function openReviewQueue() {
@@ -379,8 +379,18 @@ function focusedRecordCard() {
   return document.activeElement?.closest?.(".translation-record-card") || null;
 }
 
-function focusRecordCard(card) {
+function clearReviewTargetHighlight() {
+  resultsEl.querySelectorAll(".translation-record-card.is-review-target").forEach((node) => {
+    node.classList.remove("is-review-target");
+  });
+}
+
+function focusRecordCard(card, reviewTarget = false) {
   if (!card) return false;
+  clearReviewTargetHighlight();
+  if (reviewTarget) {
+    card.classList.add("is-review-target");
+  }
   if (typeof card.scrollIntoView === "function") {
     card.scrollIntoView({
       block: "center",
