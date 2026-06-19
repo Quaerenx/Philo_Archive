@@ -793,7 +793,7 @@ def check_work_source_bundle_ui() -> None:
         "translation result toolbar should render after primary translation content",
     )
     require_contains(template, "/assets/reader-work.js?v=common84", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common73", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common74", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -852,6 +852,10 @@ def check_work_source_bundle_ui() -> None:
         "copyStudyCard",
         "translation-card",
         "translation-utility",
+        "translation-utility-group",
+        "translation-utility-group-label",
+        "Reading controls",
+        "Review and export",
         "Context & controls",
         "Runtime, source, review, export",
         "study-tabs",
@@ -907,6 +911,9 @@ def check_work_source_bundle_ui() -> None:
         ".translation-utility summary::after",
         ".translation-utility[open] summary::after",
         ".translation-utility-body",
+        ".translation-utility-group",
+        ".translation-utility-group + .translation-utility-group",
+        ".translation-utility-group-label",
         ".translation-review-state[data-review-state=\"generated\"]",
         ".translation-review-state[data-review-state=\"reviewed\"]",
         ".translation-review-state[data-review-state=\"rejected\"]",
