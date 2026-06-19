@@ -138,9 +138,10 @@ def check_route_markup(route: str, html: str) -> None:
             "translationsActiveFilters",
             "translationsStatus",
             "translationsResults",
+            "translationsReviewQueue",
             "aria-busy=\"false\"",
-            "translations.css?v=trans1",
-            "translations.js?v=trans1",
+            "translations.css?v=trans2",
+            "translations.js?v=trans2",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
     if route == "/search":

@@ -11,11 +11,13 @@ const statusEl = document.getElementById("translationsStatus");
 const resultsEl = document.getElementById("translationsResults");
 const exportMarkdown = document.getElementById("translationsExportMarkdown");
 const exportJson = document.getElementById("translationsExportJson");
+const reviewQueueButton = document.getElementById("translationsReviewQueue");
 let lastRecords = [];
 let activeController = null;
 let activeRequest = 0;
 let recentlyChangedRecordId = "";
 let archiveCorpora = [];
+let pendingReviewQueueFocus = false;
 
 const DEFAULT_CORPUS = "nietzsche";
 const REVIEW_LABELS = {
@@ -35,6 +37,10 @@ function escapeHtml(value) {
 
 function cleanText(value) {
   return String(value || "").replace(/\s+/g, " ").trim();
+}
+
+function prefersReducedMotion() {
+  return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 }
 
 function selectedOptionText(select) {
@@ -166,6 +172,9 @@ function setBusy(isBusy) {
   resultsEl.setAttribute("aria-busy", isBusy ? "true" : "false");
   submitButton.disabled = isBusy;
   submitButton.setAttribute("aria-busy", isBusy ? "true" : "false");
+  if (reviewQueueButton) {
+    reviewQueueButton.disabled = isBusy || generatedRecords(lastRecords).length === 0;
+  }
   updateClearState(isBusy);
 }
 
@@ -220,6 +229,22 @@ function recordMatchesQuery(record) {
 function normalizedReviewState(record) {
   const state = cleanText(record.review_state).toLowerCase();
   return ["generated", "reviewed", "rejected"].includes(state) ? state : "generated";
+}
+
+function generatedRecords(records) {
+  return records.filter((record) => normalizedReviewState(record) === "generated");
+}
+
+function updateReviewQueueButton(records = lastRecords) {
+  if (!reviewQueueButton) return;
+  const generatedCount = generatedRecords(records).length;
+  reviewQueueButton.textContent = generatedCount
+    ? `Review queue (${generatedCount.toLocaleString()})`
+    : "Review queue";
+  reviewQueueButton.disabled = form.classList.contains("is-loading") || generatedCount === 0;
+  reviewQueueButton.title = generatedCount
+    ? `Show ${generatedCount.toLocaleString()} generated translations waiting for review`
+    : "No generated translations need review";
 }
 
 function recordMatchesReview(record) {
@@ -286,7 +311,7 @@ function renderRecord(record) {
   const commentary = cleanText(record.commentary || record.interpretation || "");
   const targetUrl = cleanText(record.target_url || "");
   const isRecent = record.id === recentlyChangedRecordId;
-  return `<article class="translation-record-card${isRecent ? " is-recent" : ""}" data-record-id="${escapeHtml(record.id)}" data-corpus-id="${escapeHtml(record.corpus_id)}" data-review-state="${escapeHtml(reviewState)}">
+  return `<article class="translation-record-card${isRecent ? " is-recent" : ""}" tabindex="-1" data-record-id="${escapeHtml(record.id)}" data-corpus-id="${escapeHtml(record.corpus_id)}" data-review-state="${escapeHtml(reviewState)}">
     <div class="note-title">
       ${targetUrl ? `<a href="${escapeHtml(targetUrl)}">${escapeHtml(title)}</a>` : escapeHtml(title)}
       <span class="note-meta">${escapeHtml(cleanText(date))}</span>
@@ -308,13 +333,51 @@ function renderRecords(records) {
   lastRecords = records;
   const queryMatched = records.filter(recordMatchesQuery);
   const visible = queryMatched.filter(recordMatchesReview);
+  updateReviewQueueButton(records);
   statusEl.textContent = visible.length
     ? `${visible.length.toLocaleString()} AI translation records`
     : "No AI translation records found.";
   resultsEl.innerHTML = queryMatched.length
     ? renderSummary(queryMatched) + (visible.length ? visible.map(renderRecord).join("") : renderEmptyRecords())
     : renderEmptyRecords();
+  if (pendingReviewQueueFocus) {
+    pendingReviewQueueFocus = false;
+    focusFirstReviewQueueRecord();
+  }
   recentlyChangedRecordId = "";
+}
+
+function focusFirstReviewQueueRecord() {
+  const card = resultsEl.querySelector('.translation-record-card[data-review-state="generated"]');
+  if (!card) return;
+  if (typeof card.scrollIntoView === "function") {
+    card.scrollIntoView({
+      block: "center",
+      inline: "nearest",
+      behavior: prefersReducedMotion() ? "auto" : "smooth"
+    });
+  }
+  if (typeof card.focus === "function") {
+    try {
+      card.focus({ preventScroll: true });
+    } catch {
+      card.focus();
+    }
+  }
+}
+
+function openReviewQueue() {
+  if (!generatedRecords(lastRecords).length) {
+    statusEl.textContent = "No generated translations need review.";
+    return;
+  }
+  queryInput.value = "";
+  reviewSelect.value = "generated";
+  pendingReviewQueueFocus = true;
+  updateUrl();
+  updateExportLinks();
+  updateClearState();
+  renderRecords(lastRecords);
 }
 
 function clearFilters() {
@@ -413,6 +476,10 @@ form.addEventListener("submit", (event) => {
 });
 
 clearButton.addEventListener("click", clearFilters);
+
+if (reviewQueueButton) {
+  reviewQueueButton.addEventListener("click", openReviewQueue);
+}
 
 activeFiltersEl.addEventListener("click", (event) => {
   const button = event.target.closest("button[data-filter]");

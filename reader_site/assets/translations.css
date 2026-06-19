@@ -42,9 +42,36 @@
   font-weight: normal;
 }
 
+.translation-review-queue {
+  min-height: 24px;
+  padding: 2px 9px;
+  color: #000;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  background: #fff;
+  border: 1px solid #bdbdbd;
+  cursor: pointer;
+}
+
+.translation-review-queue:disabled {
+  color: #777;
+  cursor: default;
+  background: #f3f3f3;
+}
+
+.translation-review-queue:not(:disabled) {
+  background: #fffdf2;
+  border-color: #d8c56d;
+}
+
 .translation-record-card {
   padding-top: 12px;
   border-top: 1px solid #d4d4d4;
+}
+
+.translation-record-card:focus {
+  outline: 2px solid #b00000;
+  outline-offset: 2px;
 }
 
 .translation-record-card:first-child {
