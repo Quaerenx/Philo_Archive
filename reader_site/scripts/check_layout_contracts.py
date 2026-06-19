@@ -849,7 +849,7 @@ def check_work_source_bundle_ui() -> None:
             f"{function_name} reading-first translation layout",
         )
     require_contains(template, "/assets/reader-work.js?v=common89", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common78", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common79", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -1119,6 +1119,8 @@ def check_work_source_bundle_ui() -> None:
         "scroll-padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px))",
         ".study-page.is-expanded .study-panel-toggle",
         ".study-page.is-expanded .study-panel.active",
+        ".study-page.is-expanded .translation-card",
+        ".study-page.is-expanded .translation-output",
         "padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px))",
         "overscroll-behavior: contain",
         "touch-action: pan-y",

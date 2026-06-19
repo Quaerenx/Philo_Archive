@@ -2454,6 +2454,10 @@ h1 {
     padding: 10px 11px 12px;
   }
 
+  .study-page.is-expanded .translation-card {
+    max-height: none;
+  }
+
   .runtime-status {
     grid-template-columns: auto minmax(0, 1fr);
   }
@@ -2500,6 +2504,12 @@ h1 {
   .translation-output {
     max-height: 32vh;
     padding-bottom: 14px;
+  }
+
+  .study-page.is-expanded .translation-output {
+    max-height: none;
+    padding-right: 0;
+    overflow: visible;
   }
 
   .translation-export-links {
