@@ -375,6 +375,9 @@ def check_translations_ui() -> None:
         ".translation-actions button.is-working",
         "@media (prefers-reduced-motion: reduce)",
         "@media (max-width: 860px)",
+        "grid-template-columns: repeat(2, minmax(0, 1fr))",
+        "max-height: 6.4em",
+        "justify-content: center",
     ]:
         require_contains(css, needle, "assets/translations.css")
 

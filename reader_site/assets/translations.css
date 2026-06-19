@@ -198,4 +198,39 @@
   .translations-form {
     grid-template-columns: minmax(0, 1fr);
   }
+
+  .translation-record-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .translation-record-summary button {
+    width: 100%;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .translation-source {
+    max-height: 6.4em;
+    overflow: hidden;
+  }
+
+  .translation-text {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .translation-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .translation-actions a,
+  .translation-actions button,
+  .translation-review-queue {
+    width: 100%;
+    min-width: 0;
+    justify-content: center;
+    text-align: center;
+  }
 }
