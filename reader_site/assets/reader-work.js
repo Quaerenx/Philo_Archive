@@ -1426,6 +1426,25 @@ function renderCommentary(commentary) {
     </section>`;
 }
 
+function renderTranslationEmptyState() {
+  if (!translationOutput || selectedSentence) return;
+  translationOutput.hidden = false;
+  translationOutput.setAttribute("aria-busy", "false");
+  translationOutput.classList.toggle("reading-mode", translationMode === "reading");
+  translationOutput.classList.toggle("study-mode", translationMode === "study");
+  translationOutput.innerHTML = `
+    <div class="translation-result translation-empty-state" role="note">
+      <section class="translation-section translation-section-primary" data-translation-section="translation">
+        <h3>Translation</h3>
+        <p class="translation-primary">Select a sentence in the original text.</p>
+      </section>
+      <section class="translation-section translation-commentary" data-translation-section="commentary">
+        <h3>Commentary</h3>
+        <p>AI commentary will appear here after selection.</p>
+      </section>
+    </div>`;
+}
+
 function translationJumpNav(record) {
   const hasCommentary = Boolean(cleanText(record.commentary || record.interpretation || ""));
   const buttons = [
@@ -2896,6 +2915,7 @@ function initializeStudyCompanion() {
   restoreNoteDraft();
   setStudyPanelExpanded(storedStudyPanelExpanded());
   setStudyPanel("translation");
+  renderTranslationEmptyState();
   const exportParams = new URLSearchParams({
     corpus_id: researchData.corpus_id || researchData.author_id || "",
     work_id: researchData.work_id || "",

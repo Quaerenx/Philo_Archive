@@ -1137,6 +1137,10 @@ h1 {
   gap: 12px;
 }
 
+.translation-empty-state {
+  color: #666;
+}
+
 .translation-output.has-fresh-result .translation-section-primary,
 .translation-output.has-fresh-cached-result .translation-section-primary {
   animation: archive-translation-arrival 1.25s ease-out 1;
@@ -1329,6 +1333,11 @@ h1 {
   font-family: Georgia, "Times New Roman", serif;
   font-size: 15px;
   line-height: 1.62;
+}
+
+.translation-empty-state .translation-primary,
+.translation-empty-state .translation-commentary p {
+  color: #666;
 }
 
 .translation-commentary {

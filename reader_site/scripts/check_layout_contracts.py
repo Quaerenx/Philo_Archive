@@ -597,6 +597,10 @@ def check_work_source_bundle_ui() -> None:
         "setActionButtonBusy",
         "Could not save note.",
         "renderCommentary",
+        "renderTranslationEmptyState",
+        "translation-empty-state",
+        "Select a sentence in the original text.",
+        "AI commentary will appear here after selection.",
         "setCommentaryExpanded",
         "syncTranslationModeDensity",
         "translationJumpNav",
@@ -788,8 +792,8 @@ def check_work_source_bundle_ui() -> None:
         translation_section_index < result_toolbar_index,
         "translation result toolbar should render after primary translation content",
     )
-    require_contains(template, "/assets/reader-work.js?v=common83", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common71", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common84", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common72", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -961,6 +965,7 @@ def check_work_source_bundle_ui() -> None:
         ".reader-sentence.source-focus",
         "@keyframes archive-source-focus",
         ".translation-result",
+        ".translation-empty-state",
         ".study-session-preview",
         ".study-session-preview-header",
         ".study-session-preview-actions",
@@ -979,6 +984,8 @@ def check_work_source_bundle_ui() -> None:
         ".translation-section.is-jump-target",
         ".translation-section",
         ".translation-section-primary",
+        ".translation-empty-state .translation-primary",
+        ".translation-empty-state .translation-commentary p",
         "border-left: 3px solid #b00000",
         "max-height: clamp(220px, 42vh, 520px)",
         "line-height: 1.62",
