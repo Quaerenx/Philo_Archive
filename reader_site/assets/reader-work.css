@@ -1499,6 +1499,30 @@ h1 {
   padding: 8px 9px;
 }
 
+.translation-result.translation-error,
+.translation-result.translation-cancelled {
+  color: #333;
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+
+.translation-unavailable-copy {
+  color: #666;
+}
+
+.translation-recovery-panel {
+  display: grid;
+  gap: 8px;
+  margin-top: 2px;
+  padding-top: 10px;
+  border-top: 1px solid #eeeeee;
+}
+
+.translation-recovery-panel .translation-runtime-hint {
+  margin: 0;
+}
+
 .translation-runtime-hint {
   color: #4b3030;
 }
@@ -1554,6 +1578,10 @@ h1 {
 
 .translation-cancelled button {
   margin-top: 6px;
+}
+
+.translation-result.translation-cancelled button {
+  margin-top: 0;
 }
 
 .translation-output h3 {

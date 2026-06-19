@@ -1714,15 +1714,25 @@ function renderTranslationError(message) {
   setTranslationBusy(false);
   setTranslationReviewVisualState("");
   translationOutput.hidden = false;
+  translationOutput.classList.toggle("reading-mode", translationMode === "reading");
+  translationOutput.classList.toggle("study-mode", translationMode === "study");
   resetTranslationOutputScroll();
   translationOutput.innerHTML = `
-    <div class="translation-error" role="note">
-      <h3>Translation unavailable</h3>
-      <p>${escapeHtml(cleanMessage)}</p>
-      ${runtimeRecoveryMarkup(cleanMessage)}
-      <div class="translation-error-actions">
-        <button type="button" data-translation-retry="${escapeHtml(retryMode)}">${escapeHtml(retryLabel)}</button>
-        ${isRuntimeError ? '<button type="button" data-translation-check-runtime>Check runtime</button>' : ""}
+    <div class="translation-result translation-error" role="note">
+      <section class="translation-section translation-section-primary" data-translation-section="translation">
+        <h3>Translation</h3>
+        <p class="translation-primary translation-unavailable-copy">Translation unavailable.</p>
+      </section>
+      <section class="translation-section translation-commentary" data-translation-section="commentary">
+        <h3>Commentary</h3>
+        <p class="translation-unavailable-copy">${escapeHtml(cleanMessage)}</p>
+      </section>
+      <div class="translation-recovery-panel">
+        ${runtimeRecoveryMarkup(cleanMessage)}
+        <div class="translation-error-actions">
+          <button type="button" data-translation-retry="${escapeHtml(retryMode)}">${escapeHtml(retryLabel)}</button>
+          ${isRuntimeError ? '<button type="button" data-translation-check-runtime>Check runtime</button>' : ""}
+        </div>
       </div>
     </div>`;
   updateStudyPanelToggleLabel();
@@ -1739,11 +1749,21 @@ function renderTranslationCancelled(message = "Translation request cancelled.") 
   const retryMode = pendingTranslationRegenerate ? "regenerate" : "translate";
   const retryLabel = pendingTranslationRegenerate ? "Regenerate again" : "Try again";
   pendingTranslationRegenerate = false;
+  translationOutput.classList.toggle("reading-mode", translationMode === "reading");
+  translationOutput.classList.toggle("study-mode", translationMode === "study");
   translationOutput.innerHTML = `
-    <div class="translation-cancelled" role="note">
-      <h3>Translation cancelled</h3>
-      <p>${escapeHtml(cleanText(message))} No generated text was saved for ${escapeHtml(position)}.</p>
-      <button type="button" data-translation-retry="${escapeHtml(retryMode)}">${escapeHtml(retryLabel)}</button>
+    <div class="translation-result translation-cancelled" role="note">
+      <section class="translation-section translation-section-primary" data-translation-section="translation">
+        <h3>Translation</h3>
+        <p class="translation-primary translation-unavailable-copy">Translation cancelled.</p>
+      </section>
+      <section class="translation-section translation-commentary" data-translation-section="commentary">
+        <h3>Commentary</h3>
+        <p class="translation-unavailable-copy">${escapeHtml(cleanText(message))} No generated text was saved for ${escapeHtml(position)}.</p>
+      </section>
+      <div class="translation-recovery-panel translation-error-actions">
+        <button type="button" data-translation-retry="${escapeHtml(retryMode)}">${escapeHtml(retryLabel)}</button>
+      </div>
     </div>`;
   updateStudyPanelToggleLabel();
   updateSentenceControls();

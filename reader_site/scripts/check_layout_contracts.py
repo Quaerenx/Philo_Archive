@@ -583,7 +583,10 @@ def check_work_source_bundle_ui() -> None:
         "Gemma runtime command copied.",
         ".\\\\run_reader_with_gemma.ps1",
         "translation-error-actions",
+        "translation-unavailable-copy",
+        "translation-recovery-panel",
         "renderTranslationCancelled",
+        "Translation cancelled.",
         "cancelTranslationRequest",
         "data-translation-cancel",
         "data-translation-retry",
@@ -796,8 +799,8 @@ def check_work_source_bundle_ui() -> None:
         translation_section_index < result_toolbar_index,
         "translation result toolbar should render after primary translation content",
     )
-    require_contains(template, "/assets/reader-work.js?v=common86", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common76", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common87", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common77", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -1029,6 +1032,12 @@ def check_work_source_bundle_ui() -> None:
         "@keyframes archive-sentence-review-reject",
         ".translation-cancelled",
         ".translation-cancelled button",
+        ".translation-result.translation-error",
+        ".translation-result.translation-cancelled",
+        ".translation-unavailable-copy",
+        ".translation-recovery-panel",
+        ".translation-recovery-panel .translation-runtime-hint",
+        ".translation-result.translation-cancelled button",
         ".translation-runtime-hint",
         ".translation-runtime-command",
         ".translation-runtime-command-row",
