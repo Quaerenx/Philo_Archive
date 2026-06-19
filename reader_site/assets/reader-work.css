@@ -1418,7 +1418,20 @@ h1 {
 }
 
 .commentary-toggle {
-  margin-top: 6px;
+  min-height: 26px;
+  margin-top: 8px;
+  padding: 2px 8px;
+  color: #333;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  background: #fff;
+  border: 1px solid #d4d4d4;
+  cursor: pointer;
+}
+
+.commentary-toggle:hover,
+.commentary-toggle:focus-visible {
+  border-color: #999;
 }
 
 .translation-output.reading-mode .translation-extra {

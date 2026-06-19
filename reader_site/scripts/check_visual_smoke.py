@@ -189,8 +189,8 @@ def check_route_markup(route: str, html: str) -> None:
             "Session export: checking...",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common74",
-            "reader-work.js?v=common84",
+            "reader-work.css?v=common75",
+            "reader-work.js?v=common85",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
 

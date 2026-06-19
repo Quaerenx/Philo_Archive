@@ -616,8 +616,9 @@ def check_work_source_bundle_ui() -> None:
         "data-translation-section=\"commentary\"",
         "translation-result",
         "translation-section-primary",
-        "Show full commentary",
-        "Collapse commentary",
+        "Read full commentary",
+        "Show less",
+        "Show less commentary",
         "recentlyChangedNoteId",
         "Note saved and highlighted.",
         "setStudyPanelExpanded",
@@ -792,8 +793,8 @@ def check_work_source_bundle_ui() -> None:
         translation_section_index < result_toolbar_index,
         "translation result toolbar should render after primary translation content",
     )
-    require_contains(template, "/assets/reader-work.js?v=common84", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common74", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common85", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common75", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -1032,6 +1033,8 @@ def check_work_source_bundle_ui() -> None:
         ".translation-commentary.is-collapsed",
         ".translation-commentary.is-expanded p::after",
         ".commentary-toggle",
+        ".commentary-toggle:hover",
+        ".commentary-toggle:focus-visible",
         ".note-item.is-recent",
         ".note-item.is-recent:focus",
         "@keyframes archive-note-highlight",

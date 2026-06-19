@@ -291,7 +291,8 @@ function setCommentaryExpanded(commentary, expanded) {
   commentary.classList.toggle("is-expanded", expanded);
   commentary.classList.toggle("is-collapsed", !expanded);
   toggle.setAttribute("aria-expanded", expanded ? "true" : "false");
-  toggle.textContent = expanded ? "Collapse commentary" : "Show full commentary";
+  toggle.setAttribute("aria-label", expanded ? "Show less commentary" : "Read full commentary");
+  toggle.textContent = expanded ? "Show less" : "Read full commentary";
 }
 
 function syncTranslationModeDensity() {
@@ -1422,7 +1423,7 @@ function renderCommentary(commentary) {
     <section class="translation-section translation-commentary${shouldCollapse ? " is-collapsed" : ""}" data-translation-section="commentary">
       <h3>Commentary</h3>
       <p>${escapeHtml(text)}</p>
-      ${shouldCollapse ? '<button type="button" class="commentary-toggle" aria-expanded="false">Show full commentary</button>' : ""}
+      ${shouldCollapse ? '<button type="button" class="commentary-toggle" aria-expanded="false" aria-label="Read full commentary">Read full commentary</button>' : ""}
     </section>`;
 }
 
