@@ -815,16 +815,24 @@ function selectedSentenceIsVisible() {
 function updateTranslationTargetViewState() {
   if (!translationTarget || !selectedSentence) return;
   const sourceVisible = selectedSentenceIsVisible();
+  const sourceState = sourceVisible ? "visible" : "away";
   translationTarget.classList.toggle("is-source-visible", sourceVisible);
   translationTarget.classList.toggle("is-source-away", !sourceVisible);
+  translationTarget.dataset.sourceState = sourceState;
   const status = translationTarget.querySelector("[data-selected-source-status]");
   if (status) {
+    status.dataset.sourceState = sourceState;
     status.textContent = sourceVisible ? "Source in view" : "Source off screen";
   }
   const jumpButton = translationTarget.querySelector("[data-selected-source-jump]");
   if (jumpButton) {
+    jumpButton.classList.toggle("is-source-away", !sourceVisible);
     jumpButton.textContent = sourceVisible ? "Center" : "Show source";
     jumpButton.setAttribute("aria-keyshortcuts", "S");
+    jumpButton.setAttribute(
+      "title",
+      sourceVisible ? "Center selected source sentence" : "Show selected source sentence"
+    );
     jumpButton.setAttribute(
       "aria-label",
       `${sourceVisible ? "Center" : "Show"} selected source sentence ${selectedSentence.sentenceId}`
@@ -837,6 +845,7 @@ function renderTranslationTarget() {
   if (!selectedSentence) {
     translationTarget.textContent = "Select a sentence in the source page.";
     translationTarget.classList.remove("is-source-visible", "is-source-away");
+    delete translationTarget.dataset.sourceState;
     return;
   }
   const position = selectedSentencePositionLabel();

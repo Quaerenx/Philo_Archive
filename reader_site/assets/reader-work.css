@@ -633,11 +633,17 @@ h1 {
   background: #fbfbfb;
   border: 1px solid #eeeeee;
   border-left: 3px solid #d4d4d4;
+  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.translation-target.is-source-visible {
+  border-left-color: #5a9a68;
 }
 
 .translation-target.is-source-away {
   background: #fffdf2;
   border-left-color: #b00000;
+  box-shadow: inset 0 0 0 1px rgba(176, 0, 0, 0.04);
 }
 
 .translation-target-main {
@@ -652,6 +658,33 @@ h1 {
   font-family: Verdana, Arial, Helvetica, sans-serif;
   font-size: 9px;
   line-height: 1.35;
+}
+
+.translation-target-status {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.translation-target-status::before {
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  background: #9a9a9a;
+  border-radius: 50%;
+  content: "";
+}
+
+.translation-target-status[data-source-state="visible"]::before {
+  background: #5a9a68;
+}
+
+.translation-target-status[data-source-state="away"] {
+  color: #6a2525;
+}
+
+.translation-target-status[data-source-state="away"]::before {
+  background: #b00000;
 }
 
 .translation-target-id {
@@ -683,6 +716,12 @@ h1 {
   margin: 0;
   padding: 2px 7px;
   white-space: nowrap;
+}
+
+.translation-target button.is-source-away {
+  background: #fff;
+  border-color: #b00000;
+  box-shadow: inset 3px 0 0 #b00000;
 }
 
 .reading-position {
@@ -1979,6 +2018,8 @@ h1 {
 
   .reader-sentence,
   .study-page,
+  .translation-target,
+  .translation-target button,
   .translation-status {
     transition: none;
   }

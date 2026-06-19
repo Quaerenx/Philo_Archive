@@ -700,6 +700,9 @@ def check_work_source_bundle_ui() -> None:
         "function renderTranslationTarget",
         "function selectedSentenceIsVisible",
         "function updateTranslationTargetViewState",
+        "translationTarget.dataset.sourceState",
+        "status.dataset.sourceState",
+        "jumpButton.classList.toggle(\"is-source-away\"",
         "function focusSelectedSourceSentence",
         "function flashSourceFocus",
         'event.key.toLowerCase() === "s"',
@@ -777,8 +780,8 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common81", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common68", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common82", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common69", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -927,9 +930,14 @@ def check_work_source_bundle_ui() -> None:
         ".translation-output.reading-mode .translation-extra",
         ".translation-target-main",
         ".translation-target-status",
+        ".translation-target-status::before",
+        ".translation-target-status[data-source-state=\"visible\"]::before",
+        ".translation-target-status[data-source-state=\"away\"]",
         ".translation-target-excerpt",
+        ".translation-target.is-source-visible",
         ".translation-target.is-source-away",
         ".translation-target button",
+        ".translation-target button.is-source-away",
         ".runtime-status button",
         ".translation-review-actions",
         ".translation-review-actions button",
