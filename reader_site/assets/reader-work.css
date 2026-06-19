@@ -2194,6 +2194,50 @@ h1 {
 
   .translation-card {
     max-height: calc(72vh - 24px);
+    padding: 10px 11px 12px;
+  }
+
+  .runtime-status {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .runtime-status button {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-height: 32px;
+  }
+
+  .translation-target {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+
+  .translation-target button {
+    width: 100%;
+    min-height: 32px;
+  }
+
+  .translation-record-counts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .study-progress {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .study-progress button {
+    width: 100%;
+    min-height: 32px;
+  }
+
+  .translation-review-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .translation-review-actions button {
+    width: 100%;
+    min-height: 34px;
   }
 
   .translation-output {

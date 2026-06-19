@@ -778,7 +778,7 @@ def check_work_source_bundle_ui() -> None:
     ]:
         require_contains(script, needle, "assets/reader-work.js")
     require_contains(template, "/assets/reader-work.js?v=common81", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common67", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common68", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -930,6 +930,9 @@ def check_work_source_bundle_ui() -> None:
         ".translation-target-excerpt",
         ".translation-target.is-source-away",
         ".translation-target button",
+        ".runtime-status button",
+        ".translation-review-actions",
+        ".translation-review-actions button",
         ".reader-sentence.source-focus",
         "@keyframes archive-source-focus",
         ".translation-result",
