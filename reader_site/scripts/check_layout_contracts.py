@@ -336,6 +336,8 @@ def check_translations_ui() -> None:
         "function updateReviewQueueButton",
         "function focusFirstReviewQueueRecord",
         "function openReviewQueue",
+        "Review queue complete.",
+        "next generated record selected",
         "function updateRecordReview",
         "data-translation-summary-filter",
         "review_state: reviewState",

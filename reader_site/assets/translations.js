@@ -342,14 +342,18 @@ function renderRecords(records) {
     : renderEmptyRecords();
   if (pendingReviewQueueFocus) {
     pendingReviewQueueFocus = false;
-    focusFirstReviewQueueRecord();
+    if (focusFirstReviewQueueRecord()) {
+      statusEl.textContent = `${visible.length.toLocaleString()} AI translation records / next generated record selected.`;
+    } else if (reviewSelect.value === "generated") {
+      statusEl.textContent = "Review queue complete.";
+    }
   }
   recentlyChangedRecordId = "";
 }
 
 function focusFirstReviewQueueRecord() {
   const card = resultsEl.querySelector('.translation-record-card[data-review-state="generated"]');
-  if (!card) return;
+  if (!card) return false;
   if (typeof card.scrollIntoView === "function") {
     card.scrollIntoView({
       block: "center",
@@ -364,6 +368,7 @@ function focusFirstReviewQueueRecord() {
       card.focus();
     }
   }
+  return true;
 }
 
 function openReviewQueue() {
@@ -516,6 +521,7 @@ resultsEl.addEventListener("click", async (event) => {
     const ok = await updateRecordReview(recordId, corpusId, nextState);
     if (ok) {
       recentlyChangedRecordId = recordId;
+      pendingReviewQueueFocus = reviewSelect.value === "generated" && nextState !== "generated";
     }
     statusEl.textContent = ok ? "AI translation review state updated." : "Could not update AI translation review state.";
     await loadRecords();
