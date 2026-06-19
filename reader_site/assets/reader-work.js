@@ -83,8 +83,8 @@ const STUDY_PANEL_DRAG_THRESHOLD = 36;
 const ACTION_CONFIRM_MS = 4500;
 const GEMMA_RUNTIME_COMMAND = ".\\run_reader_with_gemma.ps1";
 const TRANSLATION_WAIT_PHASES = [
-  [0, "Preparing local model request"],
-  [12, "Gemma is still generating locally"],
+  [0, "Preparing translation request"],
+  [12, "Still generating locally"],
   [30, "Longer local generation in progress"]
 ];
 const TRANSLATION_PROGRESS_PHASES = [
@@ -343,7 +343,7 @@ async function checkGemmaRuntimeStatus(announce = false) {
   const controller = new AbortController();
   gemmaRuntimeCheckController = controller;
   const timeout = window.setTimeout(() => controller.abort(), 2500);
-  setGemmaRuntimeIndicator("checking", "Gemma checking...", "Checking local Gemma runtime");
+  setGemmaRuntimeIndicator("checking", "Translator checking...", "Checking local translator");
   setActionButtonBusy(gemmaRuntimeCheckButton, true);
   try {
     const response = await fetch("/api/health", { signal: controller.signal });
@@ -354,24 +354,24 @@ async function checkGemmaRuntimeStatus(announce = false) {
     const gemma = payload.gemma || {};
     if (gemma.reachable) {
       const model = Array.isArray(gemma.models) ? cleanText(gemma.models[0] || "") : "";
-      const label = model ? `Gemma ready: ${model}` : "Gemma ready";
-      setGemmaRuntimeIndicator("ready", label, label);
+      const title = model ? `Local translator ready: ${model}` : "Local translator ready";
+      setGemmaRuntimeIndicator("ready", "Translator ready", title);
       if (announce) {
-        setTranslationStatus("Gemma runtime is ready.");
+        setTranslationStatus("Local translator is ready.");
       }
       return;
     }
     const error = cleanText(gemma.error || "Start .\\run_reader_with_gemma.ps1, then check again.");
-    setGemmaRuntimeIndicator("offline", "Gemma offline", error);
+    setGemmaRuntimeIndicator("offline", "Translator offline", error);
     if (announce) {
-      setTranslationStatus("Gemma runtime is not reachable.", true);
+      setTranslationStatus("Local translator is not reachable.", true);
     }
   } catch (error) {
     if (error && error.name === "AbortError" && gemmaRuntimeCheckController !== controller) {
       return;
     }
-    const label = error && error.name === "AbortError" ? "Gemma check timed out" : "Gemma status unavailable";
-    setGemmaRuntimeIndicator("unavailable", label, "Check whether the reader server and Gemma runtime are running.");
+    const label = error && error.name === "AbortError" ? "Translator check timed out" : "Translator status unavailable";
+    setGemmaRuntimeIndicator("unavailable", label, "Check whether the reader server and local translator are running.");
     if (announce) {
       setTranslationStatus(label, true);
     }
@@ -404,10 +404,10 @@ function setTranslationRecordsSummary(text, state = "empty", counts = null) {
   const generated = Number(counts.generated || 0);
   const reviewed = Number(counts.reviewed || 0);
   const rejected = Number(counts.rejected || 0);
-  const reviewHint = generated ? `${generated} generated records need review.` : "No generated records need review.";
+  const reviewHint = generated ? `${generated} generated translations need review.` : "No generated translations need review.";
   translationRecordsSummary.setAttribute(
     "aria-label",
-    `${text}. ${total} total records, ${sentenceCount} sentences, ${generated} generated, ${reviewed} reviewed, ${rejected} rejected. ${reviewHint}`
+    `${text}. ${total} saved translations, ${sentenceCount} sentences, ${generated} generated, ${reviewed} reviewed, ${rejected} rejected. ${reviewHint}`
   );
   translationRecordsSummary.innerHTML = `
     <span class="translation-records-summary-main">${escapeHtml(text)}</span>
@@ -477,7 +477,7 @@ function updateStudyProgress() {
     ? (studied ? "active" : "empty")
     : (pendingReview ? "review" : "complete");
   const reviewText = pendingReview ? ` / ${pendingReview} need review` : "";
-  setStudyProgress(`Study progress: ${studied} of ${total} sentences have AI records / ${remaining} remaining${reviewText}`, state);
+  setStudyProgress(`Study progress: ${studied} of ${total} sentences translated / ${remaining} remaining${reviewText}`, state);
   if (continueStudyButton) {
     const wantsReview = remaining === 0 && pendingReview > 0;
     const wantsPreview = remaining === 0 && pendingReview === 0 && stateCounts.reviewed > 0;
@@ -487,7 +487,7 @@ function updateStudyProgress() {
       continueStudyButton.textContent = "Preview session";
       continueStudyButton.dataset.studyAction = "preview-session";
       continueStudyButton.disabled = false;
-      continueStudyButton.title = "Preview reviewed notes and reviewed Gemma translations";
+      continueStudyButton.title = "Preview reviewed notes and reviewed translations";
       continueStudyButton.setAttribute("aria-label", "Preview reviewed study session");
     } else {
       continueStudyButton.textContent = wantsReview ? "Review generated" : "Continue study";
@@ -495,7 +495,7 @@ function updateStudyProgress() {
       continueStudyButton.disabled = nextIndex < 0;
       continueStudyButton.title = nextIndex >= 0
         ? `${wantsReview ? "Review" : "Continue at"} ${nextLabel}`
-        : (wantsReview ? "No generated translations need review" : "All sentences have AI records");
+        : (wantsReview ? "No generated translations need review" : "All sentences have translations");
       continueStudyButton.setAttribute("aria-label", nextIndex >= 0
         ? `${wantsReview ? "Review generated translation at" : "Continue study at"} ${nextLabel}`
         : (wantsReview ? "No generated translations need review" : "Study progress complete"));
@@ -607,12 +607,12 @@ async function loadStudySessionSummary() {
     const noteCount = Number(payload.note_count || 0);
     const translationCount = Number(payload.translation_count || 0);
     setStudySessionSummary(
-      `Session export: ${noteCount} reviewed notes / ${translationCount} reviewed translations`,
+      `Study bundle: ${noteCount} reviewed notes / ${translationCount} reviewed translations`,
       noteCount + translationCount ? "has-content" : "empty"
     );
     updateStudySessionExportLink(noteCount, translationCount);
   } catch (error) {
-    setStudySessionSummary("Session export unavailable.", "unavailable");
+    setStudySessionSummary("Study bundle unavailable.", "unavailable");
     updateStudySessionExportLink(0, 0);
   }
 }
@@ -637,14 +637,14 @@ async function loadTranslationRecordsSummary() {
     const sentenceCount = Number(payload.sentence_state_count || 0);
     applySentenceTranslationStates(payload.sentence_states || []);
     setTranslationRecordsSummary(
-      `AI records: ${sentenceCount} sentences tracked`,
+      `Saved translations: ${sentenceCount} sentences`,
       generated ? "needs-review" : (total ? "has-records" : "empty"),
       { total, sentenceCount, generated, reviewed, rejected }
     );
     updateTranslationExportLinks(total, reviewed);
   } catch (error) {
     clearSentenceTranslationStates(false);
-    setTranslationRecordsSummary("AI records unavailable.", "unavailable");
+    setTranslationRecordsSummary("Saved translations unavailable.", "unavailable");
     updateTranslationExportLinks(0, 0);
   }
 }
@@ -1711,10 +1711,16 @@ function translationErrorIsRuntime(message) {
   );
 }
 
+function translationErrorDisplayMessage(message) {
+  return translationErrorIsRuntime(message)
+    ? "Local translator is not running. Start it, then try this sentence again."
+    : cleanText(message || "Translation unavailable.");
+}
+
 function runtimeRecoveryMarkup(message) {
   if (!translationErrorIsRuntime(message)) return "";
   return `
-      <p class="translation-runtime-hint">Start the local Gemma runtime, then retry this sentence.</p>
+      <p class="translation-runtime-hint">Start the local translator, then retry this sentence.</p>
       <div class="translation-runtime-command-row">
         <code class="translation-runtime-command">${escapeHtml(GEMMA_RUNTIME_COMMAND)}</code>
         <button type="button" data-translation-copy-runtime>Copy command</button>
@@ -1725,8 +1731,9 @@ function renderTranslationError(message) {
   selectedTranslationRecord = null;
   const retryMode = pendingTranslationRegenerate ? "regenerate" : "translate";
   const retryLabel = pendingTranslationRegenerate ? "Regenerate again" : "Try again";
-  const cleanMessage = cleanText(message || "Gemma runtime is not running.");
+  const cleanMessage = cleanText(message || "Local translator is not running.");
   const isRuntimeError = translationErrorIsRuntime(cleanMessage);
+  const displayMessage = translationErrorDisplayMessage(cleanMessage);
   pendingTranslationRegenerate = false;
   setTranslationBusy(false);
   setTranslationReviewVisualState("");
@@ -1742,7 +1749,7 @@ function renderTranslationError(message) {
       </section>
       <section class="translation-section translation-commentary" data-translation-section="commentary">
         <h3>Commentary</h3>
-        <p class="translation-unavailable-copy">${escapeHtml(cleanMessage)}</p>
+        <p class="translation-unavailable-copy">${escapeHtml(displayMessage)}</p>
       </section>
       <div class="translation-recovery-panel">
         ${runtimeRecoveryMarkup(cleanMessage)}
@@ -2086,7 +2093,7 @@ async function requestSentenceTranslation(regenerate = false) {
   activeTranslationController = controller;
   activeTranslationTargetKey = targetKey;
   const sentenceNode = document.getElementById(selectedSentence.sentenceId);
-  setTranslationStatus(regenerate ? "Regenerating with Gemma..." : "Translating with Gemma...", true);
+  setTranslationStatus(regenerate ? "Regenerating..." : "Translating...", true);
   renderTranslationPending(regenerate);
   regenerateSentenceButton.disabled = true;
   if (sentenceNode) {
@@ -2111,14 +2118,14 @@ async function requestSentenceTranslation(regenerate = false) {
     if (!response.ok || !payload.ok) {
       const message = cleanText(payload.error || "Gemma runtime is not running.");
       if (message.includes("Gemma runtime")) {
-        setGemmaRuntimeIndicator("offline", "Gemma offline", "Start .\\run_reader_with_gemma.ps1, then retry.");
+        setGemmaRuntimeIndicator("offline", "Translator offline", "Start .\\run_reader_with_gemma.ps1, then retry.");
       }
-      setTranslationStatus(message, true);
+      setTranslationStatus(translationErrorDisplayMessage(message), true);
       renderTranslationError(message);
       return;
     }
     if (!payload.cached) {
-      setGemmaRuntimeIndicator("ready", "Gemma ready", "Local Gemma runtime responded to this request.");
+      setGemmaRuntimeIndicator("ready", "Translator ready", "Local translator responded to this request.");
     }
     renderTranslationRecord(payload.record, payload.cached);
     if (!payload.cached) {
@@ -2132,9 +2139,9 @@ async function requestSentenceTranslation(regenerate = false) {
     if (requestId === activeTranslationRequest) {
       const message = cleanText(error && error.message ? error.message : "Gemma runtime is not running.");
       if (message.includes("Gemma runtime")) {
-        setGemmaRuntimeIndicator("offline", "Gemma offline", "Start .\\run_reader_with_gemma.ps1, then retry.");
+        setGemmaRuntimeIndicator("offline", "Translator offline", "Start .\\run_reader_with_gemma.ps1, then retry.");
       }
-      setTranslationStatus(message, true);
+      setTranslationStatus(translationErrorDisplayMessage(message), true);
       renderTranslationError(message);
     }
   } finally {
@@ -2714,8 +2721,8 @@ translationOutput.addEventListener("click", (event) => {
   const copyRuntime = event.target.closest("[data-translation-copy-runtime]");
   if (copyRuntime) {
     copyText(GEMMA_RUNTIME_COMMAND)
-      .then(() => setTranslationStatus("Gemma runtime command copied."))
-      .catch(() => setTranslationStatus("Could not copy Gemma runtime command.", true));
+      .then(() => setTranslationStatus("Start command copied."))
+      .catch(() => setTranslationStatus("Could not copy start command.", true));
     return;
   }
   const checkRuntime = event.target.closest("[data-translation-check-runtime]");
@@ -2973,7 +2980,7 @@ function initializeStudyCompanion() {
   }
   if (exportStudySession) {
     exportStudySession.href = studySessionExportUrl("markdown");
-    exportStudySession.title = "Export reviewed notes and reviewed Gemma translations for this work";
+    exportStudySession.title = "Export reviewed notes and reviewed translations for this work";
   }
   const conceptsPanel = document.querySelector('[data-study-panel="concepts"]');
   if (conceptsPanel && !conceptsPanel.textContent.trim()) {
