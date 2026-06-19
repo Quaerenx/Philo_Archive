@@ -47,7 +47,7 @@
           Review
           <select id="translationsReview" name="review_state">
             <option value="all">All</option>
-            <option value="generated">Generated</option>
+            <option value="generated">Needs review</option>
             <option value="reviewed">Reviewed</option>
             <option value="rejected">Rejected</option>
           </select>
@@ -62,13 +62,13 @@
       <div class="export-row" aria-label="Export saved translations">
         <a id="translationsExportMarkdown" href="/api/sentence-translations/export?corpus_id=nietzsche&format=markdown&review_state=all">Markdown</a>
         <a id="translationsExportJson" href="/api/sentence-translations/export?corpus_id=nietzsche&format=json&review_state=all">JSON</a>
-        <button id="translationsReviewQueue" type="button" class="translation-review-queue" aria-keyshortcuts="Q" title="Review generated translations" disabled>Review queue</button>
+        <button id="translationsReviewQueue" type="button" class="translation-review-queue" aria-keyshortcuts="Q" title="Show translations waiting for review" disabled>Review next</button>
       </div>
 
       <div id="translationsStatus" class="notes-status translations-status" role="status" aria-live="polite" aria-atomic="true"></div>
       <section id="translationsResults" class="notes-results translations-results" aria-live="polite" aria-busy="false"></section>
     </main>
   </div>
-  <script src="/assets/translations.js?v=trans3"></script>
+  <script src="/assets/translations.js?v=trans4"></script>
 </body>
 </html>

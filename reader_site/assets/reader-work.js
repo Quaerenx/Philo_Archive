@@ -92,7 +92,7 @@ const TRANSLATION_PROGRESS_PHASES = [
   [2, "generate"]
 ];
 const TRANSLATION_STATE_LABELS = {
-  generated: "Generated translation",
+  generated: "Needs review",
   reviewed: "Reviewed translation",
   rejected: "Rejected translation"
 };
@@ -102,7 +102,7 @@ const TRANSLATION_REVIEW_CHIP_LABELS = {
   rejected: "Rejected"
 };
 const TRANSLATION_REVIEW_CHIP_HINTS = {
-  generated: "Generated translation awaiting review",
+  generated: "Translation awaiting review",
   reviewed: "Reviewed translation",
   rejected: "Rejected translation"
 };
@@ -404,7 +404,7 @@ function setTranslationRecordsSummary(text, state = "empty", counts = null) {
   const generated = Number(counts.generated || 0);
   const reviewed = Number(counts.reviewed || 0);
   const rejected = Number(counts.rejected || 0);
-  const reviewHint = generated ? `${generated} generated translations need review.` : "No generated translations need review.";
+  const reviewHint = generated ? `${generated} translations need review.` : "No translations need review.";
   translationRecordsSummary.setAttribute(
     "aria-label",
     `${text}. ${total} saved translations, ${sentenceCount} sentences, ${generated} generated, ${reviewed} reviewed, ${rejected} rejected. ${reviewHint}`
@@ -415,7 +415,7 @@ function setTranslationRecordsSummary(text, state = "empty", counts = null) {
     <span class="translation-record-counts" aria-hidden="true">
       ${translationRecordSummaryChip("Total", total)}
       ${translationRecordSummaryChip("Sentences", sentenceCount)}
-      ${translationRecordSummaryChip("Generated", generated, "generated")}
+      ${translationRecordSummaryChip("Needs review", generated, "generated")}
       ${translationRecordSummaryChip("Reviewed", reviewed, "reviewed")}
       ${translationRecordSummaryChip("Rejected", rejected, "rejected")}
     </span>`;
@@ -490,15 +490,15 @@ function updateStudyProgress() {
       continueStudyButton.title = "Preview reviewed notes and reviewed translations";
       continueStudyButton.setAttribute("aria-label", "Preview reviewed study session");
     } else {
-      continueStudyButton.textContent = wantsReview ? "Review generated" : "Continue study";
+      continueStudyButton.textContent = wantsReview ? "Review next" : "Continue study";
       continueStudyButton.dataset.studyAction = wantsReview ? "review-generated" : "continue";
       continueStudyButton.disabled = nextIndex < 0;
       continueStudyButton.title = nextIndex >= 0
         ? `${wantsReview ? "Review" : "Continue at"} ${nextLabel}`
-        : (wantsReview ? "No generated translations need review" : "All sentences have translations");
+        : (wantsReview ? "No translations need review" : "All sentences have translations");
       continueStudyButton.setAttribute("aria-label", nextIndex >= 0
-        ? `${wantsReview ? "Review generated translation at" : "Continue study at"} ${nextLabel}`
-        : (wantsReview ? "No generated translations need review" : "Study progress complete"));
+        ? `${wantsReview ? "Review translation at" : "Continue study at"} ${nextLabel}`
+        : (wantsReview ? "No translations need review" : "Study progress complete"));
     }
   }
 }
@@ -674,7 +674,7 @@ function actionConfirmationConfig(action) {
       defaultTitle: "Regenerate translation",
       defaultAria: "Regenerate translation",
       confirmText: "Confirm regenerate",
-      confirmTitle: "Click again to replace this generated translation",
+      confirmTitle: "Click again to replace this translation",
       confirmAria: "Confirm regenerate translation",
       status: "Click Confirm regenerate to replace this translation.",
       blockMessage: selectedSentence ? "" : "Select a sentence first.",
@@ -691,7 +691,7 @@ function actionConfirmationConfig(action) {
       confirmTitle: "Click again to mark this translation rejected",
       confirmAria: "Confirm reject translation",
       status: "Click Confirm reject to exclude this cached translation.",
-      blockMessage: selectedTranslationRecord && selectedTranslationRecord.id ? "" : "No generated translation is selected.",
+      blockMessage: selectedTranslationRecord && selectedTranslationRecord.id ? "" : "No saved translation is selected.",
       run: () => updateTranslationReview("rejected")
     };
   }
@@ -1060,12 +1060,12 @@ function updateSentenceControls() {
     nextReviewSentenceButton.disabled = nextReviewIndex < 0;
     const nextReviewLabel = nextReviewIndex >= 0
       ? sentencePositionText(sentenceNodeId(sentenceNodes[nextReviewIndex]))
-      : (translationSentenceStatesLoaded ? "No generated translations need review" : "Translation states are loading");
+      : (translationSentenceStatesLoaded ? "No translations need review" : "Translation states are loading");
     nextReviewSentenceButton.title = nextReviewIndex >= 0
       ? `Review ${nextReviewLabel}`
       : nextReviewLabel;
     nextReviewSentenceButton.setAttribute("aria-label", nextReviewIndex >= 0
-      ? `Next generated translation to review, ${nextReviewLabel}`
+      ? `Next translation to review, ${nextReviewLabel}`
       : nextReviewLabel);
   }
   updateStudyProgress();
@@ -1363,7 +1363,7 @@ function navigateToNextReviewSentence() {
   if (nextIndex < 0) {
     setTranslationStatus(
       translationSentenceStatesLoaded
-        ? "No generated translations need review."
+        ? "No translations need review."
         : "Translation states are still loading.",
       true
     );
@@ -1391,7 +1391,7 @@ function continueStudy() {
   if (nextIndex < 0) {
     setTranslationStatus(
       translationSentenceStatesLoaded
-        ? (action === "review-generated" ? "No generated translations need review." : "All sentences have translations.")
+        ? (action === "review-generated" ? "No translations need review." : "All sentences have translations.")
         : "Translation states are still loading.",
       true
     );
@@ -1783,7 +1783,7 @@ function renderTranslationCancelled(message = "Translation request cancelled.") 
       </section>
       <section class="translation-section translation-commentary" data-translation-section="commentary">
         <h3>Commentary</h3>
-        <p class="translation-unavailable-copy">${escapeHtml(cleanText(message))} No generated text was saved for ${escapeHtml(position)}.</p>
+        <p class="translation-unavailable-copy">${escapeHtml(cleanText(message))} No translation was saved for ${escapeHtml(position)}.</p>
       </section>
       <div class="translation-recovery-panel translation-error-actions">
         <button type="button" data-translation-retry="${escapeHtml(retryMode)}">${escapeHtml(retryLabel)}</button>
@@ -2131,7 +2131,7 @@ async function requestSentenceTranslation(regenerate = false) {
     if (!payload.cached) {
       loadTranslationRecordsSummary();
     }
-    setTranslationStatus(payload.cached ? "Loaded cached translation." : "Generated translation saved locally.");
+    setTranslationStatus(payload.cached ? "Loaded saved translation." : "Translation saved locally.");
   } catch (error) {
     if (error && error.name === "AbortError") {
       return;
@@ -2158,7 +2158,7 @@ async function requestSentenceTranslation(regenerate = false) {
 
 async function updateTranslationReview(reviewState) {
   if (!selectedTranslationRecord || !selectedTranslationRecord.id) {
-    setTranslationStatus("No generated translation is selected.", true);
+    setTranslationStatus("No saved translation is selected.", true);
     return;
   }
   clearActionConfirmations();
@@ -2198,7 +2198,7 @@ function translationNoteDraftText(record) {
   const translation = cleanText(record.translation || "");
   const commentary = cleanText(record.commentary || record.interpretation || "");
   const lines = [
-    "Generated translation & commentary",
+    "Saved translation & commentary",
     `Target: ${selectedSentencePositionLabel()} / ${selectedSentence?.sentenceId || ""}`
   ];
   if (source) {
@@ -2374,7 +2374,7 @@ function clearNoteDraft() {
 
 async function copyStudyCard() {
   if (!selectedTranslationRecord) {
-    setTranslationStatus("No generated translation is selected.", true);
+    setTranslationStatus("No saved translation is selected.", true);
     return;
   }
   setActionButtonBusy(copyStudyCardButton, true);

@@ -22,7 +22,7 @@ let pendingReviewQueueFocus = false;
 const DEFAULT_CORPUS = "nietzsche";
 const REVIEW_LABELS = {
   all: "All",
-  generated: "Generated",
+  generated: "Needs review",
   reviewed: "Reviewed",
   rejected: "Rejected"
 };
@@ -239,12 +239,12 @@ function updateReviewQueueButton(records = lastRecords) {
   if (!reviewQueueButton) return;
   const generatedCount = generatedRecords(records).length;
   reviewQueueButton.textContent = generatedCount
-    ? `Review queue (${generatedCount.toLocaleString()})`
-    : "Review queue";
+    ? `Review next (${generatedCount.toLocaleString()})`
+    : "Review next";
   reviewQueueButton.disabled = form.classList.contains("is-loading") || generatedCount === 0;
   reviewQueueButton.title = generatedCount
-    ? `Show ${generatedCount.toLocaleString()} generated translations waiting for review`
-    : "No generated translations need review";
+    ? `Show ${generatedCount.toLocaleString()} translations waiting for review`
+    : "No translations need review";
 }
 
 function recordMatchesReview(record) {
@@ -272,7 +272,7 @@ function renderSummary(records) {
   const counts = summaryCounts(records);
   return `<nav class="translation-record-summary" aria-label="Visible saved translations by review state">
     ${summaryButton("all", "All", counts.total)}
-    ${summaryButton("generated", "Generated", counts.generated)}
+    ${summaryButton("generated", "Needs review", counts.generated)}
     ${summaryButton("reviewed", "Reviewed", counts.reviewed)}
     ${summaryButton("rejected", "Rejected", counts.rejected)}
   </nav>`;
@@ -323,7 +323,7 @@ function renderRecord(record) {
     <div class="translation-actions">
       ${targetUrl ? `<a href="${escapeHtml(targetUrl)}" data-open-source aria-keyshortcuts="O" title="Open source">Open source</a>` : ""}
       <button type="button" data-review-state="reviewed" aria-keyshortcuts="R" title="Mark reviewed" ${reviewState === "reviewed" ? "disabled" : ""}>Mark reviewed</button>
-      <button type="button" data-review-state="generated" aria-keyshortcuts="G" title="Mark generated" ${reviewState === "generated" ? "disabled" : ""}>Mark generated</button>
+      <button type="button" data-review-state="generated" aria-keyshortcuts="G" title="Mark as needs review" ${reviewState === "generated" ? "disabled" : ""}>Needs review</button>
       <button type="button" data-review-state="rejected" aria-keyshortcuts="X" title="Reject" ${reviewState === "rejected" ? "disabled" : ""}>Reject</button>
     </div>
   </article>`;
@@ -343,9 +343,9 @@ function renderRecords(records) {
   if (pendingReviewQueueFocus) {
     pendingReviewQueueFocus = false;
     if (focusFirstReviewQueueRecord()) {
-      statusEl.textContent = `${visible.length.toLocaleString()} saved translations / next generated translation selected.`;
+      statusEl.textContent = `${visible.length.toLocaleString()} saved translations / next translation selected for review.`;
     } else if (reviewSelect.value === "generated") {
-      statusEl.textContent = "Review queue complete.";
+      statusEl.textContent = "Review list complete.";
     }
   }
   recentlyChangedRecordId = "";
@@ -359,7 +359,7 @@ function focusFirstReviewQueueRecord() {
 
 function openReviewQueue() {
   if (!generatedRecords(lastRecords).length) {
-    statusEl.textContent = "No generated translations need review.";
+    statusEl.textContent = "No translations need review.";
     return;
   }
   queryInput.value = "";
