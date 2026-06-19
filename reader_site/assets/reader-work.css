@@ -1257,14 +1257,12 @@ h1 {
 }
 
 .translation-result-toolbar {
-  position: sticky;
-  top: 0;
-  z-index: 1;
   display: grid;
   gap: 7px;
-  padding: 0 0 8px;
+  margin-top: 12px;
+  padding: 8px 0 0;
   background: #fff;
-  border-bottom: 1px solid #eeeeee;
+  border-top: 1px solid #eeeeee;
 }
 
 .translation-result-meta {

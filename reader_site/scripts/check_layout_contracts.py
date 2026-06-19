@@ -606,7 +606,7 @@ def check_work_source_bundle_ui() -> None:
         "translation-result-target",
         "translationOutputUsesInternalScroll",
         "scrollTranslationSectionIntoView",
-        "const toolbar = translationOutput.querySelector(\".translation-result-toolbar\")",
+        "const stickyOffset = 8",
         "data-translation-jump",
         "data-translation-section=\"translation\"",
         "data-translation-section=\"commentary\"",
@@ -780,8 +780,16 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    require_contains(template, "/assets/reader-work.js?v=common82", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common70", "templates/work.html")
+    translation_section_index = script.find('<section class="translation-section translation-section-primary"')
+    result_toolbar_index = script.find("${translationResultToolbar(record, cached, reviewState)}")
+    require(translation_section_index >= 0, "assets/reader-work.js missing primary translation section")
+    require(result_toolbar_index >= 0, "assets/reader-work.js missing translation result toolbar")
+    require(
+        translation_section_index < result_toolbar_index,
+        "translation result toolbar should render after primary translation content",
+    )
+    require_contains(template, "/assets/reader-work.js?v=common83", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common71", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",

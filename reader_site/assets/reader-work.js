@@ -1588,8 +1588,7 @@ function scrollTranslationSectionIntoView(sectionName) {
   const section = Array.from(translationOutput.querySelectorAll("[data-translation-section]"))
     .find((item) => item.dataset.translationSection === sectionName);
   if (!section) return;
-  const toolbar = translationOutput.querySelector(".translation-result-toolbar");
-  const stickyOffset = toolbar ? toolbar.offsetHeight + 8 : 8;
+  const stickyOffset = 8;
   const behavior = prefersReducedMotion() ? "auto" : "smooth";
   if (translationOutputUsesInternalScroll()) {
     const top = Math.max(0, section.offsetTop - translationOutput.offsetTop - stickyOffset);
@@ -1927,7 +1926,6 @@ function renderTranslationRecord(record, cached, reviewFlashState = "") {
   resetTranslationOutputScroll();
   translationOutput.innerHTML = `
     <div class="translation-result">
-      ${translationResultToolbar(record, cached, reviewState)}
       <section class="translation-section translation-extra" data-translation-section="source">
         <h3>Original source</h3>
         <p>${escapeHtml(cleanText(record.source_text_excerpt || selectedSentence?.text || ""))}</p>
@@ -1938,6 +1936,7 @@ function renderTranslationRecord(record, cached, reviewFlashState = "") {
       </section>
       ${renderCommentary(record.commentary || record.interpretation || "")}
       ${optionalCautions(record)}
+      ${translationResultToolbar(record, cached, reviewState)}
     </div>
   `;
   applySentenceTranslationState(record, Boolean(reviewFlashState));
