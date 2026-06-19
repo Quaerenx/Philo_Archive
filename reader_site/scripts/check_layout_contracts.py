@@ -595,6 +595,9 @@ def check_work_source_bundle_ui() -> None:
         "resetTranslationOutputScroll",
         "translationOutput.scrollTop = 0",
         "setActionButtonBusy",
+        "translation-pending-result",
+        "translation-pending-copy",
+        "Commentary will appear after local generation.",
         "Could not save note.",
         "renderCommentary",
         "renderTranslationEmptyState",
@@ -793,8 +796,8 @@ def check_work_source_bundle_ui() -> None:
         translation_section_index < result_toolbar_index,
         "translation result toolbar should render after primary translation content",
     )
-    require_contains(template, "/assets/reader-work.js?v=common85", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common75", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common86", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common76", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -974,6 +977,8 @@ def check_work_source_bundle_ui() -> None:
         "@keyframes archive-source-focus",
         ".translation-result",
         ".translation-empty-state",
+        ".translation-pending-result",
+        ".translation-pending-copy",
         ".study-session-preview",
         ".study-session-preview-header",
         ".study-session-preview-actions",

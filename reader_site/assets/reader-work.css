@@ -1380,6 +1380,14 @@ h1 {
   color: #666;
 }
 
+.translation-pending-result {
+  color: #666;
+}
+
+.translation-pending-copy {
+  color: #666;
+}
+
 .translation-commentary {
   color: #333;
 }

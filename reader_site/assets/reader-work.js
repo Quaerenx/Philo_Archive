@@ -1638,35 +1638,44 @@ function renderTranslationPending(regenerate = false) {
   const position = selectedSentencePositionLabel();
   const sourceText = cleanText(selectedSentence?.text || "");
   translationOutput.innerHTML = `
-    <div class="translation-loading" role="status" aria-live="polite" aria-label="${escapeHtml(`${actionLabel}: ${position}`)}">
-      <span class="loading-spinner" aria-hidden="true"></span>
-      <span class="translation-loading-copy">
-        <strong>${escapeHtml(actionLabel)}</strong>
-        <span>${escapeHtml(position)}</span>
-        <span class="translation-phase-note" data-translation-phase-note>Preparing local model request</span>
-      </span>
-      <span class="translation-elapsed" data-translation-elapsed aria-hidden="true">Elapsed 0s</span>
-    </div>
-    <p class="translation-pending-source"><span>Source locked</span>${escapeHtml(sourceText)}</p>
-    <ol class="translation-progress-steps" aria-label="Translation progress">
-      <li class="done" data-translation-step="source">Source</li>
-      <li class="active" data-translation-step="request" aria-current="step">Request</li>
-      <li data-translation-step="generate" aria-current="false">Generate</li>
-    </ol>
-    <div class="translation-loading-actions">
-      <button type="button" data-translation-cancel>Cancel request</button>
-    </div>
-    <div class="translation-skeleton translation-study-skeleton" aria-hidden="true">
-      <div class="translation-skeleton-block primary">
-        <span class="translation-skeleton-heading"></span>
-        <span class="translation-skeleton-line wide"></span>
-        <span class="translation-skeleton-line"></span>
+    <div class="translation-result translation-pending-result" role="status" aria-live="polite" aria-label="${escapeHtml(`${actionLabel}: ${position}`)}">
+      <section class="translation-section translation-section-primary" data-translation-section="translation">
+        <h3>Translation</h3>
+        <p class="translation-primary translation-pending-copy">${escapeHtml(actionLabel)}...</p>
+        <div class="translation-skeleton translation-study-skeleton" aria-hidden="true">
+          <div class="translation-skeleton-block primary">
+            <span class="translation-skeleton-line wide"></span>
+            <span class="translation-skeleton-line"></span>
+          </div>
+        </div>
+      </section>
+      <section class="translation-section translation-commentary" data-translation-section="commentary">
+        <h3>Commentary</h3>
+        <p class="translation-pending-copy">Commentary will appear after local generation.</p>
+        <div class="translation-skeleton translation-study-skeleton" aria-hidden="true">
+          <div class="translation-skeleton-block commentary">
+            <span class="translation-skeleton-line wide"></span>
+            <span class="translation-skeleton-line"></span>
+            <span class="translation-skeleton-line short"></span>
+          </div>
+        </div>
+      </section>
+      <div class="translation-loading" aria-label="Translation progress">
+        <span class="loading-spinner" aria-hidden="true"></span>
+        <span class="translation-loading-copy">
+          <strong>${escapeHtml(position)}</strong>
+          <span class="translation-phase-note" data-translation-phase-note>Preparing local model request</span>
+        </span>
+        <span class="translation-elapsed" data-translation-elapsed aria-hidden="true">Elapsed 0s</span>
       </div>
-      <div class="translation-skeleton-block commentary">
-        <span class="translation-skeleton-heading short"></span>
-        <span class="translation-skeleton-line wide"></span>
-        <span class="translation-skeleton-line"></span>
-        <span class="translation-skeleton-line short"></span>
+      <p class="translation-pending-source"><span>Source locked</span>${escapeHtml(sourceText)}</p>
+      <ol class="translation-progress-steps" aria-label="Translation progress">
+        <li class="done" data-translation-step="source">Source</li>
+        <li class="active" data-translation-step="request" aria-current="step">Request</li>
+        <li data-translation-step="generate" aria-current="false">Generate</li>
+      </ol>
+      <div class="translation-loading-actions">
+        <button type="button" data-translation-cancel>Cancel request</button>
       </div>
     </div>`;
   startTranslationElapsedTimer();
