@@ -365,7 +365,7 @@ h1 {
 }
 
 .translation-utility summary::after {
-  grid-row: 1 / span 2;
+  grid-row: 1;
   grid-column: 2;
   color: #777;
   content: "+";
@@ -1281,12 +1281,63 @@ h1 {
 }
 
 .translation-result-toolbar {
-  display: grid;
-  gap: 7px;
+  display: block;
   margin-top: 12px;
   padding: 8px 0 0;
   background: #fff;
   border-top: 1px solid #eeeeee;
+}
+
+.translation-result-toolbar summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 8px;
+  align-items: center;
+  min-height: 26px;
+  color: #666;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  line-height: 1.35;
+  cursor: pointer;
+  list-style: none;
+}
+
+.translation-result-toolbar summary::-webkit-details-marker {
+  display: none;
+}
+
+.translation-result-toolbar summary::after {
+  grid-column: 2;
+  color: #777;
+  content: "+";
+}
+
+.translation-result-toolbar[open] summary::after {
+  content: "-";
+}
+
+.translation-result-toolbar summary span,
+.translation-result-toolbar summary small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.translation-result-toolbar summary span {
+  color: #444;
+}
+
+.translation-result-toolbar summary small {
+  grid-column: 1;
+  color: #888;
+  font-size: 9px;
+}
+
+.translation-result-detail-body {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .translation-result-meta {
@@ -1360,6 +1411,14 @@ h1 {
 
 .translation-section-primary h3 {
   color: #6f1111;
+}
+
+.translation-source-detail p {
+  margin: 0;
+  color: #555;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 13px;
+  line-height: 1.65;
 }
 
 .translation-section.is-jump-target {

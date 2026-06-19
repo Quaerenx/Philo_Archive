@@ -101,6 +101,11 @@ const TRANSLATION_REVIEW_CHIP_LABELS = {
   reviewed: "Reviewed",
   rejected: "Rejected"
 };
+const TRANSLATION_REVIEW_CHIP_HINTS = {
+  generated: "Generated translation awaiting review",
+  reviewed: "Reviewed translation",
+  rejected: "Rejected translation"
+};
 const TRANSLATION_STATE_SHORT = {
   generated: "AI",
   reviewed: "OK",
@@ -1462,20 +1467,32 @@ function translationResultToolbar(record, cached, reviewState) {
   const targetLabel = selectedSentence
     ? selectedSentencePositionLabel()
     : cleanText(record.sentence_id || "Selected sentence");
+  const sourceText = cleanText(record.source_text_excerpt || selectedSentence?.text || "");
   const normalizedReviewState = normalizedTranslationReviewState(reviewState);
   const stateLabel = TRANSLATION_REVIEW_CHIP_LABELS[normalizedReviewState];
-  const sourceLabel = cached ? "Cached" : "Generated";
-  return `<div class="translation-result-toolbar">
-    <div class="translation-result-meta">
-      <span class="translation-result-kicker">Selected sentence</span>
-      <strong class="translation-result-target">${escapeHtml(targetLabel)}</strong>
-      <span class="translation-review-state" data-review-state="${escapeHtml(normalizedReviewState)}">
-        <span>${escapeHtml(stateLabel)}</span>
-        <small>${escapeHtml(sourceLabel)}</small>
-      </span>
+  const stateHint = TRANSLATION_REVIEW_CHIP_HINTS[normalizedReviewState] || stateLabel;
+  const sourceLabel = cached ? "Cached result" : "New result";
+  const reviewLabel = `${stateHint}; ${sourceLabel}`;
+  return `<details class="translation-result-toolbar translation-result-details">
+    <summary>
+      <span>Details</span>
+    </summary>
+    <div class="translation-result-detail-body">
+      <div class="translation-result-meta">
+        <span class="translation-result-kicker">Selected sentence</span>
+        <strong class="translation-result-target">${escapeHtml(targetLabel)}</strong>
+        <span class="translation-review-state" data-review-state="${escapeHtml(normalizedReviewState)}" title="${escapeHtml(reviewLabel)}" aria-label="${escapeHtml(reviewLabel)}">
+          <span>${escapeHtml(stateLabel)}</span>
+          <small>${escapeHtml(sourceLabel)}</small>
+        </span>
+      </div>
+      ${sourceText ? `<section class="translation-section translation-source-detail">
+        <h3>Original source</h3>
+        <p>${escapeHtml(sourceText)}</p>
+      </section>` : ""}
+      ${translationJumpNav(record)}
     </div>
-    ${translationJumpNav(record)}
-  </div>`;
+  </details>`;
 }
 
 function setTranslationReviewVisualState(reviewState) {
@@ -1975,10 +1992,6 @@ function renderTranslationRecord(record, cached, reviewFlashState = "") {
   resetTranslationOutputScroll();
   translationOutput.innerHTML = `
     <div class="translation-result">
-      <section class="translation-section translation-extra" data-translation-section="source">
-        <h3>Original source</h3>
-        <p>${escapeHtml(cleanText(record.source_text_excerpt || selectedSentence?.text || ""))}</p>
-      </section>
       <section class="translation-section translation-section-primary" data-translation-section="translation">
         <h3>Translation</h3>
         <p class="translation-primary">${escapeHtml(cleanText(record.translation || ""))}</p>

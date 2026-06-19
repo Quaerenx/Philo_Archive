@@ -556,6 +556,11 @@ def check_work_source_bundle_ui() -> None:
         "All sentences have AI records.",
         "No unstudied sentence after current position.",
         "TRANSLATION_REVIEW_CHIP_LABELS",
+        "TRANSLATION_REVIEW_CHIP_HINTS",
+        "Generated translation awaiting review",
+        "Cached result",
+        "New result",
+        "aria-label=\"${escapeHtml(reviewLabel)}\"",
         "function applySentenceTranslationState",
         "function applySentenceTranslationStates",
         "function clearSentenceTranslationStates",
@@ -843,8 +848,8 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common87", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common77", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common89", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common78", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -907,8 +912,7 @@ def check_work_source_bundle_ui() -> None:
         "translation-utility-group-label",
         "Reading controls",
         "Review and export",
-        "Context & controls",
-        "Runtime, source, review, export",
+        "Tools",
         "study-tabs",
         "previousSentence",
         "nextUnstudiedSentence",
@@ -1037,6 +1041,11 @@ def check_work_source_bundle_ui() -> None:
         ".session-preview-toggle",
         ".session-preview-empty",
         ".translation-result-toolbar",
+        ".translation-result-toolbar summary",
+        ".translation-result-toolbar summary::-webkit-details-marker",
+        ".translation-result-toolbar summary::after",
+        ".translation-result-toolbar[open] summary::after",
+        ".translation-result-detail-body",
         ".translation-result-meta",
         ".translation-result-kicker",
         ".translation-result-target",
@@ -1047,6 +1056,7 @@ def check_work_source_bundle_ui() -> None:
         ".translation-section h3",
         ".translation-section-primary",
         ".translation-section-primary h3",
+        ".translation-source-detail p",
         ".translation-empty-state .translation-primary",
         ".translation-empty-state .translation-commentary p",
         "border-left: 3px solid #b00000",
