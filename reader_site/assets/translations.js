@@ -18,6 +18,7 @@ let activeRequest = 0;
 let recentlyChangedRecordId = "";
 let archiveCorpora = [];
 let pendingReviewQueueFocus = false;
+let pendingReviewQueueMessage = "";
 
 const DEFAULT_CORPUS = "nietzsche";
 const REVIEW_LABELS = {
@@ -341,11 +342,15 @@ function renderRecords(records) {
     ? renderSummary(queryMatched) + (visible.length ? visible.map(renderRecord).join("") : renderEmptyRecords())
     : renderEmptyRecords();
   if (pendingReviewQueueFocus) {
+    const reviewMessage = pendingReviewQueueMessage;
     pendingReviewQueueFocus = false;
+    pendingReviewQueueMessage = "";
     if (focusFirstReviewQueueRecord()) {
-      statusEl.textContent = `${visible.length.toLocaleString()} saved translations / next translation selected for review.`;
+      statusEl.textContent = reviewMessage
+        ? `${reviewMessage} Next translation selected for review.`
+        : `${visible.length.toLocaleString()} saved translations / next translation selected for review.`;
     } else if (reviewSelect.value === "generated") {
-      statusEl.textContent = "Review list complete.";
+      statusEl.textContent = reviewMessage ? `${reviewMessage} Review list complete.` : "Review list complete.";
     }
   }
   recentlyChangedRecordId = "";
@@ -365,6 +370,7 @@ function openReviewQueue() {
   queryInput.value = "";
   reviewSelect.value = "generated";
   pendingReviewQueueFocus = true;
+  pendingReviewQueueMessage = "";
   updateUrl();
   updateExportLinks();
   updateClearState();
@@ -619,6 +625,7 @@ resultsEl.addEventListener("click", async (event) => {
     if (ok) {
       recentlyChangedRecordId = recordId;
       pendingReviewQueueFocus = reviewSelect.value === "generated" && nextState !== "generated";
+      pendingReviewQueueMessage = pendingReviewQueueFocus ? "Review saved." : "";
     }
     statusEl.textContent = ok ? "Saved translation review updated." : "Could not update saved translation review.";
     await loadRecords();
