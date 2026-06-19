@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AI Translations / Personal Archive of Literature</title>
+  <title>Saved Translations / Personal Archive of Literature</title>
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
   <link rel="stylesheet" href="/assets/notes.css?v=notes10">
@@ -14,9 +14,9 @@
     <div class="spacer"></div>
     <main class="reader">
       <header class="reader-header">
-        <h1>AI Translations</h1>
-        <div class="meta-line">Personal Archive of Literature / generated study aids</div>
-        <nav class="toolbar" aria-label="AI translation navigation">
+        <h1>Saved Translations</h1>
+        <div class="meta-line">Personal Archive of Literature / reviewed sentence study aids</div>
+        <nav class="toolbar" aria-label="Saved translation navigation">
           <a href="/">Archive index</a>
           <a href="/search">Research search</a>
           <a href="/notes">Research notes</a>
@@ -59,7 +59,7 @@
       </form>
       <div id="translationsActiveFilters" class="active-filters" aria-live="polite" aria-label="Active translation filters"></div>
 
-      <div class="export-row" aria-label="Export AI translations">
+      <div class="export-row" aria-label="Export saved translations">
         <a id="translationsExportMarkdown" href="/api/sentence-translations/export?corpus_id=nietzsche&format=markdown&review_state=all">Markdown</a>
         <a id="translationsExportJson" href="/api/sentence-translations/export?corpus_id=nietzsche&format=json&review_state=all">JSON</a>
         <button id="translationsReviewQueue" type="button" class="translation-review-queue" aria-keyshortcuts="Q" title="Review generated translations" disabled>Review queue</button>
@@ -69,6 +69,6 @@
       <section id="translationsResults" class="notes-results translations-results" aria-live="polite" aria-busy="false"></section>
     </main>
   </div>
-  <script src="/assets/translations.js?v=trans2"></script>
+  <script src="/assets/translations.js?v=trans3"></script>
 </body>
 </html>

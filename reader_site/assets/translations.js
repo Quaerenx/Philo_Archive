@@ -196,7 +196,7 @@ function setActionButtonBusy(button, isBusy) {
 }
 
 function renderPending() {
-  statusEl.textContent = "Loading AI translation records...";
+  statusEl.textContent = "Loading saved translations...";
   resultsEl.innerHTML = `
     <article class="translation-record-card notes-skeleton" aria-hidden="true">
       <span class="notes-skeleton-line title"></span>
@@ -270,7 +270,7 @@ function summaryButton(filter, label, count) {
 
 function renderSummary(records) {
   const counts = summaryCounts(records);
-  return `<nav class="translation-record-summary" aria-label="Visible AI translations by review state">
+  return `<nav class="translation-record-summary" aria-label="Visible saved translations by review state">
     ${summaryButton("all", "All", counts.total)}
     ${summaryButton("generated", "Generated", counts.generated)}
     ${summaryButton("reviewed", "Reviewed", counts.reviewed)}
@@ -280,10 +280,10 @@ function renderSummary(records) {
 
 function renderEmptyRecords() {
   const filtered = hasActiveFilters();
-  const title = filtered ? "No AI translation records match these filters." : "No AI translation records for this corpus yet.";
+  const title = filtered ? "No saved translations match these filters." : "No saved translations for this corpus yet.";
   const body = filtered
     ? "Try clearing the filters, or choose a broader review state and work id."
-    : "Open a work page, select a sentence, and let Gemma generate a translation to create a local study record.";
+    : "Open a work page, select a sentence, and generate a local translation to save it here.";
   const clearAction = filtered
     ? '<button type="button" data-empty-action="clear-filters">Clear filters</button>'
     : "";
@@ -304,7 +304,7 @@ function recordTitle(record) {
 
 function renderRecord(record) {
   const reviewState = normalizedReviewState(record);
-  const title = recordTitle(record) || "AI translation record";
+  const title = recordTitle(record) || "Saved translation";
   const date = record.updated_at || record.reviewed_at || record.generated_at || record.created_at || "";
   const source = cleanText(record.source_text_excerpt || "");
   const translation = cleanText(record.translation || "");
@@ -335,15 +335,15 @@ function renderRecords(records) {
   const visible = queryMatched.filter(recordMatchesReview);
   updateReviewQueueButton(records);
   statusEl.textContent = visible.length
-    ? `${visible.length.toLocaleString()} AI translation records`
-    : "No AI translation records found.";
+    ? `${visible.length.toLocaleString()} saved translations`
+    : "No saved translations found.";
   resultsEl.innerHTML = queryMatched.length
     ? renderSummary(queryMatched) + (visible.length ? visible.map(renderRecord).join("") : renderEmptyRecords())
     : renderEmptyRecords();
   if (pendingReviewQueueFocus) {
     pendingReviewQueueFocus = false;
     if (focusFirstReviewQueueRecord()) {
-      statusEl.textContent = `${visible.length.toLocaleString()} AI translation records / next generated record selected.`;
+      statusEl.textContent = `${visible.length.toLocaleString()} saved translations / next generated translation selected.`;
     } else if (reviewSelect.value === "generated") {
       statusEl.textContent = "Review queue complete.";
     }
@@ -408,7 +408,7 @@ function navigateRecordFocus(delta) {
     : Math.min(cards.length - 1, Math.max(0, currentIndex + delta));
   const moved = focusRecordCard(cards[nextIndex]);
   if (moved) {
-    statusEl.textContent = `Selected AI translation record ${nextIndex + 1} of ${cards.length}.`;
+    statusEl.textContent = `Selected saved translation ${nextIndex + 1} of ${cards.length}.`;
   }
   return moved;
 }
@@ -510,7 +510,7 @@ async function loadRecords() {
     const response = await fetch(`/api/sentence-translations/export?${fetchParams("json")}`, { signal: controller.signal });
     if (requestId !== activeRequest) return;
     if (!response.ok) {
-      statusEl.textContent = "Could not load AI translation records.";
+      statusEl.textContent = "Could not load saved translations.";
       resultsEl.innerHTML = "";
       return;
     }
@@ -519,7 +519,7 @@ async function loadRecords() {
   } catch (error) {
     if (error && error.name === "AbortError") return;
     if (requestId === activeRequest) {
-      statusEl.textContent = "Could not load AI translation records.";
+      statusEl.textContent = "Could not load saved translations.";
       resultsEl.innerHTML = "";
     }
   } finally {
@@ -610,7 +610,7 @@ resultsEl.addEventListener("click", async (event) => {
       recentlyChangedRecordId = recordId;
       pendingReviewQueueFocus = reviewSelect.value === "generated" && nextState !== "generated";
     }
-    statusEl.textContent = ok ? "AI translation review state updated." : "Could not update AI translation review state.";
+    statusEl.textContent = ok ? "Saved translation review updated." : "Could not update saved translation review.";
     await loadRecords();
   } finally {
     setActionButtonBusy(reviewButton, false);

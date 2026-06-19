@@ -1391,7 +1391,7 @@ function continueStudy() {
   if (nextIndex < 0) {
     setTranslationStatus(
       translationSentenceStatesLoaded
-        ? (action === "review-generated" ? "No generated translations need review." : "All sentences have AI records.")
+        ? (action === "review-generated" ? "No generated translations need review." : "All sentences have translations.")
         : "Translation states are still loading.",
       true
     );
@@ -1807,7 +1807,7 @@ function renderStudySessionPreviewPending() {
       <span class="loading-spinner" aria-hidden="true"></span>
       <span class="translation-loading-copy">
         <strong>Loading study session preview</strong>
-        <span>Reviewed notes and Gemma translations</span>
+        <span>Reviewed notes and saved translations</span>
       </span>
     </div>
     <div class="translation-skeleton translation-study-skeleton" aria-hidden="true">
