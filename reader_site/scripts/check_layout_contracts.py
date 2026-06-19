@@ -793,7 +793,7 @@ def check_work_source_bundle_ui() -> None:
         "translation result toolbar should render after primary translation content",
     )
     require_contains(template, "/assets/reader-work.js?v=common84", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common72", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common73", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -983,13 +983,16 @@ def check_work_source_bundle_ui() -> None:
         ".translation-jump-nav",
         ".translation-section.is-jump-target",
         ".translation-section",
+        ".translation-result > .translation-section:first-child",
+        ".translation-section h3",
         ".translation-section-primary",
+        ".translation-section-primary h3",
         ".translation-empty-state .translation-primary",
         ".translation-empty-state .translation-commentary p",
         "border-left: 3px solid #b00000",
         "max-height: clamp(220px, 42vh, 520px)",
-        "line-height: 1.62",
-        "line-height: 1.72",
+        "line-height: 1.7",
+        "line-height: 1.76",
         ".translation-loading",
         ".translation-loading-copy",
         ".translation-phase-note",

@@ -1319,9 +1319,27 @@ h1 {
   border-top: 1px solid #eeeeee;
 }
 
+.translation-result > .translation-section:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.translation-section h3 {
+  margin: 0 0 7px;
+  color: #555;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  font-weight: normal;
+  line-height: 1.35;
+}
+
 .translation-section-primary {
   padding-left: 10px;
   border-left: 3px solid #b00000;
+}
+
+.translation-section-primary h3 {
+  color: #6f1111;
 }
 
 .translation-section.is-jump-target {
@@ -1331,8 +1349,10 @@ h1 {
 
 .translation-output .translation-primary {
   font-family: Georgia, "Times New Roman", serif;
-  font-size: 15px;
-  line-height: 1.62;
+  margin: 0;
+  color: #171717;
+  font-size: 16px;
+  line-height: 1.7;
 }
 
 .translation-empty-state .translation-primary,
@@ -1348,8 +1368,9 @@ h1 {
   position: relative;
   margin: 0;
   color: #333;
-  font-size: 13px;
-  line-height: 1.72;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 14px;
+  line-height: 1.76;
 }
 
 .translation-commentary.is-collapsed p {
