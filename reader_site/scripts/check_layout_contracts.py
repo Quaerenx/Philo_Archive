@@ -37,6 +37,33 @@ def require_contains(text: str, needle: str, label: str) -> None:
     require(needle in text, f"{label} missing {needle!r}")
 
 
+def js_function_body(script: str, function_name: str) -> str:
+    signature = f"function {function_name}"
+    start = script.find(signature)
+    require(start >= 0, f"assets/reader-work.js missing {signature}")
+    open_brace = script.find("{", start)
+    require(open_brace >= 0, f"assets/reader-work.js malformed {signature}")
+    depth = 0
+    for index in range(open_brace, len(script)):
+        char = script[index]
+        if char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0:
+                return script[open_brace + 1:index]
+    raise AssertionError(f"assets/reader-work.js unterminated {signature}")
+
+
+def require_ordered_markers(text: str, markers: list[str], label: str) -> None:
+    cursor = -1
+    for marker in markers:
+        next_index = text.find(marker, cursor + 1)
+        require(next_index >= 0, f"{label} missing ordered marker {marker!r}")
+        require(next_index > cursor, f"{label} marker {marker!r} is out of order")
+        cursor = next_index
+
+
 def css_rule_block(css: str, selector: str, label: str) -> str:
     start = css.find(selector)
     require(start >= 0, f"{label} missing selector {selector!r}")
@@ -791,14 +818,31 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    translation_section_index = script.find('<section class="translation-section translation-section-primary"')
-    result_toolbar_index = script.find("${translationResultToolbar(record, cached, reviewState)}")
-    require(translation_section_index >= 0, "assets/reader-work.js missing primary translation section")
-    require(result_toolbar_index >= 0, "assets/reader-work.js missing translation result toolbar")
-    require(
-        translation_section_index < result_toolbar_index,
-        "translation result toolbar should render after primary translation content",
-    )
+    for function_name, commentary_marker, trailing_marker in [
+        ("renderTranslationEmptyState", '<section class="translation-section translation-commentary"', ""),
+        ("renderTranslationPending", '<section class="translation-section translation-commentary"', "translation-loading"),
+        ("renderTranslationError", '<section class="translation-section translation-commentary"', "translation-recovery-panel"),
+        ("renderTranslationCancelled", '<section class="translation-section translation-commentary"', "translation-recovery-panel"),
+        (
+            "renderTranslationRecord",
+            "${renderCommentary(record.commentary || record.interpretation || \"\")}",
+            "${translationResultToolbar(record, cached, reviewState)}",
+        ),
+    ]:
+        markers = [
+            '<section class="translation-section translation-section-primary"',
+            'data-translation-section="translation"',
+            commentary_marker,
+        ]
+        if "translation-commentary" in commentary_marker:
+            markers.append('data-translation-section="commentary"')
+        if trailing_marker:
+            markers.append(trailing_marker)
+        require_ordered_markers(
+            js_function_body(script, function_name),
+            markers,
+            f"{function_name} reading-first translation layout",
+        )
     require_contains(template, "/assets/reader-work.js?v=common87", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common77", "templates/work.html")
     for needle in [
