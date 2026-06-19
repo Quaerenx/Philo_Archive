@@ -179,7 +179,9 @@ def check_search_ui() -> None:
     css = read_site_file("assets/search.css")
     for needle in [
         "/assets/search.css?v=phase12",
-        "/assets/search.js?v=phase12",
+        "/assets/search.js?v=phase13",
+        'href="/translations"',
+        "Saved translations",
         'id="searchSubmit"',
         'id="searchClear"',
         'id="searchActiveFilters"',
@@ -214,6 +216,7 @@ def check_search_ui() -> None:
         "activeSearchController.abort()",
         "signal: controller.signal",
         'error.name === "AbortError"',
+        "Could not complete search.",
     ]:
         require_contains(script, needle, "assets/search.js")
     for needle in [

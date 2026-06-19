@@ -415,7 +415,7 @@ async function runSearch() {
     const response = await fetch(`/api/search?${params}`, { signal: controller.signal });
     if (requestId !== activeSearchRequest) return;
     if (!response.ok) {
-      statusEl.textContent = "Search failed.";
+      statusEl.textContent = "Could not complete search.";
       resultsEl.innerHTML = "";
       return;
     }
@@ -425,7 +425,7 @@ async function runSearch() {
       return;
     }
     if (requestId === activeSearchRequest) {
-      statusEl.textContent = "Search failed.";
+      statusEl.textContent = "Could not complete search.";
       resultsEl.innerHTML = "";
     }
   } finally {

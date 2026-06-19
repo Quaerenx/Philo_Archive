@@ -152,7 +152,8 @@ def check_route_markup(route: str, html: str) -> None:
             "searchStatus",
             "aria-busy=\"false\"",
             "search.css?v=phase12",
-            "search.js?v=phase12",
+            "search.js?v=phase13",
+            "Saved translations",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
     if route.startswith("/work/"):
