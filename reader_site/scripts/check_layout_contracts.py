@@ -849,7 +849,7 @@ def check_work_source_bundle_ui() -> None:
             f"{function_name} reading-first translation layout",
         )
     require_contains(template, "/assets/reader-work.js?v=common89", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common79", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common80", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -879,6 +879,9 @@ def check_work_source_bundle_ui() -> None:
         "Session export: checking...",
         "aria-label=\"Full study panel. Select a sentence\"",
         'aria-controls="studyCompanionPanel"',
+        'aria-labelledby="translationCardTitle"',
+        'id="translationCardTitle"',
+        'class="visually-hidden"',
         "readingPosition",
         "Current reading position",
         "Reading position",
@@ -910,6 +913,9 @@ def check_work_source_bundle_ui() -> None:
         "translation-utility",
         "translation-utility-group",
         "translation-utility-group-label",
+        "Display controls",
+        "Display",
+        "Translation display mode",
         "Reading controls",
         "Review and export",
         "Tools",
@@ -938,6 +944,7 @@ def check_work_source_bundle_ui() -> None:
 
     for needle in [
         ".reading-desk",
+        ".visually-hidden",
         "grid-template-columns: minmax(0, 1fr) 340px",
         "gap: 20px",
         ".source-page",
@@ -969,6 +976,7 @@ def check_work_source_bundle_ui() -> None:
         ".translation-utility-group",
         ".translation-utility-group + .translation-utility-group",
         ".translation-utility-group-label",
+        ".translation-utility .mode-toggle",
         ".translation-review-state[data-review-state=\"generated\"]",
         ".translation-review-state[data-review-state=\"reviewed\"]",
         ".translation-review-state[data-review-state=\"rejected\"]",
@@ -1054,6 +1062,7 @@ def check_work_source_bundle_ui() -> None:
         ".translation-section",
         ".translation-result > .translation-section:first-child",
         ".translation-section h3",
+        ".translation-card > .translation-output",
         ".translation-section-primary",
         ".translation-section-primary h3",
         ".translation-source-detail p",

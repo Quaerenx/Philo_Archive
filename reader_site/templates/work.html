@@ -6,7 +6,7 @@
   <title>{{TITLE}} / {{CORPUS_TITLE}}</title>
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
-  <link rel="stylesheet" href="/assets/reader-work.css?v=common79">
+  <link rel="stylesheet" href="/assets/reader-work.css?v=common80">
 </head>
 <body class="{{BODY_CLASS}}">
   <div class="page">
@@ -41,20 +41,21 @@
             <button type="button" id="study-tab-concepts" class="study-tab" role="tab" aria-selected="false" aria-controls="study-panel-concepts" tabindex="-1" data-study-tab="concepts">Concepts</button>
           </nav>
           <section id="study-panel-translation" class="study-panel active" role="tabpanel" aria-labelledby="study-tab-translation" tabindex="0" data-study-panel="translation">
-            <section class="research-card translation-card">
-              <div class="translation-card-header">
-                <h2>Translation</h2>
-                <div class="mode-toggle" role="group" aria-label="Translation display mode">
-                  <button type="button" id="readingMode" class="active">Reading</button>
-                  <button type="button" id="studyMode">Study</button>
-                </div>
-              </div>
+            <section class="research-card translation-card" aria-labelledby="translationCardTitle">
+              <h2 id="translationCardTitle" class="visually-hidden">Translation</h2>
               <div id="translationOutput" class="translation-output reading-mode" aria-label="Translation result" aria-busy="false" tabindex="0" hidden></div>
               <details class="translation-utility">
                 <summary>
                   <span>Tools</span>
                 </summary>
                 <div class="translation-utility-body">
+                  <section class="translation-utility-group" aria-label="Display controls">
+                    <div class="translation-utility-group-label">Display</div>
+                    <div class="mode-toggle" role="group" aria-label="Translation display mode">
+                      <button type="button" id="readingMode" class="active">Reading</button>
+                      <button type="button" id="studyMode">Study</button>
+                    </div>
+                  </section>
                   <section class="translation-utility-group" aria-label="Reading controls">
                     <div class="translation-utility-group-label">Reading</div>
                     <div id="gemmaRuntimeStatus" class="runtime-status" data-runtime-state="checking" title="Checking local Gemma runtime">

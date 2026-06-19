@@ -55,6 +55,18 @@ a:hover {
   z-index: 1;
 }
 
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .spacer {
   height: var(--header-spacer-height, 160px);
 }
@@ -333,13 +345,6 @@ h1 {
   animation: archive-loading-rail 1.4s ease-in-out infinite;
 }
 
-.translation-card-header {
-  display: flex;
-  gap: 10px;
-  align-items: start;
-  justify-content: space-between;
-}
-
 .translation-utility {
   margin-top: 12px;
   padding-top: 8px;
@@ -424,6 +429,13 @@ h1 {
   display: inline-flex;
   flex: 0 0 auto;
   gap: 3px;
+}
+
+.translation-utility .mode-toggle {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 100%;
+  gap: 4px;
 }
 
 .mode-toggle button {
@@ -936,6 +948,12 @@ h1 {
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
   border-top: 1px solid #e0e0e0;
+}
+
+.translation-card > .translation-output {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
 }
 
 .translation-output:focus-visible {
@@ -2445,10 +2463,6 @@ h1 {
     content: "";
   }
 
-  .translation-card-header {
-    display: block;
-  }
-
   .translation-card {
     max-height: calc(72vh - 24px);
     padding: 10px 11px 12px;
@@ -2526,10 +2540,6 @@ h1 {
 
   .research-card .note-target-lock {
     justify-self: start;
-  }
-
-  .mode-toggle {
-    margin-top: 6px;
   }
 
   .segment-anchor {
