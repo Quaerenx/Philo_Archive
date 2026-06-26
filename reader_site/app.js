@@ -4,6 +4,21 @@ const state = {
   activeSection: "all",
 };
 
+const START_READING_LIMIT = 6;
+const START_READING_WORK_IDS = {
+  nietzsche: ["M", "FW", "Za-I", "JGB", "GM", "GD"],
+  bible: ["oshb.Gen", "oshb.Ps", "oshb.Isa", "sblgnt.Matt", "sblgnt.John", "sblgnt.Rom"],
+  kierkegaard: ["ee1", "ee2", "fb", "g", "ba", "ps"],
+  wittgenstein: [
+    "Group_Notebooks",
+    "Group_BigTypescriptCorpus",
+    "Group_BrownBookCorpus",
+    "Group_PICorpus",
+    "Group_RFMCorpus",
+    "Group_RPPCorpus"
+  ],
+};
+
 const el = {
   archiveLinks: document.querySelector("#archiveLinks"),
   pageSubtitle: document.querySelector("#pageSubtitle"),
@@ -31,6 +46,20 @@ function filteredSections(corpus) {
   return corpus.sections.filter((section) => section.links.length || section.count);
 }
 
+function corpusLinks(corpus) {
+  return filteredSections(corpus).flatMap((section) => section.links || []);
+}
+
+function uniqueLinks(links) {
+  const seen = new Set();
+  return links.filter((link) => {
+    const key = link.work_id || link.href || link.label;
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 function normalizedContains(value, query) {
   return normalize(value).includes(normalize(query));
 }
@@ -56,8 +85,14 @@ function filteredCategorySections(corpus) {
 
 function readingPathLinks(corpus) {
   const sections = filteredSections(corpus);
+  const links = corpusLinks(corpus);
+  const linksByWorkId = new Map(links.map((link) => [link.work_id, link]));
+  const priorityLinks = (START_READING_WORK_IDS[corpus.id] || [])
+    .map((workId) => linksByWorkId.get(workId))
+    .filter(Boolean);
   const primary = sections.find((section) => /주요|core|hebrew|works/i.test(`${section.title} ${section.meta || ""}`)) || sections[0];
-  return primary ? primary.links.slice(0, 6) : [];
+  const fallbackLinks = primary ? primary.links : links;
+  return uniqueLinks([...priorityLinks, ...fallbackLinks]).slice(0, START_READING_LIMIT);
 }
 
 function renderShell(title, subtitle) {

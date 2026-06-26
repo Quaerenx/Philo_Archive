@@ -93,7 +93,7 @@ def check_html_entrypoints() -> None:
         require_contains(html, 'class="page"', relative_path)
         if relative_path == "index.html":
             require_contains(html, "Saved translations", relative_path)
-            require_contains(html, "/app.js?v=home2", relative_path)
+            require_contains(html, "/app.js?v=home3", relative_path)
 
 
 def check_page_frame_css(relative_path: str, css: str) -> None:
@@ -147,6 +147,24 @@ def check_home_css() -> None:
         "padding: 0 10px 24px;",
     ]:
         require_contains(responsive, needle, f"{relative_path} responsive block")
+
+
+def check_home_script() -> None:
+    script = read_site_file("app.js")
+    for needle in [
+        "START_READING_LIMIT",
+        "START_READING_WORK_IDS",
+        'nietzsche: ["M", "FW", "Za-I", "JGB", "GM", "GD"]',
+        '"oshb.Gen", "oshb.Ps", "oshb.Isa", "sblgnt.Matt", "sblgnt.John", "sblgnt.Rom"',
+        'kierkegaard: ["ee1", "ee2", "fb", "g", "ba", "ps"]',
+        '"Group_Notebooks"',
+        "function corpusLinks",
+        "function uniqueLinks",
+        "linksByWorkId",
+        "START_READING_WORK_IDS[corpus.id]",
+        "START_READING_LIMIT",
+    ]:
+        require_contains(script, needle, "app.js")
 
 
 def check_reader_pages_css() -> None:
@@ -1191,6 +1209,7 @@ def main() -> None:
     check_tokens()
     check_html_entrypoints()
     check_home_css()
+    check_home_script()
     check_reader_pages_css()
     check_study_target_ui()
     check_search_ui()
