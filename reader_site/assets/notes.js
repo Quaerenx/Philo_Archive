@@ -138,6 +138,7 @@ function updateNotesFilterSummary() {
   if (tag) chips.push(renderFilterChip("tag", "Tag", tag));
   if (reviewSelect.value) chips.push(renderFilterChip("review", "Status", selectedOptionText(reviewSelect)));
   if (requestedTargetId) chips.push(renderFilterChip("target", "Target", requestedTargetId));
+  activeFiltersEl.hidden = chips.length === 0;
   activeFiltersEl.classList.toggle("has-filters", chips.length > 0);
   activeFiltersEl.innerHTML = chips.length
     ? `<span class="active-filters-label">Filters</span>${chips.join("")}`
@@ -148,6 +149,14 @@ function updateNotesClearState(isBusy = form.classList.contains("is-loading")) {
   if (!notesClear) return;
   notesClear.disabled = isBusy || !hasActiveFilters();
   updateNotesFilterSummary();
+}
+
+function updateNotesListChrome(count = lastNotes.length) {
+  const showTools = count > 0 || hasActiveFilters();
+  form.hidden = !showTools;
+  if (activeFiltersEl) {
+    activeFiltersEl.hidden = !hasActiveFilters();
+  }
 }
 
 function renderEmptyNotes() {
@@ -281,6 +290,7 @@ function renderNoteFooter(meta, actions) {
 
 function renderNotes(notes) {
   lastNotes = notes;
+  updateNotesListChrome(notes.length);
   if (exportTools) {
     exportTools.hidden = notes.length === 0;
     if (!notes.length) exportTools.open = false;

@@ -111,6 +111,12 @@ h1 {
   border-bottom: 1px solid #d4d4d4;
 }
 
+.notes-form[hidden],
+.translations-form[hidden],
+.active-filters[hidden] {
+  display: none;
+}
+
 .notes-form label {
   display: grid;
   gap: 4px;

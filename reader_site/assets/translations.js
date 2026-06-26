@@ -190,6 +190,7 @@ function updateFilterSummary() {
   if (reviewSelect.value !== "all") {
     chips.push(renderFilterChip("review", "Status", selectedOptionText(reviewSelect)));
   }
+  activeFiltersEl.hidden = chips.length === 0;
   activeFiltersEl.classList.toggle("has-filters", chips.length > 0);
   activeFiltersEl.innerHTML = chips.length
     ? `<span class="active-filters-label">Filters</span>${chips.join("")}`
@@ -199,6 +200,14 @@ function updateFilterSummary() {
 function updateClearState(isBusy = form.classList.contains("is-loading")) {
   clearButton.disabled = isBusy || !hasActiveFilters();
   updateFilterSummary();
+}
+
+function updateTranslationsListChrome(count = lastRecords.length) {
+  const showTools = count > 0 || hasActiveFilters();
+  form.hidden = !showTools;
+  if (activeFiltersEl) {
+    activeFiltersEl.hidden = !hasActiveFilters();
+  }
 }
 
 function updateUrl() {
@@ -401,6 +410,7 @@ function renderRecord(record) {
 
 function renderRecords(records) {
   lastRecords = records;
+  updateTranslationsListChrome(records.length);
   const queryMatched = records.filter(recordMatchesQuery);
   const visible = queryMatched.filter(recordMatchesReview);
   updateReviewQueueButton(records);

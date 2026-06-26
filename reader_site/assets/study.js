@@ -111,6 +111,7 @@ function updateStudyFilterSummary() {
   if (corpusSelect.value) chips.push(renderFilterChip("corpus", "Corpus", selectedOptionText(corpusSelect)));
   if (workId) chips.push(renderFilterChip("work", "Work", workId));
   if (tag) chips.push(renderFilterChip("tag", "Tag", tag));
+  activeFiltersEl.hidden = chips.length === 0;
   activeFiltersEl.classList.toggle("has-filters", chips.length > 0);
   activeFiltersEl.innerHTML = chips.length
     ? `<span class="active-filters-label">Filters</span>${chips.join("")}`
@@ -121,6 +122,14 @@ function updateStudyClearState(isBusy = form.classList.contains("is-loading")) {
   if (!studyClear) return;
   studyClear.disabled = isBusy || !hasActiveFilters();
   updateStudyFilterSummary();
+}
+
+function updateStudyListChrome(count = 0) {
+  const showTools = count > 0 || hasActiveFilters();
+  form.hidden = !showTools;
+  if (activeFiltersEl) {
+    activeFiltersEl.hidden = !hasActiveFilters();
+  }
 }
 
 function renderEmptyStudy() {
@@ -257,6 +266,7 @@ function studyGroupMeta(group) {
 function renderStudy(payload) {
   const groups = payload.groups || [];
   const count = payload.count || 0;
+  updateStudyListChrome(count);
   if (exportTools) {
     exportTools.hidden = count === 0;
     if (count === 0) exportTools.open = false;

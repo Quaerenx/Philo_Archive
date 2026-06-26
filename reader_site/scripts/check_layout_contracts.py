@@ -338,8 +338,8 @@ def check_notes_ui() -> None:
     script = read_site_file("assets/notes.js")
     css = read_site_file("assets/notes.css")
     for needle in [
-        "/assets/notes.css?v=notes18",
-        "/assets/notes.js?v=notes24",
+        "/assets/notes.css?v=notes19",
+        "/assets/notes.js?v=notes25",
         'id="notesSubmit"',
         'id="notesClear"',
         'id="notesActiveFilters"',
@@ -390,6 +390,8 @@ def check_notes_ui() -> None:
         "Edit cancelled.",
         "editForm.requestSubmit",
         "function renderEmptyNotes",
+        "function updateNotesListChrome",
+        "form.hidden = !showTools",
         "No notes yet.",
         "Find a work",
         "Study",
@@ -397,6 +399,7 @@ def check_notes_ui() -> None:
         "queryInput.focus();",
         "function updateNotesClearState",
         "function updateNotesFilterSummary",
+        "activeFiltersEl.hidden = chips.length === 0",
         "function removeNotesFilter",
         "notesClear.addEventListener",
         "activeFiltersEl.addEventListener",
@@ -411,6 +414,9 @@ def check_notes_ui() -> None:
         require_contains(script, needle, "assets/notes.js")
     for needle in [
         ".notes-form.is-loading",
+        ".notes-form[hidden]",
+        ".translations-form[hidden]",
+        ".active-filters[hidden]",
         ".spacer",
         "height: 136px",
         ".reader-header",
@@ -466,9 +472,9 @@ def check_translations_ui() -> None:
     base_css = read_site_file("assets/notes.css")
     css = read_site_file("assets/translations.css")
     for needle in [
-        "/assets/notes.css?v=notes18",
+        "/assets/notes.css?v=notes19",
         "/assets/translations.css?v=trans13",
-        "/assets/translations.js?v=trans30",
+        "/assets/translations.js?v=trans31",
         '<option value="">All corpora</option>',
         'id="translationsSubmit"',
         'id="translationsClear"',
@@ -509,12 +515,15 @@ def check_translations_ui() -> None:
         "function archiveWorkOptions",
         "function updateWorkOptions",
         "function renderEmptyRecords",
+        "function updateTranslationsListChrome",
+        "form.hidden = !showTools",
         "No translations yet.",
         "Translation and commentary will appear here for review.",
         "Study",
         "function clearFilters",
         "queryInput.focus();",
         "function updateFilterSummary",
+        "activeFiltersEl.hidden = chips.length === 0",
         "function removeFilter",
         "function renderSummary",
         'statusEl.textContent = "";',
@@ -646,8 +655,8 @@ def check_study_ui() -> None:
     script = read_site_file("assets/study.js")
     css = read_site_file("assets/study.css")
     for needle in [
-        "/assets/study.css?v=study17",
-        "/assets/study.js?v=study21",
+        "/assets/study.css?v=study18",
+        "/assets/study.js?v=study22",
         'id="studySubmit"',
         'id="studyClear"',
         'id="studyActiveFilters"',
@@ -670,6 +679,8 @@ def check_study_ui() -> None:
         "exportTools.hidden = count === 0",
         "renderStudyPending",
         "function renderEmptyStudy",
+        "function updateStudyListChrome",
+        "form.hidden = !showTools",
         "function renderNoteFooter",
         "function archiveCorpusById",
         "function corpusDisplayName",
@@ -686,6 +697,7 @@ def check_study_ui() -> None:
         "queryInput.focus();",
         "function updateStudyClearState",
         "function updateStudyFilterSummary",
+        "activeFiltersEl.hidden = chips.length === 0",
         "function removeStudyFilter",
         "studyClear.addEventListener",
         "activeFiltersEl.addEventListener",
@@ -699,6 +711,8 @@ def check_study_ui() -> None:
         require_contains(script, needle, "assets/study.js")
     for needle in [
         ".study-form.is-loading",
+        ".study-form[hidden]",
+        ".active-filters[hidden]",
         ".spacer",
         "height: 136px",
         ".reader-header",

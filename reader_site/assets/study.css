@@ -114,6 +114,11 @@ h1 {
   border-bottom: 1px solid #d4d4d4;
 }
 
+.study-form[hidden],
+.active-filters[hidden] {
+  display: none;
+}
+
 .study-form label {
   display: grid;
   gap: 4px;
