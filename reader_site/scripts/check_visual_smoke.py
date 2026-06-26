@@ -290,7 +290,7 @@ def check_route_markup(route: str, html: str) -> None:
             "Study pack</div>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common107",
+            "reader-work.css?v=common108",
             "reader-work.js?v=common133",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
@@ -573,6 +573,10 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       const readingNext = document.querySelector('[data-translation-quick-action="next-sentence"]');
       const readingSave = document.querySelector('[data-translation-quick-action="mark-reviewed"], .translation-quick-state[data-review-state="reviewed"]');
       const readingNote = document.querySelector('[data-translation-quick-action="draft-note"]');
+      const translationHeading = document.querySelector('.translation-section-primary h3');
+      const translationHeadingBox = translationHeading?.getBoundingClientRect();
+      const commentaryHeading = document.querySelector('#translationOutput .translation-commentary h3');
+      const commentaryHeadingBox = commentaryHeading?.getBoundingClientRect();
       const readingActions = Array.from(document.querySelectorAll('.translation-reading-actions > *'))
         .filter((node) => window.getComputedStyle(node).display !== 'none')
         .map((node) => node.textContent.trim());
@@ -589,6 +593,10 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         readingNextText: readingNext ? readingNext.textContent.trim() : '',
         readingNextLabel: readingNext ? readingNext.getAttribute('aria-label') || '' : '',
         readingNextBorderColor: readingNext ? window.getComputedStyle(readingNext).borderColor : '',
+        translationHeadingWidth: translationHeadingBox?.width || 0,
+        translationHeadingHeight: translationHeadingBox?.height || 0,
+        commentaryHeadingWidth: commentaryHeadingBox?.width || 0,
+        commentaryHeadingHeight: commentaryHeadingBox?.height || 0,
         readingSaveLabel: readingSave ? readingSave.getAttribute('aria-label') || '' : '',
         readingNoteLabel: readingNote ? readingNote.getAttribute('aria-label') || '' : '',
         readingActions,
@@ -613,6 +621,12 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (state.readingNextBorderColor !== 'rgb(176, 0, 0)') {
       throw new Error(`reading mode next action should be visually primary: ${JSON.stringify(state)}`);
+    }
+    if (state.translationHeadingWidth > 2 || state.translationHeadingHeight > 2) {
+      throw new Error(`reading mode should hide the redundant Translation heading: ${JSON.stringify(state)}`);
+    }
+    if (state.commentaryHeadingWidth <= 2 || state.commentaryHeadingHeight <= 2) {
+      throw new Error(`reading mode should keep the Commentary heading visible: ${JSON.stringify(state)}`);
     }
     if (!['Save translation', 'Saved translation'].includes(state.readingSaveLabel) || state.readingNoteLabel !== 'Add note from translation') {
       throw new Error(`reading mode quick actions should keep clear accessible labels: ${JSON.stringify(state)}`);
