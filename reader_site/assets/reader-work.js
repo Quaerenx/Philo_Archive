@@ -57,8 +57,6 @@ let activeTranslationTargetKey = "";
 let pendingTranslationRegenerate = false;
 let translationMode = "reading";
 let translationStatusTimer = null;
-let translationElapsedTimer = 0;
-let translationStartedAt = 0;
 let translationRevealTimer = 0;
 let sentenceRevealTimer = 0;
 let sourceFocusTimer = 0;
@@ -82,15 +80,6 @@ const STUDY_PANEL_STORAGE_KEY = "philo.reader.studyPanelExpanded";
 const STUDY_PANEL_DRAG_THRESHOLD = 36;
 const ACTION_CONFIRM_MS = 4500;
 const GEMMA_RUNTIME_COMMAND = ".\\run_reader_with_gemma.ps1";
-const TRANSLATION_WAIT_PHASES = [
-  [0, "Preparing translation request"],
-  [12, "Still generating locally"],
-  [30, "Longer local generation in progress"]
-];
-const TRANSLATION_PROGRESS_PHASES = [
-  [0, "request"],
-  [2, "generate"]
-];
 const TRANSLATION_STATE_LABELS = {
   generated: "Needs review",
   reviewed: "Reviewed translation",
@@ -1519,80 +1508,7 @@ function setTranslationBusy(isBusy) {
     translationCard.classList.toggle("is-loading", isBusy);
   }
   translationOutput.setAttribute("aria-busy", isBusy ? "true" : "false");
-  if (!isBusy) {
-    clearTranslationElapsedTimer();
-  }
   updateStudyPanelToggleLabel();
-}
-
-function clearTranslationElapsedTimer() {
-  if (translationElapsedTimer) {
-    window.clearInterval(translationElapsedTimer);
-    translationElapsedTimer = 0;
-  }
-  translationStartedAt = 0;
-}
-
-function formatElapsedSeconds(seconds) {
-  if (seconds < 60) return `${seconds}s`;
-  const minutes = Math.floor(seconds / 60);
-  const remainder = seconds % 60;
-  return `${minutes}m ${String(remainder).padStart(2, "0")}s`;
-}
-
-function translationWaitPhase(seconds) {
-  let label = TRANSLATION_WAIT_PHASES[0][1];
-  TRANSLATION_WAIT_PHASES.forEach(([threshold, phase]) => {
-    if (seconds >= threshold) {
-      label = phase;
-    }
-  });
-  return label;
-}
-
-function translationProgressPhase(seconds) {
-  let activeStep = TRANSLATION_PROGRESS_PHASES[0][1];
-  TRANSLATION_PROGRESS_PHASES.forEach(([threshold, step]) => {
-    if (seconds >= threshold) {
-      activeStep = step;
-    }
-  });
-  return activeStep;
-}
-
-function updateTranslationProgressSteps(seconds) {
-  const activeStep = translationProgressPhase(seconds);
-  const order = ["source", "request", "generate"];
-  const activeIndex = order.indexOf(activeStep);
-  translationOutput.querySelectorAll("[data-translation-step]").forEach((step) => {
-    const stepIndex = order.indexOf(step.dataset.translationStep || "");
-    const isDone = stepIndex >= 0 && stepIndex < activeIndex;
-    const isActive = step.dataset.translationStep === activeStep;
-    step.classList.toggle("done", isDone);
-    step.classList.toggle("active", isActive);
-    step.setAttribute("aria-current", isActive ? "step" : "false");
-  });
-}
-
-function updateTranslationElapsed() {
-  if (!translationStartedAt) return;
-  const seconds = Math.max(0, Math.floor((Date.now() - translationStartedAt) / 1000));
-  const elapsedNode = translationOutput.querySelector("[data-translation-elapsed]");
-  if (elapsedNode) {
-    elapsedNode.textContent = `Elapsed ${formatElapsedSeconds(seconds)}`;
-  }
-  const phaseNode = translationOutput.querySelector("[data-translation-phase-note]");
-  if (phaseNode) {
-    phaseNode.textContent = translationWaitPhase(seconds);
-  }
-  updateTranslationProgressSteps(seconds);
-}
-
-function startTranslationElapsedTimer() {
-  clearTranslationElapsedTimer();
-  translationStartedAt = Date.now();
-  updateTranslationElapsed();
-  translationElapsedTimer = window.setInterval(updateTranslationElapsed, 1000);
 }
 
 function translationOutputUsesInternalScroll() {
@@ -1647,14 +1563,15 @@ function renderTranslationPending(regenerate = false) {
   translationOutput.classList.toggle("study-mode", translationMode === "study");
   setTranslationBusy(true);
   resetTranslationOutputScroll();
-  const actionLabel = regenerate ? "Refreshing study card" : "Preparing translation and commentary";
+  const actionLabel = regenerate ? "Refreshing study card" : "Preparing translation";
+  const commentaryLabel = regenerate ? "Updating commentary for this sentence." : "Commentary will appear with the translation.";
   const position = selectedSentencePositionLabel();
-  const sourceText = cleanText(selectedSentence?.text || "");
   translationOutput.innerHTML = `
     <div class="translation-result translation-pending-result" role="status" aria-live="polite" aria-label="${escapeHtml(`${actionLabel}: ${position}`)}">
       <section class="translation-section translation-section-primary" data-translation-section="translation">
         <h3>Translation</h3>
         <p class="translation-primary translation-pending-copy">${escapeHtml(actionLabel)}...</p>
+        <p class="translation-pending-context">${escapeHtml(position)}</p>
         <div class="translation-skeleton translation-study-skeleton" aria-hidden="true">
           <div class="translation-skeleton-block primary">
             <span class="translation-skeleton-line wide"></span>
@@ -1662,32 +1579,14 @@ function renderTranslationPending(regenerate = false) {
           </div>
         </div>
       </section>
-      <details class="translation-result-toolbar translation-generation-details">
-        <summary>
-          <span>Details</span>
-        </summary>
-        <div class="translation-result-detail-body">
-          <div class="translation-loading" aria-label="Translation progress">
-            <span class="loading-spinner" aria-hidden="true"></span>
-            <span class="translation-loading-copy">
-              <strong>${escapeHtml(position)}</strong>
-              <span class="translation-phase-note" data-translation-phase-note>Preparing local model request</span>
-            </span>
-            <span class="translation-elapsed" data-translation-elapsed aria-hidden="true">Elapsed 0s</span>
-          </div>
-          <p class="translation-pending-source"><span>Source locked</span>${escapeHtml(sourceText)}</p>
-          <ol class="translation-progress-steps" aria-label="Translation progress">
-            <li class="done" data-translation-step="source">Source</li>
-            <li class="active" data-translation-step="request" aria-current="step">Request</li>
-            <li data-translation-step="generate" aria-current="false">Generate</li>
-          </ol>
-        </div>
-      </details>
+      <section class="translation-section translation-commentary translation-pending-commentary" data-translation-section="commentary">
+        <h3>Commentary</h3>
+        <p class="translation-unavailable-copy">${escapeHtml(commentaryLabel)}</p>
+      </section>
       <div class="translation-loading-actions">
         <button type="button" data-translation-cancel>Cancel request</button>
       </div>
     </div>`;
-  startTranslationElapsedTimer();
   updateSentenceControls();
 }
 
