@@ -237,8 +237,7 @@ def check_route_markup(route: str, html: str) -> None:
             "reading-desk",
             "toolbar-more",
             "More</summary>",
-            "toolbar-source-path",
-            "Source file</span>",
+            "Source</a>",
             "study-tabs",
             "study-tab-secondary",
             "citation-copy-options",
@@ -279,7 +278,7 @@ def check_route_markup(route: str, html: str) -> None:
             "Study pack</div>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common94",
+            "reader-work.css?v=common95",
             "reader-work.js?v=common110",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
