@@ -6,7 +6,7 @@
   <title>{{TITLE}} / {{CORPUS_TITLE}}</title>
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
-  <link rel="stylesheet" href="/assets/reader-work.css?v=common86">
+  <link rel="stylesheet" href="/assets/reader-work.css?v=common87">
 </head>
 <body class="{{BODY_CLASS}}">
   <div class="page">
@@ -123,14 +123,17 @@
                 <button type="submit">Save note</button>
               </form>
               <div id="noteStatus" class="note-status" role="status" aria-live="polite" aria-atomic="true"></div>
-              <div class="notes-list-tools">
-                <label>Filter<input id="noteFilter" name="note_filter" autocomplete="off"></label>
-                <button type="button" id="noteFilterClear" class="note-filter-clear" disabled>Clear filter</button>
-                <label>Sort<select id="noteSort" name="note_sort">
-                  <option value="recent">Recent</option>
-                  <option value="target">Target</option>
-                </select></label>
-              </div>
+              <details class="notes-filter-tools">
+                <summary>Find notes</summary>
+                <div class="notes-list-tools">
+                  <label>Filter<input id="noteFilter" name="note_filter" autocomplete="off"></label>
+                  <button type="button" id="noteFilterClear" class="note-filter-clear" disabled>Clear filter</button>
+                  <label>Sort<select id="noteSort" name="note_sort">
+                    <option value="recent">Recent</option>
+                    <option value="target">Target</option>
+                  </select></label>
+                </div>
+              </details>
               <div id="noteListSummary" class="note-list-summary" aria-live="polite"></div>
               <div id="notesList" class="notes-list" aria-busy="false"></div>
             </section>

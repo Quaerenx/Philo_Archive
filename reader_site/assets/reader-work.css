@@ -1855,11 +1855,41 @@ h1 {
   white-space: nowrap;
 }
 
+.notes-filter-tools {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #eeeeee;
+}
+
+.notes-filter-tools summary {
+  color: #555;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  line-height: 1.35;
+  cursor: pointer;
+  list-style: none;
+}
+
+.notes-filter-tools summary::-webkit-details-marker {
+  display: none;
+}
+
+.notes-filter-tools summary::after {
+  margin-left: 4px;
+  color: #777;
+  content: "+";
+}
+
+.notes-filter-tools[open] summary::after {
+  content: "-";
+}
+
 .notes-list-tools {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto 94px;
   gap: 8px;
   align-items: end;
+  margin-top: 8px;
 }
 
 .research-card .note-filter-clear {
