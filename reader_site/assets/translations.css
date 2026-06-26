@@ -341,6 +341,13 @@
     grid-template-columns: minmax(0, 1fr) auto;
   }
 
+  .translation-record-title {
+    display: -webkit-box;
+    white-space: normal;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
   .translation-source blockquote {
     max-height: 6.4em;
     overflow: hidden;

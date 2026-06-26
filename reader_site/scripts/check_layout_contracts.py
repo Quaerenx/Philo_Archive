@@ -401,7 +401,7 @@ def check_translations_ui() -> None:
     css = read_site_file("assets/translations.css")
     for needle in [
         "/assets/notes.css?v=notes15",
-        "/assets/translations.css?v=trans8",
+        "/assets/translations.css?v=trans9",
         "/assets/translations.js?v=trans19",
         '<option value="">All corpora</option>',
         'id="translationsSubmit"',
@@ -514,6 +514,7 @@ def check_translations_ui() -> None:
         ".translation-record-card[data-review-state=\"generated\"]",
         ".translation-record-heading",
         ".translation-record-title",
+        "-webkit-line-clamp: 2",
         ".translation-record-title a",
         ".translation-record-footer",
         ".translation-record-meta",
