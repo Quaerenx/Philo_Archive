@@ -333,6 +333,10 @@ function summaryCounts(records) {
   }, { total: 0, generated: 0, reviewed: 0, rejected: 0 });
 }
 
+function visibleSummaryStates(counts) {
+  return ["generated", "reviewed", "rejected"].filter((state) => counts[state] > 0);
+}
+
 function summaryButton(filter, label, count) {
   const selected = (filter || "all") === (reviewSelect.value || "all");
   return `<button type="button" class="${selected ? "active" : ""}" data-translation-summary-filter="${escapeHtml(filter)}" aria-pressed="${selected ? "true" : "false"}">
@@ -344,6 +348,7 @@ function summaryButton(filter, label, count) {
 function renderSummary(records) {
   const counts = summaryCounts(records);
   if (counts.total <= 0) return "";
+  if (visibleSummaryStates(counts).length <= 1) return "";
   const buttons = [
     summaryButton("all", "All", counts.total),
     counts.generated ? summaryButton("generated", "To check", counts.generated) : "",

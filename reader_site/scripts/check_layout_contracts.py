@@ -487,7 +487,7 @@ def check_translations_ui() -> None:
     for needle in [
         "/assets/notes.css?v=notes19",
         "/assets/translations.css?v=trans21",
-        "/assets/translations.js?v=trans49",
+        "/assets/translations.js?v=trans50",
         '<option value="">All corpora</option>',
         'id="translationsListTools"',
         "Filter</summary>",
@@ -546,6 +546,7 @@ def check_translations_ui() -> None:
         "function removeFilter",
         "function renderSummary",
         "counts.total <= 0",
+        "function visibleSummaryStates",
         "Translation status overview",
         "function reviewActionsVisible",
         'statusEl.textContent = "";',

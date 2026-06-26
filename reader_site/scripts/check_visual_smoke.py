@@ -220,7 +220,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translationsReviewQueue",
             "aria-busy=\"false\"",
             "translations.css?v=trans21",
-            "translations.js?v=trans49",
+            "translations.js?v=trans50",
             "translationsListTools",
             "Filter</summary>",
             "filter-panel",
@@ -555,8 +555,16 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (translationsPageState.reviewQueueText && !translationsPageState.reviewQueueText.startsWith('Review')) {
         throw new Error(`translations review entry should stay concise: ${JSON.stringify(translationsPageState)}`);
       }
-      if (!translationsPageState.summaryButtons.some((text) => text.startsWith('All'))) {
+      if (translationsPageState.summaryButtons.length && !translationsPageState.summaryButtons.some((text) => text.startsWith('All'))) {
         throw new Error(`default translations list should expose a compact status overview: ${JSON.stringify(translationsPageState)}`);
+      }
+      if (translationsPageState.summaryButtons.length === 2) {
+        const reviewCount = Number((translationsPageState.reviewQueueText.match(/\((\d+)\)/) || [])[1] || 0);
+        const allCount = Number((translationsPageState.summaryButtons.find((text) => text.startsWith('All')) || '').match(/\d+/)?.[0] || 0);
+        const toCheckCount = Number((translationsPageState.summaryButtons.find((text) => text.startsWith('To check')) || '').match(/\d+/)?.[0] || 0);
+        if (reviewCount && allCount === reviewCount && toCheckCount === reviewCount) {
+          throw new Error(`translations page should not repeat all-generated counts in both review queue and summary: ${JSON.stringify(translationsPageState)}`);
+        }
       }
       if (translationsPageState.groupTitleCount === 0 || !translationsPageState.firstGroupTitle) {
         throw new Error(`default translations list should group records by work context: ${JSON.stringify(translationsPageState)}`);
