@@ -66,6 +66,10 @@ function corpusDisplayName(corpusId) {
   return cleanText(corpus?.title || corpusId || "Archive");
 }
 
+function compactWorkMeta(meta) {
+  return cleanText(meta).replace(/\s*·\s*\d[\d,]*\s+(verses?|segments?|files?|works?)\b.*$/i, "");
+}
+
 function workDisplayName(corpusId, workId) {
   const id = cleanText(workId || "");
   if (!id) return "";
@@ -74,7 +78,7 @@ function workDisplayName(corpusId, workId) {
     const match = (section.links || []).find((link) => cleanText(link.work_id || "") === id);
     if (match) {
       const label = cleanText(match.label || id);
-      const meta = cleanText(match.meta || "");
+      const meta = compactWorkMeta(match.meta || "");
       return meta ? `${label} / ${meta}` : label;
     }
   }

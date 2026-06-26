@@ -486,7 +486,7 @@ def check_translations_ui() -> None:
     for needle in [
         "/assets/notes.css?v=notes19",
         "/assets/translations.css?v=trans23",
-        "/assets/translations.js?v=trans51",
+        "/assets/translations.js?v=trans52",
         '<option value="">All corpora</option>',
         'id="translationsListTools"',
         "Filter</summary>",
@@ -527,6 +527,7 @@ def check_translations_ui() -> None:
         "function selectedCorpusArchive",
         "function archiveCorpusById",
         "function corpusDisplayName",
+        "function compactWorkMeta",
         "function workDisplayName",
         "function sentenceDisplayName",
         "function archiveWorkOptions",

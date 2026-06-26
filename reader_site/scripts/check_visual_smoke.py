@@ -223,7 +223,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translationsReviewQueue",
             "aria-busy=\"false\"",
             "translations.css?v=trans23",
-            "translations.js?v=trans51",
+            "translations.js?v=trans52",
             "translationsListTools",
             "Filter</summary>",
             "filter-panel",
@@ -574,6 +574,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       if (translationsPageState.groupTitleCount === 0 || !translationsPageState.firstGroupTitle) {
         throw new Error(`default translations list should group records by work context: ${JSON.stringify(translationsPageState)}`);
+      }
+      if (/\d[\d,]*\s+(verses|segments|files|works)\b/i.test(translationsPageState.firstGroupTitle)) {
+        throw new Error(`default translations group title should hide inventory-style counts: ${JSON.stringify(translationsPageState)}`);
       }
       if (!translationsPageState.firstGroupActions.includes('Read')) {
         throw new Error(`translation work groups should expose a concise read action: ${JSON.stringify(translationsPageState)}`);
