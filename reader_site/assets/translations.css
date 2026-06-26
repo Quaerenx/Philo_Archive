@@ -192,10 +192,13 @@
 
 .translation-record-card.is-review-target {
   padding: 10px 10px 10px 12px;
-  background: #fffdf2;
-  border: 1px solid #d8c56d;
-  border-left: 3px solid #c4a94a;
-  animation: archive-review-target 1.4s ease-out 1;
+  background: #fff;
+  border: 1px solid #d4d4d4;
+  border-left: 3px solid #b00000;
+}
+
+.translation-record-card.is-review-target:focus {
+  outline-color: #8a8a8a;
 }
 
 .translation-record-card[data-review-state="generated"] .review-badge {
@@ -437,21 +440,8 @@
   }
 }
 
-@keyframes archive-review-target {
-  0% {
-    background: #fff4c8;
-    box-shadow: inset 0 0 0 1px rgba(196, 169, 74, 0.42);
-  }
-
-  100% {
-    background: #fffdf2;
-    box-shadow: inset 0 0 0 1px rgba(196, 169, 74, 0);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .translation-record-card.is-recent,
-  .translation-record-card.is-review-target,
   .translation-actions button.is-working::after {
     animation: none;
   }

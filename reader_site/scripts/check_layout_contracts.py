@@ -485,7 +485,7 @@ def check_translations_ui() -> None:
     css = read_site_file("assets/translations.css")
     for needle in [
         "/assets/notes.css?v=notes19",
-        "/assets/translations.css?v=trans22",
+        "/assets/translations.css?v=trans23",
         "/assets/translations.js?v=trans51",
         '<option value="">All corpora</option>',
         'id="translationsListTools"',
@@ -664,6 +664,8 @@ def check_translations_ui() -> None:
         ".translation-record-group .translation-record-card:first-of-type",
         ".translation-record-card:focus",
         ".translation-record-card.is-review-target",
+        ".translation-record-card.is-review-target:focus",
+        "border-left: 3px solid #b00000",
         ".translation-record-card[data-review-state=\"generated\"]",
         ".translation-record-heading",
         "grid-template-columns: minmax(0, 1fr) auto",
@@ -695,7 +697,6 @@ def check_translations_ui() -> None:
         ".translation-record-card.is-review-target .translation-more-actions",
         ".translation-actions .primary-review-action:not(:disabled)",
         ".translation-actions button.is-working",
-        "@keyframes archive-review-target",
         "@media (prefers-reduced-motion: reduce)",
         "@media (max-width: 860px)",
         "overflow-x: auto",

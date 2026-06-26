@@ -222,7 +222,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translationsResults",
             "translationsReviewQueue",
             "aria-busy=\"false\"",
-            "translations.css?v=trans22",
+            "translations.css?v=trans23",
             "translations.js?v=trans51",
             "translationsListTools",
             "Filter</summary>",
@@ -807,6 +807,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       await page.waitForSelector('#translationsResults .translation-record-card.is-review-target', { timeout: 3000 }).catch(() => {});
       const reviewTargetState = await page.evaluate(() => {
         const card = document.querySelector('#translationsResults .translation-record-card.is-review-target');
+        const cardStyle = card ? window.getComputedStyle(card) : null;
         const reject = card?.querySelector('.translation-more-actions');
         const source = card?.querySelector('.translation-source');
         const commentaryHeading = card?.querySelector('.translation-commentary h3');
@@ -817,6 +818,10 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
           rejectDisplay: reject ? window.getComputedStyle(reject).display : '',
           sourceOpen: Boolean(source?.open),
           sourceText: source?.textContent.trim() || '',
+          reviewTargetBackground: cardStyle?.backgroundColor || '',
+          reviewTargetBorderLeftColor: cardStyle?.borderLeftColor || '',
+          reviewTargetOutlineColor: cardStyle?.outlineColor || '',
+          reviewTargetOutlineStyle: cardStyle?.outlineStyle || '',
           commentaryHeadingWidth: commentaryHeadingBox?.width || 0,
           commentaryHeadingHeight: commentaryHeadingBox?.height || 0,
           statusText: document.querySelector('#translationsStatus')?.textContent.trim() || ''
@@ -827,6 +832,15 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       if (!reviewTargetState.sourceOpen || !reviewTargetState.sourceText.includes('Original')) {
         throw new Error(`review queue should open the active source text: ${JSON.stringify(reviewTargetState)}`);
+      }
+      if (reviewTargetState.reviewTargetBackground !== 'rgb(255, 255, 255)') {
+        throw new Error(`review queue target should stay visually quiet on a white reading surface: ${JSON.stringify(reviewTargetState)}`);
+      }
+      if (reviewTargetState.reviewTargetBorderLeftColor !== 'rgb(176, 0, 0)') {
+        throw new Error(`review queue target should use only a slim archive accent line: ${JSON.stringify(reviewTargetState)}`);
+      }
+      if (reviewTargetState.reviewTargetOutlineStyle !== 'none' && reviewTargetState.reviewTargetOutlineColor === 'rgb(176, 0, 0)') {
+        throw new Error(`review queue focus should not look like a red error outline: ${JSON.stringify(reviewTargetState)}`);
       }
       if (reviewTargetState.statusText.includes('translations /')) {
         throw new Error(`review queue should avoid duplicate count status text: ${JSON.stringify(reviewTargetState)}`);
