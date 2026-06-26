@@ -1079,7 +1079,10 @@ def check_work_source_bundle_ui() -> None:
         "notes-list-skeleton",
         "No notes yet.",
         "Notes unavailable.",
-        "No concepts yet.",
+        "function syncConceptsPanelAvailability",
+        "conceptsTab.hidden = true",
+        'conceptsTab.classList.remove("active")',
+        "function visibleStudyTabs",
         "copyStudyCard",
         "function translationNoteDraftText",
         "function focusNoteComposer",
@@ -1155,7 +1158,7 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common116", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common117", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common101", "templates/work.html")
     for needle in [
         "reading-desk",

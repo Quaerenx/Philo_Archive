@@ -142,6 +142,10 @@ function escapeHtml(value) {
 }
 
 function setStudyPanel(name, focusTab = false) {
+  const targetTab = studyTabs.find((tab) => tab.dataset.studyTab === name);
+  if (targetTab?.hidden) {
+    name = "translation";
+  }
   let activeTab = null;
   studyTabs.forEach((tab) => {
     const active = tab.dataset.studyTab === name;
@@ -163,6 +167,10 @@ function setStudyPanel(name, focusTab = false) {
   ensureActiveStudyTabVisible(activeTab);
 }
 
+function visibleStudyTabs() {
+  return studyTabs.filter((tab) => !tab.hidden);
+}
+
 function ensureActiveStudyTabVisible(tab) {
   if (!tab || !studyTabsContainer || !isMobileStudyLayout()) return;
   if (typeof tab.scrollIntoView !== "function") return;
@@ -174,9 +182,10 @@ function ensureActiveStudyTabVisible(tab) {
 }
 
 function activateStudyTabByIndex(index) {
-  if (!studyTabs.length) return;
-  const nextIndex = (index + studyTabs.length) % studyTabs.length;
-  const nextTab = studyTabs[nextIndex];
+  const tabs = visibleStudyTabs();
+  if (!tabs.length) return;
+  const nextIndex = (index + tabs.length) % tabs.length;
+  const nextTab = tabs[nextIndex];
   setStudyPanel(nextTab.dataset.studyTab || "translation", true);
   setStudyPanelExpanded(true);
 }
@@ -2752,7 +2761,8 @@ studyTabs.forEach((tab) => {
 
 if (studyTabsContainer) {
   studyTabsContainer.addEventListener("keydown", (event) => {
-    const currentIndex = studyTabs.indexOf(event.target);
+    const tabs = visibleStudyTabs();
+    const currentIndex = tabs.indexOf(event.target);
     if (currentIndex < 0) return;
     if (event.key === "ArrowRight") {
       event.preventDefault();
@@ -2768,7 +2778,7 @@ if (studyTabsContainer) {
     }
     if (event.key === "End") {
       event.preventDefault();
-      activateStudyTabByIndex(studyTabs.length - 1);
+      activateStudyTabByIndex(tabs.length - 1);
     }
   });
 }
@@ -2984,10 +2994,7 @@ function initializeStudyCompanion() {
     exportStudySession.href = studySessionExportUrl("markdown");
     exportStudySession.title = "Export notes and translations for this work";
   }
-  const conceptsPanel = document.querySelector('[data-study-panel="concepts"]');
-  if (conceptsPanel && !conceptsPanel.textContent.trim()) {
-    conceptsPanel.innerHTML = '<section class="research-card"><h2>Concepts</h2><p class="source-notes">No concepts yet.</p></section>';
-  }
+  syncConceptsPanelAvailability();
   selectSentenceFromHash();
   if (selectedSentence) {
     requestSentenceTranslation(false);
@@ -2998,6 +3005,20 @@ function initializeStudyCompanion() {
   checkGemmaRuntimeStatus(false);
   loadTranslationRecordsSummary();
   loadStudySessionSummary();
+}
+
+function syncConceptsPanelAvailability() {
+  const conceptsPanel = document.querySelector('[data-study-panel="concepts"]');
+  const conceptsTab = document.querySelector('[data-study-tab="concepts"]');
+  if (!conceptsPanel || !conceptsTab) return;
+  const hasConcepts = Boolean(conceptsPanel.textContent.trim());
+  if (hasConcepts) return;
+  conceptsTab.hidden = true;
+  conceptsTab.classList.remove("active");
+  conceptsTab.setAttribute("aria-selected", "false");
+  conceptsTab.tabIndex = -1;
+  conceptsPanel.hidden = true;
+  conceptsPanel.classList.remove("active");
 }
 
 initializeStudyCompanion();
