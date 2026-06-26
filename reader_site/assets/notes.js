@@ -314,8 +314,8 @@ function renderNotes(notes) {
           <button type="button" data-action="${escapeHtml(reviewAction)}">${escapeHtml(reviewActionLabel)}</button>
           <button type="button" data-action="edit">Edit</button>
           <details class="note-danger-actions">
-            <summary>More</summary>
-            <button type="button" data-action="delete">Delete</button>
+            <summary>Delete</summary>
+            <button type="button" data-action="delete">Confirm</button>
           </details>`;
       return `<article class="note-card${isRecent ? " is-recent" : ""}" data-note-id="${escapeHtml(note.id)}" data-corpus-id="${escapeHtml(note.corpus_id)}" data-review-state="${escapeHtml(reviewState)}"${recentAttrs}>
         <div class="note-title">

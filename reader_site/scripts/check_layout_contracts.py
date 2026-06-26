@@ -348,7 +348,7 @@ def check_notes_ui() -> None:
     css = read_site_file("assets/notes.css")
     for needle in [
         "/assets/notes.css?v=notes19",
-        "/assets/notes.js?v=notes27",
+        "/assets/notes.js?v=notes28",
         'id="notesSubmit"',
         'id="notesClear"',
         'id="notesActiveFilters"',
@@ -383,7 +383,8 @@ def check_notes_ui() -> None:
         "function renderNoteFooter",
         "note-footer",
         "note-danger-actions",
-        "More</summary>",
+        "Delete</summary>",
+        "Confirm</button>",
         "data-notes-summary-filter",
         "recentlyChangedNoteId",
         "function revealRecentlyChangedNote",

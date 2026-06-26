@@ -202,7 +202,7 @@ def check_route_markup(route: str, html: str) -> None:
             "notesStatus",
             "aria-busy=\"false\"",
             "notes.css?v=notes19",
-            "notes.js?v=notes27",
+            "notes.js?v=notes28",
             "filter-panel",
             "export-tools",
         ]:
@@ -482,6 +482,10 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       const notesActionText = await page.evaluate(() => Array.from(document.querySelectorAll('#notesResults .note-actions')).map((node) => node.textContent.trim()).join(' '));
       if (/Open target|Open work|Manage note|Edit note/.test(notesActionText)) {
         throw new Error(`notes page actions should stay concise: ${notesActionText}`);
+      }
+      const notesDangerText = await page.evaluate(() => Array.from(document.querySelectorAll('#notesResults .note-danger-actions summary')).map((node) => node.textContent.trim()).join(' '));
+      if (notesDangerText.includes('More')) {
+        throw new Error(`notes danger action should be explicit, not hidden behind More: ${notesDangerText}`);
       }
     }
   }
