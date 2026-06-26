@@ -473,7 +473,7 @@ def check_translations_ui() -> None:
     css = read_site_file("assets/translations.css")
     for needle in [
         "/assets/notes.css?v=notes19",
-        "/assets/translations.css?v=trans15",
+        "/assets/translations.css?v=trans16",
         "/assets/translations.js?v=trans36",
         '<option value="">All corpora</option>',
         'id="translationsListTools"',
@@ -610,6 +610,7 @@ def check_translations_ui() -> None:
         ".list-tools summary::after",
         ".list-tools[open] summary::after",
         ".list-tools .translations-form",
+        ".list-tools .export-tools",
         ".translation-record-summary-tools",
         ".translation-record-summary-tools summary",
         ".translation-record-summary-tools[open] summary::after",
@@ -617,7 +618,6 @@ def check_translations_ui() -> None:
         "background: transparent",
         ".translation-review-queue",
         ".translation-review-queue:not(:disabled)",
-        ".review-export-row .export-tools",
         ".translation-record-card",
         ".translation-record-card:focus",
         ".translation-record-card.is-review-target",

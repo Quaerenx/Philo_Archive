@@ -43,6 +43,10 @@
   margin-top: 8px;
 }
 
+.list-tools .export-tools {
+  margin: 8px 0 0;
+}
+
 .translation-record-summary-tools {
   margin: 8px 0 0;
   padding-top: 8px;

@@ -7,7 +7,7 @@
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
   <link rel="stylesheet" href="/assets/notes.css?v=notes19">
-  <link rel="stylesheet" href="/assets/translations.css?v=trans15">
+  <link rel="stylesheet" href="/assets/translations.css?v=trans16">
 </head>
 <body>
   <div class="page">
@@ -64,11 +64,6 @@
             <button id="translationsClear" type="button" class="secondary-action" disabled>Clear</button>
           </div>
         </form>
-      </details>
-      <div id="translationsActiveFilters" class="active-filters" aria-live="polite" aria-label="Active translation filters"></div>
-
-      <div class="review-export-row">
-        <button id="translationsReviewQueue" type="button" class="translation-review-queue" aria-keyshortcuts="Q" title="Review generated translations" disabled>Review queue</button>
         <details id="translationsExportTools" class="export-tools" hidden>
           <summary>Export results</summary>
           <div class="export-row" aria-label="Export translations">
@@ -76,6 +71,11 @@
             <a id="translationsExportJson" href="/api/sentence-translations/export?format=json&review_state=all">JSON</a>
           </div>
         </details>
+      </details>
+      <div id="translationsActiveFilters" class="active-filters" aria-live="polite" aria-label="Active translation filters"></div>
+
+      <div class="review-export-row">
+        <button id="translationsReviewQueue" type="button" class="translation-review-queue" aria-keyshortcuts="Q" title="Review generated translations" disabled>Review queue</button>
       </div>
 
       <div id="translationsStatus" class="notes-status translations-status" role="status" aria-live="polite" aria-atomic="true"></div>
