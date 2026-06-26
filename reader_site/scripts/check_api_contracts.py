@@ -227,7 +227,10 @@ def check_sentence_translation_export() -> None:
         {"corpus_id": ["nietzsche"], "work_id": ["GM"], "format": ["markdown"]}
     )
     require(markdown["kind"] == "text", "sentence translations markdown export should be text")
-    require("Reviewed Gemma Sentence Translations" in markdown["body"], "sentence translations markdown export heading missing")
+    require("Sentence Translations" in markdown["body"], "sentence translations markdown export heading missing")
+    require("Reviewed Gemma" not in markdown["body"], "sentence translations export should hide runtime-oriented title")
+    require("Review:" not in markdown["body"], "sentence translations export should hide review-state metadata")
+    require("Reviewed:" not in markdown["body"], "sentence translations export should hide reviewed timestamps")
     payload = sentence_translations_export_from_query(
         {"corpus_id": ["nietzsche"], "work_id": ["GM"], "format": ["json"], "review_state": ["all"]}
     )

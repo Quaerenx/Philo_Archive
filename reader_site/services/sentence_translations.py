@@ -436,7 +436,7 @@ def sentence_translations_summary_from_query(query: dict[str, list[str]]) -> dic
 
 
 def export_sentence_translations_markdown(records: list[dict[str, Any]]) -> str:
-    lines = ["# Reviewed Gemma Sentence Translations", "", f"{len(records)} records", ""]
+    lines = ["# Sentence Translations", "", f"{len(records)} translations", ""]
     for record in records:
         label = " / ".join(
             item
@@ -448,22 +448,14 @@ def export_sentence_translations_markdown(records: list[dict[str, Any]]) -> str:
             if item
         )
         lines.extend([f"## {label or 'Sentence translation'}", ""])
-        if record.get("target_url"):
-            lines.append(f"- URL: {record['target_url']}")
-        if record.get("review_state"):
-            lines.append(f"- Review: {record['review_state']}")
-        if record.get("reviewed_at"):
-            lines.append(f"- Reviewed: {record['reviewed_at']}")
-        if record.get("source_text_excerpt"):
-            lines.extend(["", "Original:", "", "> " + str(record["source_text_excerpt"]).replace("\n", "\n> ")])
         if record.get("translation"):
-            lines.extend(["", "Translation:", "", str(record["translation"])])
+            lines.extend(["Translation", "", str(record["translation"]), ""])
         if record.get("commentary"):
-            lines.extend(["", "Commentary:", "", str(record["commentary"])])
-        cautions = record.get("cautions") if isinstance(record.get("cautions"), list) else []
-        if cautions:
-            lines.extend(["", "Cautions:"])
-            lines.extend(f"- {item}" for item in cautions)
+            lines.extend(["Commentary", "", str(record["commentary"]), ""])
+        if record.get("source_text_excerpt"):
+            lines.extend(["Original", "", "> " + str(record["source_text_excerpt"]).replace("\n", "\n> "), ""])
+        if record.get("target_url"):
+            lines.append(f"Source: {record['target_url']}")
         lines.append("")
     return "\n".join(lines).rstrip() + "\n"
 
