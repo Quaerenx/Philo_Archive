@@ -474,7 +474,7 @@ def check_translations_ui() -> None:
     for needle in [
         "/assets/notes.css?v=notes19",
         "/assets/translations.css?v=trans16",
-        "/assets/translations.js?v=trans37",
+        "/assets/translations.js?v=trans38",
         '<option value="">All corpora</option>',
         'id="translationsListTools"',
         "Search and filters</summary>",

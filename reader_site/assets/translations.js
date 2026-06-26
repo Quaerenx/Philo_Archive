@@ -179,6 +179,12 @@ function hasSearchFilters() {
   );
 }
 
+function isReviewQueueOnlyView() {
+  return (reviewSelect.value || "all") === "generated" &&
+    !hasSearchFilters() &&
+    generatedRecords(lastRecords).length > 0;
+}
+
 function renderFilterChip(filterName, label, value) {
   return `<button type="button" class="filter-chip" data-filter="${escapeHtml(filterName)}" aria-label="Remove ${escapeHtml(label)} filter">
     <span>${escapeHtml(label)}: ${escapeHtml(value)}</span>
@@ -196,7 +202,7 @@ function updateFilterSummary() {
     chips.push(renderFilterChip("corpus", "Corpus", selectedOptionText(corpusSelect)));
   }
   if (workId) chips.push(renderFilterChip("work", "Work", workId));
-  if (reviewSelect.value !== "all") {
+  if (reviewSelect.value !== "all" && !isReviewQueueOnlyView()) {
     chips.push(renderFilterChip("review", "Status", selectedOptionText(reviewSelect)));
   }
   activeFiltersEl.hidden = chips.length === 0;
@@ -220,9 +226,7 @@ function updateTranslationsListChrome(count = lastRecords.length) {
     listTools.open = shouldOpenTools;
   }
   form.hidden = !showTools;
-  if (activeFiltersEl) {
-    activeFiltersEl.hidden = !activeFilters;
-  }
+  updateFilterSummary();
 }
 
 function updateUrl() {

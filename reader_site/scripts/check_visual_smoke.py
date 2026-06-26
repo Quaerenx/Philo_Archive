@@ -32,6 +32,7 @@ ROUTES = [
     ("notes", "/notes", True),
     ("study", "/study", True),
     ("translations", "/translations", True),
+    ("translations-review", "/translations?review_state=generated", True),
 ]
 VIEWPORTS = [
     ("desktop", 1365, 768),
@@ -205,7 +206,7 @@ def check_route_markup(route: str, html: str) -> None:
             "export-tools",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
-    if route == "/translations":
+    if route.startswith("/translations"):
         for needle in [
             "translationsSubmit",
             "translationsClear",
@@ -215,7 +216,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translationsReviewQueue",
             "aria-busy=\"false\"",
             "translations.css?v=trans16",
-            "translations.js?v=trans37",
+            "translations.js?v=trans38",
             "translationsListTools",
             "Search and filters</summary>",
             "filter-panel",
