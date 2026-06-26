@@ -1193,8 +1193,8 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common117", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common101", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common118", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common102", "templates/work.html")
     for needle in [
         "reading-desk",
         "toolbar-more",
@@ -1342,6 +1342,7 @@ def check_work_source_bundle_ui() -> None:
         ".translation-card[data-review-state=\"generated\"]",
         ".translation-card[data-review-state=\"reviewed\"]",
         ".translation-card[data-review-state=\"rejected\"]",
+        ".translation-card.reading-mode[data-review-state]",
         ".translation-card.review-state-changed",
         ".translation-utility",
         ".translation-utility summary",

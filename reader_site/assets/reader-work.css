@@ -413,6 +413,10 @@ h1 {
   box-shadow: inset 3px 0 0 #b00000;
 }
 
+.translation-card.reading-mode[data-review-state] {
+  box-shadow: none;
+}
+
 .translation-card.is-loading {
   border-color: #c8b86a;
 }

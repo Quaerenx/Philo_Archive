@@ -286,8 +286,8 @@ def check_route_markup(route: str, html: str) -> None:
             "Study pack</div>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common101",
-            "reader-work.js?v=common117",
+            "reader-work.css?v=common102",
+            "reader-work.js?v=common118",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
 
@@ -429,6 +429,55 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
   const parsed = new URL(url);
   if (parsed.pathname === '/search' && parsed.searchParams.get('q')) {
     await page.waitForSelector('.result:not(.search-skeleton), .empty-state', { timeout: 5000 }).catch(() => {});
+  }
+  if (parsed.pathname.startsWith('/work/') && parsed.hash) {
+    await page.waitForSelector('.reader-sentence.selected', { timeout: 7000 }).catch(() => {});
+    await page.waitForSelector('#translationOutput:not([hidden])', { timeout: 7000 }).catch(() => {});
+    const state = await page.evaluate(() => {
+      const output = document.querySelector('#translationOutput');
+      const card = document.querySelector('.translation-card');
+      const activeTab = document.querySelector('.study-tab.active');
+      const visibleExtras = Array.from(document.querySelectorAll('#translationOutput .translation-extra'))
+        .filter((node) => window.getComputedStyle(node).display !== 'none');
+      return {
+        selectedSentence: Boolean(document.querySelector('.reader-sentence.selected')),
+        outputVisible: Boolean(output && !output.hidden),
+        readingMode: Boolean(output && output.classList.contains('reading-mode')),
+        cardReadingMode: Boolean(card && card.classList.contains('reading-mode')),
+        cardReviewState: card ? card.dataset.reviewState || '' : '',
+        cardBoxShadow: card ? window.getComputedStyle(card).boxShadow : '',
+        visibleExtraCount: visibleExtras.length,
+        activeTab: activeTab ? activeTab.textContent.trim() : '',
+        studyToolsOpen: Boolean(document.querySelector('.translation-utility')?.open)
+      };
+    });
+    if (!state.selectedSentence) throw new Error(`selected work route did not select a sentence: ${JSON.stringify(state)}`);
+    if (!state.outputVisible) throw new Error(`selected work route did not show translation output: ${JSON.stringify(state)}`);
+    if (!state.readingMode) throw new Error(`translation output did not default to reading mode: ${JSON.stringify(state)}`);
+    if (!state.cardReadingMode) throw new Error(`translation card did not default to reading mode: ${JSON.stringify(state)}`);
+    if (state.cardReviewState && state.cardBoxShadow !== 'none') {
+      throw new Error(`reading mode should suppress review-state card decoration: ${JSON.stringify(state)}`);
+    }
+    if (state.visibleExtraCount !== 0) throw new Error(`reading mode exposed study-only translation extras: ${JSON.stringify(state)}`);
+    if (state.activeTab !== 'Translation') throw new Error(`selected work route did not keep Translation tab active: ${JSON.stringify(state)}`);
+    if (state.studyToolsOpen) throw new Error(`study tools should stay collapsed in default reading mode: ${JSON.stringify(state)}`);
+  }
+  if (parsed.pathname === '/translations' && parsed.searchParams.get('review_state') === 'generated') {
+    await page.waitForSelector('#translationsResults .translation-record-card, #translationsResults .empty-state', { timeout: 7000 }).catch(() => {});
+    const state = await page.evaluate(() => {
+      const activeFilters = document.querySelector('#translationsActiveFilters');
+      const cards = document.querySelectorAll('#translationsResults .translation-record-card:not(.notes-skeleton)').length;
+      return {
+        cards,
+        toolsOpen: Boolean(document.querySelector('#translationsListTools')?.open),
+        activeFiltersHidden: Boolean(activeFilters?.hidden),
+        activeFiltersText: activeFilters ? activeFilters.textContent.trim() : ''
+      };
+    });
+    if (state.cards > 0 && state.toolsOpen) throw new Error(`review queue should keep list tools collapsed: ${JSON.stringify(state)}`);
+    if (state.cards > 0 && (!state.activeFiltersHidden || state.activeFiltersText)) {
+      throw new Error(`review queue should not repeat the status filter chip: ${JSON.stringify(state)}`);
+    }
   }
   await page.waitForTimeout(700);
   await page.screenshot({ path: outputPath, fullPage: false });

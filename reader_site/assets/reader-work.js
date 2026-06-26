@@ -311,6 +311,9 @@ function cancelStudyPanelDrag() {
 
 function syncTranslationModeDensity() {
   // Reading mode hides tools and metadata; translation and commentary stay readable.
+  if (!translationCard) return;
+  translationCard.classList.toggle("reading-mode", translationMode === "reading");
+  translationCard.classList.toggle("study-mode", translationMode === "study");
 }
 
 function setTranslationMode(mode) {
