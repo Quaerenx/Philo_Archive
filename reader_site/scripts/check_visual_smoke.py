@@ -185,8 +185,8 @@ def check_route_markup(route: str, html: str) -> None:
             "studyActiveFilters",
             "studyStatus",
             "aria-busy=\"false\"",
-            "study.css?v=study15",
-            "study.js?v=study18",
+            "study.css?v=study16",
+            "study.js?v=study19",
             "filter-panel",
             "export-tools",
         ]:

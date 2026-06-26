@@ -606,8 +606,8 @@ def check_study_ui() -> None:
     script = read_site_file("assets/study.js")
     css = read_site_file("assets/study.css")
     for needle in [
-        "/assets/study.css?v=study15",
-        "/assets/study.js?v=study18",
+        "/assets/study.css?v=study16",
+        "/assets/study.js?v=study19",
         'id="studySubmit"',
         'id="studyClear"',
         'id="studyActiveFilters"',
@@ -631,6 +631,8 @@ def check_study_ui() -> None:
         "renderStudyPending",
         "function renderEmptyStudy",
         "function renderNoteFooter",
+        "study-note-more-actions",
+        "<summary>More</summary>",
         "function studyCountLabel",
         "function studyGroupMeta",
         'statusEl.textContent = "";',
@@ -680,6 +682,12 @@ def check_study_ui() -> None:
         ".note-title > a",
         ".note-footer",
         ".note-footer .note-meta",
+        ".study-note-more-actions",
+        ".study-note-more-actions summary",
+        ".study-note-more-actions summary::-webkit-details-marker",
+        ".study-note-more-actions summary::after",
+        ".study-note-more-actions[open] summary::after",
+        ".study-note-more-actions a",
         ".empty-state",
         ".empty-actions",
         ".empty-actions a",

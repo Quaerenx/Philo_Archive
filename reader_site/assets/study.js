@@ -202,7 +202,10 @@ function renderNote(note) {
   ].filter(Boolean).join(" / ");
   const actions = `
       ${openTarget}
-      <a href="${escapeHtml(manageHref)}">Edit note</a>`;
+      <details class="study-note-more-actions">
+        <summary>More</summary>
+        <a href="${escapeHtml(manageHref)}">Edit note</a>
+      </details>`;
   return `<article class="study-note">
     <div class="note-title">
       ${targetLink}
