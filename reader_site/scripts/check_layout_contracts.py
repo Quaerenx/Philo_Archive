@@ -1027,7 +1027,7 @@ def check_work_source_bundle_ui() -> None:
             f"{function_name} reading-first translation layout",
         )
     require_contains(template, "/assets/reader-work.js?v=common108", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common93", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common94", "templates/work.html")
     for needle in [
         "reading-desk",
         "toolbar-more",
@@ -1055,6 +1055,8 @@ def check_work_source_bundle_ui() -> None:
         "continueStudy",
         "Continue study",
         "Translations</div>",
+        "translation-review-tools",
+        "translation-review-tools-body",
         "translation-export-tools",
         "translation-export-links",
         "Export</summary>",
@@ -1110,7 +1112,8 @@ def check_work_source_bundle_ui() -> None:
         "Display",
         "Translation display mode",
         "Reading controls",
-        "Actions",
+        "Reading flow",
+        "Review and export",
         "Reading tools",
         "study-tabs",
         "previousSentence",
@@ -1182,6 +1185,10 @@ def check_work_source_bundle_ui() -> None:
         ".translation-utility-group + .translation-utility-group",
         ".translation-utility-group-label",
         ".translation-utility .mode-toggle",
+        ".translation-review-tools",
+        ".translation-review-tools summary",
+        ".translation-review-tools[open] summary::after",
+        ".translation-review-tools-body",
         ".translation-review-state[data-review-state=\"generated\"]",
         ".translation-review-state[data-review-state=\"reviewed\"]",
         ".translation-review-state[data-review-state=\"rejected\"]",
