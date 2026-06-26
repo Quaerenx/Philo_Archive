@@ -223,7 +223,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translationsReviewQueue",
             "aria-busy=\"false\"",
             "translations.css?v=trans23",
-            "translations.js?v=trans52",
+            "translations.js?v=trans53",
             "translationsListTools",
             "Filter</summary>",
             "filter-panel",
@@ -542,6 +542,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
           summaryButtons: Array.from(document.querySelectorAll('#translationsResults .translation-record-summary [data-translation-summary-filter]')).map((node) => node.textContent.trim()),
           groupTitleCount: document.querySelectorAll('#translationsResults .translation-record-group-title').length,
           firstGroupTitle: document.querySelector('#translationsResults .translation-record-group-title')?.textContent.trim() || '',
+          firstRecordTitle: document.querySelector('#translationsResults .translation-record-card .translation-record-title')?.textContent.trim() || '',
           firstGroupActions: Array.from(document.querySelectorAll('#translationsResults .translation-record-group:first-of-type .translation-record-group-actions a')).map((node) => node.textContent.trim()),
           reviewQueueText: document.querySelector('#translationsReviewQueue')?.textContent.trim() || ''
         };
@@ -577,6 +578,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       if (/\d[\d,]*\s+(verses|segments|files|works)\b/i.test(translationsPageState.firstGroupTitle)) {
         throw new Error(`default translations group title should hide inventory-style counts: ${JSON.stringify(translationsPageState)}`);
+      }
+      if (/\.[0-9]+\.s[0-9]+/i.test(translationsPageState.firstRecordTitle)) {
+        throw new Error(`default translations record title should use readable references, not internal sentence IDs: ${JSON.stringify(translationsPageState)}`);
       }
       if (!translationsPageState.firstGroupActions.includes('Read')) {
         throw new Error(`translation work groups should expose a concise read action: ${JSON.stringify(translationsPageState)}`);

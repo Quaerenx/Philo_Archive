@@ -87,6 +87,12 @@ function workDisplayName(corpusId, workId) {
 
 function sentenceDisplayName(record) {
   const id = cleanText(record.sentence_id || record.target_id || "");
+  const bibleMatch = /^([A-Za-z0-9]+)\.(\d+)\.(\d+)\.s(\d+)$/i.exec(id);
+  if (bibleMatch) {
+    const sentenceNumber = Number(bibleMatch[4]);
+    const suffix = sentenceNumber > 1 ? `, sentence ${sentenceNumber}` : "";
+    return `${bibleMatch[1]} ${Number(bibleMatch[2])}:${Number(bibleMatch[3])}${suffix}`;
+  }
   const match = /^p-(\d+)\.s(\d+)$/i.exec(id);
   if (match) {
     return `Paragraph ${Number(match[1])}, sentence ${Number(match[2])}`;
