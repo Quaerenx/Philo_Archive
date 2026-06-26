@@ -1490,7 +1490,7 @@ function translationQuickActions(reviewState) {
   const reviewAction = normalizedReviewState === "reviewed"
     ? '<span class="translation-quick-state" data-review-state="reviewed">Saved</span>'
     : '<button type="button" data-translation-quick-action="mark-reviewed">Save</button>';
-  return `<div class="translation-quick-actions" aria-label="Study actions">
+  return `<div class="translation-quick-actions translation-extra" aria-label="Study actions">
       ${reviewAction}
       <button type="button" data-translation-quick-action="draft-note">Add note</button>
       <button type="button" data-translation-quick-action="continue">Next</button>

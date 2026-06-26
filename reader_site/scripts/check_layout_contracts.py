@@ -972,7 +972,7 @@ def check_work_source_bundle_ui() -> None:
         "noteText.setSelectionRange",
         "translationStudyCardText",
         "function translationQuickActions",
-        "translation-quick-actions",
+        "translation-quick-actions translation-extra",
         "data-translation-quick-action",
         "Save",
         "Add note",
@@ -1029,7 +1029,7 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common109", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common110", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common94", "templates/work.html")
     for needle in [
         "reading-desk",
