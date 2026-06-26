@@ -1442,11 +1442,7 @@ function renderTranslationEmptyState() {
     <div class="translation-result translation-empty-state" role="note">
       <section class="translation-section translation-section-primary" data-translation-section="translation">
         <h3>Translation</h3>
-        <p class="translation-primary">Select a sentence in the original text.</p>
-      </section>
-      <section class="translation-section translation-commentary" data-translation-section="commentary">
-        <h3>Commentary</h3>
-        <p>AI commentary will appear here after selection.</p>
+        <p class="translation-primary translation-empty-copy">No sentence selected.</p>
       </section>
     </div>`;
 }

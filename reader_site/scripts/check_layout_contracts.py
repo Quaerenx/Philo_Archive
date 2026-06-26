@@ -716,8 +716,8 @@ def check_work_source_bundle_ui() -> None:
         "renderCommentary",
         "renderTranslationEmptyState",
         "translation-empty-state",
-        "Select a sentence in the original text.",
-        "AI commentary will appear here after selection.",
+        "translation-empty-copy",
+        "No sentence selected.",
         "setCommentaryExpanded",
         "syncTranslationModeDensity",
         "translationJumpNav",
@@ -902,8 +902,16 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
+    require_ordered_markers(
+        js_function_body(script, "renderTranslationEmptyState"),
+        [
+            '<section class="translation-section translation-section-primary"',
+            'data-translation-section="translation"',
+            "translation-empty-copy",
+        ],
+        "renderTranslationEmptyState quiet empty layout",
+    )
     for function_name, commentary_marker, trailing_marker in [
-        ("renderTranslationEmptyState", '<section class="translation-section translation-commentary"', ""),
         ("renderTranslationPending", '<section class="translation-section translation-commentary"', "translation-loading"),
         ("renderTranslationError", '<section class="translation-section translation-commentary"', "translation-recovery-panel"),
         ("renderTranslationCancelled", '<section class="translation-section translation-commentary"', "translation-recovery-panel"),
@@ -927,7 +935,7 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common92", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common93", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common82", "templates/work.html")
     for needle in [
         "reading-desk",
@@ -1123,6 +1131,9 @@ def check_work_source_bundle_ui() -> None:
         "@keyframes archive-source-focus",
         ".translation-result",
         ".translation-empty-state",
+        ".translation-empty-state .translation-section-primary",
+        ".translation-empty-state .translation-section h3",
+        ".translation-output .translation-empty-copy",
         ".translation-pending-result",
         ".translation-pending-copy",
         ".study-session-preview",
@@ -1154,7 +1165,6 @@ def check_work_source_bundle_ui() -> None:
         ".translation-section-primary h3",
         ".translation-source-detail p",
         ".translation-empty-state .translation-primary",
-        ".translation-empty-state .translation-commentary p",
         "border-left: 3px solid #b00000",
         "max-height: clamp(220px, 42vh, 520px)",
         "line-height: 1.7",

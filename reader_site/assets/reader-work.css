@@ -1211,6 +1211,22 @@ h1 {
   color: #666;
 }
 
+.translation-empty-state .translation-section-primary {
+  padding-left: 0;
+  border-left: 0;
+}
+
+.translation-empty-state .translation-section h3 {
+  display: none;
+}
+
+.translation-output .translation-empty-copy {
+  color: #666;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
 .translation-output.has-fresh-result .translation-section-primary,
 .translation-output.has-fresh-cached-result .translation-section-primary {
   animation: archive-translation-arrival 1.25s ease-out 1;
@@ -1484,8 +1500,7 @@ h1 {
   line-height: 1.7;
 }
 
-.translation-empty-state .translation-primary,
-.translation-empty-state .translation-commentary p {
+.translation-empty-state .translation-primary {
   color: #666;
 }
 
