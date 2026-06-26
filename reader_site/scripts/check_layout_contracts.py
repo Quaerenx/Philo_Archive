@@ -229,7 +229,7 @@ def check_search_ui() -> None:
     css = read_site_file("assets/search.css")
     for needle in [
         "/assets/search.css?v=phase19",
-        "/assets/search.js?v=phase22",
+        "/assets/search.js?v=phase23",
         'href="/translations"',
         "Translations",
         'class="filter-panel"',
@@ -252,7 +252,7 @@ def check_search_ui() -> None:
         "search-start-links",
         "Search the archive.",
         "No matching passages.",
-        "Find a work, phrase, or note, then open the source to read and study.",
+        "const bodyMarkup = body ?",
         "function clearSearchFilters",
         "function updateSearchClearState",
         "function updateSearchFilterSummary",

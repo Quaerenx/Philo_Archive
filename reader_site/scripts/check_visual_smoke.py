@@ -29,6 +29,7 @@ ROUTES = [
     ("nietzsche-work-selected", "/work/nietzsche/GM#p-0023.s001", True),
     ("search", "/search", True),
     ("search-results", "/search?q=ressentiment&corpus_id=nietzsche", True),
+    ("search-empty", "/search?q=unlikelyarchivequery0000", True),
     ("notes", "/notes", True),
     ("study", "/study", True),
     ("translations", "/translations", True),
@@ -232,7 +233,7 @@ def check_route_markup(route: str, html: str) -> None:
             "searchStatus",
             "aria-busy=\"false\"",
             "search.css?v=phase19",
-            "search.js?v=phase22",
+            "search.js?v=phase23",
             "Translations",
             "filter-panel",
         ]:
@@ -429,6 +430,21 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
   const parsed = new URL(url);
   if (parsed.pathname === '/search' && parsed.searchParams.get('q')) {
     await page.waitForSelector('.result:not(.search-skeleton), .empty-state', { timeout: 5000 }).catch(() => {});
+    const searchPageState = await page.evaluate(() => {
+      const empty = document.querySelector('#results .empty-state');
+      return {
+        statusText: document.querySelector('#searchStatus')?.textContent.trim() || '',
+        hasResults: document.querySelectorAll('#results .result:not(.search-skeleton)').length > 0,
+        emptyTitle: empty?.querySelector('h2')?.textContent.trim() || '',
+        emptyBodyCount: empty ? empty.querySelectorAll('p').length : 0
+      };
+    });
+    if (searchPageState.statusText) {
+      throw new Error(`search status should not duplicate rendered results: ${JSON.stringify(searchPageState)}`);
+    }
+    if (!searchPageState.hasResults && searchPageState.emptyTitle !== 'No matching passages.') {
+      throw new Error(`empty search should use a concise title: ${JSON.stringify(searchPageState)}`);
+    }
   }
   if (parsed.pathname === '/notes' && !parsed.search) {
     await page.waitForSelector('#notesResults .note-card:not(.notes-skeleton), #notesResults .empty-state', { timeout: 7000 }).catch(() => {});

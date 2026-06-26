@@ -127,13 +127,14 @@ function renderEmptySearch(query) {
   const title = query ? "No matching passages." : "Search the archive.";
   const body = query
     ? "Try a broader term, clear filters, or check saved notes."
-    : "Find a work, phrase, or note, then open the source to read and study.";
+    : "";
   const clearAction = filtered
     ? '<button type="button" data-empty-action="clear-search">Clear search</button>'
     : "";
+  const bodyMarkup = body ? `<p>${escapeHtml(body)}</p>` : "";
   return `<section class="empty-state">
     <h2>${escapeHtml(title)}</h2>
-    <p>${escapeHtml(body)}</p>
+    ${bodyMarkup}
     <div class="empty-actions">
       ${clearAction}
       <a href="${escapeHtml(notesSearchHref(query))}">Search notes</a>
@@ -233,10 +234,7 @@ function compactCount(count, label) {
 }
 
 function searchStatusText(workCount, segmentCount, noteCount, query, direct) {
-  if (!workCount && !segmentCount && !noteCount) {
-    return query ? "No matching passages." : "";
-  }
-  return direct ? "Bible reference results." : "";
+  return "";
 }
 
 function resultFooter(meta, actions) {
