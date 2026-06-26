@@ -585,6 +585,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         .map((node) => node.textContent.trim());
       const visibleExtras = Array.from(document.querySelectorAll('#translationOutput .translation-extra'))
         .filter((node) => window.getComputedStyle(node).display !== 'none');
+      const sectionOrder = Array.from(document.querySelectorAll('#translationOutput .translation-result > [data-translation-section]'))
+        .filter((node) => window.getComputedStyle(node).display !== 'none')
+        .map((node) => node.dataset.translationSection || '');
       return {
         selectedSentence: Boolean(document.querySelector('.reader-sentence.selected')),
         outputVisible: Boolean(output && !output.hidden),
@@ -603,6 +606,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         readingSaveLabel: readingSave ? readingSave.getAttribute('aria-label') || '' : '',
         readingNoteLabel: readingNote ? readingNote.getAttribute('aria-label') || '' : '',
         readingActions,
+        sectionOrder,
+        visibleOutputText: output ? output.innerText : '',
         visibleExtraCount: visibleExtras.length,
         activeTab: activeTab ? activeTab.textContent.trim() : '',
         studyToolsOpen: Boolean(document.querySelector('.translation-utility')?.open),
@@ -630,6 +635,14 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (state.commentaryHeadingWidth <= 2 || state.commentaryHeadingHeight <= 2) {
       throw new Error(`reading mode should keep the Commentary heading visible: ${JSON.stringify(state)}`);
+    }
+    if (state.sectionOrder[0] !== 'translation' || state.sectionOrder[1] !== 'commentary') {
+      throw new Error(`reading mode should keep Translation and Commentary as the first visible result sections: ${JSON.stringify(state)}`);
+    }
+    for (const noisyText of ['Literal gloss', 'Key terms', 'source_text_sha256', 'prompt_sha256']) {
+      if (state.visibleOutputText.includes(noisyText)) {
+        throw new Error(`reading mode should hide noisy translation metadata ${noisyText}: ${JSON.stringify(state)}`);
+      }
     }
     if (!['Save translation', 'Saved translation'].includes(state.readingSaveLabel) || state.readingNoteLabel !== 'Add note from translation') {
       throw new Error(`reading mode quick actions should keep clear accessible labels: ${JSON.stringify(state)}`);
