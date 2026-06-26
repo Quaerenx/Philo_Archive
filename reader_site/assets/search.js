@@ -177,6 +177,32 @@ function setSearchBusy(isBusy) {
   updateSearchClearState(isBusy);
 }
 
+function compactCount(count, label) {
+  const value = Number(count || 0);
+  return `${value.toLocaleString()} ${label}${value === 1 ? "" : "s"}`;
+}
+
+function searchStatusText(workCount, segmentCount, noteCount, query, direct) {
+  if (!workCount && !segmentCount && !noteCount) {
+    return query ? "No matching passages." : "";
+  }
+  const parts = [
+    workCount ? compactCount(workCount, "work") : "",
+    segmentCount ? compactCount(segmentCount, "passage") : "",
+    noteCount ? compactCount(noteCount, "note") : ""
+  ].filter(Boolean).join(" · ");
+  return direct ? `Bible reference · ${parts}` : parts;
+}
+
+function resultFooter(meta, actions) {
+  const cleanMeta = cleanText(meta || "");
+  if (!cleanMeta && !actions) return "";
+  return `<footer class="result-footer">
+    ${cleanMeta ? `<div class="result-meta">${escapeHtml(cleanMeta)}</div>` : "<div></div>"}
+    ${actions ? `<div class="result-actions">${actions}</div>` : ""}
+  </footer>`;
+}
+
 function renderSearchPending(query) {
   const label = query ? `Searching "${query}"...` : "Searching...";
   statusEl.textContent = label;
@@ -201,13 +227,7 @@ function renderResults(payload, query) {
   const workResults = payload.work_results || [];
   const segmentResults = payload.results || [];
   const noteResults = payload.note_results || [];
-  if (payload.direct && payload.results && payload.results.length) {
-    statusEl.textContent = `Direct Bible reference - ${workCount.toLocaleString()} matching works, ${segmentCount.toLocaleString()} matching segments, ${noteCount.toLocaleString()} matching notes`;
-  } else {
-    statusEl.textContent = workCount || segmentCount || noteCount
-    ? `${workCount.toLocaleString()} matching works, ${segmentCount.toLocaleString()} matching segments, ${noteCount.toLocaleString()} matching notes`
-    : query ? "No matching passages." : "";
-  }
+  statusEl.textContent = searchStatusText(workCount, segmentCount, noteCount, query, Boolean(payload.direct));
   const workMarkup = (payload.work_results || [])
     .map((result) => {
       const meta = [
@@ -216,18 +236,17 @@ function renderResults(payload, query) {
         result.category_title || result.label
       ].filter(Boolean).join(" / ");
       const variants = (result.variant_ids || []).slice(0, 8).map((variantId) => `<span class="tag">${escapeHtml(variantLabel(variantId))}</span>`).join("");
+      const actions = `
+          <a href="${escapeHtml(result.url)}">Open work</a>
+          <a href="/notes?corpus_id=${encodeURIComponent(result.corpus_id || "")}&work_id=${encodeURIComponent(result.work_id || "")}">Notes</a>`;
       return `<article class="result work-result">
         <div class="result-title">
           ${resultKind("Work", "work")}
           <a href="${escapeHtml(result.url)}">${escapeHtml(result.title || result.work_id)}</a>
-          <span class="result-meta">${escapeHtml(meta)}</span>
         </div>
         <p class="snippet">${highlight(result.snippet || "", query)}</p>
         ${variants ? `<div class="tag-row">${variants}</div>` : ""}
-        <div class="result-actions">
-          <a href="${escapeHtml(result.url)}">Open work</a>
-          <a href="/notes?corpus_id=${encodeURIComponent(result.corpus_id || "")}&work_id=${encodeURIComponent(result.work_id || "")}">Notes for work</a>
-        </div>
+        ${resultFooter(meta, actions)}
       </article>`;
     })
     .join("");
@@ -239,17 +258,16 @@ function renderResults(payload, query) {
         result.variant_id,
         result.label
       ].filter(Boolean).join(" / ");
+      const actions = `
+          <a href="${escapeHtml(result.url)}">Open source</a>
+          <a href="${escapeHtml(notesHref(result))}">Notes</a>`;
       return `<article class="result">
         <div class="result-title">
           ${resultKind("Segment", "segment")}
           <a href="${escapeHtml(result.url)}">${escapeHtml(result.title || result.work_id)}</a>
-          <span class="result-meta">${escapeHtml(meta)}</span>
         </div>
         <p class="snippet">${highlight(result.snippet || "", query)}</p>
-        <div class="result-actions">
-          <a href="${escapeHtml(notesHref(result))}">Notes for target</a>
-          <a href="/notes?corpus_id=${encodeURIComponent(result.corpus_id || "")}&work_id=${encodeURIComponent(result.work_id || "")}">Notes for work</a>
-        </div>
+        ${resultFooter(meta, actions)}
       </article>`;
     })
     .join("");
@@ -263,18 +281,17 @@ function renderResults(payload, query) {
       ].filter(Boolean).join(" / ");
       const tags = (result.tags || []).map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join("");
       const targetLink = result.url ? `<a href="${escapeHtml(result.url)}">Open target</a>` : "";
+      const actions = `
+          ${targetLink}
+          <a href="${escapeHtml(result.manage_url || notesHref(result))}">Manage note</a>`;
       return `<article class="result note-result">
         <div class="result-title">
           ${resultKind("Note", "note")}
           <a href="${escapeHtml(result.manage_url || notesHref(result))}">${escapeHtml(result.title || "Research note")}</a>
-          <span class="result-meta">${escapeHtml(meta)}</span>
         </div>
         <p class="snippet">${highlight(result.snippet || "", query)}</p>
         ${tags ? `<div class="tag-row">${tags}</div>` : ""}
-        <div class="result-actions">
-          ${targetLink}
-          <a href="${escapeHtml(result.manage_url || notesHref(result))}">Manage note</a>
-        </div>
+        ${resultFooter(meta, actions)}
       </article>`;
     })
     .join("");

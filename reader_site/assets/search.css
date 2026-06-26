@@ -392,17 +392,21 @@ h1 {
 }
 
 .result-title {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 8px;
-  align-items: baseline;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 6px;
+  align-items: center;
   margin-bottom: 4px;
   line-height: 1.35;
 }
 
 .result-title > a {
+  min-width: 0;
+  overflow: hidden;
   color: #111;
   font-weight: bold;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .result-kind {
@@ -432,16 +436,28 @@ h1 {
 }
 
 .result-meta {
-  flex-basis: 100%;
   color: #555;
   font-size: 10px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.result-footer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: end;
+  margin-top: 8px;
+  padding-top: 7px;
+  border-top: 1px solid #eeeeee;
 }
 
 .result-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-top: 6px;
+  justify-content: flex-end;
+  margin-top: 0;
   line-height: 1.35;
 }
 
@@ -549,5 +565,13 @@ mark {
   .empty-actions button,
   .empty-actions a {
     min-height: 32px;
+  }
+
+  .result-footer {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .result-actions {
+    justify-content: flex-start;
   }
 }
