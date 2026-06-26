@@ -353,7 +353,7 @@ async function checkGemmaRuntimeStatus(announce = false) {
   const controller = new AbortController();
   gemmaRuntimeCheckController = controller;
   const timeout = window.setTimeout(() => controller.abort(), 2500);
-  setGemmaRuntimeIndicator("checking", "Checking translator", "Translation service status");
+  setGemmaRuntimeIndicator("checking", "Checking translator", "Translator status");
   setActionButtonBusy(gemmaRuntimeCheckButton, true);
   try {
     const response = await fetch("/api/health", { signal: controller.signal });
@@ -1524,7 +1524,7 @@ function translationQuickActions(reviewState) {
   const nextSentenceDisabled = selectedIndex < 0 || selectedIndex >= sentenceNodes.length - 1
     ? " disabled"
     : "";
-  return `<div class="translation-reading-actions" aria-label="Reading flow">
+  return `<div class="translation-reading-actions" aria-label="Study flow">
       <button type="button" data-translation-quick-action="next-sentence"${nextSentenceDisabled}>Next sentence</button>
     </div>
     <div class="translation-quick-actions translation-extra" aria-label="Study actions">

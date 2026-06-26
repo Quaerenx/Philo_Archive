@@ -48,21 +48,21 @@
             <section class="research-card translation-card" aria-labelledby="translationCardTitle">
               <h2 id="translationCardTitle" class="visually-hidden">Translation</h2>
               <div id="translationOutput" class="translation-output reading-mode" aria-label="Translation result" aria-busy="false" tabindex="0" hidden></div>
-              <details class="translation-utility" aria-label="Additional translation tools">
+              <details class="translation-utility" aria-label="Study options">
                 <summary>
-                  <span>Tools</span>
+                  <span>Options</span>
                 </summary>
                 <div class="translation-utility-body">
-                  <section class="translation-utility-group" aria-label="Display controls">
-                    <div class="translation-utility-group-label">Display</div>
+                  <section class="translation-utility-group" aria-label="View controls">
+                    <div class="translation-utility-group-label">View</div>
                     <div class="mode-toggle" role="group" aria-label="Translation display mode">
                       <button type="button" id="readingMode" class="active">Reading</button>
                       <button type="button" id="studyMode">Study</button>
                     </div>
                   </section>
-                  <section class="translation-utility-group" aria-label="Reading controls">
-                    <div class="translation-utility-group-label">Reading</div>
-                    <div id="gemmaRuntimeStatus" class="runtime-status" data-runtime-state="checking" title="Translation service status">
+                  <section class="translation-utility-group" aria-label="Sentence controls">
+                    <div class="translation-utility-group-label">Sentence</div>
+                    <div id="gemmaRuntimeStatus" class="runtime-status" data-runtime-state="checking" title="Translator status">
                       <span class="runtime-status-dot" aria-hidden="true"></span>
                       <span id="gemmaRuntimeStatusText" class="runtime-status-text" role="status" aria-live="polite" aria-atomic="true">Checking translator</span>
                       <button type="button" id="gemmaRuntimeCheck" title="Check translator">Check</button>
@@ -77,7 +77,7 @@
                       <button type="button" id="previousSentence" aria-keyshortcuts="ArrowUp K" title="Previous sentence" disabled>Previous</button>
                       <button type="button" id="nextSentence" aria-keyshortcuts="ArrowDown J" title="Next sentence" disabled>Next</button>
                       <details class="sentence-more-controls">
-                        <summary>More navigation</summary>
+                        <summary>Next options</summary>
                         <div class="sentence-more-controls-body">
                           <button type="button" id="nextUnstudiedSentence" title="Next sentence without a translation" aria-label="Next unstudied sentence" disabled>Next unstudied</button>
                           <button type="button" id="nextReviewSentence" title="Next translation to check" aria-label="Next translation to check" disabled>Next to check</button>
@@ -86,15 +86,15 @@
                       </details>
                     </div>
                   </section>
-                  <section class="translation-utility-group translation-flow-group" aria-label="Reading flow">
-                    <div class="translation-utility-group-label">Reading flow</div>
+                  <section class="translation-utility-group translation-flow-group" aria-label="Study flow">
+                    <div class="translation-utility-group-label">Study</div>
                     <div id="translationStatus" class="translation-status" role="status" aria-live="polite" aria-atomic="true"></div>
                     <div id="studyProgress" class="study-progress" data-progress-state="loading" role="status" aria-live="polite" aria-atomic="true">
-                      <span id="studyProgressText">Progress</span>
+                      <span id="studyProgressText">Study progress</span>
                       <button type="button" id="continueStudy" title="Continue with the next sentence without a translation" disabled>Continue study</button>
                     </div>
                     <details class="translation-review-tools">
-                      <summary>Review and export</summary>
+                      <summary>Save & export</summary>
                       <div class="translation-review-tools-body">
                         <div class="translation-review-actions" aria-label="Review actions">
                           <button type="button" id="markTranslationReviewed" title="Save translation" aria-label="Save translation" disabled>Save</button>
@@ -102,7 +102,7 @@
                           <button type="button" id="copyStudyCard" title="Copy study card" aria-label="Copy study card" disabled>Copy study card</button>
                           <button type="button" id="draftTranslationNote" title="Add note from translation" aria-label="Add note from translation" disabled>Add note</button>
                         </div>
-                        <div id="translationRecordsSummary" class="translation-records-summary" role="status" aria-live="polite" aria-atomic="true">Translations</div>
+                        <div id="translationRecordsSummary" class="translation-records-summary" role="status" aria-live="polite" aria-atomic="true">Saved translations</div>
                         <details class="translation-export-tools">
                           <summary>Export</summary>
                           <div class="translation-export-links" aria-label="Translation export links">
@@ -175,6 +175,6 @@
     </main>
   </div>
   <script id="researchData" type="application/json">{{RESEARCH_JSON}}</script>
-  <script src="/assets/reader-work.js?v=common126"></script>
+  <script src="/assets/reader-work.js?v=common127"></script>
 </body>
 </html>

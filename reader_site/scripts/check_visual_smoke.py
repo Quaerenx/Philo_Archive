@@ -256,7 +256,7 @@ def check_route_markup(route: str, html: str) -> None:
             "sentence-context-tools",
             "sentenceContext",
             "sentence-more-controls",
-            "More navigation</summary>",
+            "Next options</summary>",
             "previousSentence",
             "nextSentence",
             "markTranslationReviewed",
@@ -272,9 +272,9 @@ def check_route_markup(route: str, html: str) -> None:
             "Saved</summary>",
             "noteSort",
             "gemmaRuntimeStatus",
-            "Translation service status",
+            "Translator status",
             "translationRecordsSummary",
-            "Translations</div>",
+            "Saved translations</div>",
             "studyProgress",
             "Continue study",
             "translation-export-tools",
@@ -288,7 +288,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common103",
-            "reader-work.js?v=common126",
+            "reader-work.js?v=common127",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
 
