@@ -153,8 +153,8 @@ def check_route_markup(route: str, html: str) -> None:
             "translationsResults",
             "translationsReviewQueue",
             "aria-busy=\"false\"",
-            "translations.css?v=trans6",
-            "translations.js?v=trans12",
+            "translations.css?v=trans7",
+            "translations.js?v=trans14",
             "filter-panel",
             "export-tools",
         ]:
@@ -219,8 +219,8 @@ def check_route_markup(route: str, html: str) -> None:
             "Study bundle</div>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common90",
-            "reader-work.js?v=common101",
+            "reader-work.css?v=common93",
+            "reader-work.js?v=common106",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
 

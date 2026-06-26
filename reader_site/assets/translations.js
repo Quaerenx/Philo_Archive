@@ -231,7 +231,7 @@ function setActionButtonBusy(button, isBusy) {
 }
 
 function renderPending() {
-  statusEl.textContent = "Loading translations...";
+  statusEl.textContent = "Loading...";
   resultsEl.innerHTML = `
     <article class="translation-record-card notes-skeleton" aria-hidden="true">
       <span class="notes-skeleton-line title"></span>
@@ -345,7 +345,7 @@ function translationStatusMessage(queryMatched, visible) {
   const counts = summaryCounts(queryMatched);
   if (!queryMatched.length) return "No translations found.";
   if (!visible.length) return `No translations match this status. ${counts.generated.toLocaleString()} still need review.`;
-  const shown = `${visible.length.toLocaleString()} translations shown`;
+  const shown = `${visible.length.toLocaleString()} shown`;
   if (counts.generated > 0) {
     return `${shown} · ${counts.generated.toLocaleString()} need review.`;
   }
@@ -361,6 +361,11 @@ function renderRecord(record) {
   const commentary = cleanText(record.commentary || record.interpretation || "");
   const targetUrl = cleanText(record.target_url || "");
   const isRecent = record.id === recentlyChangedRecordId;
+  const reviewLabel = REVIEW_LABELS[reviewState] || reviewState;
+  const metaItems = [
+    date ? `<span>${escapeHtml(cleanText(date))}</span>` : "",
+    `<span class="review-badge ${escapeHtml(reviewState)}">${escapeHtml(reviewLabel)}</span>`
+  ].filter(Boolean).join("");
   const actions = [
     reviewState !== "reviewed"
       ? '<button type="button" class="primary-review-action" data-review-state="reviewed" aria-keyshortcuts="R" title="Mark reviewed">Mark reviewed</button>'
@@ -374,17 +379,18 @@ function renderRecord(record) {
       : ""
   ].filter(Boolean).join("");
   return `<article class="translation-record-card${isRecent ? " is-recent" : ""}" tabindex="-1" data-record-id="${escapeHtml(record.id)}" data-corpus-id="${escapeHtml(record.corpus_id)}" data-review-state="${escapeHtml(reviewState)}">
-    <div class="note-title">
-      ${targetUrl ? `<a href="${escapeHtml(targetUrl)}">${escapeHtml(title)}</a>` : escapeHtml(title)}
-      <span class="note-meta">${escapeHtml(cleanText(date))}</span>
-      <span class="review-badge ${escapeHtml(reviewState)}">${escapeHtml(REVIEW_LABELS[reviewState] || reviewState)}</span>
-    </div>
+    <header class="translation-record-heading">
+      <h2 class="translation-record-title">${targetUrl ? `<a href="${escapeHtml(targetUrl)}">${escapeHtml(title)}</a>` : escapeHtml(title)}</h2>
+    </header>
     ${translation ? `<p class="translation-text">${escapeHtml(translation)}</p>` : ""}
     ${commentary ? `<section class="translation-commentary" aria-label="Commentary"><h3>Commentary</h3><p>${escapeHtml(commentary)}</p></section>` : ""}
     ${source ? `<details class="translation-source"><summary>Original source</summary><blockquote>${escapeHtml(source)}</blockquote></details>` : ""}
-    <div class="translation-actions">
-      ${actions}
-    </div>
+    <footer class="translation-record-footer">
+      <div class="translation-record-meta" aria-label="Translation record status">${metaItems}</div>
+      <div class="translation-actions">
+        ${actions}
+      </div>
+    </footer>
   </article>`;
 }
 
