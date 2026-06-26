@@ -92,7 +92,7 @@ def check_html_entrypoints() -> None:
         require_contains(html, "/assets/design-tokens.css", relative_path)
         require_contains(html, 'class="page"', relative_path)
         if relative_path == "index.html":
-            require_contains(html, "Saved translations", relative_path)
+            require_contains(html, "Translation review", relative_path)
             require_contains(html, "/app.js?v=home4", relative_path)
 
 
@@ -209,7 +209,7 @@ def check_search_ui() -> None:
         "/assets/search.css?v=phase13",
         "/assets/search.js?v=phase13",
         'href="/translations"',
-        "Saved translations",
+        "Translation review",
         'class="filter-panel"',
         'class="filter-panel-fields"',
         'id="searchSubmit"',
@@ -377,7 +377,7 @@ def check_translations_ui() -> None:
     for needle in [
         "/assets/notes.css?v=notes12",
         "/assets/translations.css?v=trans4",
-        "/assets/translations.js?v=trans8",
+        "/assets/translations.js?v=trans9",
         'id="translationsSubmit"',
         'id="translationsClear"',
         'id="translationsReviewQueue"',
@@ -650,7 +650,7 @@ def check_work_source_bundle_ui() -> None:
         "sentence_state_count",
         "async function loadTranslationRecordsSummary",
         "/api/sentence-translations/summary",
-        "Saved translations:",
+        "Translation review:",
         "review_state_counts",
         "function setTranslationReviewVisualState",
         "function flashTranslationReviewState",
@@ -868,7 +868,7 @@ def check_work_source_bundle_ui() -> None:
         "Translation is already in Notes.",
         "noteForm.scrollIntoView",
         "preventScroll: isMobileStudyLayout()",
-        "Saved translation & commentary",
+        "Translation & commentary",
         "Original source",
         "Korean translation",
         "Translation drafted into this note. Review and save.",
@@ -928,7 +928,7 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common97", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common98", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common89", "templates/work.html")
     for needle in [
         "reading-desk",
@@ -956,7 +956,7 @@ def check_work_source_bundle_ui() -> None:
         "studyProgressText",
         "continueStudy",
         "Continue study",
-        "Saved translations</div>",
+        "Translation review</div>",
         "translation-export-tools",
         "translation-export-links",
         "Export</summary>",

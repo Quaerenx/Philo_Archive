@@ -23,7 +23,7 @@
             <div class="toolbar-more-links">
               <a href="/notes">Research notes</a>
               <a href="/study">Study notes</a>
-              <a href="/translations?corpus_id={{CORPUS_ID}}&work_id={{WORK_ID}}">Saved translations</a>
+              <a href="/translations?corpus_id={{CORPUS_ID}}&work_id={{WORK_ID}}">Translation review</a>
               <a href="{{SOURCE_HREF}}">Source mode</a>
             </div>
             <div class="toolbar-source-path" aria-label="Source file">
@@ -91,7 +91,7 @@
                       <button type="button" id="draftTranslationNote" title="Draft note from translation" aria-label="Draft note from translation" disabled>Draft note</button>
                     </div>
                     <div id="translationStatus" class="translation-status" role="status" aria-live="polite" aria-atomic="true"></div>
-                    <div id="translationRecordsSummary" class="translation-records-summary" role="status" aria-live="polite" aria-atomic="true">Saved translations</div>
+                    <div id="translationRecordsSummary" class="translation-records-summary" role="status" aria-live="polite" aria-atomic="true">Translation review</div>
                     <div id="studyProgress" class="study-progress" data-progress-state="loading" role="status" aria-live="polite" aria-atomic="true">
                       <span id="studyProgressText">Study progress</span>
                       <button type="button" id="continueStudy" title="Continue with the next sentence without a translation" disabled>Continue study</button>
@@ -163,6 +163,6 @@
     </main>
   </div>
   <script id="researchData" type="application/json">{{RESEARCH_JSON}}</script>
-  <script src="/assets/reader-work.js?v=common97"></script>
+  <script src="/assets/reader-work.js?v=common98"></script>
 </body>
 </html>

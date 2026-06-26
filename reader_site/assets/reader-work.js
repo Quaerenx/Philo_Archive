@@ -396,7 +396,7 @@ function setTranslationRecordsSummary(text, state = "empty", counts = null) {
   const reviewHint = generated ? `${generated} translations need review.` : "No translations need review.";
   translationRecordsSummary.setAttribute(
     "aria-label",
-    `${text}. ${total} saved translations, ${sentenceCount} sentences, ${generated} generated, ${reviewed} reviewed, ${rejected} rejected. ${reviewHint}`
+    `${text}. ${total} translation records, ${sentenceCount} sentences, ${generated} generated, ${reviewed} reviewed, ${rejected} rejected. ${reviewHint}`
   );
   translationRecordsSummary.innerHTML = `
     <span class="translation-records-summary-main">${escapeHtml(text)}</span>
@@ -626,14 +626,14 @@ async function loadTranslationRecordsSummary() {
     const sentenceCount = Number(payload.sentence_state_count || 0);
     applySentenceTranslationStates(payload.sentence_states || []);
     setTranslationRecordsSummary(
-      `Saved translations: ${sentenceCount} sentences`,
+      `Translation review: ${sentenceCount} sentences`,
       generated ? "needs-review" : (total ? "has-records" : "empty"),
       { total, sentenceCount, generated, reviewed, rejected }
     );
     updateTranslationExportLinks(total, reviewed);
   } catch (error) {
     clearSentenceTranslationStates(false);
-    setTranslationRecordsSummary("Saved translations unavailable.", "unavailable");
+    setTranslationRecordsSummary("Translation review unavailable.", "unavailable");
     updateTranslationExportLinks(0, 0);
   }
 }
@@ -680,7 +680,7 @@ function actionConfirmationConfig(action) {
       confirmTitle: "Click again to mark this translation rejected",
       confirmAria: "Confirm reject translation",
       status: "Click Confirm reject to exclude this cached translation.",
-      blockMessage: selectedTranslationRecord && selectedTranslationRecord.id ? "" : "No saved translation is selected.",
+      blockMessage: selectedTranslationRecord && selectedTranslationRecord.id ? "" : "No translation record selected.",
       run: () => updateTranslationReview("rejected")
     };
   }
@@ -1698,7 +1698,7 @@ function renderStudySessionPreviewPending() {
       <span class="loading-spinner" aria-hidden="true"></span>
       <span class="translation-loading-copy">
         <strong>Loading study session preview</strong>
-        <span>Reviewed notes and saved translations</span>
+        <span>Reviewed notes and translations</span>
       </span>
     </div>
     <div class="translation-skeleton translation-study-skeleton" aria-hidden="true">
@@ -2022,7 +2022,7 @@ async function requestSentenceTranslation(regenerate = false) {
     if (!payload.cached) {
       loadTranslationRecordsSummary();
     }
-    setTranslationStatus(payload.cached ? "Loaded saved translation." : "Translation saved locally.");
+    setTranslationStatus(payload.cached ? "Loaded translation." : "Translation saved locally.");
   } catch (error) {
     if (error && error.name === "AbortError") {
       return;
@@ -2049,7 +2049,7 @@ async function requestSentenceTranslation(regenerate = false) {
 
 async function updateTranslationReview(reviewState) {
   if (!selectedTranslationRecord || !selectedTranslationRecord.id) {
-    setTranslationStatus("No saved translation is selected.", true);
+    setTranslationStatus("No translation record selected.", true);
     return;
   }
   clearActionConfirmations();
@@ -2089,7 +2089,7 @@ function translationNoteDraftText(record) {
   const translation = cleanText(record.translation || "");
   const commentary = cleanText(record.commentary || record.interpretation || "");
   const lines = [
-    "Saved translation & commentary",
+    "Translation & commentary",
     `Target: ${selectedSentencePositionLabel()} / ${selectedSentence?.sentenceId || ""}`
   ];
   if (source) {
@@ -2265,7 +2265,7 @@ function clearNoteDraft() {
 
 async function copyStudyCard() {
   if (!selectedTranslationRecord) {
-    setTranslationStatus("No saved translation is selected.", true);
+    setTranslationStatus("No translation record selected.", true);
     return;
   }
   setActionButtonBusy(copyStudyCardButton, true);

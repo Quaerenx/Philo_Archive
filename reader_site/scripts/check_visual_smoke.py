@@ -114,7 +114,7 @@ def check_route_markup(route: str, html: str) -> None:
             "Research search",
             "Research notes",
             "Study notes",
-            "Saved translations",
+            "Translation review",
             "app.js?v=home4",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
@@ -154,7 +154,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translationsReviewQueue",
             "aria-busy=\"false\"",
             "translations.css?v=trans4",
-            "translations.js?v=trans8",
+            "translations.js?v=trans9",
             "filter-panel",
             "export-tools",
         ]:
@@ -168,7 +168,7 @@ def check_route_markup(route: str, html: str) -> None:
             "aria-busy=\"false\"",
             "search.css?v=phase13",
             "search.js?v=phase13",
-            "Saved translations",
+            "Translation review",
             "filter-panel",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
@@ -206,7 +206,7 @@ def check_route_markup(route: str, html: str) -> None:
             "gemmaRuntimeStatus",
             "Local translator status",
             "translationRecordsSummary",
-            "Saved translations</div>",
+            "Translation review</div>",
             "studyProgress",
             "Continue study",
             "translation-export-tools",
@@ -220,7 +220,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common89",
-            "reader-work.js?v=common97",
+            "reader-work.js?v=common98",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
 

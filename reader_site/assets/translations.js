@@ -197,7 +197,7 @@ function setActionButtonBusy(button, isBusy) {
 }
 
 function renderPending() {
-  statusEl.textContent = "Loading saved translations...";
+  statusEl.textContent = "Loading translations...";
   resultsEl.innerHTML = `
     <article class="translation-record-card notes-skeleton" aria-hidden="true">
       <span class="notes-skeleton-line title"></span>
@@ -271,7 +271,7 @@ function summaryButton(filter, label, count) {
 
 function renderSummary(records) {
   const counts = summaryCounts(records);
-  return `<nav class="translation-record-summary" aria-label="Visible saved translations by review state">
+  return `<nav class="translation-record-summary" aria-label="Visible translations by review state">
     ${summaryButton("all", "All", counts.total)}
     ${summaryButton("generated", "Needs review", counts.generated)}
     ${summaryButton("reviewed", "Reviewed", counts.reviewed)}
@@ -281,7 +281,7 @@ function renderSummary(records) {
 
 function renderEmptyRecords() {
   const filtered = hasActiveFilters();
-  const title = filtered ? "No saved translations match these filters." : "No saved translations for this corpus yet.";
+  const title = filtered ? "No translations match these filters." : "No translations for this corpus yet.";
   const body = filtered
     ? "Try clearing the filters, or choose a broader review state and work id."
     : "Open a work, click a sentence, and save a local translation here.";
@@ -305,7 +305,7 @@ function recordTitle(record) {
 
 function renderRecord(record) {
   const reviewState = normalizedReviewState(record);
-  const title = recordTitle(record) || "Saved translation";
+  const title = recordTitle(record) || "Translation record";
   const date = record.updated_at || record.reviewed_at || record.generated_at || record.created_at || "";
   const source = cleanText(record.source_text_excerpt || "");
   const translation = cleanText(record.translation || "");
@@ -345,8 +345,8 @@ function renderRecords(records) {
   const visible = queryMatched.filter(recordMatchesReview);
   updateReviewQueueButton(records);
   statusEl.textContent = visible.length
-    ? `${visible.length.toLocaleString()} saved translations`
-    : "No saved translations found.";
+    ? `${visible.length.toLocaleString()} translations`
+    : "No translations found.";
   resultsEl.innerHTML = queryMatched.length
     ? renderSummary(queryMatched) + (visible.length ? visible.map(renderRecord).join("") : renderEmptyRecords())
     : renderEmptyRecords();
@@ -357,7 +357,7 @@ function renderRecords(records) {
     if (focusFirstReviewQueueRecord()) {
       statusEl.textContent = reviewMessage
         ? `${reviewMessage} Next translation ready for review.`
-        : `${visible.length.toLocaleString()} saved translations / next translation ready for review.`;
+        : `${visible.length.toLocaleString()} translations / next translation ready for review.`;
     } else if (reviewSelect.value === "generated") {
       statusEl.textContent = reviewMessage ? `${reviewMessage} Review queue complete.` : "Review queue complete.";
     }
@@ -433,7 +433,7 @@ function navigateRecordFocus(delta) {
     : Math.min(cards.length - 1, Math.max(0, currentIndex + delta));
   const moved = focusRecordCard(cards[nextIndex]);
   if (moved) {
-    statusEl.textContent = `Selected saved translation ${nextIndex + 1} of ${cards.length}.`;
+    statusEl.textContent = `Selected translation ${nextIndex + 1} of ${cards.length}.`;
   }
   return moved;
 }
@@ -535,7 +535,7 @@ async function loadRecords() {
     const response = await fetch(`/api/sentence-translations/export?${fetchParams("json")}`, { signal: controller.signal });
     if (requestId !== activeRequest) return;
     if (!response.ok) {
-      statusEl.textContent = "Could not load saved translations.";
+      statusEl.textContent = "Could not load translations.";
       resultsEl.innerHTML = "";
       return;
     }
@@ -544,7 +544,7 @@ async function loadRecords() {
   } catch (error) {
     if (error && error.name === "AbortError") return;
     if (requestId === activeRequest) {
-      statusEl.textContent = "Could not load saved translations.";
+      statusEl.textContent = "Could not load translations.";
       resultsEl.innerHTML = "";
     }
   } finally {
