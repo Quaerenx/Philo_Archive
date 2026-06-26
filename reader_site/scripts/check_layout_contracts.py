@@ -314,8 +314,8 @@ def check_notes_ui() -> None:
     script = read_site_file("assets/notes.js")
     css = read_site_file("assets/notes.css")
     for needle in [
-        "/assets/notes.css?v=notes16",
-        "/assets/notes.js?v=notes21",
+        "/assets/notes.css?v=notes17",
+        "/assets/notes.js?v=notes22",
         'id="notesSubmit"',
         'id="notesClear"',
         'id="notesActiveFilters"',
@@ -345,6 +345,8 @@ def check_notes_ui() -> None:
         "function renderNoteFooter",
         "note-footer",
         "Open target",
+        "note-danger-actions",
+        "More</summary>",
         "data-notes-summary-filter",
         "recentlyChangedNoteId",
         "function revealRecentlyChangedNote",
@@ -404,6 +406,11 @@ def check_notes_ui() -> None:
         ".note-footer",
         ".note-footer .note-meta",
         ".note-actions a",
+        ".note-danger-actions",
+        ".note-danger-actions summary",
+        ".note-danger-actions summary::after",
+        ".note-danger-actions[open] summary::after",
+        ".note-danger-actions button",
         ".note-edit-actions",
         "grid-template-columns: repeat(2, minmax(0, 1fr))",
         "justify-content: flex-end",
@@ -428,7 +435,7 @@ def check_translations_ui() -> None:
     base_css = read_site_file("assets/notes.css")
     css = read_site_file("assets/translations.css")
     for needle in [
-        "/assets/notes.css?v=notes16",
+        "/assets/notes.css?v=notes17",
         "/assets/translations.css?v=trans10",
         "/assets/translations.js?v=trans23",
         '<option value="">All corpora</option>',
@@ -1006,6 +1013,9 @@ def check_work_source_bundle_ui() -> None:
         "data-notes-empty-action=\"clear-filter\"",
         "function noteTargetHref",
         "Open target",
+        "note-danger-actions",
+        "More</summary>",
+        "delete-note",
         "Save",
         "Reopen",
         "mark-reviewed-note",
@@ -1089,8 +1099,8 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common112", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common97", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common113", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common98", "templates/work.html")
     for needle in [
         "reading-desk",
         "toolbar-more",
@@ -1391,6 +1401,11 @@ def check_work_source_bundle_ui() -> None:
         ".note-item-title",
         ".note-item-title .review-badge",
         ".note-item-title .review-badge.reviewed",
+        ".note-danger-actions",
+        ".note-danger-actions summary",
+        ".note-danger-actions summary::after",
+        ".note-danger-actions[open] summary::after",
+        ".note-danger-actions button",
         "@keyframes archive-note-highlight",
         ".study-panel-toggle",
         ".study-panel-toggle::before",

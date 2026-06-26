@@ -2471,7 +2471,10 @@ function renderNotesList(notes) {
         <a class="note-target-link" href="${escapeHtml(targetHref)}">Open target</a>
         <button type="button" data-action="${escapeHtml(noteReviewAction(reviewState))}" data-note-id="${escapeHtml(note.id)}">${escapeHtml(noteReviewActionLabel(reviewState))}</button>
         <button type="button" data-action="edit-note" data-note-id="${escapeHtml(note.id)}">Edit</button>
-        <button type="button" data-action="delete-note" data-note-id="${escapeHtml(note.id)}">Delete</button>
+        <details class="note-danger-actions">
+          <summary>More</summary>
+          <button type="button" data-action="delete-note" data-note-id="${escapeHtml(note.id)}">Delete</button>
+        </details>
       </div>
     </div>`;
   }).join("");

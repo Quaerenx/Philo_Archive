@@ -2018,6 +2018,44 @@ h1 {
   margin-top: 4px;
 }
 
+.note-danger-actions {
+  margin: 0;
+}
+
+.note-danger-actions summary {
+  display: inline-flex;
+  min-height: 20px;
+  align-items: center;
+  margin-top: 4px;
+  padding: 2px 7px;
+  color: #555;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  background: #fff;
+  border: 1px solid #bdbdbd;
+  cursor: pointer;
+  list-style: none;
+}
+
+.note-danger-actions summary::-webkit-details-marker {
+  display: none;
+}
+
+.note-danger-actions summary::after {
+  margin-left: 4px;
+  color: #777;
+  content: "+";
+}
+
+.note-danger-actions[open] summary::after {
+  content: "-";
+}
+
+.note-danger-actions button {
+  color: #7b2f2f;
+  border-color: #d7a0a0;
+}
+
 .note-target-link {
   display: inline-flex;
   min-height: 20px;

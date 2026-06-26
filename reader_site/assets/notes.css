@@ -536,6 +536,44 @@ h1 {
   color: #000;
 }
 
+.note-danger-actions {
+  position: relative;
+  margin: 0;
+}
+
+.note-danger-actions summary {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  padding: 4px 12px;
+  color: #555;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  background: #fff;
+  border: 1px solid #bdbdbd;
+  cursor: pointer;
+  list-style: none;
+}
+
+.note-danger-actions summary::-webkit-details-marker {
+  display: none;
+}
+
+.note-danger-actions summary::after {
+  margin-left: 5px;
+  color: #777;
+  content: "+";
+}
+
+.note-danger-actions[open] summary::after {
+  content: "-";
+}
+
+.note-danger-actions button {
+  color: #7b2f2f;
+  border-color: #d7a0a0;
+}
+
 .note-edit-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
