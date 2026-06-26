@@ -201,7 +201,7 @@ def check_route_markup(route: str, html: str) -> None:
             "notesStatus",
             "aria-busy=\"false\"",
             "notes.css?v=notes19",
-            "notes.js?v=notes25",
+            "notes.js?v=notes26",
             "filter-panel",
             "export-tools",
         ]:
@@ -429,6 +429,28 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
   const parsed = new URL(url);
   if (parsed.pathname === '/search' && parsed.searchParams.get('q')) {
     await page.waitForSelector('.result:not(.search-skeleton), .empty-state', { timeout: 5000 }).catch(() => {});
+  }
+  if (parsed.pathname === '/notes' && !parsed.search) {
+    await page.waitForSelector('#notesResults .note-card:not(.notes-skeleton), #notesResults .empty-state', { timeout: 7000 }).catch(() => {});
+    const notesPageState = await page.evaluate(() => {
+      const empty = document.querySelector('#notesResults .empty-state');
+      return {
+        hasNotes: document.querySelectorAll('#notesResults .note-card:not(.notes-skeleton)').length > 0,
+        formHidden: Boolean(document.querySelector('#notesForm')?.hidden),
+        emptyTitle: empty?.querySelector('h2')?.textContent.trim() || '',
+        emptyBodyCount: empty ? empty.querySelectorAll('p').length : 0,
+        emptyActions: Array.from(empty?.querySelectorAll('.empty-actions a') || []).map((node) => node.textContent.trim())
+      };
+    });
+    if (!notesPageState.hasNotes) {
+      if (!notesPageState.formHidden) throw new Error(`empty notes page should hide filter form: ${JSON.stringify(notesPageState)}`);
+      if (notesPageState.emptyTitle !== 'No notes yet.' || notesPageState.emptyBodyCount !== 0) {
+        throw new Error(`empty notes page should stay quiet: ${JSON.stringify(notesPageState)}`);
+      }
+      if (!notesPageState.emptyActions.includes('Find work')) {
+        throw new Error(`empty notes page should keep a concise find action: ${JSON.stringify(notesPageState)}`);
+      }
+    }
   }
   if (parsed.pathname.startsWith('/work/') && parsed.hash) {
     await page.waitForSelector('.reader-sentence.selected', { timeout: 7000 }).catch(() => {});

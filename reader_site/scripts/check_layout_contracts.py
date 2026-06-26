@@ -339,7 +339,7 @@ def check_notes_ui() -> None:
     css = read_site_file("assets/notes.css")
     for needle in [
         "/assets/notes.css?v=notes19",
-        "/assets/notes.js?v=notes25",
+        "/assets/notes.js?v=notes26",
         'id="notesSubmit"',
         'id="notesClear"',
         'id="notesActiveFilters"',
@@ -393,7 +393,7 @@ def check_notes_ui() -> None:
         "function updateNotesListChrome",
         "form.hidden = !showTools",
         "No notes yet.",
-        "Find a work",
+        "Find work",
         "Study",
         "function clearNotesFilters",
         "queryInput.focus();",
