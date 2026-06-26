@@ -1511,47 +1511,6 @@ h1 {
   line-height: 1.76;
 }
 
-.translation-commentary.is-collapsed p {
-  max-height: 9.9em;
-  overflow: hidden;
-}
-
-.translation-commentary.is-collapsed p::after {
-  content: "";
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: 3.3em;
-  pointer-events: none;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0), #fff 78%);
-}
-
-.translation-commentary.is-expanded p {
-  max-height: none;
-}
-
-.translation-commentary.is-expanded p::after {
-  display: none;
-}
-
-.commentary-toggle {
-  min-height: 26px;
-  margin-top: 8px;
-  padding: 2px 8px;
-  color: #333;
-  font-family: Verdana, Arial, Helvetica, sans-serif;
-  font-size: 10px;
-  background: #fff;
-  border: 1px solid #d4d4d4;
-  cursor: pointer;
-}
-
-.commentary-toggle:hover,
-.commentary-toggle:focus-visible {
-  border-color: #999;
-}
-
 .translation-quick-actions {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

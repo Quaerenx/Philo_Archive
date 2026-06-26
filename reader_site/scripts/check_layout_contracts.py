@@ -865,7 +865,6 @@ def check_work_source_bundle_ui() -> None:
         "translation-empty-state",
         "translation-empty-copy",
         "Click a sentence to read translation and commentary.",
-        "setCommentaryExpanded",
         "syncTranslationModeDensity",
         "translationJumpNav",
         "translationResultToolbar",
@@ -882,9 +881,6 @@ def check_work_source_bundle_ui() -> None:
         "data-translation-section=\"commentary\"",
         "translation-result",
         "translation-section-primary",
-        "Read full commentary",
-        "Show less",
-        "Show less commentary",
         "recentlyChangedNoteId",
         "Note saved and highlighted.",
         "setStudyPanelExpanded",
@@ -1106,8 +1102,8 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common113", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common98", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common114", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common99", "templates/work.html")
     for needle in [
         "reading-desk",
         "toolbar-more",
@@ -1398,11 +1394,6 @@ def check_work_source_bundle_ui() -> None:
         ".translation-runtime-command-row button",
         ".translation-error-actions",
         ".research-card button.is-working",
-        ".translation-commentary.is-collapsed",
-        ".translation-commentary.is-expanded p::after",
-        ".commentary-toggle",
-        ".commentary-toggle:hover",
-        ".commentary-toggle:focus-visible",
         ".note-item.is-recent",
         ".note-item.is-recent:focus",
         ".note-item-title",

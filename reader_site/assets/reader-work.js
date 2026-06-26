@@ -75,7 +75,6 @@ let ignoreNextStudyPanelToggleClick = false;
 let pendingActionConfirmation = "";
 let actionConfirmationTimer = 0;
 const visibleSentenceNodes = new Set();
-const COMMENTARY_COLLAPSE_LENGTH = 420;
 const RECENT_WORK_STORAGE_KEY = "philo.reader.recentWork";
 const STUDY_PANEL_STORAGE_KEY = "philo.reader.studyPanelExpanded";
 const STUDY_PANEL_DRAG_THRESHOLD = 36;
@@ -300,22 +299,8 @@ function cancelStudyPanelDrag() {
   }
 }
 
-function setCommentaryExpanded(commentary, expanded) {
-  if (!commentary) return;
-  const toggle = commentary.querySelector(".commentary-toggle");
-  if (!toggle) return;
-  commentary.classList.toggle("is-expanded", expanded);
-  commentary.classList.toggle("is-collapsed", !expanded);
-  toggle.setAttribute("aria-expanded", expanded ? "true" : "false");
-  toggle.setAttribute("aria-label", expanded ? "Show less commentary" : "Read full commentary");
-  toggle.textContent = expanded ? "Show less" : "Read full commentary";
-}
-
 function syncTranslationModeDensity() {
-  if (!translationOutput) return;
-  const commentary = translationOutput.querySelector(".translation-commentary");
-  if (!commentary) return;
-  setCommentaryExpanded(commentary, translationMode === "study");
+  // Reading mode hides tools and metadata; translation and commentary stay readable.
 }
 
 function setTranslationMode(mode) {
@@ -1431,12 +1416,10 @@ function optionalCautions(record) {
 
 function renderCommentary(commentary) {
   const text = cleanText(commentary || "");
-  const shouldCollapse = text.length > COMMENTARY_COLLAPSE_LENGTH;
   return `
-    <section class="translation-section translation-commentary${shouldCollapse ? " is-collapsed" : ""}" data-translation-section="commentary">
+    <section class="translation-section translation-commentary" data-translation-section="commentary">
       <h3>Commentary</h3>
       <p>${escapeHtml(text)}</p>
-      ${shouldCollapse ? '<button type="button" class="commentary-toggle" aria-expanded="false" aria-label="Read full commentary">Read full commentary</button>' : ""}
     </section>`;
 }
 
@@ -2747,13 +2730,7 @@ translationOutput.addEventListener("click", (event) => {
   const sessionCopy = event.target.closest("[data-session-preview-copy]");
   if (sessionCopy) {
     copyStudySessionMarkdown(sessionCopy);
-    return;
   }
-  const toggle = event.target.closest(".commentary-toggle");
-  if (!toggle) return;
-  const commentary = toggle.closest(".translation-commentary");
-  if (!commentary) return;
-  setCommentaryExpanded(commentary, !commentary.classList.contains("is-expanded"));
 });
 
 studyTabs.forEach((tab) => {
