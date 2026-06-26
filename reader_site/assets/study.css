@@ -520,6 +520,11 @@ h1 {
     min-height: 32px;
   }
 
+  .filter-panel summary,
+  .export-tools summary {
+    min-height: 32px;
+  }
+
   .empty-actions {
     gap: 8px;
   }

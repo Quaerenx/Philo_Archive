@@ -206,7 +206,7 @@ def check_search_ui() -> None:
     script = read_site_file("assets/search.js")
     css = read_site_file("assets/search.css")
     for needle in [
-        "/assets/search.css?v=phase13",
+        "/assets/search.css?v=phase14",
         "/assets/search.js?v=phase13",
         'href="/translations"',
         "Translation review",
@@ -284,7 +284,7 @@ def check_notes_ui() -> None:
     script = read_site_file("assets/notes.js")
     css = read_site_file("assets/notes.css")
     for needle in [
-        "/assets/notes.css?v=notes12",
+        "/assets/notes.css?v=notes13",
         "/assets/notes.js?v=notes14",
         'id="notesSubmit"',
         'id="notesClear"',
@@ -375,7 +375,7 @@ def check_translations_ui() -> None:
     base_css = read_site_file("assets/notes.css")
     css = read_site_file("assets/translations.css")
     for needle in [
-        "/assets/notes.css?v=notes12",
+        "/assets/notes.css?v=notes13",
         "/assets/translations.css?v=trans4",
         "/assets/translations.js?v=trans10",
         'id="translationsSubmit"',
@@ -482,7 +482,7 @@ def check_study_ui() -> None:
     script = read_site_file("assets/study.js")
     css = read_site_file("assets/study.css")
     for needle in [
-        "/assets/study.css?v=study10",
+        "/assets/study.css?v=study11",
         "/assets/study.js?v=study10",
         'id="studySubmit"',
         'id="studyClear"',
@@ -929,7 +929,7 @@ def check_work_source_bundle_ui() -> None:
             f"{function_name} reading-first translation layout",
         )
     require_contains(template, "/assets/reader-work.js?v=common99", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common89", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common90", "templates/work.html")
     for needle in [
         "reading-desk",
         "toolbar-more",
