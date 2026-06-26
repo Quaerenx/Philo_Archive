@@ -423,7 +423,8 @@ def main() -> None:
     parser.add_argument("--port", type=int, default=8793)
     args = parser.parse_args()
     server = ThreadingHTTPServer((args.host, args.port), Handler)
-    print(f"Personal Archive of Literature reader running at http://{args.host}:{args.port}")
+    display_host = "127.0.0.1" if args.host in {"0.0.0.0", ""} else args.host
+    print(f"Personal Archive of Literature reader running at http://{display_host}:{args.port}/")
     server.serve_forever()
 
 
