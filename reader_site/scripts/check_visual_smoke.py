@@ -175,7 +175,7 @@ def check_route_markup(route: str, html: str) -> None:
             "Notes",
             "Study",
             "Translations",
-            "app.js?v=home6",
+            "app.js?v=home7",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
     if route == "/study":

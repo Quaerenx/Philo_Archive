@@ -102,8 +102,9 @@ p {
 }
 
 .founded {
-  font-weight: bold;
   margin-bottom: 0.75em;
+  color: #333;
+  font-weight: normal;
 }
 
 .site-tools {
@@ -172,7 +173,7 @@ img {
 }
 
 .reading-path {
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   line-height: 1.4;
 }
 
@@ -181,14 +182,27 @@ img {
   margin-bottom: 4px;
 }
 
+.reading-path-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 5px 8px;
+}
+
 .reading-path a {
-  display: inline-block;
-  margin: 0 10px 4px 0;
+  display: block;
+  margin: 0;
+  padding: 2px 0;
+  line-height: 1.35;
 }
 
 .reading-path-link.primary {
+  grid-column: 1 / -1;
+  padding: 6px 8px;
   color: #000;
   font-weight: bold;
+  background: #fff;
+  border: 1px solid #d4d4d4;
+  border-left: 3px solid #b00000;
 }
 
 .category-filter {

@@ -93,7 +93,8 @@ def check_html_entrypoints() -> None:
         require_contains(html, 'class="page"', relative_path)
         if relative_path == "index.html":
             require_contains(html, "Translations", relative_path)
-            require_contains(html, "/app.js?v=home6", relative_path)
+            require_contains(html, "/styles.css?v=home2", relative_path)
+            require_contains(html, "/app.js?v=home7", relative_path)
 
 
 def check_page_frame_css(relative_path: str, css: str) -> None:
@@ -135,6 +136,7 @@ def check_home_css() -> None:
         "background: var(--reader-background",
         "border: 1px solid var(--reader-border",
         ".reading-path-link.primary",
+        ".reading-path-links",
         ".recent-work",
         ".recent-work-meta",
         "@media (max-width: 860px)",
@@ -159,6 +161,7 @@ def check_home_script() -> None:
         "START_READING_WORK_IDS",
         "START_READING_LABELS",
         "ROOT_LINK_LABELS",
+        "CATEGORY_SUBTITLES",
         'nietzsche: ["M", "FW", "Za-I", "JGB", "GM", "GD"]',
         '"oshb.Gen", "oshb.Ps", "oshb.Isa", "sblgnt.Matt", "sblgnt.John", "sblgnt.Rom"',
         'kierkegaard: ["ee1", "ee2", "fb", "g", "ba", "ps"]',
@@ -171,6 +174,7 @@ def check_home_script() -> None:
         "function startReadingLabel",
         "function startReadingTitle",
         "function rootLinkLabel",
+        "function categorySubtitle",
         "function storedRecentWork",
         "function recentWorkMarkup",
         "Continue reading",

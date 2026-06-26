@@ -43,6 +43,13 @@ const ROOT_LINK_LABELS = {
   wittgenstein: "비트겐슈타인 / Wittgenstein",
 };
 
+const CATEGORY_SUBTITLES = {
+  nietzsche: "Published works and reading groups",
+  bible: "Hebrew Bible, Greek New Testament, and LXX",
+  kierkegaard: "Primary texts organized for reading",
+  wittgenstein: "Notebooks, remarks, and philosophical investigations",
+};
+
 const el = {
   archiveLinks: document.querySelector("#archiveLinks"),
   pageSubtitle: document.querySelector("#pageSubtitle"),
@@ -76,11 +83,10 @@ function storedRecentWork() {
     if (!href.startsWith("/work/")) return null;
     const title = cleanText(item.title || item.work_id || "Recent work");
     const corpus = cleanText(item.corpus_title || item.corpus_id || "");
-    const workId = cleanText(item.work_id || "");
     return {
       href,
       title,
-      meta: [corpus, workId].filter(Boolean).join(" / ")
+      meta: corpus
     };
   } catch (error) {
     return null;
@@ -169,6 +175,10 @@ function rootLinkLabel(corpus) {
   return ROOT_LINK_LABELS[corpus.id] || corpus.title;
 }
 
+function categorySubtitle(corpus) {
+  return CATEGORY_SUBTITLES[corpus.id] || corpus.subtitle || corpus.id;
+}
+
 function renderShell(title, subtitle) {
   el.pageTitle.textContent = title;
   el.pageSubtitle.textContent = subtitle;
@@ -212,7 +222,7 @@ function renderCategory(categoryId) {
     return;
   }
 
-  renderShell(corpus.title, corpus.subtitle || corpus.id);
+  renderShell(corpus.title, categorySubtitle(corpus));
   const baseSections = filteredSections(corpus);
   if (state.activeSection !== "all" && !baseSections.some((section) => section.title === state.activeSection)) {
     state.activeSection = "all";
@@ -258,7 +268,7 @@ function categoryControls(corpus, sections) {
   ].join("");
   return `<section class="category-tools">
     <div class="reading-path"><strong>Start reading</strong><div class="reading-path-links">${pathLinks || '<span class="empty">No starting works available.</span>'}</div></div>
-    <label class="category-filter">Find within this category<input id="categoryFilter" value="${escapeHtml(state.categoryQuery)}" autocomplete="off" placeholder="Title or siglum"></label>
+    <label class="category-filter">Find work<input id="categoryFilter" value="${escapeHtml(state.categoryQuery)}" autocomplete="off" placeholder="Title or siglum"></label>
     <div class="section-filters" aria-label="Sections">${sectionButtons}</div>
   </section>`;
 }
