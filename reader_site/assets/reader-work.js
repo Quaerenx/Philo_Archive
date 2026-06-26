@@ -2505,11 +2505,11 @@ function renderNotesList(notes) {
       <div class="note-text">${escapeHtml(cleanText(note.note))}</div>
       <small>${escapeHtml(cleanText(tags))}${escapeHtml(updated)}</small>
       <div class="note-actions">
-        <a class="note-target-link" href="${escapeHtml(targetHref)}">Open target</a>
+        <a class="note-target-link" href="${escapeHtml(targetHref)}">Source</a>
         <button type="button" data-action="${escapeHtml(noteReviewAction(reviewState))}" data-note-id="${escapeHtml(note.id)}">${escapeHtml(noteReviewActionLabel(reviewState))}</button>
         <button type="button" data-action="edit-note" data-note-id="${escapeHtml(note.id)}">Edit</button>
         <details class="note-danger-actions">
-          <summary>More</summary>
+          <summary>Delete</summary>
           <button type="button" data-action="delete-note" data-note-id="${escapeHtml(note.id)}">Delete</button>
         </details>
       </div>
@@ -2975,7 +2975,7 @@ notesList.addEventListener("click", async (event) => {
     return;
   }
   if (button.dataset.action === "edit-note") {
-    const nextNote = window.prompt("Edit note", currentText);
+    const nextNote = window.prompt("Edit", currentText);
     if (nextNote === null) return;
     const nextTags = window.prompt("Tags", currentTags) || "";
     setActionButtonBusy(button, true);

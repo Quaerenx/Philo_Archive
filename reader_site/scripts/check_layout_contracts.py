@@ -1136,9 +1136,9 @@ def check_work_source_bundle_ui() -> None:
         "No notes match this filter.",
         "data-notes-empty-action=\"clear-filter\"",
         "function noteTargetHref",
-        "Open target",
+        ">Source</a>",
         "note-danger-actions",
-        "More</summary>",
+        "<summary>Delete</summary>",
         "delete-note",
         "Save",
         "Reopen",
@@ -1239,7 +1239,7 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common123", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common124", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common103", "templates/work.html")
     for needle in [
         "reading-desk",
