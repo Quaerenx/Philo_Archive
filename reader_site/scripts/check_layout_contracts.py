@@ -711,7 +711,7 @@ def check_work_source_bundle_ui() -> None:
         "renderTranslationEmptyState",
         "translation-empty-state",
         "translation-empty-copy",
-        "No sentence selected.",
+        "문장을 누르면 번역과 해설이 여기에 표시됩니다.",
         "setCommentaryExpanded",
         "syncTranslationModeDensity",
         "translationJumpNav",

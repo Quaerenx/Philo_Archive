@@ -1431,7 +1431,7 @@ function renderTranslationEmptyState() {
     <div class="translation-result translation-empty-state" role="note">
       <section class="translation-section translation-section-primary" data-translation-section="translation">
         <h3>Translation</h3>
-        <p class="translation-primary translation-empty-copy">No sentence selected.</p>
+        <p class="translation-primary translation-empty-copy">문장을 누르면 번역과 해설이 여기에 표시됩니다.</p>
       </section>
     </div>`;
 }

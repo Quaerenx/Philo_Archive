@@ -80,7 +80,7 @@ def check_selected_sentence_dom(html: str, viewport_label: str) -> None:
     require("translation-target-excerpt" in html, f"{context} missing selected sentence excerpt")
     require("study-panel-toggle-action\">Close" in html, f"{context} did not expand study panel after selection")
     require("study-panel-toggle-summary\">Sentence " in html, f"{context} missing selected sentence summary")
-    require("No sentence selected." not in html, f"{context} still shows empty translation state")
+    require("문장을 누르면 번역과 해설이 여기에 표시됩니다." not in html, f"{context} still shows empty translation state")
 
 
 def main() -> None:
