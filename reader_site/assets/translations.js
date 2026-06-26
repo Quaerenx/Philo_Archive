@@ -244,8 +244,8 @@ function updateReviewQueueButton(records = lastRecords) {
     : "Review next";
   reviewQueueButton.disabled = form.classList.contains("is-loading") || generatedCount === 0;
   reviewQueueButton.title = generatedCount
-    ? `Show ${generatedCount.toLocaleString()} translations waiting for review`
-    : "No translations need review";
+    ? `Start with the first of ${generatedCount.toLocaleString()} translations needing review`
+    : "Review queue is clear";
 }
 
 function recordMatchesReview(record) {
@@ -284,7 +284,7 @@ function renderEmptyRecords() {
   const title = filtered ? "No saved translations match these filters." : "No saved translations for this corpus yet.";
   const body = filtered
     ? "Try clearing the filters, or choose a broader review state and work id."
-    : "Open a work page, select a sentence, and generate a local translation to save it here.";
+    : "Open a work, click a sentence, and save a local translation here.";
   const clearAction = filtered
     ? '<button type="button" data-empty-action="clear-filters">Clear filters</button>'
     : "";
@@ -322,8 +322,8 @@ function renderRecord(record) {
     ${translation ? `<p class="translation-text">${escapeHtml(translation)}</p>` : ""}
     ${commentary ? `<details class="translation-commentary"><summary>Commentary</summary><p>${escapeHtml(commentary)}</p></details>` : ""}
     <div class="translation-actions">
-      ${targetUrl ? `<a href="${escapeHtml(targetUrl)}" data-open-source aria-keyshortcuts="O" title="Open source">Open source</a>` : ""}
-      <button type="button" data-review-state="reviewed" aria-keyshortcuts="R" title="Mark reviewed" ${reviewState === "reviewed" ? "disabled" : ""}>Mark reviewed</button>
+      <button type="button" class="primary-review-action" data-review-state="reviewed" aria-keyshortcuts="R" title="Mark reviewed" ${reviewState === "reviewed" ? "disabled" : ""}>Mark reviewed</button>
+      ${targetUrl ? `<a href="${escapeHtml(targetUrl)}" data-open-source aria-keyshortcuts="O" title="Open work">Open work</a>` : ""}
       <button type="button" data-review-state="generated" aria-keyshortcuts="G" title="Mark as needs review" ${reviewState === "generated" ? "disabled" : ""}>Needs review</button>
       <button type="button" data-review-state="rejected" aria-keyshortcuts="X" title="Reject" ${reviewState === "rejected" ? "disabled" : ""}>Reject</button>
     </div>
@@ -347,10 +347,10 @@ function renderRecords(records) {
     pendingReviewQueueMessage = "";
     if (focusFirstReviewQueueRecord()) {
       statusEl.textContent = reviewMessage
-        ? `${reviewMessage} Next translation selected for review.`
-        : `${visible.length.toLocaleString()} saved translations / next translation selected for review.`;
+        ? `${reviewMessage} Next translation ready for review.`
+        : `${visible.length.toLocaleString()} saved translations / next translation ready for review.`;
     } else if (reviewSelect.value === "generated") {
-      statusEl.textContent = reviewMessage ? `${reviewMessage} Review list complete.` : "Review list complete.";
+      statusEl.textContent = reviewMessage ? `${reviewMessage} Review queue complete.` : "Review queue complete.";
     }
   }
   recentlyChangedRecordId = "";
@@ -364,7 +364,7 @@ function focusFirstReviewQueueRecord() {
 
 function openReviewQueue() {
   if (!generatedRecords(lastRecords).length) {
-    statusEl.textContent = "No translations need review.";
+    statusEl.textContent = "Review queue is clear.";
     return;
   }
   queryInput.value = "";
@@ -627,7 +627,7 @@ resultsEl.addEventListener("click", async (event) => {
       pendingReviewQueueFocus = reviewSelect.value === "generated" && nextState !== "generated";
       pendingReviewQueueMessage = pendingReviewQueueFocus ? "Review saved." : "";
     }
-    statusEl.textContent = ok ? "Saved translation review updated." : "Could not update saved translation review.";
+    statusEl.textContent = ok ? "Review saved." : "Could not update review.";
     await loadRecords();
   } finally {
     setActionButtonBusy(reviewButton, false);

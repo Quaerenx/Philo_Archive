@@ -175,6 +175,12 @@
   background: #f3f3f3;
 }
 
+.translation-actions .primary-review-action:not(:disabled) {
+  color: #111;
+  background: #fffdf2;
+  border-color: #c4a94a;
+}
+
 .translation-actions button.is-working {
   padding-right: 28px;
   background: #fffaf0;
