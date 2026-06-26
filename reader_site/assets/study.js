@@ -222,9 +222,7 @@ function renderNote(note) {
 function renderStudy(payload) {
   const groups = payload.groups || [];
   const count = payload.count || 0;
-  statusEl.textContent = count
-    ? `${count.toLocaleString()} reviewed notes`
-    : "No reviewed notes.";
+  statusEl.textContent = count ? `${count.toLocaleString()} reviewed notes` : "";
   resultsEl.innerHTML = groups.length
     ? groups.map((group) => {
       const title = [group.corpus_id, group.work_id].filter(Boolean).join(" / ") || "Reviewed notes";
