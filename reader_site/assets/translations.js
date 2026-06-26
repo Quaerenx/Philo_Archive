@@ -308,12 +308,12 @@ function updateReviewQueueButton(records = lastRecords) {
   const generatedCount = generatedRecords(records).length;
   reviewQueueButton.hidden = generatedCount === 0;
   reviewQueueButton.textContent = generatedCount
-    ? `Review queue (${generatedCount.toLocaleString()})`
-    : "Review queue";
+    ? `To check (${generatedCount.toLocaleString()})`
+    : "To check";
   reviewQueueButton.disabled = form.classList.contains("is-loading") || generatedCount === 0;
   reviewQueueButton.title = generatedCount
-    ? `Review ${generatedCount.toLocaleString()} generated translations`
-    : "Review queue is empty";
+    ? `${generatedCount.toLocaleString()} translations to check`
+    : "Nothing to check";
 }
 
 function recordMatchesReview(record) {
@@ -453,7 +453,7 @@ function renderRecords(records) {
     exportTools.hidden = visible.length === 0;
     if (!visible.length) exportTools.open = false;
   }
-  const showReviewBadges = visibleReviewStates(visible).size > 1;
+  const showReviewBadges = reviewActionsVisible() && visibleReviewStates(visible).size > 1;
   const showReviewActions = reviewActionsVisible();
   statusEl.textContent = "";
   resultsEl.innerHTML = queryMatched.length
@@ -468,7 +468,7 @@ function renderRecords(records) {
         ? `${reviewMessage} Next review item ready.`
         : `${visible.length.toLocaleString()} translations / review item ready.`;
     } else if (reviewSelect.value === "generated") {
-      statusEl.textContent = reviewMessage ? `${reviewMessage} Review queue is empty.` : "Review queue is empty.";
+      statusEl.textContent = reviewMessage ? `${reviewMessage} Nothing to check.` : "Nothing to check.";
     }
   }
   recentlyChangedRecordId = "";
@@ -482,7 +482,7 @@ function focusFirstReviewQueueRecord() {
 
 function openReviewQueue() {
   if (!generatedRecords(lastRecords).length) {
-    statusEl.textContent = "Review queue is empty.";
+    statusEl.textContent = "Nothing to check.";
     return;
   }
   queryInput.value = "";

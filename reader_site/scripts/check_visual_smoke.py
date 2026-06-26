@@ -217,7 +217,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translationsReviewQueue",
             "aria-busy=\"false\"",
             "translations.css?v=trans16",
-            "translations.js?v=trans39",
+            "translations.js?v=trans40",
             "translationsListTools",
             "Search and filters</summary>",
             "filter-panel",
@@ -516,7 +516,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         formHidden: Boolean(document.querySelector('#translationsForm')?.hidden),
         emptyTitle: empty?.querySelector('h2')?.textContent.trim() || '',
         emptyBodyCount: empty ? empty.querySelectorAll('p').length : 0,
-        emptyActions: Array.from(empty?.querySelectorAll('.empty-actions a') || []).map((node) => node.textContent.trim())
+        emptyActions: Array.from(empty?.querySelectorAll('.empty-actions a') || []).map((node) => node.textContent.trim()),
+        reviewBadgeCount: document.querySelectorAll('#translationsResults .review-badge').length,
+        reviewQueueText: document.querySelector('#translationsReviewQueue')?.textContent.trim() || ''
       };
     });
     if (!translationsPageState.hasRecords) {
@@ -526,6 +528,13 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       if (!translationsPageState.emptyActions.includes('Find work') || !translationsPageState.emptyActions.includes('Study')) {
         throw new Error(`empty translations page should keep concise actions: ${JSON.stringify(translationsPageState)}`);
+      }
+    } else {
+      if (translationsPageState.reviewBadgeCount !== 0) {
+        throw new Error(`default translations list should hide review-state badges: ${JSON.stringify(translationsPageState)}`);
+      }
+      if (translationsPageState.reviewQueueText && !translationsPageState.reviewQueueText.startsWith('To check')) {
+        throw new Error(`translations review entry should stay concise: ${JSON.stringify(translationsPageState)}`);
       }
     }
   }

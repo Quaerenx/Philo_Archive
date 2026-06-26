@@ -489,7 +489,7 @@ def check_translations_ui() -> None:
     for needle in [
         "/assets/notes.css?v=notes19",
         "/assets/translations.css?v=trans16",
-        "/assets/translations.js?v=trans39",
+        "/assets/translations.js?v=trans40",
         '<option value="">All corpora</option>',
         'id="translationsListTools"',
         "Search and filters</summary>",
@@ -586,8 +586,8 @@ def check_translations_ui() -> None:
         "aria-keyshortcuts=\"X\"",
         "aria-keyshortcuts=\"O\"",
         "data-open-source",
-        "Review queue",
-        "Review queue is empty.",
+        "To check",
+        "Nothing to check.",
         "Saved.",
         "Next review item ready",
         "function updateRecordReview",
@@ -604,6 +604,7 @@ def check_translations_ui() -> None:
         "translation-more-actions",
         "More</summary>",
         "Open source",
+        "reviewActionsVisible() && visibleReviewStates(visible).size > 1",
     ]:
         require_contains(script, needle, "assets/translations.js")
     require_ordered_markers(
