@@ -287,8 +287,8 @@ def check_route_markup(route: str, html: str) -> None:
             "Study pack</div>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common103",
-            "reader-work.js?v=common127",
+            "reader-work.css?v=common104",
+            "reader-work.js?v=common128",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
 
@@ -550,6 +550,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       const card = document.querySelector('.translation-card');
       const activeTab = document.querySelector('.study-tab.active');
       const readingNext = document.querySelector('[data-translation-quick-action="next-sentence"]');
+      const readingActions = Array.from(document.querySelectorAll('.translation-reading-actions > *'))
+        .filter((node) => window.getComputedStyle(node).display !== 'none')
+        .map((node) => node.textContent.trim());
       const visibleExtras = Array.from(document.querySelectorAll('#translationOutput .translation-extra'))
         .filter((node) => window.getComputedStyle(node).display !== 'none');
       return {
@@ -561,6 +564,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         cardBoxShadow: card ? window.getComputedStyle(card).boxShadow : '',
         readingNextVisible: Boolean(readingNext && window.getComputedStyle(readingNext).display !== 'none'),
         readingNextText: readingNext ? readingNext.textContent.trim() : '',
+        readingActions,
         visibleExtraCount: visibleExtras.length,
         activeTab: activeTab ? activeTab.textContent.trim() : '',
         studyToolsOpen: Boolean(document.querySelector('.translation-utility')?.open)
@@ -574,7 +578,12 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       throw new Error(`reading mode should suppress review-state card decoration: ${JSON.stringify(state)}`);
     }
     if (!state.readingNextVisible || state.readingNextText !== 'Next sentence') {
-      throw new Error(`reading mode should expose only the next sentence flow action: ${JSON.stringify(state)}`);
+      throw new Error(`reading mode should expose the next sentence action: ${JSON.stringify(state)}`);
+    }
+    for (const actionText of ['Next sentence', 'Save', 'Add note']) {
+      if (!state.readingActions.includes(actionText) && !(actionText === 'Save' && state.readingActions.includes('Saved'))) {
+        throw new Error(`reading mode should expose immediate study action ${actionText}: ${JSON.stringify(state)}`);
+      }
     }
     if (state.visibleExtraCount !== 0) throw new Error(`reading mode exposed study-only translation extras: ${JSON.stringify(state)}`);
     if (state.activeTab !== 'Translation') throw new Error(`selected work route did not keep Translation tab active: ${JSON.stringify(state)}`);

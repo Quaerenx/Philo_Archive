@@ -1569,13 +1569,14 @@ h1 {
 
 .translation-reading-actions {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(78px, 1fr));
   gap: 6px;
   padding-top: 10px;
   border-top: 1px solid #eeeeee;
 }
 
-.translation-reading-actions button {
+.translation-reading-actions button,
+.translation-reading-actions .translation-quick-state {
   min-height: 28px;
   margin: 0;
   padding: 3px 8px;
@@ -1629,10 +1630,6 @@ h1 {
 }
 
 .translation-output.reading-mode .translation-extra {
-  display: none;
-}
-
-.translation-output.study-mode .translation-reading-actions {
   display: none;
 }
 

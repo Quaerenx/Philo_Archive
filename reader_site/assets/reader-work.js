@@ -1524,12 +1524,12 @@ function translationQuickActions(reviewState) {
   const nextSentenceDisabled = selectedIndex < 0 || selectedIndex >= sentenceNodes.length - 1
     ? " disabled"
     : "";
-  return `<div class="translation-reading-actions" aria-label="Study flow">
+  return `<div class="translation-reading-actions" aria-label="Study actions">
       <button type="button" data-translation-quick-action="next-sentence"${nextSentenceDisabled}>Next sentence</button>
-    </div>
-    <div class="translation-quick-actions translation-extra" aria-label="Study actions">
       ${reviewAction}
       <button type="button" data-translation-quick-action="draft-note">Add note</button>
+    </div>
+    <div class="translation-quick-actions translation-extra" aria-label="Study queue">
       <button type="button" data-translation-quick-action="continue">Continue study</button>
     </div>`;
 }
