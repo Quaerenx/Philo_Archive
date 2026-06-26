@@ -248,6 +248,14 @@ To keep HTML marker validation while recording flaky local browser screenshot fa
 python .\scripts\check_visual_smoke.py --allow-screenshot-failures
 ```
 
+Validate the core reader interaction flow in a headless browser:
+
+```powershell
+python .\scripts\check_reader_interaction_smoke.py
+```
+
+This checks that a sentence URL selects the source sentence, opens the study panel state, and keeps the selected sentence visible to the translation/commentary workflow.
+
 For manual browser QA of the work reader, open a cached sentence such as:
 
 ```text

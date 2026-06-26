@@ -142,9 +142,10 @@ For layout-facing changes, also run:
 
 ```powershell
 python .\scripts\check_visual_smoke.py
+python .\scripts\check_reader_interaction_smoke.py
 ```
 
-This starts the local reader on a temporary port and writes ignored desktop/mobile PNG screenshots to `data/visual_qa.local/`.
+These start the local reader on a temporary port. The visual smoke writes ignored desktop/mobile PNG screenshots to `data/visual_qa.local/`; the interaction smoke verifies the sentence-selection study-panel flow without calling Gemma.
 
 ## Public Release Notes
 

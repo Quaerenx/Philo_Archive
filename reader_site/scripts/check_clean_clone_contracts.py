@@ -68,6 +68,7 @@ REQUIRED_FILES = [
     "reader_site/scripts/check_restore_readiness.py",
     "reader_site/scripts/check_search_artifact_integrity.py",
     "reader_site/scripts/check_note_target_integrity.py",
+    "reader_site/scripts/check_reader_interaction_smoke.py",
     "reader_site/data/ai_prompt_templates.json",
     "reader_site/services/interpretation_prompts.py",
     "reader_site/services/sentence_targets.py",
@@ -95,12 +96,14 @@ REQUIRED_DOC_SNIPPETS = {
         "--run-source-light-checks",
         "python .\\scripts\\check_ci_contracts.py",
         "python .\\scripts\\check_source_publication_contracts.py",
+        "python .\\scripts\\check_reader_interaction_smoke.py",
         ".github/workflows/reader-site-source-light.yml",
     ],
     "reader_site/docs/release_handoff.md": [
         "python .\\scripts\\check_clean_clone_contracts.py",
         "python .\\scripts\\check_ci_contracts.py",
         "python .\\scripts\\check_source_publication_contracts.py",
+        "python .\\scripts\\check_reader_interaction_smoke.py",
         "docs/clean_clone_reproducibility.md",
         "docs/source_publication_policy.md",
         ".github/workflows/reader-site-source-light.yml",
@@ -143,6 +146,7 @@ FORBIDDEN_SOURCE_LIGHT_SCRIPTS = {
     "check_search_relevance.py",
     "check_source_target_contracts.py",
     "check_static_routes.py",
+    "check_reader_interaction_smoke.py",
     "check_visual_smoke.py",
 }
 
@@ -346,7 +350,7 @@ def remove_tree(path: Path) -> None:
         func(target)
 
     if path.exists():
-        shutil.rmtree(path, onexc=clear_readonly)
+        shutil.rmtree(path, onerror=clear_readonly)
 
 
 def clone_smoke(parent: Path, keep_clone: bool) -> None:
