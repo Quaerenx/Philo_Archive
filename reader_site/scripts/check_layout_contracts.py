@@ -677,7 +677,7 @@ def check_study_ui() -> None:
     css = read_site_file("assets/study.css")
     for needle in [
         "/assets/study.css?v=study18",
-        "/assets/study.js?v=study22",
+        "/assets/study.js?v=study23",
         'id="studySubmit"',
         'id="studyClear"',
         'id="studyActiveFilters"',
@@ -712,8 +712,8 @@ def check_study_ui() -> None:
         "function studyGroupMeta",
         "archiveCorpora = payload.corpora || []",
         'statusEl.textContent = "";',
-        "Save notes while reading, then return here to study them.",
-        "Find a work",
+        "Working notes",
+        "Find work",
         "function clearStudyFilters",
         "queryInput.focus();",
         "function updateStudyClearState",

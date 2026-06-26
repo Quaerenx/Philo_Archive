@@ -135,19 +135,18 @@ function updateStudyListChrome(count = 0) {
 function renderEmptyStudy() {
   const filtered = hasActiveFilters();
   const title = filtered ? "No saved notes match these filters." : "No saved notes yet.";
-  const body = filtered
-    ? "Clear filters, or edit the saved notes list."
-    : "Save notes while reading, then return here to study them.";
+  const body = filtered ? "Clear filters, or edit the saved notes list." : "";
   const clearAction = filtered
     ? '<button type="button" data-empty-action="clear-filters">Clear filters</button>'
     : "";
+  const bodyMarkup = body ? `<p>${escapeHtml(body)}</p>` : "";
   return `<section class="empty empty-state">
     <h2>${escapeHtml(title)}</h2>
-    <p>${escapeHtml(body)}</p>
+    ${bodyMarkup}
     <div class="empty-actions">
       ${clearAction}
-      <a href="/notes?review_state=raw">Open working notes</a>
-      <a href="/search">Find a work</a>
+      <a href="/notes?review_state=raw">Working notes</a>
+      <a href="/search">Find work</a>
     </div>
   </section>`;
 }

@@ -188,7 +188,7 @@ def check_route_markup(route: str, html: str) -> None:
             "studyStatus",
             "aria-busy=\"false\"",
             "study.css?v=study18",
-            "study.js?v=study22",
+            "study.js?v=study23",
             "filter-panel",
             "export-tools",
         ]:
@@ -449,6 +449,28 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       if (!notesPageState.emptyActions.includes('Find work')) {
         throw new Error(`empty notes page should keep a concise find action: ${JSON.stringify(notesPageState)}`);
+      }
+    }
+  }
+  if (parsed.pathname === '/study' && !parsed.search) {
+    await page.waitForSelector('#studyResults .study-group:not(.study-skeleton), #studyResults .empty-state', { timeout: 7000 }).catch(() => {});
+    const studyPageState = await page.evaluate(() => {
+      const empty = document.querySelector('#studyResults .empty-state');
+      return {
+        hasGroups: document.querySelectorAll('#studyResults .study-group:not(.study-skeleton)').length > 0,
+        formHidden: Boolean(document.querySelector('#studyForm')?.hidden),
+        emptyTitle: empty?.querySelector('h2')?.textContent.trim() || '',
+        emptyBodyCount: empty ? empty.querySelectorAll('p').length : 0,
+        emptyActions: Array.from(empty?.querySelectorAll('.empty-actions a') || []).map((node) => node.textContent.trim())
+      };
+    });
+    if (!studyPageState.hasGroups) {
+      if (!studyPageState.formHidden) throw new Error(`empty study page should hide filter form: ${JSON.stringify(studyPageState)}`);
+      if (studyPageState.emptyTitle !== 'No saved notes yet.' || studyPageState.emptyBodyCount !== 0) {
+        throw new Error(`empty study page should stay quiet: ${JSON.stringify(studyPageState)}`);
+      }
+      if (!studyPageState.emptyActions.includes('Working notes') || !studyPageState.emptyActions.includes('Find work')) {
+        throw new Error(`empty study page should keep concise actions: ${JSON.stringify(studyPageState)}`);
       }
     }
   }
