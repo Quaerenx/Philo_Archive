@@ -219,8 +219,8 @@ def check_route_markup(route: str, html: str) -> None:
             "translationsResults",
             "translationsReviewQueue",
             "aria-busy=\"false\"",
-            "translations.css?v=trans18",
-            "translations.js?v=trans45",
+            "translations.css?v=trans19",
+            "translations.js?v=trans46",
             "translationsListTools",
             "Search and filters</summary>",
             "filter-panel",
@@ -531,6 +531,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
           emptyActions: Array.from(empty?.querySelectorAll('.empty-actions a') || []).map((node) => node.textContent.trim()),
           reviewBadgeCount: document.querySelectorAll('#translationsResults .review-badge').length,
           summaryButtons: Array.from(document.querySelectorAll('#translationsResults .translation-record-summary [data-translation-summary-filter]')).map((node) => node.textContent.trim()),
+          groupTitleCount: document.querySelectorAll('#translationsResults .translation-record-group-title').length,
+          firstGroupTitle: document.querySelector('#translationsResults .translation-record-group-title')?.textContent.trim() || '',
           reviewQueueText: document.querySelector('#translationsReviewQueue')?.textContent.trim() || ''
         };
     });
@@ -551,6 +553,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       if (!translationsPageState.summaryButtons.some((text) => text.startsWith('All'))) {
         throw new Error(`default translations list should expose a compact status overview: ${JSON.stringify(translationsPageState)}`);
+      }
+      if (translationsPageState.groupTitleCount === 0 || !translationsPageState.firstGroupTitle) {
+        throw new Error(`default translations list should group records by work context: ${JSON.stringify(translationsPageState)}`);
       }
     }
   }

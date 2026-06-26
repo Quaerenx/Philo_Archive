@@ -388,6 +388,33 @@ function recordContext(record) {
   ].filter(Boolean).join(" / ");
 }
 
+function recordGroupKey(record) {
+  return [
+    cleanText(record.corpus_id || ""),
+    cleanText(record.work_id || "")
+  ].join("\u001f");
+}
+
+function groupedTranslationRecords(records) {
+  const groups = [];
+  const indexes = new Map();
+  for (const record of records) {
+    const key = recordGroupKey(record);
+    let group = indexes.get(key);
+    if (!group) {
+      group = {
+        key,
+        label: recordContext(record) || corpusDisplayName(record.corpus_id) || "Translations",
+        records: []
+      };
+      indexes.set(key, group);
+      groups.push(group);
+    }
+    group.records.push(record);
+  }
+  return groups;
+}
+
 function visibleReviewStates(records) {
   return new Set(records.map(normalizedReviewState));
 }
@@ -405,6 +432,7 @@ function renderRecord(record, options) {
   const reviewLabel = REVIEW_LABELS[reviewState] || reviewState;
   const showReviewBadge = options.showReviewBadge !== false;
   const showReviewActions = options.showReviewActions === true;
+  const showContext = options.showContext !== false;
   const reviewKicker = showReviewBadge
     ? `<div class="translation-record-kicker">
         <span class="review-badge" aria-label="Review status: ${escapeHtml(reviewLabel)}">${escapeHtml(reviewLabel)}</span>
@@ -429,7 +457,7 @@ function renderRecord(record, options) {
     <header class="translation-record-heading">
       <h2 class="translation-record-title">${targetUrl ? `<a href="${escapeHtml(targetUrl)}" data-open-source aria-keyshortcuts="O" title="Source">${escapeHtml(title)}</a>` : escapeHtml(title)}</h2>
       ${reviewKicker}
-      ${context ? `<div class="translation-record-context">${escapeHtml(context)}</div>` : ""}
+      ${showContext && context ? `<div class="translation-record-context">${escapeHtml(context)}</div>` : ""}
     </header>
     ${translation ? `<p class="translation-text">${escapeHtml(translation)}</p>` : ""}
     ${commentary ? `<section class="translation-commentary" aria-label="Commentary"><h3>Commentary</h3><p>${escapeHtml(commentary)}</p></section>` : ""}
@@ -440,6 +468,17 @@ function renderRecord(record, options) {
       </div>
     </footer>` : ""}
   </article>`;
+}
+
+function renderRecordGroups(records, options) {
+  return groupedTranslationRecords(records).map((group, groupIndex) => `
+    <section class="translation-record-group" data-translation-record-group="${groupIndex + 1}">
+      <div class="translation-record-group-title">
+        <span>${escapeHtml(group.label)}</span>
+        <strong>${group.records.length.toLocaleString()} ${group.records.length === 1 ? "translation" : "translations"}</strong>
+      </div>
+      ${group.records.map((record) => renderRecord(record, { ...options, showContext: false })).join("")}
+    </section>`).join("");
 }
 
 function renderRecords(records) {
@@ -456,7 +495,7 @@ function renderRecords(records) {
   const showReviewActions = reviewActionsVisible();
   statusEl.textContent = "";
   resultsEl.innerHTML = queryMatched.length
-    ? renderSummary(queryMatched) + (visible.length ? visible.map((record) => renderRecord(record, { showReviewBadge: showReviewBadges, showReviewActions })).join("") : renderEmptyRecords())
+    ? renderSummary(queryMatched) + (visible.length ? renderRecordGroups(visible, { showReviewBadge: showReviewBadges, showReviewActions }) : renderEmptyRecords())
     : renderEmptyRecords();
   if (pendingReviewQueueFocus) {
     const reviewMessage = pendingReviewQueueMessage;
