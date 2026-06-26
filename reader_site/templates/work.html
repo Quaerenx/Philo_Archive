@@ -6,7 +6,7 @@
   <title>{{TITLE}} / {{CORPUS_TITLE}}</title>
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
-  <link rel="stylesheet" href="/assets/reader-work.css?v=common99">
+  <link rel="stylesheet" href="/assets/reader-work.css?v=common100">
 </head>
 <body class="{{BODY_CLASS}}">
   <div class="page">
@@ -69,13 +69,21 @@
                     </div>
                     <div id="translationTarget" class="translation-target">Select a sentence in the source page.</div>
                     <div id="readingPosition" class="reading-position" aria-label="Current reading position">Reading position</div>
-                    <div id="sentenceContext" class="sentence-context" aria-label="Selected sentence context" hidden></div>
+                    <details class="sentence-context-tools" hidden>
+                      <summary>Nearby text</summary>
+                      <div id="sentenceContext" class="sentence-context" aria-label="Selected sentence context" hidden></div>
+                    </details>
                     <div class="sentence-controls" aria-label="Sentence navigation">
                       <button type="button" id="previousSentence" aria-keyshortcuts="ArrowUp K" title="Previous sentence" disabled>Previous</button>
                       <button type="button" id="nextSentence" aria-keyshortcuts="ArrowDown J" title="Next sentence" disabled>Next</button>
-                      <button type="button" id="nextUnstudiedSentence" title="Next sentence without a translation" aria-label="Next unstudied sentence" disabled>Next unstudied</button>
-                      <button type="button" id="nextReviewSentence" title="Next translation to check" aria-label="Next translation to check" disabled>Next to check</button>
-                      <button type="button" id="regenerateSentence" title="Regenerate translation" aria-label="Regenerate translation" disabled>Regenerate</button>
+                      <details class="sentence-more-controls">
+                        <summary>More navigation</summary>
+                        <div class="sentence-more-controls-body">
+                          <button type="button" id="nextUnstudiedSentence" title="Next sentence without a translation" aria-label="Next unstudied sentence" disabled>Next unstudied</button>
+                          <button type="button" id="nextReviewSentence" title="Next translation to check" aria-label="Next translation to check" disabled>Next to check</button>
+                          <button type="button" id="regenerateSentence" title="Regenerate translation" aria-label="Regenerate translation" disabled>Regenerate</button>
+                        </div>
+                      </details>
                     </div>
                   </section>
                   <section class="translation-utility-group translation-flow-group" aria-label="Reading flow">
@@ -164,6 +172,6 @@
     </main>
   </div>
   <script id="researchData" type="application/json">{{RESEARCH_JSON}}</script>
-  <script src="/assets/reader-work.js?v=common114"></script>
+  <script src="/assets/reader-work.js?v=common115"></script>
 </body>
 </html>

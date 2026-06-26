@@ -12,6 +12,7 @@ const lockNoteTargetButton = document.getElementById("lockNoteTarget");
 const copySourceBundleButton = document.getElementById("copySourceBundle");
 const translationTarget = document.getElementById("translationTarget");
 const readingPosition = document.getElementById("readingPosition");
+const sentenceContextTools = document.querySelector(".sentence-context-tools");
 const sentenceContext = document.getElementById("sentenceContext");
 const previousSentenceButton = document.getElementById("previousSentence");
 const nextSentenceButton = document.getElementById("nextSentence");
@@ -1001,12 +1002,18 @@ function updateSentenceContext() {
       sentenceContext.hidden = true;
       sentenceContext.innerHTML = "";
     }
+    if (sentenceContextTools) {
+      sentenceContextTools.hidden = true;
+    }
     return;
   }
   const index = sentenceIndex(selectedSentence.sentenceId);
   if (index < 0) {
     sentenceContext.hidden = true;
     sentenceContext.innerHTML = "";
+    if (sentenceContextTools) {
+      sentenceContextTools.hidden = true;
+    }
     return;
   }
   const rows = [
@@ -1014,6 +1021,9 @@ function updateSentenceContext() {
     ["Current", index],
     ["Next", index + 1]
   ].filter((entry) => entry[1] >= 0 && entry[1] < sentenceNodes.length);
+  if (sentenceContextTools) {
+    sentenceContextTools.hidden = false;
+  }
   sentenceContext.hidden = false;
   sentenceContext.innerHTML = rows.map(([label, rowIndex]) => {
     const node = sentenceNodes[rowIndex];

@@ -562,6 +562,7 @@ h1 {
 }
 
 .runtime-status[data-runtime-state="ready"] {
+  display: none;
   background: #f6fbf6;
   border-color: #c8dec8;
 }
@@ -586,6 +587,57 @@ h1 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 6px;
   margin-top: 8px;
+}
+
+.sentence-context-tools,
+.sentence-more-controls {
+  min-width: 0;
+  margin: 0;
+}
+
+.sentence-context-tools[hidden] {
+  display: none;
+}
+
+.sentence-more-controls {
+  grid-column: 1 / -1;
+}
+
+.sentence-context-tools summary,
+.sentence-more-controls summary {
+  display: flex;
+  min-height: 24px;
+  align-items: center;
+  justify-content: space-between;
+  color: #555;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  line-height: 1.35;
+  cursor: pointer;
+  list-style: none;
+}
+
+.sentence-context-tools summary::-webkit-details-marker,
+.sentence-more-controls summary::-webkit-details-marker {
+  display: none;
+}
+
+.sentence-context-tools summary::after,
+.sentence-more-controls summary::after {
+  color: #777;
+  content: "+";
+}
+
+.sentence-context-tools[open] summary::after,
+.sentence-more-controls[open] summary::after {
+  content: "-";
+}
+
+.sentence-more-controls-body {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 6px;
 }
 
 .translation-review-tools {

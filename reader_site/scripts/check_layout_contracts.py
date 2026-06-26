@@ -1102,8 +1102,8 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common114", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common99", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common115", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common100", "templates/work.html")
     for needle in [
         "reading-desk",
         "toolbar-more",
@@ -1164,7 +1164,12 @@ def check_work_source_bundle_ui() -> None:
         "Clear filter",
         "aria-busy=\"false\"",
         'aria-describedby="noteStatus"',
+        "sentence-context-tools",
+        "Nearby text</summary>",
         "sentenceContext",
+        "sentence-more-controls",
+        "More navigation</summary>",
+        "sentence-more-controls-body",
         'role="tablist"',
         'role="tab"',
         'role="tabpanel"',
@@ -1255,6 +1260,18 @@ def check_work_source_bundle_ui() -> None:
         ".translation-utility-group + .translation-utility-group",
         ".translation-utility-group-label",
         ".translation-utility .mode-toggle",
+        ".sentence-context-tools",
+        ".sentence-context-tools[hidden]",
+        ".sentence-more-controls",
+        ".sentence-more-controls-body",
+        ".sentence-context-tools summary",
+        ".sentence-more-controls summary",
+        ".sentence-context-tools summary::-webkit-details-marker",
+        ".sentence-more-controls summary::-webkit-details-marker",
+        ".sentence-context-tools summary::after",
+        ".sentence-more-controls summary::after",
+        ".sentence-context-tools[open] summary::after",
+        ".sentence-more-controls[open] summary::after",
         ".translation-review-tools",
         ".translation-review-tools summary",
         ".translation-review-tools[open] summary::after",
@@ -1278,6 +1295,7 @@ def check_work_source_bundle_ui() -> None:
         ".runtime-status-dot",
         ".runtime-status-text",
         ".runtime-status[data-runtime-state=\"ready\"]",
+        "display: none",
         ".runtime-status[data-runtime-state=\"offline\"]",
         ".translation-records-summary",
         ".translation-records-summary[data-records-state=\"has-records\"]",
