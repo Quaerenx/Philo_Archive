@@ -217,6 +217,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translations.js?v=trans20",
             "filter-panel",
             "export-tools",
+            "Export results</summary>",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
     if route == "/search":

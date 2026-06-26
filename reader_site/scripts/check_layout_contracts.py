@@ -418,6 +418,7 @@ def check_translations_ui() -> None:
         'class="filter-panel-fields"',
         'class="review-export-row"',
         'class="export-tools"',
+        "Export results</summary>",
         'role="status"',
         'aria-busy="false"',
     ]:
