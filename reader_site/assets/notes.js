@@ -19,6 +19,7 @@ let requestedTargetId = "";
 let activeNotesController = null;
 let activeNotesRequest = 0;
 let recentlyChangedNoteId = "";
+let archiveCorpora = [];
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -30,6 +31,40 @@ function escapeHtml(value) {
 
 function cleanText(value) {
   return String(value || "").replace(/\s+/g, " ").trim();
+}
+
+function archiveCorpusById(corpusId) {
+  const id = cleanText(corpusId || "");
+  return archiveCorpora.find((corpus) => corpus.id === id) || null;
+}
+
+function corpusDisplayName(corpusId) {
+  const corpus = archiveCorpusById(corpusId);
+  return cleanText(corpus?.title || corpusId || "");
+}
+
+function workDisplayName(corpusId, workId) {
+  const id = cleanText(workId || "");
+  if (!id) return "";
+  const corpus = archiveCorpusById(corpusId);
+  for (const section of corpus?.sections || []) {
+    const match = (section.links || []).find((link) => cleanText(link.work_id || "") === id);
+    if (match) {
+      return cleanText(match.label || id);
+    }
+  }
+  return id;
+}
+
+function noteTitle(note) {
+  return cleanText(note.target_label || note.target_id || note.work_id || "Untitled note");
+}
+
+function noteContext(note) {
+  return [
+    corpusDisplayName(note.corpus_id),
+    workDisplayName(note.corpus_id, note.work_id)
+  ].filter(Boolean).join(" / ");
 }
 
 function splitTags(value) {
@@ -253,8 +288,8 @@ function renderNotes(notes) {
   statusEl.textContent = "";
   resultsEl.innerHTML = notes.length
     ? renderNotesSummary(notes) + notes.map((note) => {
-      const titleParts = [note.corpus_id, note.work_id, note.target_label || note.target_id].filter(Boolean);
-      const title = titleParts.join(" / ");
+      const title = noteTitle(note);
+      const context = noteContext(note);
       const tags = (note.tags || []).join(", ");
       const reviewState = note.review_state || "raw";
       const reviewAction = reviewState === "reviewed" ? "mark-raw" : "mark-reviewed";
@@ -278,6 +313,7 @@ function renderNotes(notes) {
         <div class="note-title">
           ${href}
         </div>
+        ${context ? `<div class="note-context">${escapeHtml(context)}</div>` : ""}
         <p class="note-text">${escapeHtml(cleanText(note.note))}</p>
         ${quote}
         ${renderNoteFooter(meta, actions)}
@@ -413,8 +449,9 @@ async function loadCorpora() {
     const response = await fetch("/api/archive");
     if (!response.ok) return;
     const payload = await response.json();
+    archiveCorpora = payload.corpora || [];
     const current = corpusSelect.value || requestedCorpusId;
-    corpusSelect.innerHTML = `<option value="">All</option>` + (payload.corpora || [])
+    corpusSelect.innerHTML = `<option value="">All</option>` + archiveCorpora
       .map((corpus) => `<option value="${escapeHtml(corpus.id)}">${escapeHtml(corpus.title)}</option>`)
       .join("");
     corpusSelect.value = current;

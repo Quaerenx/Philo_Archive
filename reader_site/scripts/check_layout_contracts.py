@@ -338,8 +338,8 @@ def check_notes_ui() -> None:
     script = read_site_file("assets/notes.js")
     css = read_site_file("assets/notes.css")
     for needle in [
-        "/assets/notes.css?v=notes17",
-        "/assets/notes.js?v=notes23",
+        "/assets/notes.css?v=notes18",
+        "/assets/notes.js?v=notes24",
         'id="notesSubmit"',
         'id="notesClear"',
         'id="notesActiveFilters"',
@@ -365,6 +365,11 @@ def check_notes_ui() -> None:
         "function notesSummaryCounts",
         "function notesSummaryButton",
         "function renderNotesSummary",
+        "function archiveCorpusById",
+        "function corpusDisplayName",
+        "function workDisplayName",
+        "function noteTitle",
+        "function noteContext",
         'statusEl.textContent = "";',
         "function renderNoteFooter",
         "note-footer",
@@ -398,6 +403,7 @@ def check_notes_ui() -> None:
         "filter-chip",
         "data-empty-action=\"clear-filters\"",
         "notes-skeleton",
+        "archiveCorpora = payload.corpora || []",
         "activeNotesController.abort()",
         "signal: controller.signal",
         'error.name === "AbortError"',
@@ -427,6 +433,7 @@ def check_notes_ui() -> None:
         ".note-card.is-recent:focus",
         ".note-card.is-editing",
         ".note-title > a",
+        ".note-context",
         ".note-footer",
         ".note-footer .note-meta",
         ".note-actions a",
@@ -459,7 +466,7 @@ def check_translations_ui() -> None:
     base_css = read_site_file("assets/notes.css")
     css = read_site_file("assets/translations.css")
     for needle in [
-        "/assets/notes.css?v=notes17",
+        "/assets/notes.css?v=notes18",
         "/assets/translations.css?v=trans13",
         "/assets/translations.js?v=trans28",
         '<option value="">All corpora</option>',
@@ -635,8 +642,8 @@ def check_study_ui() -> None:
     script = read_site_file("assets/study.js")
     css = read_site_file("assets/study.css")
     for needle in [
-        "/assets/study.css?v=study16",
-        "/assets/study.js?v=study20",
+        "/assets/study.css?v=study17",
+        "/assets/study.js?v=study21",
         'id="studySubmit"',
         'id="studyClear"',
         'id="studyActiveFilters"',
@@ -660,10 +667,14 @@ def check_study_ui() -> None:
         "renderStudyPending",
         "function renderEmptyStudy",
         "function renderNoteFooter",
+        "function archiveCorpusById",
+        "function corpusDisplayName",
+        "function workDisplayName",
         "study-note-more-actions",
         "<summary>More</summary>",
         "function studyCountLabel",
         "function studyGroupMeta",
+        "archiveCorpora = payload.corpora || []",
         'statusEl.textContent = "";',
         "Save notes while reading, then return here to study them.",
         "Find a work",
@@ -703,6 +714,7 @@ def check_study_ui() -> None:
         ".study-form.is-loading #studySubmit",
         "padding-bottom: 12px",
         ".group-meta",
+        ".study-group-context",
         ".study-tags-panel",
         ".study-tags-panel summary",
         ".study-tags-panel[open] summary::after",

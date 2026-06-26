@@ -14,6 +14,7 @@ const manageLink = document.getElementById("studyManageLink");
 let requestedCorpusId = "";
 let activeStudyController = null;
 let activeStudyRequest = 0;
+let archiveCorpora = [];
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -25,6 +26,29 @@ function escapeHtml(value) {
 
 function cleanText(value) {
   return String(value || "").replace(/\s+/g, " ").trim();
+}
+
+function archiveCorpusById(corpusId) {
+  const id = cleanText(corpusId || "");
+  return archiveCorpora.find((corpus) => corpus.id === id) || null;
+}
+
+function corpusDisplayName(corpusId) {
+  const corpus = archiveCorpusById(corpusId);
+  return cleanText(corpus?.title || corpusId || "");
+}
+
+function workDisplayName(corpusId, workId) {
+  const id = cleanText(workId || "");
+  if (!id) return "";
+  const corpus = archiveCorpusById(corpusId);
+  for (const section of corpus?.sections || []) {
+    const match = (section.links || []).find((link) => cleanText(link.work_id || "") === id);
+    if (match) {
+      return cleanText(match.label || id);
+    }
+  }
+  return id;
 }
 
 function currentParams(format = "json") {
@@ -240,7 +264,8 @@ function renderStudy(payload) {
   statusEl.textContent = "";
   resultsEl.innerHTML = groups.length
     ? groups.map((group) => {
-      const title = [group.corpus_id, group.work_id].filter(Boolean).join(" / ") || "Saved notes";
+      const title = workDisplayName(group.corpus_id, group.work_id) || corpusDisplayName(group.corpus_id) || "Saved notes";
+      const context = group.work_id ? corpusDisplayName(group.corpus_id) : "";
       const workHref = group.corpus_id && group.work_id ? `/work/${encodeURIComponent(group.corpus_id)}/${encodeURIComponent(group.work_id)}` : "";
       const notesHref = `/notes?corpus_id=${encodeURIComponent(group.corpus_id)}&work_id=${encodeURIComponent(group.work_id)}&review_state=reviewed`;
       const tagCounts = (group.tag_counts || [])
@@ -251,6 +276,7 @@ function renderStudy(payload) {
         : "";
       return `<section class="study-group">
         <h2>${escapeHtml(title)}</h2>
+        ${context ? `<div class="study-group-context">${escapeHtml(context)}</div>` : ""}
         <div class="group-meta">${escapeHtml(studyGroupMeta(group))}</div>
         ${tagsPanel}
         ${group.notes.map(renderNote).join("")}
@@ -276,8 +302,9 @@ async function loadCorpora() {
     const response = await fetch("/api/archive");
     if (!response.ok) return;
     const payload = await response.json();
+    archiveCorpora = payload.corpora || [];
     const current = corpusSelect.value || requestedCorpusId;
-    corpusSelect.innerHTML = `<option value="">All</option>` + (payload.corpora || [])
+    corpusSelect.innerHTML = `<option value="">All</option>` + archiveCorpora
       .map((corpus) => `<option value="${escapeHtml(corpus.id)}">${escapeHtml(corpus.title)}</option>`)
       .join("");
     corpusSelect.value = current;

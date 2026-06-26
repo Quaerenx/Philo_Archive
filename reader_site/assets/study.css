@@ -83,6 +83,7 @@ h1 {
 .meta-line,
 .study-status,
 .group-meta,
+.study-group-context,
 .note-meta,
 .note-tags,
 .note-quote,
@@ -371,6 +372,11 @@ h1 {
   margin: 0 0 5px;
   font-size: 13px;
   line-height: 1.35;
+}
+
+.study-group-context {
+  margin: -2px 0 4px;
+  font-size: 10px;
 }
 
 .group-actions {
