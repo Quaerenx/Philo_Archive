@@ -1649,6 +1649,8 @@ function translationErrorIsRuntime(message) {
   if (!text) return true;
   return (
     text.includes("gemma runtime") ||
+    text.includes("translator is offline") ||
+    text.includes("translator offline") ||
     text.includes("runtime is not") ||
     text.includes("translation service is not running") ||
     text.includes("failed to fetch") ||
@@ -1659,14 +1661,14 @@ function translationErrorIsRuntime(message) {
 
 function translationErrorDisplayMessage(message) {
   return translationErrorIsRuntime(message)
-    ? "The translation service is not running. Start it, then try this sentence again."
+    ? "Translator is offline."
     : cleanText(message || "Translation unavailable.");
 }
 
 function runtimeRecoveryMarkup(message) {
   if (!translationErrorIsRuntime(message)) return "";
   return `
-      <p class="translation-runtime-hint">Start the translation service, then retry this sentence.</p>
+      <p class="translation-runtime-hint">Start the translator, then retry this sentence.</p>
       <details class="translation-runtime-details">
         <summary>Startup command</summary>
         <div class="translation-runtime-command-row">
@@ -1680,7 +1682,7 @@ function renderTranslationError(message) {
   selectedTranslationRecord = null;
   const retryMode = pendingTranslationRegenerate ? "regenerate" : "translate";
   const retryLabel = pendingTranslationRegenerate ? "Regenerate again" : "Try again";
-  const cleanMessage = cleanText(message || "The translation service is not running.");
+  const cleanMessage = cleanText(message || "Translator is offline.");
   const isRuntimeError = translationErrorIsRuntime(cleanMessage);
   const displayMessage = translationErrorDisplayMessage(cleanMessage);
   pendingTranslationRegenerate = false;
@@ -2066,9 +2068,9 @@ async function requestSentenceTranslation(regenerate = false) {
     const payload = await response.json().catch(() => ({}));
     if (requestId !== activeTranslationRequest) return;
     if (!response.ok || !payload.ok) {
-      const message = cleanText(payload.error || "Gemma runtime is not running.");
-      if (message.includes("Gemma runtime")) {
-        setGemmaRuntimeIndicator("offline", "Translator offline", "Start the translation service, then retry.");
+      const message = cleanText(payload.error || "Translator is offline.");
+      if (translationErrorIsRuntime(message)) {
+        setGemmaRuntimeIndicator("offline", "Translator offline", "Start the translator, then retry.");
       }
       setTranslationStatus(translationErrorDisplayMessage(message), true);
       renderTranslationError(message);
@@ -2087,9 +2089,9 @@ async function requestSentenceTranslation(regenerate = false) {
       return;
     }
     if (requestId === activeTranslationRequest) {
-      const message = cleanText(error && error.message ? error.message : "Gemma runtime is not running.");
-      if (message.includes("Gemma runtime")) {
-        setGemmaRuntimeIndicator("offline", "Translator offline", "Start the translation service, then retry.");
+      const message = cleanText(error && error.message ? error.message : "Translator is offline.");
+      if (translationErrorIsRuntime(message)) {
+        setGemmaRuntimeIndicator("offline", "Translator offline", "Start the translator, then retry.");
       }
       setTranslationStatus(translationErrorDisplayMessage(message), true);
       renderTranslationError(message);

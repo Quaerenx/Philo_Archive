@@ -943,7 +943,8 @@ def check_work_source_bundle_ui() -> None:
         "function translationErrorIsRuntime",
         "function runtimeRecoveryMarkup",
         "translation-runtime-hint",
-        "Start the translation service, then retry this sentence.",
+        "Translator is offline.",
+        "Start the translator, then retry this sentence.",
         "translation-runtime-details",
         "Startup command",
         "translation-runtime-command",
@@ -1237,7 +1238,7 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common125", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common126", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common103", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
