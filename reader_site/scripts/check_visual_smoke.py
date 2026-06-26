@@ -593,7 +593,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         readingActions,
         visibleExtraCount: visibleExtras.length,
         activeTab: activeTab ? activeTab.textContent.trim() : '',
-        studyToolsOpen: Boolean(document.querySelector('.translation-utility')?.open)
+        studyToolsOpen: Boolean(document.querySelector('.translation-utility')?.open),
+        studyToolsSummary: document.querySelector('.translation-utility summary')?.textContent.trim() || ''
       };
     });
     if (!state.selectedSentence) throw new Error(`selected work route did not select a sentence: ${JSON.stringify(state)}`);
@@ -626,6 +627,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (state.visibleExtraCount !== 0) throw new Error(`reading mode exposed study-only translation extras: ${JSON.stringify(state)}`);
     if (state.activeTab !== 'Translation') throw new Error(`selected work route did not keep Translation tab active: ${JSON.stringify(state)}`);
     if (state.studyToolsOpen) throw new Error(`study tools should stay collapsed in default reading mode: ${JSON.stringify(state)}`);
+    if (state.studyToolsSummary !== 'More') throw new Error(`study tools summary should stay concise: ${JSON.stringify(state)}`);
     await page.click('[data-translation-quick-action="draft-note"]');
     await page.waitForSelector('#study-panel-notes:not([hidden])', { timeout: 5000 });
     await page.waitForFunction(() => document.activeElement?.id === 'noteText', null, { timeout: 3000 }).catch(() => {});

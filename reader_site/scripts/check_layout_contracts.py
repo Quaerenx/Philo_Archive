@@ -1393,7 +1393,7 @@ def check_work_source_bundle_ui() -> None:
         "Sentence controls",
         "Study flow",
         "Save & export",
-        "<span>Options</span>",
+        "<span>More</span>",
         "study-tabs",
         "previousSentence",
         "nextUnstudiedSentence",
