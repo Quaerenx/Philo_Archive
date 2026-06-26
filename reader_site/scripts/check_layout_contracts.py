@@ -986,6 +986,8 @@ def check_work_source_bundle_ui() -> None:
         "translation-result-toolbar",
         "translation-result-toolbar translation-result-details translation-extra",
         "<span>Source</span>",
+        "translation-result-kicker\">Sentence",
+        "<h3>Original</h3>",
         "translation-result-meta",
         "translation-result-target",
         "translationOutputUsesInternalScroll",
@@ -1235,7 +1237,7 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common122", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common123", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common103", "templates/work.html")
     for needle in [
         "reading-desk",

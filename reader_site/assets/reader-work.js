@@ -1488,7 +1488,7 @@ function translationJumpNav(record) {
 function translationResultToolbar(record, _cached, reviewState) {
   const targetLabel = selectedSentence
     ? selectedSentencePositionLabel()
-    : cleanText(record.sentence_id || "Selected sentence");
+    : cleanText(record.sentence_id || "Sentence");
   const sourceText = cleanText(record.source_text_excerpt || selectedSentence?.text || "");
   const normalizedReviewState = normalizedTranslationReviewState(reviewState);
   const stateLabel = TRANSLATION_REVIEW_CHIP_LABELS[normalizedReviewState];
@@ -1500,14 +1500,14 @@ function translationResultToolbar(record, _cached, reviewState) {
     </summary>
     <div class="translation-result-detail-body">
       <div class="translation-result-meta">
-        <span class="translation-result-kicker">Selected sentence</span>
+        <span class="translation-result-kicker">Sentence</span>
         <strong class="translation-result-target">${escapeHtml(targetLabel)}</strong>
         <span class="translation-review-state" data-review-state="${escapeHtml(normalizedReviewState)}" title="${escapeHtml(reviewLabel)}" aria-label="${escapeHtml(reviewLabel)}">
           <span>${escapeHtml(stateLabel)}</span>
         </span>
       </div>
       ${sourceText ? `<section class="translation-section translation-source-detail">
-        <h3>Original source</h3>
+        <h3>Original</h3>
         <p>${escapeHtml(sourceText)}</p>
       </section>` : ""}
       ${translationJumpNav(record)}
