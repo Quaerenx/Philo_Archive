@@ -93,8 +93,7 @@ h1 {
   line-height: 1.35;
 }
 
-.meta-line,
-.path {
+.meta-line {
   color: #555;
   line-height: 1.45;
   overflow-wrap: anywhere;
@@ -146,6 +145,29 @@ h1 {
   flex-wrap: wrap;
   gap: 10px;
   margin-left: 10px;
+}
+
+.toolbar-source-path {
+  display: grid;
+  gap: 2px;
+  max-width: min(620px, 100%);
+  margin: 6px 0 0 10px;
+  color: #777;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 9px;
+  line-height: 1.35;
+}
+
+.toolbar-source-path span {
+  text-transform: uppercase;
+}
+
+.toolbar-source-path code {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  color: #555;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 9px;
 }
 
 .variant-tabs {
@@ -2387,6 +2409,10 @@ h1 {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px 10px;
+    margin: 8px 0 0;
+  }
+
+  .toolbar-source-path {
     margin: 8px 0 0;
   }
 
