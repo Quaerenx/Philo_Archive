@@ -214,7 +214,7 @@ def check_search_ui() -> None:
     css = read_site_file("assets/search.css")
     for needle in [
         "/assets/search.css?v=phase16",
-        "/assets/search.js?v=phase18",
+        "/assets/search.js?v=phase19",
         'href="/translations"',
         "Translations",
         'class="filter-panel"',
@@ -250,6 +250,8 @@ def check_search_ui() -> None:
         "function resultFooter",
         "search-results-works",
         "search-results-segments",
+        "Passage",
+        "Passages",
         "search-results-notes",
         "result-group-count",
         "result-kind",

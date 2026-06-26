@@ -281,7 +281,7 @@ function renderResults(payload, query) {
           <a href="${escapeHtml(notesHref(result))}">Notes</a>`;
       return `<article class="result">
         <div class="result-title">
-          ${resultKind("Segment", "segment")}
+          ${resultKind("Passage", "segment")}
           <a href="${escapeHtml(result.url)}">${escapeHtml(result.title || result.work_id)}</a>
         </div>
         <p class="snippet">${highlight(result.snippet || "", query)}</p>
@@ -325,9 +325,9 @@ function renderResults(payload, query) {
   if (segmentMarkup) {
     groups.push({
       id: "search-results-segments",
-      label: "Segments",
+      label: "Passages",
       count: segmentResults.length,
-      markup: `<section id="search-results-segments" class="result-group">${resultGroupHeader("Segments", segmentResults.length, "segment")}${segmentMarkup}</section>`
+      markup: `<section id="search-results-segments" class="result-group">${resultGroupHeader("Passages", segmentResults.length, "passage")}${segmentMarkup}</section>`
     });
   }
   if (noteMarkup) {
