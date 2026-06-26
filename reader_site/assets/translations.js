@@ -13,6 +13,7 @@ const exportTools = document.getElementById("translationsExportTools");
 const exportMarkdown = document.getElementById("translationsExportMarkdown");
 const exportJson = document.getElementById("translationsExportJson");
 const reviewQueueButton = document.getElementById("translationsReviewQueue");
+const listTools = document.getElementById("translationsListTools");
 let lastRecords = [];
 let activeController = null;
 let activeRequest = 0;
@@ -203,10 +204,15 @@ function updateClearState(isBusy = form.classList.contains("is-loading")) {
 }
 
 function updateTranslationsListChrome(count = lastRecords.length) {
-  const showTools = count > 0 || hasActiveFilters();
+  const activeFilters = hasActiveFilters();
+  const showTools = count > 0 || activeFilters;
+  if (listTools) {
+    listTools.hidden = !showTools;
+    listTools.open = activeFilters;
+  }
   form.hidden = !showTools;
   if (activeFiltersEl) {
-    activeFiltersEl.hidden = !hasActiveFilters();
+    activeFiltersEl.hidden = !activeFilters;
   }
 }
 
@@ -320,6 +326,8 @@ function summaryButton(filter, label, count) {
 
 function renderSummary(records) {
   const counts = summaryCounts(records);
+  const nonzeroStates = ["generated", "reviewed", "rejected"].filter((state) => counts[state] > 0);
+  if (nonzeroStates.length < 2) return "";
   return `<details class="translation-record-summary-tools">
     <summary>Status</summary>
     <nav class="translation-record-summary" aria-label="Visible translations by status">

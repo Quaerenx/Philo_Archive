@@ -2,6 +2,47 @@
   grid-template-columns: minmax(0, 1fr) minmax(180px, 220px) 126px;
 }
 
+.list-tools {
+  margin: 0 0 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.list-tools[hidden] {
+  display: none;
+}
+
+.list-tools summary {
+  display: inline-grid;
+  grid-template-columns: minmax(0, auto) auto;
+  gap: 7px;
+  align-items: center;
+  min-height: 24px;
+  padding: 2px 8px;
+  color: #555;
+  background: #fff;
+  border: 1px solid #d4d4d4;
+  cursor: pointer;
+  list-style: none;
+}
+
+.list-tools summary::-webkit-details-marker {
+  display: none;
+}
+
+.list-tools summary::after {
+  color: #777;
+  content: "+";
+}
+
+.list-tools[open] summary::after {
+  content: "-";
+}
+
+.list-tools .translations-form {
+  margin-top: 8px;
+}
+
 .translation-record-summary-tools {
   margin: 8px 0 0;
   padding-top: 8px;

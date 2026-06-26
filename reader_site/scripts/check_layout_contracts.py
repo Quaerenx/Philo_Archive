@@ -473,9 +473,11 @@ def check_translations_ui() -> None:
     css = read_site_file("assets/translations.css")
     for needle in [
         "/assets/notes.css?v=notes19",
-        "/assets/translations.css?v=trans13",
-        "/assets/translations.js?v=trans31",
+        "/assets/translations.css?v=trans14",
+        "/assets/translations.js?v=trans32",
         '<option value="">All corpora</option>',
+        'id="translationsListTools"',
+        "Search and filters</summary>",
         'id="translationsSubmit"',
         'id="translationsClear"',
         'id="translationsReviewQueue"',
@@ -502,6 +504,8 @@ def check_translations_ui() -> None:
         "pendingReviewQueueFocus",
         "pendingReviewQueueMessage",
         "translationsExportTools",
+        "translationsListTools",
+        "listTools.open = activeFilters",
         "exportTools.hidden = visible.length === 0",
         "if (!visible.length) exportTools.open = false",
         "setBusy",
@@ -526,6 +530,7 @@ def check_translations_ui() -> None:
         "activeFiltersEl.hidden = chips.length === 0",
         "function removeFilter",
         "function renderSummary",
+        "nonzeroStates.length < 2",
         'statusEl.textContent = "";',
         "function renderRecord",
         "function recordContext",
@@ -594,6 +599,12 @@ def check_translations_ui() -> None:
     )
     for needle in [
         ".translations-form",
+        ".list-tools",
+        ".list-tools[hidden]",
+        ".list-tools summary",
+        ".list-tools summary::after",
+        ".list-tools[open] summary::after",
+        ".list-tools .translations-form",
         ".translation-record-summary-tools",
         ".translation-record-summary-tools summary",
         ".translation-record-summary-tools[open] summary::after",
