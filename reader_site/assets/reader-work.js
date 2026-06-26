@@ -7,6 +7,7 @@ const noteFilter = document.getElementById("noteFilter");
 const noteFilterClear = document.getElementById("noteFilterClear");
 const noteSort = document.getElementById("noteSort");
 const noteListSummary = document.getElementById("noteListSummary");
+const notesFilterTools = document.querySelector(".notes-filter-tools");
 const noteTargetPreview = document.getElementById("noteTargetPreview");
 const lockNoteTargetButton = document.getElementById("lockNoteTarget");
 const copySourceBundleButton = document.getElementById("copySourceBundle");
@@ -2455,16 +2456,27 @@ function noteListSummaryText(items) {
 
 function renderNotesUnavailable() {
   notesList.setAttribute("aria-busy", "false");
+  syncNotesFilterToolsVisibility(0, "");
   if (noteListSummary) {
     noteListSummary.textContent = "";
   }
   notesList.innerHTML = '<div class="notes-empty">Notes unavailable.</div>';
 }
 
+function syncNotesFilterToolsVisibility(itemCount, filter) {
+  if (!notesFilterTools) return;
+  const showTools = itemCount > 0 || Boolean(cleanText(filter || ""));
+  notesFilterTools.hidden = !showTools;
+  if (!showTools) {
+    notesFilterTools.open = false;
+  }
+}
+
 function renderNotesList(notes) {
   const items = sortedNotes(notes);
   const filter = noteFilter ? noteFilter.value.trim() : "";
   notesList.setAttribute("aria-busy", "false");
+  syncNotesFilterToolsVisibility(items.length, filter);
   if (noteListSummary) {
     noteListSummary.textContent = noteListSummaryText(items);
   }

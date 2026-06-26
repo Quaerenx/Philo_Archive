@@ -287,7 +287,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common103",
-            "reader-work.js?v=common120",
+            "reader-work.js?v=common121",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
 
@@ -475,7 +475,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       saveText: document.querySelector('#noteForm button[type="submit"]')?.textContent.trim() || '',
       saveLabel: document.querySelector('#noteForm button[type="submit"]')?.getAttribute('aria-label') || '',
       tagsSummary: document.querySelector('.note-options summary')?.textContent.trim() || '',
-      savedSummary: document.querySelector('.notes-filter-tools summary')?.textContent.trim() || ''
+      savedSummary: document.querySelector('.notes-filter-tools summary')?.textContent.trim() || '',
+      savedToolsHidden: Boolean(document.querySelector('.notes-filter-tools')?.hidden),
+      notesEmptyText: document.querySelector('#notesList .notes-empty')?.textContent.trim() || ''
     }));
     if (notesState.notePlaceholder !== 'Write a note...' || !notesState.noteLabelHidden) {
       throw new Error(`notes tab should keep the editor quiet but accessible: ${JSON.stringify(notesState)}`);
@@ -483,8 +485,14 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (notesState.saveText !== 'Save' || notesState.saveLabel !== 'Save note') {
       throw new Error(`notes tab save control should stay concise: ${JSON.stringify(notesState)}`);
     }
-    if (notesState.tagsSummary !== 'Tags' || notesState.savedSummary !== 'Saved') {
+    if (notesState.tagsSummary !== 'Tags') {
       throw new Error(`notes tab details labels should stay concise: ${JSON.stringify(notesState)}`);
+    }
+    if (notesState.notesEmptyText === 'No notes yet.' && !notesState.savedToolsHidden) {
+      throw new Error(`notes tab should hide saved filters when there are no notes: ${JSON.stringify(notesState)}`);
+    }
+    if (notesState.notesEmptyText !== 'No notes yet.' && notesState.savedSummary !== 'Saved') {
+      throw new Error(`notes tab saved filter label should stay concise when notes or filters exist: ${JSON.stringify(notesState)}`);
     }
     await page.click('#study-tab-citation');
     await page.waitForSelector('#study-panel-citation:not([hidden])', { timeout: 5000 });

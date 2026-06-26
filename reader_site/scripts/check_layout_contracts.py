@@ -1104,6 +1104,8 @@ def check_work_source_bundle_ui() -> None:
         "function renderNotesPending",
         "function noteListSummaryText",
         "function renderNotesUnavailable",
+        "function syncNotesFilterToolsVisibility",
+        "notesFilterTools.hidden = !showTools",
         "function renderNotesList",
         "function revealRecentNote",
         "Recently changed note",
@@ -1215,7 +1217,7 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common120", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common121", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common103", "templates/work.html")
     for needle in [
         "reading-desk",
