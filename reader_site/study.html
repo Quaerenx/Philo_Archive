@@ -56,8 +56,9 @@
 
       <details id="studyExportTools" class="export-tools" hidden>
         <summary>Export</summary>
-        <div class="export-row" aria-label="Export study notes">
-          <a id="studyExportMarkdown" href="/api/study/export?format=markdown">Markdown</a>
+        <div class="export-row" aria-label="Export study material">
+          <a id="studyExportMarkdown" href="/api/study/export?format=markdown">Notes</a>
+          <a id="studyExportTranslations" href="/api/sentence-translations/export?format=markdown&review_state=reviewed" hidden>Saved translations</a>
         </div>
       </details>
 
@@ -65,6 +66,6 @@
       <section id="studyResults" class="study-results" aria-live="polite" aria-busy="false"></section>
     </main>
   </div>
-  <script src="/assets/study.js?v=study26"></script>
+  <script src="/assets/study.js?v=study27"></script>
 </body>
 </html>

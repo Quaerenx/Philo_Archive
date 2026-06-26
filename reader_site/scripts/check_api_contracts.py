@@ -260,6 +260,7 @@ def check_study_session_export() -> None:
     )
     require(markdown["kind"] == "text", "study session markdown export should be text")
     require("Study Bundle" in markdown["body"], "study session export heading missing")
+    require(" notes / " in markdown["body"], "study session export count summary should use an ASCII separator")
     require("Translations And Commentary" in markdown["body"], "study session export translation section missing")
     require("Review:" not in markdown["body"], "study session export should hide review-state metadata")
     require("AI output below" not in markdown["body"], "study session export should avoid log-like AI disclaimers")

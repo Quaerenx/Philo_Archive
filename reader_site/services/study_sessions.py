@@ -58,7 +58,7 @@ def export_study_session_markdown(payload: dict[str, Any]) -> str:
     lines = [
         "# Study Bundle",
         "",
-        f"{payload.get('note_count', 0)} notes · {payload.get('translation_count', 0)} translations",
+        f"{payload.get('note_count', 0)} notes / {payload.get('translation_count', 0)} translations",
         "",
         "## Notes",
         "",

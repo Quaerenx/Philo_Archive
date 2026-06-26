@@ -11,6 +11,7 @@ const statusEl = document.getElementById("studyStatus");
 const resultsEl = document.getElementById("studyResults");
 const exportTools = document.getElementById("studyExportTools");
 const exportMarkdown = document.getElementById("studyExportMarkdown");
+const exportTranslations = document.getElementById("studyExportTranslations");
 let requestedCorpusId = "";
 let activeStudyController = null;
 let activeStudyRequest = 0;
@@ -67,12 +68,29 @@ function currentParams(format = "json") {
 function updateLinks() {
   const exportParams = currentParams("markdown");
   exportMarkdown.href = `/api/study/export?${exportParams}`;
+  if (exportTranslations) {
+    exportTranslations.href = `/api/sentence-translations/export?${translationExportParams("markdown")}`;
+  }
 }
 
 function translationSummaryParams() {
   const params = new URLSearchParams();
   const corpusId = corpusSelect.value;
   const workId = workInput.value.trim();
+  if (corpusId) params.set("corpus_id", corpusId);
+  if (workId) params.set("work_id", workId);
+  return params;
+}
+
+function translationExportParams(format = "markdown") {
+  const params = new URLSearchParams({
+    format,
+    review_state: "reviewed"
+  });
+  const query = queryInput.value.trim();
+  const corpusId = corpusSelect.value;
+  const workId = workInput.value.trim();
+  if (query) params.set("q", query);
   if (corpusId) params.set("corpus_id", corpusId);
   if (workId) params.set("work_id", workId);
   return params;
@@ -298,11 +316,16 @@ function studyGroupMeta(group) {
 function renderStudy(payload, translationSummary = null) {
   const groups = payload.groups || [];
   const count = payload.count || 0;
+  const translationCounts = translationSummary?.review_state_counts || {};
+  const reviewedTranslationCount = Number(translationCounts.reviewed || 0);
   updateStudyListChrome(count);
   renderStudyOverview(payload, translationSummary);
   if (exportTools) {
-    exportTools.hidden = count === 0;
-    if (count === 0) exportTools.open = false;
+    exportTools.hidden = count === 0 && reviewedTranslationCount === 0;
+    if (exportTools.hidden) exportTools.open = false;
+  }
+  if (exportTranslations) {
+    exportTranslations.hidden = reviewedTranslationCount === 0;
   }
   statusEl.textContent = "";
   resultsEl.innerHTML = groups.length
