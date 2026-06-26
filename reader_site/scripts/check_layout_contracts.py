@@ -486,7 +486,7 @@ def check_translations_ui() -> None:
     css = read_site_file("assets/translations.css")
     for needle in [
         "/assets/notes.css?v=notes19",
-        "/assets/translations.css?v=trans17",
+        "/assets/translations.css?v=trans18",
         "/assets/translations.js?v=trans45",
         '<option value="">All corpora</option>',
         'id="translationsListTools"',
@@ -667,7 +667,9 @@ def check_translations_ui() -> None:
         ".translation-more-actions button",
         "@media (hover: hover) and (pointer: fine)",
         ".translation-record-card:hover .translation-more-actions",
+        ".translation-record-card:focus .translation-more-actions",
         ".translation-record-card:focus-within .translation-more-actions",
+        ".translation-record-card.is-review-target .translation-more-actions",
         ".translation-actions .primary-review-action:not(:disabled)",
         ".translation-actions button.is-working",
         "@keyframes archive-review-target",

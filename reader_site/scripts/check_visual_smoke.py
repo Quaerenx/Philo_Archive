@@ -219,7 +219,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translationsResults",
             "translationsReviewQueue",
             "aria-busy=\"false\"",
-            "translations.css?v=trans17",
+            "translations.css?v=trans18",
             "translations.js?v=trans45",
             "translationsListTools",
             "Search and filters</summary>",
@@ -727,6 +727,22 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (state.cards > 0 && state.toolsOpen) throw new Error(`review queue should keep list tools collapsed: ${JSON.stringify(state)}`);
     if (state.cards > 0 && (!state.activeFiltersHidden || state.activeFiltersText)) {
       throw new Error(`review queue should not repeat the status filter chip: ${JSON.stringify(state)}`);
+    }
+    if (state.cards > 0) {
+      await page.click('#translationsReviewQueue');
+      await page.waitForSelector('#translationsResults .translation-record-card.is-review-target', { timeout: 3000 }).catch(() => {});
+      const reviewTargetState = await page.evaluate(() => {
+        const card = document.querySelector('#translationsResults .translation-record-card.is-review-target');
+        const reject = card?.querySelector('.translation-more-actions');
+        return {
+          hasReviewTarget: Boolean(card),
+          rejectText: reject?.textContent.trim() || '',
+          rejectDisplay: reject ? window.getComputedStyle(reject).display : ''
+        };
+      });
+      if (!reviewTargetState.hasReviewTarget || !reviewTargetState.rejectText.includes('Reject') || reviewTargetState.rejectDisplay === 'none') {
+        throw new Error(`review queue should expose Reject on the active review card: ${JSON.stringify(reviewTargetState)}`);
+      }
     }
   }
   await page.waitForTimeout(700);

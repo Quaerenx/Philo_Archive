@@ -383,7 +383,9 @@
   }
 
   .translation-record-card:hover .translation-more-actions,
+  .translation-record-card:focus .translation-more-actions,
   .translation-record-card:focus-within .translation-more-actions,
+  .translation-record-card.is-review-target .translation-more-actions,
   .translation-more-actions[open] {
     display: block;
   }
