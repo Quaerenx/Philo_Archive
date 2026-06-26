@@ -19,6 +19,22 @@ const START_READING_WORK_IDS = {
   ],
 };
 
+const START_READING_LABELS = {
+  M: "Morgenröthe / 아침놀",
+  FW: "Die fröhliche Wissenschaft / 즐거운 학문",
+  JGB: "Jenseits von Gut und Böse / 선악의 저편",
+  GM: "Zur Genealogie der Moral / 도덕의 계보",
+  GD: "Götzen-Dämmerung / 우상의 황혼",
+  ee1: "Enten - Eller I",
+  ee2: "Enten - Eller II",
+  Group_Notebooks: "Notebooks",
+  Group_BigTypescriptCorpus: "Big Typescript",
+  Group_BrownBookCorpus: "Brown Book",
+  Group_PICorpus: "Philosophical Investigations",
+  Group_RFMCorpus: "Remarks on Mathematics",
+  Group_RPPCorpus: "Remarks on Psychology",
+};
+
 const el = {
   archiveLinks: document.querySelector("#archiveLinks"),
   pageSubtitle: document.querySelector("#pageSubtitle"),
@@ -93,6 +109,15 @@ function readingPathLinks(corpus) {
   const primary = sections.find((section) => /주요|core|hebrew|works/i.test(`${section.title} ${section.meta || ""}`)) || sections[0];
   const fallbackLinks = primary ? primary.links : links;
   return uniqueLinks([...priorityLinks, ...fallbackLinks]).slice(0, START_READING_LIMIT);
+}
+
+function startReadingLabel(link) {
+  return START_READING_LABELS[link.work_id] || link.label;
+}
+
+function startReadingTitle(link) {
+  const displayLabel = startReadingLabel(link);
+  return displayLabel !== link.label ? ` title="${escapeHtml(link.label)}"` : "";
 }
 
 function renderShell(title, subtitle) {
@@ -171,7 +196,7 @@ function renderCategory(categoryId) {
 
 function categoryControls(corpus, sections) {
   const pathLinks = readingPathLinks(corpus)
-    .map((link, index) => `<a class="reading-path-link${index === 0 ? " primary" : ""}" href="${escapeHtml(link.href)}">${escapeHtml(link.label)}</a>`)
+    .map((link, index) => `<a class="reading-path-link${index === 0 ? " primary" : ""}" href="${escapeHtml(link.href)}"${startReadingTitle(link)}>${escapeHtml(startReadingLabel(link))}</a>`)
     .join("");
   const sectionButtons = [
     `<button type="button" class="section-filter${state.activeSection === "all" ? " active" : ""}" data-section-filter="all">All</button>`,

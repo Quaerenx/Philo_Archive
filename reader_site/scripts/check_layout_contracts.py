@@ -93,7 +93,7 @@ def check_html_entrypoints() -> None:
         require_contains(html, 'class="page"', relative_path)
         if relative_path == "index.html":
             require_contains(html, "Saved translations", relative_path)
-            require_contains(html, "/app.js?v=home3", relative_path)
+            require_contains(html, "/app.js?v=home4", relative_path)
 
 
 def check_page_frame_css(relative_path: str, css: str) -> None:
@@ -154,12 +154,18 @@ def check_home_script() -> None:
     for needle in [
         "START_READING_LIMIT",
         "START_READING_WORK_IDS",
+        "START_READING_LABELS",
         'nietzsche: ["M", "FW", "Za-I", "JGB", "GM", "GD"]',
         '"oshb.Gen", "oshb.Ps", "oshb.Isa", "sblgnt.Matt", "sblgnt.John", "sblgnt.Rom"',
         'kierkegaard: ["ee1", "ee2", "fb", "g", "ba", "ps"]',
         '"Group_Notebooks"',
+        "Morgenröthe / 아침놀",
+        "Big Typescript",
+        "Philosophical Investigations",
         "function corpusLinks",
         "function uniqueLinks",
+        "function startReadingLabel",
+        "function startReadingTitle",
         "linksByWorkId",
         "START_READING_WORK_IDS[corpus.id]",
         "START_READING_LIMIT",
