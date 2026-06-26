@@ -308,6 +308,10 @@ function recordMatchesReview(record) {
   return selected === "all" || normalizedReviewState(record) === selected;
 }
 
+function reviewActionsVisible() {
+  return (reviewSelect.value || "all") !== "all";
+}
+
 function summaryCounts(records) {
   return records.reduce((counts, record) => {
     counts.total += 1;
@@ -387,6 +391,7 @@ function renderRecord(record, options) {
   const isRecent = record.id === recentlyChangedRecordId;
   const reviewLabel = REVIEW_LABELS[reviewState] || reviewState;
   const showReviewBadge = options.showReviewBadge !== false;
+  const showReviewActions = options.showReviewActions === true;
   const reviewKicker = showReviewBadge
     ? `<div class="translation-record-kicker">
         <span class="review-badge" aria-label="Review status: ${escapeHtml(reviewLabel)}">${escapeHtml(reviewLabel)}</span>
@@ -398,7 +403,7 @@ function renderRecord(record, options) {
         <button type="button" data-review-state="rejected" aria-keyshortcuts="X" title="Reject">Reject</button>
       </details>`
     : "";
-  const actions = [
+  const actions = showReviewActions ? [
     reviewState !== "reviewed"
       ? '<button type="button" class="primary-review-action" data-review-state="reviewed" aria-keyshortcuts="R" title="Save translation">Save</button>'
       : "",
@@ -406,7 +411,7 @@ function renderRecord(record, options) {
       ? '<button type="button" data-review-state="generated" aria-keyshortcuts="G" title="Move back to check">To check</button>'
       : "",
     rejectAction
-  ].filter(Boolean).join("");
+  ].filter(Boolean).join("") : "";
   return `<article class="translation-record-card${isRecent ? " is-recent" : ""}" tabindex="-1" data-record-id="${escapeHtml(record.id)}" data-corpus-id="${escapeHtml(record.corpus_id)}" data-review-state="${escapeHtml(reviewState)}">
     <header class="translation-record-heading">
       <h2 class="translation-record-title">${targetUrl ? `<a href="${escapeHtml(targetUrl)}" data-open-source aria-keyshortcuts="O" title="Open source">${escapeHtml(title)}</a>` : escapeHtml(title)}</h2>
@@ -416,11 +421,11 @@ function renderRecord(record, options) {
     ${translation ? `<p class="translation-text">${escapeHtml(translation)}</p>` : ""}
     ${commentary ? `<section class="translation-commentary" aria-label="Commentary"><h3>Commentary</h3><p>${escapeHtml(commentary)}</p></section>` : ""}
     ${source ? `<details class="translation-source"><summary>Original source</summary><blockquote>${escapeHtml(source)}</blockquote></details>` : ""}
-    <footer class="translation-record-footer">
+    ${actions ? `<footer class="translation-record-footer">
       <div class="translation-actions">
         ${actions}
       </div>
-    </footer>
+    </footer>` : ""}
   </article>`;
 }
 
@@ -435,9 +440,10 @@ function renderRecords(records) {
     if (!visible.length) exportTools.open = false;
   }
   const showReviewBadges = visibleReviewStates(visible).size > 1;
+  const showReviewActions = reviewActionsVisible();
   statusEl.textContent = "";
   resultsEl.innerHTML = queryMatched.length
-    ? renderSummary(queryMatched) + (visible.length ? visible.map((record) => renderRecord(record, { showReviewBadge: showReviewBadges })).join("") : renderEmptyRecords())
+    ? renderSummary(queryMatched) + (visible.length ? visible.map((record) => renderRecord(record, { showReviewBadge: showReviewBadges, showReviewActions })).join("") : renderEmptyRecords())
     : renderEmptyRecords();
   if (pendingReviewQueueFocus) {
     const reviewMessage = pendingReviewQueueMessage;
