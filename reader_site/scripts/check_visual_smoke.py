@@ -749,7 +749,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
           rejectText: reject?.textContent.trim() || '',
           rejectDisplay: reject ? window.getComputedStyle(reject).display : '',
           sourceOpen: Boolean(source?.open),
-          sourceText: source?.textContent.trim() || ''
+          sourceText: source?.textContent.trim() || '',
+          statusText: document.querySelector('#translationsStatus')?.textContent.trim() || ''
         };
       });
       if (!reviewTargetState.hasReviewTarget || !reviewTargetState.rejectText.includes('Reject') || reviewTargetState.rejectDisplay === 'none') {
@@ -757,6 +758,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       if (!reviewTargetState.sourceOpen || !reviewTargetState.sourceText.includes('Original')) {
         throw new Error(`review queue should open the active source text: ${JSON.stringify(reviewTargetState)}`);
+      }
+      if (reviewTargetState.statusText.includes('translations /')) {
+        throw new Error(`review queue should avoid duplicate count status text: ${JSON.stringify(reviewTargetState)}`);
       }
     }
   }

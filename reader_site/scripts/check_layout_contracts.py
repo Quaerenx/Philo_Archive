@@ -603,7 +603,7 @@ def check_translations_ui() -> None:
         "To check",
         "Nothing to check.",
         "Saved.",
-        "Next review item ready",
+        "Next item.",
         "function updateRecordReview",
         "function reviewActionMessage",
         "Rejected.",

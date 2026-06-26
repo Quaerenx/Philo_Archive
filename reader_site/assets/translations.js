@@ -536,8 +536,8 @@ function renderRecords(records) {
     pendingReviewQueueMessage = "";
     if (focusFirstReviewQueueRecord()) {
       statusEl.textContent = reviewMessage
-        ? `${reviewMessage} Next review item ready.`
-        : `${visible.length.toLocaleString()} translations / review item ready.`;
+        ? `${reviewMessage} Next item.`
+        : "";
     } else if (reviewSelect.value === "generated") {
       statusEl.textContent = reviewMessage ? `${reviewMessage} Nothing to check.` : "Nothing to check.";
     }
