@@ -80,7 +80,7 @@ function renderArchive() {
   const visibleCorpora = state.archive.corpora;
 
   if (!visibleCorpora.length) {
-    el.archiveLinks.innerHTML = `<div class="empty">No matching texts.</div>`;
+    el.archiveLinks.innerHTML = `<div class="empty">Archive categories are not available.</div>`;
     return;
   }
 
@@ -95,7 +95,7 @@ function renderCategory(categoryId) {
     renderShell("Not found", "Unknown category");
     el.archiveLinks.innerHTML = [
       `<a class="back-link" href="/">Archive index</a>`,
-      `<div class="empty">No matching category.</div>`,
+      `<div class="empty">Category not found.</div>`,
     ].join("");
     return;
   }
@@ -110,7 +110,7 @@ function renderCategory(categoryId) {
     el.archiveLinks.innerHTML = [
       `<a class="back-link" href="/">Archive index</a>`,
       categoryControls(corpus, baseSections),
-      `<div class="empty">No matching texts.</div>`,
+      `<div class="empty">No works match this filter.</div>`,
     ].join("");
     return;
   }
@@ -136,7 +136,7 @@ function renderCategory(categoryId) {
 
 function categoryControls(corpus, sections) {
   const pathLinks = readingPathLinks(corpus)
-    .map((link) => `<a href="${escapeHtml(link.href)}">${escapeHtml(link.label)}</a>`)
+    .map((link, index) => `<a class="reading-path-link${index === 0 ? " primary" : ""}" href="${escapeHtml(link.href)}">${escapeHtml(link.label)}</a>`)
     .join("");
   const sectionButtons = [
     `<button type="button" class="section-filter${state.activeSection === "all" ? " active" : ""}" data-section-filter="all">All</button>`,
@@ -145,9 +145,9 @@ function categoryControls(corpus, sections) {
     )),
   ].join("");
   return `<section class="category-tools">
-    <div class="reading-path"><strong>Reading path</strong><div>${pathLinks || '<span class="empty">No reading path available.</span>'}</div></div>
-    <label class="category-filter">Filter<input id="categoryFilter" value="${escapeHtml(state.categoryQuery)}" autocomplete="off"></label>
-    <div class="section-filters" aria-label="Section filters">${sectionButtons}</div>
+    <div class="reading-path"><strong>Start reading</strong><div class="reading-path-links">${pathLinks || '<span class="empty">No starting works available.</span>'}</div></div>
+    <label class="category-filter">Find within this category<input id="categoryFilter" value="${escapeHtml(state.categoryQuery)}" autocomplete="off" placeholder="Title or siglum"></label>
+    <div class="section-filters" aria-label="Sections">${sectionButtons}</div>
   </section>`;
 }
 
@@ -179,7 +179,7 @@ async function init() {
     state.archive = await response.json();
     renderArchive();
   } catch (error) {
-    el.archiveLinks.innerHTML = `<div class="empty">${escapeHtml(error.message)}</div>`;
+    el.archiveLinks.innerHTML = `<div class="empty">Archive could not be loaded.</div>`;
   }
 }
 

@@ -93,6 +93,7 @@ def check_html_entrypoints() -> None:
         require_contains(html, 'class="page"', relative_path)
         if relative_path == "index.html":
             require_contains(html, "Saved translations", relative_path)
+            require_contains(html, "/app.js?v=home2", relative_path)
 
 
 def check_page_frame_css(relative_path: str, css: str) -> None:
@@ -133,6 +134,7 @@ def check_home_css() -> None:
         "flex: 0 0 var(--reader-column-width",
         "background: var(--reader-background",
         "border: 1px solid var(--reader-border",
+        ".reading-path-link.primary",
         "@media (max-width: 860px)",
     ]:
         require_contains(css, needle, relative_path)

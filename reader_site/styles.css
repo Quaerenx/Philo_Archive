@@ -158,6 +158,11 @@ img {
   margin: 0 10px 4px 0;
 }
 
+.reading-path-link.primary {
+  color: #000;
+  font-weight: bold;
+}
+
 .category-filter {
   display: block;
   margin-bottom: 10px;
