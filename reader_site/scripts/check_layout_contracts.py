@@ -206,7 +206,7 @@ def check_search_ui() -> None:
     script = read_site_file("assets/search.js")
     css = read_site_file("assets/search.css")
     for needle in [
-        "/assets/search.css?v=phase14",
+        "/assets/search.css?v=phase15",
         "/assets/search.js?v=phase14",
         'href="/translations"',
         "Translation review",
@@ -270,6 +270,8 @@ def check_search_ui() -> None:
         ".result-kind.work",
         ".result-kind.segment",
         ".result-kind.note",
+        ".result-title > a",
+        "flex-basis: 100%",
         ".search-form.is-searching #searchSubmit",
         ".empty-state",
         ".empty-actions",
@@ -287,7 +289,7 @@ def check_notes_ui() -> None:
     script = read_site_file("assets/notes.js")
     css = read_site_file("assets/notes.css")
     for needle in [
-        "/assets/notes.css?v=notes13",
+        "/assets/notes.css?v=notes14",
         "/assets/notes.js?v=notes15",
         'id="notesSubmit"',
         'id="notesClear"',
@@ -359,6 +361,9 @@ def check_notes_ui() -> None:
         ".note-card.is-recent",
         ".note-card.is-recent:focus",
         ".note-card.is-editing",
+        ".note-title > a",
+        ".note-title .review-badge",
+        ".note-title .note-meta",
         ".note-edit-actions",
         "grid-template-columns: repeat(2, minmax(0, 1fr))",
         "@keyframes archive-note-highlight",
@@ -381,7 +386,7 @@ def check_translations_ui() -> None:
     base_css = read_site_file("assets/notes.css")
     css = read_site_file("assets/translations.css")
     for needle in [
-        "/assets/notes.css?v=notes13",
+        "/assets/notes.css?v=notes14",
         "/assets/translations.css?v=trans6",
         "/assets/translations.js?v=trans12",
         'id="translationsSubmit"',

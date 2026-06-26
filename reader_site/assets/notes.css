@@ -465,6 +465,22 @@ h1 {
   line-height: 1.35;
 }
 
+.note-title > a {
+  order: 1;
+  color: #111;
+  font-weight: bold;
+}
+
+.note-title .review-badge {
+  order: 2;
+}
+
+.note-title .note-meta {
+  order: 3;
+  flex-basis: 100%;
+  font-size: 10px;
+}
+
 .review-badge {
   padding: 1px 5px;
   color: #555;
