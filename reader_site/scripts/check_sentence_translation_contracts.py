@@ -185,19 +185,32 @@ def check_cache_and_review_compatibility(target: dict) -> None:
             bible_record["review_state"] = "generated"
             bible_path = sentence_translation_service.ai_record_path("bible")
             bible_path.write_text(json.dumps(bible_record, ensure_ascii=False) + "\n", encoding="utf-8")
+            metadata_record = dict(stored)
+            metadata_record["id"] = "wittgenstein-metadata-demo-translation"
+            metadata_record["corpus_id"] = "wittgenstein"
+            metadata_record["work_id"] = "10.7.10"
+            metadata_record["variant_id"] = "source_metadata"
+            metadata_record["target_url"] = "/work/wittgenstein/10.7.10?variant=source_metadata#p-0001.s001"
+            metadata_record["translation"] = "metadata generated translation"
+            metadata_record["commentary"] = "metadata generated commentary"
+            metadata_record["review_state"] = "generated"
+            metadata_path = sentence_translation_service.ai_record_path("wittgenstein")
+            metadata_path.write_text(json.dumps(metadata_record, ensure_ascii=False) + "\n", encoding="utf-8")
             all_records = sentence_translations_for_export({"review_state": ["all"]})
             require(
-                {record["corpus_id"] for record in all_records} == {"nietzsche", "bible"},
+                {record["corpus_id"] for record in all_records} == {"nietzsche", "bible", "wittgenstein"},
                 "sentence translation export without corpus_id should include all corpora",
             )
+            require(all_records[-1]["variant_id"] == "source_metadata", "metadata translations should not lead review lists")
+            require(all_records[0]["variant_id"] != "source_metadata", "primary text translations should lead review lists")
             filtered_records = sentence_translations_for_export({"review_state": ["all"], "q": ["newest"]})
             require(len(filtered_records) == 1, "sentence translation export q filter count failed")
             require(filtered_records[0]["translation"] == "newest translation", "sentence translation export q filter mismatch")
             empty_filtered_records = sentence_translations_for_export({"review_state": ["all"], "q": ["not-present"]})
             require(empty_filtered_records == [], "sentence translation export q filter should allow empty results")
             all_summary = sentence_translations_summary_from_query({"review_state": ["all"]})
-            require(all_summary["count"] == 2, "sentence translation summary without corpus_id should count all corpora")
-            require(all_summary["review_state_counts"]["generated"] == 1, "all-corpus summary generated count failed")
+            require(all_summary["count"] == 3, "sentence translation summary without corpus_id should count all corpora")
+            require(all_summary["review_state_counts"]["generated"] == 2, "all-corpus summary generated count failed")
             require(all_summary["review_state_counts"]["reviewed"] == 1, "all-corpus summary reviewed count failed")
         finally:
             sentence_translation_service.AI_DIR = original_ai_dir

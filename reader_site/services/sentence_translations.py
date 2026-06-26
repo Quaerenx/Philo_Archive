@@ -401,6 +401,21 @@ def translation_record_matches_text_query(record: dict[str, Any], text_query: st
     return needle in haystack
 
 
+def translation_record_sort_key(record: dict[str, Any]) -> tuple[int, str, str, str, str, str, str]:
+    variant_id = str(record.get("variant_id") or "").lower()
+    target_url = str(record.get("target_url") or "").lower()
+    auxiliary_rank = 1 if "metadata" in variant_id or "variant=source_metadata" in target_url else 0
+    return (
+        auxiliary_rank,
+        str(record.get("corpus_id") or ""),
+        str(record.get("work_id") or ""),
+        str(record.get("segment_id") or ""),
+        str(record.get("sentence_id") or ""),
+        str(record.get("variant_id") or ""),
+        str(record.get("generated_at") or ""),
+    )
+
+
 def sentence_translations_for_export(query: dict[str, list[str]]) -> list[dict[str, Any]]:
     corpus_id = query_corpus_id(query)
     work_id = str((query.get("work_id") or [""])[0]).strip()
@@ -419,15 +434,7 @@ def sentence_translations_for_export(query: dict[str, list[str]]) -> list[dict[s
         records = [record for record in records if translation_record_matches_text_query(record, text_query)]
     if review_state != "all":
         records = [record for record in records if record.get("review_state") == review_state]
-    return sorted(
-        records,
-        key=lambda record: (
-            str(record.get("work_id") or ""),
-            str(record.get("segment_id") or ""),
-            str(record.get("sentence_id") or ""),
-            str(record.get("generated_at") or ""),
-        ),
-    )
+    return sorted(records, key=translation_record_sort_key)
 
 
 def sentence_translations_summary_from_query(query: dict[str, list[str]]) -> dict[str, Any]:
