@@ -434,7 +434,7 @@ function renderRecord(record, options) {
     </header>
     ${translation ? `<p class="translation-text">${escapeHtml(translation)}</p>` : ""}
     ${commentary ? `<section class="translation-commentary" aria-label="Commentary"><h3>Commentary</h3><p>${escapeHtml(commentary)}</p></section>` : ""}
-    ${source ? `<details class="translation-source"><summary>Original source</summary><blockquote>${escapeHtml(source)}</blockquote></details>` : ""}
+    ${source ? `<details class="translation-source"><summary>Original</summary><blockquote>${escapeHtml(source)}</blockquote></details>` : ""}
     ${actions ? `<footer class="translation-record-footer">
       <div class="translation-actions">
         ${actions}
