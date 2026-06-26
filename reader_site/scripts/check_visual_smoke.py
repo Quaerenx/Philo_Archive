@@ -28,6 +28,7 @@ ROUTES = [
     ("nietzsche-work", "/work/nietzsche/GM", True),
     ("nietzsche-work-selected", "/work/nietzsche/GM#p-0023.s001", True),
     ("search", "/search", True),
+    ("search-results", "/search?q=ressentiment&corpus_id=nietzsche", True),
     ("notes", "/notes", True),
     ("study", "/study", True),
     ("translations", "/translations", True),
@@ -220,7 +221,7 @@ def check_route_markup(route: str, html: str) -> None:
             "Export results</summary>",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
-    if route == "/search":
+    if route.startswith("/search"):
         for needle in [
             "searchSubmit",
             "searchClear",
@@ -228,7 +229,7 @@ def check_route_markup(route: str, html: str) -> None:
             "searchStatus",
             "aria-busy=\"false\"",
             "search.css?v=phase18",
-            "search.js?v=phase20",
+            "search.js?v=phase21",
             "Translations",
             "filter-panel",
         ]:
@@ -422,6 +423,10 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
   });
   await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 15000 });
   await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
+  const parsed = new URL(url);
+  if (parsed.pathname === '/search' && parsed.searchParams.get('q')) {
+    await page.waitForSelector('.result:not(.search-skeleton), .empty-state', { timeout: 5000 }).catch(() => {});
+  }
   await page.waitForTimeout(700);
   await page.screenshot({ path: outputPath, fullPage: false });
   await browser.close();

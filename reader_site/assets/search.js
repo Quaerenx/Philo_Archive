@@ -182,7 +182,8 @@ function notesHref(result) {
 }
 
 function pluralize(count, singular, plural = `${singular}s`) {
-  return `${Number(count || 0).toLocaleString()} ${count === 1 ? singular : plural}`;
+  const value = Number(count || 0);
+  return `${value.toLocaleString()} ${value === 1 ? "result" : "results"}`;
 }
 
 function resultGroupHeader(label, count, noun) {
