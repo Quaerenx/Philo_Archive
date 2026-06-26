@@ -1240,6 +1240,7 @@ def check_work_source_bundle_ui() -> None:
     require_contains(template, "/assets/reader-work.js?v=common125", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common103", "templates/work.html")
     for needle in [
+        '<div class="meta-line">{{HEADER_META}}</div>',
         "reading-desk",
         "toolbar-more",
         "toolbar-more-links",

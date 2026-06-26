@@ -101,6 +101,7 @@ def render_work_page_html(template: str, model: dict) -> str:
             "CORPUS_TITLE": html.escape(str(model.get("corpus_title", ""))),
             "CORPUS_ID": html.escape(str(model.get("corpus_id", ""))),
             "WORK_ID": html.escape(str(model.get("work_id", ""))),
+            "HEADER_META": html.escape(str(model.get("header_meta", ""))),
             "SECTION": html.escape(str(model.get("section", ""))),
             "META": html.escape(str(model.get("meta", ""))),
             "SOURCE_PATH": html.escape(str(model.get("source_path", ""))),

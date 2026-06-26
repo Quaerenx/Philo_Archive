@@ -40,6 +40,15 @@ def source_href(path: Path) -> str:
     return "/source?path=" + quote(relative_source_path(path), safe="")
 
 
+def header_meta(*parts: object) -> str:
+    values: list[str] = []
+    for part in parts:
+        value = str(part or "").strip()
+        if value and value not in values:
+            values.append(value)
+    return " / ".join(values)
+
+
 def selected_variant(work: dict, variant_id: str, preferred: list[str]) -> dict:
     variants = work.get("variants", [])
     if variant_id:
@@ -92,6 +101,7 @@ def build_nietzsche_work_model(work_id: str) -> dict:
         "category_href": "/category/nietzsche",
         "title": title_raw,
         "work_id": work_id,
+        "header_meta": header_meta(record.get("section_title") or "Works", record.get("meta")),
         "section": record.get("section_title") or "Works",
         "meta": record.get("meta") or work_id,
         "source_path": rel_path,
@@ -134,6 +144,7 @@ def build_bible_work_model(work_id: str) -> dict:
         "category_href": "/category/bible",
         "title": work.get("display_title") or work.get("title") or work_id,
         "work_id": work_id,
+        "header_meta": header_meta(work.get("category_title") or "Bible", work.get("source_label") or work.get("source_id")),
         "section": work.get("category_title") or "Bible",
         "meta": work.get("source_label") or work.get("source_id") or work_id,
         "source_path": source_path,
@@ -189,6 +200,7 @@ def build_kierkegaard_work_model(work_id: str, variant_id: str = "") -> dict:
         "title": title,
         "work_id": work_id,
         "section": work.get("category_title") or "Søren Kierkegaards Skrifter",
+        "header_meta": header_meta(work.get("category_title"), variant.get("label") or active_variant_id),
         "meta": variant.get("label") or active_variant_id,
         "source_path": source_path,
         "source_href": variant.get("source_url") or source_href(target),
@@ -251,6 +263,7 @@ def build_wittgenstein_work_model(work_id: str, variant_id: str = "") -> dict:
         "title": title,
         "work_id": work_id,
         "section": work.get("category_title") or "Wittgenstein Archive",
+        "header_meta": header_meta(work.get("category_title"), variant.get("label") or active_variant_id),
         "meta": variant.get("label") or active_variant_id,
         "source_path": source_path,
         "source_href": variant.get("source_url") or source_href(target),
