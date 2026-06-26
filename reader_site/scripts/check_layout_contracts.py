@@ -1246,6 +1246,7 @@ def check_work_source_bundle_ui() -> None:
         "noteTargetPreview",
         "lockNoteTarget",
         "Lock target",
+        "Write a note...",
         "Target</summary>",
         "note-target-body",
         'aria-pressed="false"',
