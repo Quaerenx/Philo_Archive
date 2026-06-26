@@ -58,7 +58,8 @@ If `Reader` is not ready, start `run_reader_with_gemma.ps1` again. If `Local AI`
 `run_reader_with_gemma.ps1` checks common startup problems before it starts the reader:
 
 - Missing Python: install Python or add it to `PATH`.
-- Reader port `8793` already in use: open the existing reader, stop the stale process, or run with `-ReaderPort 8795`.
+- Reader port `8793` already has Philo Archive running: open the existing reader.
+- Reader port `8793` is used by another app: stop that app or run with `-ReaderPort 8795`.
 - Missing GGUF model: pass the correct model path with `-ModelPath`.
 - Missing `llama-server.exe`: add the llama.cpp folder to `PATH`.
 - Gemma port `8794` already in use by a different process: stop that process or run with `-GemmaPort 8795`.
@@ -70,10 +71,10 @@ If `Reader` is not ready, start `run_reader_with_gemma.ps1` again. If `Local AI`
 2. Open a work page.
 3. Read the source text.
 4. Click a sentence to generate translation and commentary.
-5. Mark useful translations as reviewed.
+5. Mark useful translations as saved.
 6. Add notes from the study panel when needed.
 7. Review notes in `Notes`.
-8. Use `Review` for generated translations.
+8. Use `Translations` for generated translations that still need checking.
 9. Use `Study` as the saved study pack.
 
 ## If Something Looks Stale

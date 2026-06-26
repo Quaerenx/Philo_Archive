@@ -59,6 +59,20 @@ function Get-PortOwnerHint {
     }
 }
 
+function Test-ReaderReady {
+    param([string]$BaseUrl)
+    try {
+        $response = Invoke-WebRequest -UseBasicParsing "${BaseUrl}/api/health" -TimeoutSec 2
+        if ($response.StatusCode -ne 200) {
+            return $false
+        }
+        $payload = $response.Content | ConvertFrom-Json -ErrorAction Stop
+        return [bool]($payload.status -or $payload.site_root -or $payload.corpora)
+    } catch {
+        return $false
+    }
+}
+
 function Wait-GemmaReady {
     param([string]$BaseUrl)
     for ($i = 0; $i -lt 120; $i++) {
@@ -80,11 +94,17 @@ if (!(Get-Command python -ErrorAction SilentlyContinue)) {
 }
 
 if (Test-PortListening -Port $ReaderPort) {
-    Stop-WithHint "Reader port ${ReaderPort} is already in use." @(
+    if (Test-ReaderReady -BaseUrl $ReaderBaseUrl) {
+        Stop-WithHint "Philo Archive is already running on reader port ${ReaderPort}." @(
+            (Get-PortOwnerHint -Port $ReaderPort),
+            "Open the existing reader: ${ReaderBaseUrl}",
+            "To use another port: .\run_reader_with_gemma.ps1 -ReaderPort 8795"
+        )
+    }
+    Stop-WithHint "Reader port ${ReaderPort} is already used by another process." @(
         (Get-PortOwnerHint -Port $ReaderPort),
-        "Open the existing reader: ${ReaderBaseUrl}",
-        "If that old process is stale, stop it and run this script again.",
-        "To use another port: .\run_reader_with_gemma.ps1 -ReaderPort 8795"
+        "Stop that process and run this script again.",
+        "Or start Philo Archive on another port: .\run_reader_with_gemma.ps1 -ReaderPort 8795"
     )
 }
 
