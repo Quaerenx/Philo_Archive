@@ -22,6 +22,7 @@ MODEL_NAME = os.environ.get("PHILO_GEMMA_MODEL_NAME", "gemma-4-26B-A4B-it-Q4_K_M
 MODEL_RUNTIME = os.environ.get("PHILO_GEMMA_RUNTIME", "llama.cpp b9371-f12cc6d0f")
 LLAMA_BASE_URL = os.environ.get("PHILO_GEMMA_BASE_URL", "http://127.0.0.1:8794")
 MAX_SOURCE_CHARS = 6000
+TRANSLATION_FILE_SUFFIX = "_sentence_translations.jsonl"
 
 
 def require(condition: bool, message: str) -> None:
@@ -87,6 +88,24 @@ def bounded_source_context(source_text: str, sentence_text: str, max_chars: int 
 
 def ai_record_path(corpus_id: str) -> Path:
     return AI_DIR / f"{safe_corpus_id(corpus_id)}_sentence_translations.jsonl"
+
+
+def query_corpus_id(query: dict[str, list[str]]) -> str:
+    value = str((query.get("corpus_id") or [""])[0]).strip()
+    return safe_corpus_id(value) if value else ""
+
+
+def ai_record_paths_for_query(corpus_id: str) -> list[Path]:
+    if corpus_id:
+        return [ai_record_path(corpus_id)]
+    if not AI_DIR.exists():
+        return []
+    paths: list[Path] = []
+    for path in AI_DIR.glob(f"*{TRANSLATION_FILE_SUFFIX}"):
+        stem = path.name[: -len(TRANSLATION_FILE_SUFFIX)]
+        if re.fullmatch(r"[A-Za-z0-9_-]+", stem):
+            paths.append(path)
+    return sorted(paths)
 
 
 def render_sentence_prompt(template_record: dict[str, Any], target: dict[str, Any]) -> str:
@@ -359,13 +378,14 @@ def update_sentence_translation_review(payload: dict[str, Any], record_id: str) 
 
 
 def sentence_translations_for_export(query: dict[str, list[str]]) -> list[dict[str, Any]]:
-    corpus_id = safe_corpus_id(str((query.get("corpus_id") or [""])[0]))
+    corpus_id = query_corpus_id(query)
     work_id = str((query.get("work_id") or [""])[0]).strip()
     review_state = str((query.get("review_state") or ["reviewed"])[0]).strip().lower() or "reviewed"
     require(review_state in {"generated", "reviewed", "rejected", "all"}, "invalid review_state")
     records = [
         public_translation_record(record)
-        for record in iter_cached_records(ai_record_path(corpus_id))
+        for path in ai_record_paths_for_query(corpus_id)
+        for record in iter_cached_records(path)
         if record.get("record_type") == "ai_sentence_translation"
     ]
     if work_id:
@@ -384,11 +404,12 @@ def sentence_translations_for_export(query: dict[str, list[str]]) -> list[dict[s
 
 
 def sentence_translations_summary_from_query(query: dict[str, list[str]]) -> dict[str, Any]:
-    corpus_id = safe_corpus_id(str((query.get("corpus_id") or [""])[0]))
+    corpus_id = query_corpus_id(query)
     work_id = str((query.get("work_id") or [""])[0]).strip()
     records = [
         public_translation_record(record)
-        for record in iter_cached_records(ai_record_path(corpus_id))
+        for path in ai_record_paths_for_query(corpus_id)
+        for record in iter_cached_records(path)
         if record.get("record_type") == "ai_sentence_translation"
     ]
     if work_id:

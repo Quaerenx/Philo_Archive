@@ -20,7 +20,7 @@ let archiveCorpora = [];
 let pendingReviewQueueFocus = false;
 let pendingReviewQueueMessage = "";
 
-const DEFAULT_CORPUS = "nietzsche";
+const DEFAULT_CORPUS = "";
 const REVIEW_LABELS = {
   all: "All",
   generated: "To check",
@@ -61,7 +61,7 @@ function archiveCorpusById(corpusId) {
 
 function corpusDisplayName(corpusId) {
   const corpus = archiveCorpusById(corpusId);
-  return cleanText(corpus?.title || corpusId || DEFAULT_CORPUS);
+  return cleanText(corpus?.title || corpusId || "Archive");
 }
 
 function workDisplayName(corpusId, workId) {
@@ -113,15 +113,17 @@ function updateWorkOptions() {
   workOptionsList.innerHTML = options
     .map((option) => `<option value="${escapeHtml(option.workId)}" label="${escapeHtml(option.label)}"></option>`)
     .join("");
-  workInput.placeholder = options.length ? `${options.length.toLocaleString()} works` : "work id";
+  workInput.placeholder = corpusSelect.value
+    ? (options.length ? `${options.length.toLocaleString()} works` : "work id")
+    : "optional work id";
 }
 
 function fetchParams(format = "json") {
   const params = new URLSearchParams({
-    corpus_id: corpusSelect.value || DEFAULT_CORPUS,
     format,
     review_state: "all"
   });
+  if (corpusSelect.value) params.set("corpus_id", corpusSelect.value);
   const workId = workInput.value.trim();
   if (workId) params.set("work_id", workId);
   return params;
@@ -129,10 +131,10 @@ function fetchParams(format = "json") {
 
 function exportParams(format = "markdown") {
   const params = new URLSearchParams({
-    corpus_id: corpusSelect.value || DEFAULT_CORPUS,
     format,
     review_state: reviewSelect.value || "all"
   });
+  if (corpusSelect.value) params.set("corpus_id", corpusSelect.value);
   const workId = workInput.value.trim();
   if (workId) params.set("work_id", workId);
   return params;
@@ -141,11 +143,11 @@ function exportParams(format = "markdown") {
 function urlParams() {
   const params = new URLSearchParams();
   const query = queryInput.value.trim();
-  const corpusId = corpusSelect.value || DEFAULT_CORPUS;
+  const corpusId = corpusSelect.value || "";
   const workId = workInput.value.trim();
   const reviewState = reviewSelect.value || "all";
   if (query) params.set("q", query);
-  if (corpusId !== DEFAULT_CORPUS) params.set("corpus_id", corpusId);
+  if (corpusId) params.set("corpus_id", corpusId);
   if (workId) params.set("work_id", workId);
   if (reviewState !== "all") params.set("review_state", reviewState);
   return params;
@@ -159,7 +161,7 @@ function updateExportLinks() {
 function hasActiveFilters() {
   return Boolean(
     queryInput.value.trim() ||
-    (corpusSelect.value && corpusSelect.value !== DEFAULT_CORPUS) ||
+    corpusSelect.value ||
     workInput.value.trim() ||
     reviewSelect.value !== "all"
   );
@@ -178,7 +180,7 @@ function updateFilterSummary() {
   const query = queryInput.value.trim();
   const workId = workInput.value.trim();
   if (query) chips.push(renderFilterChip("query", "Text", query));
-  if (corpusSelect.value && corpusSelect.value !== DEFAULT_CORPUS) {
+  if (corpusSelect.value) {
     chips.push(renderFilterChip("corpus", "Corpus", selectedOptionText(corpusSelect)));
   }
   if (workId) chips.push(renderFilterChip("work", "Work", workId));
@@ -553,14 +555,14 @@ async function loadCorpora() {
     const payload = await response.json();
     archiveCorpora = payload.corpora || [];
     const current = corpusSelect.value || DEFAULT_CORPUS;
-    corpusSelect.innerHTML = archiveCorpora
+    corpusSelect.innerHTML = '<option value="">All corpora</option>' + archiveCorpora
       .map((corpus) => `<option value="${escapeHtml(corpus.id)}">${escapeHtml(corpus.title || corpus.id)}</option>`)
       .join("");
     const hasCurrent = Array.from(corpusSelect.options).some((option) => option.value === current);
     if (!hasCurrent) {
       const fallback = document.createElement("option");
       fallback.value = current;
-      fallback.textContent = current;
+      fallback.textContent = current || "All corpora";
       corpusSelect.appendChild(fallback);
     }
     corpusSelect.value = current;

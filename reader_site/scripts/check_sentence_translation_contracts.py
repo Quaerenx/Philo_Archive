@@ -22,6 +22,7 @@ from services.sentence_translations import (  # noqa: E402
     normalized_model_output,
     public_record_id,
     public_translation_record,
+    sentence_translations_for_export,
     sentence_translations_summary_from_query,
     update_sentence_translation_review,
 )
@@ -175,6 +176,22 @@ def check_cache_and_review_compatibility(target: dict) -> None:
             require(summary["sentence_states"][0]["review_state"] == "reviewed", "sentence translation summary reviewed state failed")
             stored = json.loads(path.read_text(encoding="utf-8").splitlines()[0])
             require(stored["id"] == public_legacy["id"], "reviewing a legacy record should persist the stable id")
+            bible_record = dict(stored)
+            bible_record["id"] = "bible-demo-translation"
+            bible_record["corpus_id"] = "bible"
+            bible_record["work_id"] = "demo2"
+            bible_record["review_state"] = "generated"
+            bible_path = sentence_translation_service.ai_record_path("bible")
+            bible_path.write_text(json.dumps(bible_record, ensure_ascii=False) + "\n", encoding="utf-8")
+            all_records = sentence_translations_for_export({"review_state": ["all"]})
+            require(
+                {record["corpus_id"] for record in all_records} == {"nietzsche", "bible"},
+                "sentence translation export without corpus_id should include all corpora",
+            )
+            all_summary = sentence_translations_summary_from_query({"review_state": ["all"]})
+            require(all_summary["count"] == 2, "sentence translation summary without corpus_id should count all corpora")
+            require(all_summary["review_state_counts"]["generated"] == 1, "all-corpus summary generated count failed")
+            require(all_summary["review_state_counts"]["reviewed"] == 1, "all-corpus summary reviewed count failed")
         finally:
             sentence_translation_service.AI_DIR = original_ai_dir
 
