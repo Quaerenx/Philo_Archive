@@ -376,10 +376,10 @@ function renderRecord(record) {
   ].filter(Boolean).join("");
   return `<article class="translation-record-card${isRecent ? " is-recent" : ""}" tabindex="-1" data-record-id="${escapeHtml(record.id)}" data-corpus-id="${escapeHtml(record.corpus_id)}" data-review-state="${escapeHtml(reviewState)}">
     <header class="translation-record-heading">
+      <h2 class="translation-record-title">${targetUrl ? `<a href="${escapeHtml(targetUrl)}">${escapeHtml(title)}</a>` : escapeHtml(title)}</h2>
       <div class="translation-record-kicker">
         <span class="review-badge" aria-label="Review status: ${escapeHtml(reviewLabel)}">${escapeHtml(reviewLabel)}</span>
       </div>
-      <h2 class="translation-record-title">${targetUrl ? `<a href="${escapeHtml(targetUrl)}">${escapeHtml(title)}</a>` : escapeHtml(title)}</h2>
     </header>
     ${translation ? `<p class="translation-text">${escapeHtml(translation)}</p>` : ""}
     ${commentary ? `<section class="translation-commentary" aria-label="Commentary"><h3>Commentary</h3><p>${escapeHtml(commentary)}</p></section>` : ""}

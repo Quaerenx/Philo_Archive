@@ -436,8 +436,8 @@ def check_translations_ui() -> None:
     css = read_site_file("assets/translations.css")
     for needle in [
         "/assets/notes.css?v=notes17",
-        "/assets/translations.css?v=trans11",
-        "/assets/translations.js?v=trans25",
+        "/assets/translations.css?v=trans12",
+        "/assets/translations.js?v=trans26",
         '<option value="">All corpora</option>',
         'id="translationsSubmit"',
         'id="translationsClear"',
@@ -536,8 +536,8 @@ def check_translations_ui() -> None:
         js_function_body(script, "renderRecord"),
         [
             "translation-record-heading",
-            "translation-record-kicker",
             "translation-record-title",
+            "translation-record-kicker",
             "translation-text",
             "translation-commentary",
             "Original source",
@@ -561,7 +561,9 @@ def check_translations_ui() -> None:
         ".translation-record-card.is-review-target",
         ".translation-record-card[data-review-state=\"generated\"]",
         ".translation-record-heading",
+        "grid-template-columns: minmax(0, 1fr) auto",
         ".translation-record-kicker",
+        "justify-self: end",
         ".translation-record-kicker .review-badge",
         ".translation-record-title",
         "-webkit-line-clamp: 2",

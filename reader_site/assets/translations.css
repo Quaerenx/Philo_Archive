@@ -157,7 +157,9 @@
 
 .translation-record-heading {
   display: grid;
-  gap: 4px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 8px;
+  align-items: start;
   min-width: 0;
 }
 
@@ -166,6 +168,7 @@
   flex-wrap: wrap;
   gap: 5px;
   align-items: center;
+  justify-self: end;
   min-width: 0;
   color: #777;
   font-size: 9px;
@@ -180,6 +183,7 @@
 }
 
 .translation-record-title {
+  display: -webkit-box;
   min-width: 0;
   margin: 0;
   overflow: hidden;
@@ -188,8 +192,9 @@
   font-size: 11px;
   font-weight: normal;
   line-height: 1.35;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .translation-record-title a {
@@ -383,11 +388,16 @@
     grid-template-columns: minmax(0, 1fr) auto;
   }
 
+  .translation-record-heading {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .translation-record-kicker {
+    justify-self: start;
+  }
+
   .translation-record-title {
-    display: -webkit-box;
     white-space: normal;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
   }
 
   .translation-source blockquote {
