@@ -1534,6 +1534,19 @@ function translationQuickActions(reviewState) {
     </div>`;
 }
 
+function focusNextSentenceAction() {
+  const nextAction = translationOutput?.querySelector('[data-translation-quick-action="next-sentence"]:not(:disabled)');
+  if (!nextAction || typeof nextAction.focus !== "function") return false;
+  window.requestAnimationFrame(() => {
+    try {
+      nextAction.focus({ preventScroll: true });
+    } catch (error) {
+      nextAction.focus();
+    }
+  });
+  return true;
+}
+
 function setTranslationReviewVisualState(reviewState) {
   if (!translationCard) return;
   const normalizedReviewState = reviewState ? normalizedTranslationReviewState(reviewState) : "";
@@ -2138,6 +2151,9 @@ async function updateTranslationReview(reviewState, triggerButton = null) {
     loadTranslationRecordsSummary();
     loadStudySessionSummary();
     setTranslationStatus(reviewState === "reviewed" ? "Saved." : "Rejected.");
+    if (reviewState === "reviewed") {
+      focusNextSentenceAction();
+    }
   } catch (error) {
     const message = error && error.message ? error.message : "Could not save translation.";
     setTranslationStatus(message, true);

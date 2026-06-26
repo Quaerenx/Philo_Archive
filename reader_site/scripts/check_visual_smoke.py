@@ -291,7 +291,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common108",
-            "reader-work.js?v=common133",
+            "reader-work.js?v=common134",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
 
@@ -646,6 +646,21 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (state.activeTab !== 'Translation') throw new Error(`selected work route did not keep Translation tab active: ${JSON.stringify(state)}`);
     if (state.studyToolsOpen) throw new Error(`study tools should stay collapsed in default reading mode: ${JSON.stringify(state)}`);
     if (state.studyToolsSummary !== 'More') throw new Error(`study tools summary should stay concise: ${JSON.stringify(state)}`);
+    const nextFocusState = await page.evaluate(async () => {
+      const ok = typeof window.focusNextSentenceAction === 'function'
+        ? window.focusNextSentenceAction()
+        : false;
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      return {
+        ok,
+        activeAction: document.activeElement?.dataset?.translationQuickAction || '',
+        activeText: document.activeElement?.textContent.trim() || ''
+      };
+    });
+    if (!nextFocusState.ok || nextFocusState.activeAction !== 'next-sentence') {
+      throw new Error(`saved review flow should focus the next sentence action: ${JSON.stringify(nextFocusState)}`);
+    }
     await page.click('[data-translation-quick-action="draft-note"]');
     await page.waitForSelector('#study-panel-notes:not([hidden])', { timeout: 5000 });
     await page.waitForFunction(() => document.activeElement?.id === 'noteText', null, { timeout: 3000 }).catch(() => {});
