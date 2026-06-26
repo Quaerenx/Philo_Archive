@@ -77,6 +77,15 @@ If `Reader` is not ready, start `run_reader_with_gemma.ps1` again. If `Reader` i
 8. Use `Translations` for generated translations that still need checking.
 9. Use `Study` as the saved study pack.
 
+Daily reading loop:
+
+- Click a sentence in the original text.
+- Read the translation and commentary in the study panel.
+- Use `Next sentence` to keep reading.
+- Use `Add note` when the sentence needs a personal note.
+- Use `Save` when the translation is worth keeping.
+- Use `Translations` -> `Review (n)` later to check saved local AI outputs in one queue.
+
 ## If Something Looks Stale
 
 Use a hard browser refresh first. The site uses cache keys on CSS and JavaScript, but a stale browser tab can still keep old assets alive.
@@ -103,4 +112,4 @@ To remove it:
 .\reader_site\scripts\unregister_windows_autostart.ps1
 ```
 
-Details: `local_windows_autostart.md`.
+Details: `docs/local_windows_autostart.md`.
