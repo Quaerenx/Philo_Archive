@@ -343,17 +343,16 @@ function summaryButton(filter, label, count) {
 
 function renderSummary(records) {
   const counts = summaryCounts(records);
-  const nonzeroStates = ["generated", "reviewed", "rejected"].filter((state) => counts[state] > 0);
-  if (nonzeroStates.length < 2) return "";
-  return `<details class="translation-record-summary-tools">
-    <summary>Status</summary>
-    <nav class="translation-record-summary" aria-label="Visible translations by status">
-      ${summaryButton("all", "All", counts.total)}
-      ${summaryButton("generated", "To check", counts.generated)}
-      ${summaryButton("reviewed", "Saved", counts.reviewed)}
-      ${summaryButton("rejected", "Rejected", counts.rejected)}
-    </nav>
-  </details>`;
+  if (counts.total <= 0) return "";
+  const buttons = [
+    summaryButton("all", "All", counts.total),
+    counts.generated ? summaryButton("generated", "To check", counts.generated) : "",
+    counts.reviewed ? summaryButton("reviewed", "Saved", counts.reviewed) : "",
+    counts.rejected ? summaryButton("rejected", "Rejected", counts.rejected) : ""
+  ].filter(Boolean).join("");
+  return `<nav class="translation-record-summary-tools translation-record-summary" aria-label="Translation status overview">
+    ${buttons}
+  </nav>`;
 }
 
 function renderEmptyRecords() {

@@ -48,36 +48,9 @@
 }
 
 .translation-record-summary-tools {
-  margin: 8px 0 0;
+  margin: 8px 0 10px;
   padding-top: 8px;
   border-top: 1px solid #e8e8e8;
-}
-
-.translation-record-summary-tools summary {
-  display: inline-grid;
-  grid-template-columns: minmax(0, auto) auto;
-  gap: 7px;
-  align-items: center;
-  min-height: 24px;
-  padding: 2px 8px;
-  color: #555;
-  background: #fff;
-  border: 1px solid #d4d4d4;
-  cursor: pointer;
-  list-style: none;
-}
-
-.translation-record-summary-tools summary::-webkit-details-marker {
-  display: none;
-}
-
-.translation-record-summary-tools summary::after {
-  color: #777;
-  content: "+";
-}
-
-.translation-record-summary-tools[open] summary::after {
-  content: "-";
 }
 
 .translation-record-summary {

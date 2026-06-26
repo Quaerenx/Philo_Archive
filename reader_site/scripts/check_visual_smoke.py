@@ -216,8 +216,8 @@ def check_route_markup(route: str, html: str) -> None:
             "translationsResults",
             "translationsReviewQueue",
             "aria-busy=\"false\"",
-            "translations.css?v=trans16",
-            "translations.js?v=trans43",
+            "translations.css?v=trans17",
+            "translations.js?v=trans44",
             "translationsListTools",
             "Search and filters</summary>",
             "filter-panel",
@@ -515,15 +515,16 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     await page.waitForSelector('#translationsResults .translation-record-card:not(.notes-skeleton), #translationsResults .empty-state', { timeout: 7000 }).catch(() => {});
     const translationsPageState = await page.evaluate(() => {
       const empty = document.querySelector('#translationsResults .empty-state');
-      return {
-        hasRecords: document.querySelectorAll('#translationsResults .translation-record-card:not(.notes-skeleton)').length > 0,
-        formHidden: Boolean(document.querySelector('#translationsForm')?.hidden),
-        emptyTitle: empty?.querySelector('h2')?.textContent.trim() || '',
-        emptyBodyCount: empty ? empty.querySelectorAll('p').length : 0,
-        emptyActions: Array.from(empty?.querySelectorAll('.empty-actions a') || []).map((node) => node.textContent.trim()),
-        reviewBadgeCount: document.querySelectorAll('#translationsResults .review-badge').length,
-        reviewQueueText: document.querySelector('#translationsReviewQueue')?.textContent.trim() || ''
-      };
+        return {
+          hasRecords: document.querySelectorAll('#translationsResults .translation-record-card:not(.notes-skeleton)').length > 0,
+          formHidden: Boolean(document.querySelector('#translationsForm')?.hidden),
+          emptyTitle: empty?.querySelector('h2')?.textContent.trim() || '',
+          emptyBodyCount: empty ? empty.querySelectorAll('p').length : 0,
+          emptyActions: Array.from(empty?.querySelectorAll('.empty-actions a') || []).map((node) => node.textContent.trim()),
+          reviewBadgeCount: document.querySelectorAll('#translationsResults .review-badge').length,
+          summaryButtons: Array.from(document.querySelectorAll('#translationsResults .translation-record-summary [data-translation-summary-filter]')).map((node) => node.textContent.trim()),
+          reviewQueueText: document.querySelector('#translationsReviewQueue')?.textContent.trim() || ''
+        };
     });
     if (!translationsPageState.hasRecords) {
       if (!translationsPageState.formHidden) throw new Error(`empty translations page should hide filter form: ${JSON.stringify(translationsPageState)}`);
@@ -539,6 +540,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       if (translationsPageState.reviewQueueText && !translationsPageState.reviewQueueText.startsWith('To check')) {
         throw new Error(`translations review entry should stay concise: ${JSON.stringify(translationsPageState)}`);
+      }
+      if (!translationsPageState.summaryButtons.some((text) => text.startsWith('All'))) {
+        throw new Error(`default translations list should expose a compact status overview: ${JSON.stringify(translationsPageState)}`);
       }
     }
   }
