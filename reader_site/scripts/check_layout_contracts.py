@@ -688,7 +688,7 @@ def check_study_ui() -> None:
     css = read_site_file("assets/study.css")
     for needle in [
         "/assets/study.css?v=study18",
-        "/assets/study.js?v=study23",
+        "/assets/study.js?v=study24",
         'id="studySubmit"',
         'id="studyClear"',
         'id="studyActiveFilters"',

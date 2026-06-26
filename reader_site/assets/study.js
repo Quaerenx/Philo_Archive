@@ -10,7 +10,6 @@ const statusEl = document.getElementById("studyStatus");
 const resultsEl = document.getElementById("studyResults");
 const exportTools = document.getElementById("studyExportTools");
 const exportMarkdown = document.getElementById("studyExportMarkdown");
-const manageLink = document.getElementById("studyManageLink");
 let requestedCorpusId = "";
 let activeStudyController = null;
 let activeStudyRequest = 0;
@@ -67,10 +66,6 @@ function currentParams(format = "json") {
 function updateLinks() {
   const exportParams = currentParams("markdown");
   exportMarkdown.href = `/api/study/export?${exportParams}`;
-  const manageParams = currentParams("json");
-  manageParams.delete("format");
-  manageParams.set("review_state", "reviewed");
-  manageLink.href = `/notes?${manageParams}`;
 }
 
 function updateUrl() {
