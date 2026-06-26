@@ -486,7 +486,7 @@ def check_translations_ui() -> None:
     for needle in [
         "/assets/notes.css?v=notes19",
         "/assets/translations.css?v=trans21",
-        "/assets/translations.js?v=trans50",
+        "/assets/translations.js?v=trans51",
         '<option value="">All corpora</option>',
         'id="translationsListTools"',
         "Filter</summary>",
@@ -583,7 +583,7 @@ def check_translations_ui() -> None:
         "function generatedRecords",
         "function updateReviewQueueButton",
         "reviewQueueButton.hidden = generatedCount === 0",
-        "Review (",
+        "Review translations",
         "function focusFirstReviewQueueRecord",
         "function clearReviewTargetHighlight",
         "function openReviewTargetSource",
