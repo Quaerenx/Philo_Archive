@@ -2373,15 +2373,26 @@ function renderNotesPending() {
     </div>`;
 }
 
+function noteListSummaryText(items) {
+  if (!items.length) return "";
+  const sortLabel = noteSort && noteSort.value === "target" ? "target order" : "recent first";
+  return `${items.length} notes / ${sortLabel}`;
+}
+
+function renderNotesUnavailable() {
+  notesList.setAttribute("aria-busy", "false");
+  if (noteListSummary) {
+    noteListSummary.textContent = "";
+  }
+  notesList.innerHTML = '<div class="notes-empty">Notes unavailable.</div>';
+}
+
 function renderNotesList(notes) {
   const items = sortedNotes(notes);
   const filter = noteFilter ? noteFilter.value.trim() : "";
   notesList.setAttribute("aria-busy", "false");
   if (noteListSummary) {
-    const sortLabel = noteSort && noteSort.value === "target" ? "target order" : "recent first";
-    noteListSummary.textContent = items.length
-      ? `${items.length} notes / ${sortLabel}`
-      : (filter ? "No matching notes." : "No notes yet.");
+    noteListSummary.textContent = noteListSummaryText(items);
   }
   if (!items.length) {
     notesList.innerHTML = filter
@@ -2445,7 +2456,11 @@ async function loadNotes() {
   renderNotesPending();
   try {
     const response = await fetch(`/api/notes?${params}`);
-    if (!response.ok) return;
+    if (!response.ok) {
+      renderNotesUnavailable();
+      noteStatus.textContent = "Could not load notes.";
+      return;
+    }
     const payload = await response.json();
     renderNotesList(payload.notes || []);
     if (recentlyChangedNoteId) {
@@ -2458,10 +2473,7 @@ async function loadNotes() {
       }
     }
   } catch (error) {
-    notesList.setAttribute("aria-busy", "false");
-    if (noteListSummary) {
-      noteListSummary.textContent = "Notes unavailable.";
-    }
+    renderNotesUnavailable();
     noteStatus.textContent = "Could not load notes.";
   }
 }
