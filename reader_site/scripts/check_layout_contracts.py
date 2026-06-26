@@ -928,7 +928,7 @@ def check_work_source_bundle_ui() -> None:
             f"{function_name} reading-first translation layout",
         )
     require_contains(template, "/assets/reader-work.js?v=common92", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common81", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common82", "templates/work.html")
     for needle in [
         "reading-desk",
         "source-page",
@@ -950,7 +950,9 @@ def check_work_source_bundle_ui() -> None:
         "continueStudy",
         "Continue study",
         "Saved translations</div>",
+        "translation-export-tools",
         "translation-export-links",
+        "Export</summary>",
         "exportAllTranslations",
         "Export all",
         "exportStudySession",
@@ -997,7 +999,7 @@ def check_work_source_bundle_ui() -> None:
         "Display",
         "Translation display mode",
         "Reading controls",
-        "Review and export",
+        "Review",
         "Tools",
         "study-tabs",
         "previousSentence",
@@ -1084,6 +1086,11 @@ def check_work_source_bundle_ui() -> None:
         ".study-progress[data-progress-state=\"active\"]",
         ".study-progress[data-progress-state=\"complete\"]",
         ".study-progress[data-progress-state=\"review\"]",
+        ".translation-export-tools",
+        ".translation-export-tools summary",
+        ".translation-export-tools summary::-webkit-details-marker",
+        ".translation-export-tools summary::after",
+        ".translation-export-tools[open] summary::after",
         ".translation-export-links",
         ".translation-export-link",
         ".translation-export-link.is-empty",

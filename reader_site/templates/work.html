@@ -6,7 +6,7 @@
   <title>{{TITLE}} / {{CORPUS_TITLE}}</title>
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
-  <link rel="stylesheet" href="/assets/reader-work.css?v=common81">
+  <link rel="stylesheet" href="/assets/reader-work.css?v=common82">
 </head>
 <body class="{{BODY_CLASS}}">
   <div class="page">
@@ -74,8 +74,8 @@
                       <button type="button" id="regenerateSentence" title="Regenerate translation" aria-label="Regenerate translation" disabled>Regenerate</button>
                     </div>
                   </section>
-                  <section class="translation-utility-group" aria-label="Review and export">
-                    <div class="translation-utility-group-label">Review & export</div>
+                  <section class="translation-utility-group" aria-label="Review">
+                    <div class="translation-utility-group-label">Review</div>
                     <div class="translation-review-actions" aria-label="Translation review actions">
                       <button type="button" id="markTranslationReviewed" title="Mark translation reviewed" aria-label="Mark translation reviewed" disabled>Mark reviewed</button>
                       <button type="button" id="rejectTranslation" title="Reject translation" aria-label="Reject translation" disabled>Reject</button>
@@ -88,12 +88,15 @@
                       <span id="studyProgressText">Study progress</span>
                       <button type="button" id="continueStudy" title="Continue with the next sentence without a translation" disabled>Continue study</button>
                     </div>
-                    <div class="translation-export-links" aria-label="Translation export links">
-                      <a id="exportReviewedTranslations" class="translation-export-link reviewed-export-link" href="/api/sentence-translations/export?format=markdown&review_state=reviewed">Export reviewed</a>
-                      <a id="exportAllTranslations" class="translation-export-link" href="/api/sentence-translations/export?format=markdown&review_state=all">Export all</a>
-                      <a id="exportStudySession" class="translation-export-link" href="/api/study-session/export?format=markdown">Export session</a>
-                    </div>
-                    <div id="studySessionSummary" class="study-session-summary" role="status" aria-live="polite" aria-atomic="true">Study bundle</div>
+                    <details class="translation-export-tools">
+                      <summary>Export</summary>
+                      <div class="translation-export-links" aria-label="Translation export links">
+                        <a id="exportReviewedTranslations" class="translation-export-link reviewed-export-link" href="/api/sentence-translations/export?format=markdown&review_state=reviewed">Export reviewed</a>
+                        <a id="exportAllTranslations" class="translation-export-link" href="/api/sentence-translations/export?format=markdown&review_state=all">Export all</a>
+                        <a id="exportStudySession" class="translation-export-link" href="/api/study-session/export?format=markdown">Export session</a>
+                      </div>
+                      <div id="studySessionSummary" class="study-session-summary" role="status" aria-live="polite" aria-atomic="true">Study bundle</div>
+                    </details>
                   </section>
                 </div>
               </details>
