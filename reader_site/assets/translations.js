@@ -54,6 +54,40 @@ function selectedCorpusArchive() {
   return archiveCorpora.find((corpus) => corpus.id === corpusId) || null;
 }
 
+function archiveCorpusById(corpusId) {
+  const id = corpusId || DEFAULT_CORPUS;
+  return archiveCorpora.find((corpus) => corpus.id === id) || null;
+}
+
+function corpusDisplayName(corpusId) {
+  const corpus = archiveCorpusById(corpusId);
+  return cleanText(corpus?.title || corpusId || DEFAULT_CORPUS);
+}
+
+function workDisplayName(corpusId, workId) {
+  const id = cleanText(workId || "");
+  if (!id) return "";
+  const corpus = archiveCorpusById(corpusId);
+  for (const section of corpus?.sections || []) {
+    const match = (section.links || []).find((link) => cleanText(link.work_id || "") === id);
+    if (match) {
+      const label = cleanText(match.label || id);
+      const meta = cleanText(match.meta || "");
+      return meta ? `${label} / ${meta}` : label;
+    }
+  }
+  return id;
+}
+
+function sentenceDisplayName(record) {
+  const id = cleanText(record.sentence_id || record.target_id || "");
+  const match = /^p-(\d+)\.s(\d+)$/i.exec(id);
+  if (match) {
+    return `Paragraph ${Number(match[1])}, sentence ${Number(match[2])}`;
+  }
+  return id;
+}
+
 function archiveWorkOptions(corpus) {
   const seen = new Set();
   const options = [];
@@ -300,7 +334,22 @@ function renderEmptyRecords() {
 }
 
 function recordTitle(record) {
-  return [record.corpus_id, record.work_id, record.sentence_id || record.target_id].filter(Boolean).join(" / ");
+  return [
+    corpusDisplayName(record.corpus_id),
+    workDisplayName(record.corpus_id, record.work_id),
+    sentenceDisplayName(record)
+  ].filter(Boolean).join(" / ");
+}
+
+function translationStatusMessage(queryMatched, visible) {
+  const counts = summaryCounts(queryMatched);
+  if (!queryMatched.length) return "No translations found.";
+  if (!visible.length) return `No translations match this status. ${counts.generated.toLocaleString()} still need review.`;
+  const shown = `${visible.length.toLocaleString()} translations shown`;
+  if (counts.generated > 0) {
+    return `${shown} · ${counts.generated.toLocaleString()} need review.`;
+  }
+  return `${shown} · review queue clear.`;
 }
 
 function renderRecord(record) {
@@ -344,9 +393,7 @@ function renderRecords(records) {
   const queryMatched = records.filter(recordMatchesQuery);
   const visible = queryMatched.filter(recordMatchesReview);
   updateReviewQueueButton(records);
-  statusEl.textContent = visible.length
-    ? `${visible.length.toLocaleString()} translations`
-    : "No translations found.";
+  statusEl.textContent = translationStatusMessage(queryMatched, visible);
   resultsEl.innerHTML = queryMatched.length
     ? renderSummary(queryMatched) + (visible.length ? visible.map(renderRecord).join("") : renderEmptyRecords())
     : renderEmptyRecords();
