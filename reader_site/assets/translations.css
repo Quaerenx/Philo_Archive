@@ -400,6 +400,18 @@
   border-color: #d7a0a0;
 }
 
+@media (hover: hover) and (pointer: fine) {
+  .translation-more-actions {
+    display: none;
+  }
+
+  .translation-record-card:hover .translation-more-actions,
+  .translation-record-card:focus-within .translation-more-actions,
+  .translation-more-actions[open] {
+    display: block;
+  }
+}
+
 @keyframes archive-review-target {
   0% {
     background: #fff4c8;
@@ -467,6 +479,10 @@
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 6px;
+  }
+
+  .translation-more-actions {
+    display: block;
   }
 
   .translation-actions a,

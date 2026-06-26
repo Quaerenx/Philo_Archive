@@ -473,7 +473,7 @@ def check_translations_ui() -> None:
     css = read_site_file("assets/translations.css")
     for needle in [
         "/assets/notes.css?v=notes19",
-        "/assets/translations.css?v=trans14",
+        "/assets/translations.css?v=trans15",
         "/assets/translations.js?v=trans34",
         '<option value="">All corpora</option>',
         'id="translationsListTools"',
@@ -641,6 +641,9 @@ def check_translations_ui() -> None:
         ".translation-more-actions summary::after",
         ".translation-more-actions[open] summary::after",
         ".translation-more-actions button",
+        "@media (hover: hover) and (pointer: fine)",
+        ".translation-record-card:hover .translation-more-actions",
+        ".translation-record-card:focus-within .translation-more-actions",
         ".translation-actions .primary-review-action:not(:disabled)",
         ".translation-actions button.is-working",
         "@keyframes archive-review-target",
@@ -649,6 +652,7 @@ def check_translations_ui() -> None:
         "overflow-x: auto",
         "scrollbar-width: thin",
         "max-height: 6.4em",
+        "display: block;",
         "justify-content: center",
     ]:
         require_contains(css, needle, "assets/translations.css")
