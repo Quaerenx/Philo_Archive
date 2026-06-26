@@ -428,7 +428,7 @@ function renderRecord(record, options) {
   ].filter(Boolean).join("") : "";
   return `<article class="translation-record-card${isRecent ? " is-recent" : ""}" tabindex="-1" data-record-id="${escapeHtml(record.id)}" data-corpus-id="${escapeHtml(record.corpus_id)}" data-review-state="${escapeHtml(reviewState)}">
     <header class="translation-record-heading">
-      <h2 class="translation-record-title">${targetUrl ? `<a href="${escapeHtml(targetUrl)}" data-open-source aria-keyshortcuts="O" title="Open source">${escapeHtml(title)}</a>` : escapeHtml(title)}</h2>
+      <h2 class="translation-record-title">${targetUrl ? `<a href="${escapeHtml(targetUrl)}" data-open-source aria-keyshortcuts="O" title="Source">${escapeHtml(title)}</a>` : escapeHtml(title)}</h2>
       ${reviewKicker}
       ${context ? `<div class="translation-record-context">${escapeHtml(context)}</div>` : ""}
     </header>

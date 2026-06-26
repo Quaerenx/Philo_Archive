@@ -490,7 +490,7 @@ def check_translations_ui() -> None:
     for needle in [
         "/assets/notes.css?v=notes19",
         "/assets/translations.css?v=trans16",
-        "/assets/translations.js?v=trans41",
+        "/assets/translations.js?v=trans42",
         '<option value="">All corpora</option>',
         'id="translationsListTools"',
         "Search and filters</summary>",
@@ -604,7 +604,7 @@ def check_translations_ui() -> None:
         "primary-review-action",
         "translation-more-actions",
         "More</summary>",
-        "Open source",
+        'title="Source"',
         "reviewActionsVisible() && visibleReviewStates(visible).size > 1",
     ]:
         require_contains(script, needle, "assets/translations.js")
