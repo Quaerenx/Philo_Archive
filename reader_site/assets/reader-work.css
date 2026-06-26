@@ -2133,29 +2133,24 @@ h1 {
 
 .reader-sentence.has-translation-state::after {
   display: inline-block;
-  min-width: 17px;
-  margin-left: 5px;
-  padding: 1px 3px;
-  color: #5f5f5f;
-  font-family: Verdana, Arial, Helvetica, sans-serif;
-  font-size: 8px;
-  line-height: 1.25;
-  text-align: center;
-  vertical-align: 0.12em;
-  content: attr(data-translation-state-short);
-  background: #f5f5f5;
-  border: 1px solid #d9d9d9;
+  width: 0.42em;
+  height: 0.42em;
+  margin-left: 4px;
+  vertical-align: 0.18em;
+  content: "";
+  background: #c4a94a;
+  border: 1px solid #d8c36e;
+  border-radius: 50%;
+  opacity: 0.82;
 }
 
 .reader-sentence[data-translation-state="reviewed"]::after {
-  color: #24523a;
-  background: #edf7ef;
+  background: #5a9a68;
   border-color: #9fcaa8;
 }
 
 .reader-sentence[data-translation-state="rejected"]::after {
-  color: #7b2f2f;
-  background: #fff1f1;
+  background: #b00000;
   border-color: #e0aaaa;
 }
 
