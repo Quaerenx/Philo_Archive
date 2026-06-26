@@ -374,18 +374,51 @@ h1 {
 }
 
 .group-actions {
-  margin: 6px 0 12px;
+  margin: 12px 0 0;
+  padding-top: 8px;
+  border-top: 1px solid #eeeeee;
 }
 
 .group-meta {
   font-size: 10px;
 }
 
+.study-tags-panel {
+  margin: 8px 0 0;
+}
+
+.study-tags-panel summary {
+  display: inline-grid;
+  grid-template-columns: minmax(0, auto) auto;
+  gap: 6px;
+  align-items: center;
+  min-height: 22px;
+  padding: 1px 7px;
+  color: #555;
+  background: #fff;
+  border: 1px solid #d4d4d4;
+  cursor: pointer;
+  list-style: none;
+}
+
+.study-tags-panel summary::-webkit-details-marker {
+  display: none;
+}
+
+.study-tags-panel summary::after {
+  color: #777;
+  content: "+";
+}
+
+.study-tags-panel[open] summary::after {
+  content: "-";
+}
+
 .study-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-top: 8px;
+  margin-top: 7px;
 }
 
 .study-tag {

@@ -183,11 +183,10 @@ def check_reader_pages_css() -> None:
 def check_study_target_ui() -> None:
     script = read_site_file("assets/study.js")
     for needle in [
-        "function noteTargetMeta",
-        "variant / ${variantId}",
+        "function noteManageHref",
         "Target URL missing",
         "Open target",
-        "Manage note",
+        "Edit note",
     ]:
         require_contains(script, needle, "assets/study.js")
 
@@ -548,8 +547,8 @@ def check_study_ui() -> None:
     script = read_site_file("assets/study.js")
     css = read_site_file("assets/study.css")
     for needle in [
-        "/assets/study.css?v=study13",
-        "/assets/study.js?v=study13",
+        "/assets/study.css?v=study14",
+        "/assets/study.js?v=study14",
         'id="studySubmit"',
         'id="studyClear"',
         'id="studyActiveFilters"',
@@ -569,8 +568,9 @@ def check_study_ui() -> None:
         "renderStudyPending",
         "function renderEmptyStudy",
         "function renderNoteFooter",
+        "function studyCountLabel",
         "function studyGroupMeta",
-        "Saved notes appear here.",
+        "Save notes while reading, then return here to study them.",
         "Find a work",
         "function clearStudyFilters",
         "function updateStudyClearState",
@@ -601,6 +601,10 @@ def check_study_ui() -> None:
         ".filter-chip",
         ".study-form.is-loading #studySubmit",
         ".group-meta",
+        ".study-tags-panel",
+        ".study-tags-panel summary",
+        ".study-tags-panel[open] summary::after",
+        ".study-tags",
         ".study-note + .study-note",
         ".note-title > a",
         ".note-footer",

@@ -100,10 +100,10 @@ function updateStudyClearState(isBusy = form.classList.contains("is-loading")) {
 
 function renderEmptyStudy() {
   const filtered = hasActiveFilters();
-  const title = filtered ? "No saved notes match these filters." : "No saved study notes yet.";
+  const title = filtered ? "No saved notes match these filters." : "No saved notes yet.";
   const body = filtered
-    ? "Clear filters, or save notes from the Notes page."
-    : "Saved notes appear here.";
+    ? "Clear filters, or edit the saved notes list."
+    : "Save notes while reading, then return here to study them.";
   const clearAction = filtered
     ? '<button type="button" data-empty-action="clear-filters">Clear filters</button>'
     : "";
@@ -175,20 +175,6 @@ function noteManageHref(note) {
   return `/notes?${params}`;
 }
 
-function noteTargetMeta(note) {
-  const parts = [];
-  const targetType = cleanText(note.target_type || "");
-  const targetId = cleanText(note.target_id || "");
-  const variantId = cleanText(note.variant_id || "");
-  if (targetType || targetId) {
-    parts.push([targetType, targetId].filter(Boolean).join(" / "));
-  }
-  if (variantId) {
-    parts.push(`variant / ${variantId}`);
-  }
-  return parts;
-}
-
 function renderNoteFooter(meta, actions) {
   const cleanMeta = cleanText(meta || "");
   if (!cleanMeta && !actions) return "";
@@ -200,26 +186,21 @@ function renderNoteFooter(meta, actions) {
 
 function renderNote(note) {
   const target = note.target_label || note.target_id || "Target";
-  const date = note.reviewed_at || note.updated_at || note.created_at || "";
   const tags = (note.tags || []).join(", ");
   const quote = note.quote ? `<blockquote class="note-quote">${escapeHtml(cleanText(note.quote))}</blockquote>` : "";
   const targetLink = note.url
     ? `<a href="${escapeHtml(note.url)}">${escapeHtml(target)}</a>`
     : escapeHtml(target);
-  const targetMeta = noteTargetMeta(note)
-    .join(" / ");
   const missingTarget = note.url ? "" : "Target URL missing";
   const openTarget = note.url ? `<a href="${escapeHtml(note.url)}">Open target</a>` : "";
   const manageHref = noteManageHref(note);
   const meta = [
-    date,
     tags ? `# ${tags}` : "",
-    targetMeta,
     missingTarget
   ].filter(Boolean).join(" / ");
   const actions = `
       ${openTarget}
-      <a href="${escapeHtml(manageHref)}">Manage note</a>`;
+      <a href="${escapeHtml(manageHref)}">Edit note</a>`;
   return `<article class="study-note">
     <div class="note-title">
       ${targetLink}
@@ -230,20 +211,24 @@ function renderNote(note) {
   </article>`;
 }
 
+function studyCountLabel(count, singular, plural = `${singular}s`) {
+  return `${count.toLocaleString()} ${count === 1 ? singular : plural}`;
+}
+
 function studyGroupMeta(group) {
   const noteCount = Number(group.count || group.notes?.length || 0);
   const targetCount = Number(group.target_count || 0);
   const parts = [
-    noteCount ? `${noteCount.toLocaleString()} notes` : "",
-    targetCount ? `${targetCount.toLocaleString()} targets` : ""
+    noteCount ? studyCountLabel(noteCount, "saved note") : "",
+    targetCount > 1 ? studyCountLabel(targetCount, "passage") : ""
   ].filter(Boolean);
-  return parts.join(" · ");
+  return parts.join(" / ");
 }
 
 function renderStudy(payload) {
   const groups = payload.groups || [];
   const count = payload.count || 0;
-  statusEl.textContent = count ? `${count.toLocaleString()} shown` : "";
+  statusEl.textContent = count ? studyCountLabel(count, "saved note") : "";
   resultsEl.innerHTML = groups.length
     ? groups.map((group) => {
       const title = [group.corpus_id, group.work_id].filter(Boolean).join(" / ") || "Saved notes";
@@ -252,15 +237,18 @@ function renderStudy(payload) {
       const tagCounts = (group.tag_counts || [])
         .map((item) => `<span class="study-tag">${escapeHtml(item.tag)} <span>${Number(item.count || 0).toLocaleString()}</span></span>`)
         .join("");
+      const tagsPanel = tagCounts
+        ? `<details class="study-tags-panel"><summary>Tags</summary><div class="study-tags">${tagCounts}</div></details>`
+        : "";
       return `<section class="study-group">
         <h2>${escapeHtml(title)}</h2>
         <div class="group-meta">${escapeHtml(studyGroupMeta(group))}</div>
-        ${tagCounts ? `<div class="study-tags">${tagCounts}</div>` : ""}
+        ${tagsPanel}
+        ${group.notes.map(renderNote).join("")}
         <div class="group-actions">
           ${workHref ? `<a href="${escapeHtml(workHref)}">Open work</a>` : ""}
-          <a href="${escapeHtml(notesHref)}">Manage notes</a>
+          <a href="${escapeHtml(notesHref)}">Edit notes</a>
         </div>
-        ${group.notes.map(renderNote).join("")}
       </section>`;
     }).join("")
     : renderEmptyStudy();
