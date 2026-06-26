@@ -305,12 +305,15 @@ function summaryButton(filter, label, count) {
 
 function renderSummary(records) {
   const counts = summaryCounts(records);
-  return `<nav class="translation-record-summary" aria-label="Visible translations by status">
-    ${summaryButton("all", "All", counts.total)}
-    ${summaryButton("generated", "To check", counts.generated)}
-    ${summaryButton("reviewed", "Saved", counts.reviewed)}
-    ${summaryButton("rejected", "Rejected", counts.rejected)}
-  </nav>`;
+  return `<details class="translation-record-summary-tools">
+    <summary>Status</summary>
+    <nav class="translation-record-summary" aria-label="Visible translations by status">
+      ${summaryButton("all", "All", counts.total)}
+      ${summaryButton("generated", "To check", counts.generated)}
+      ${summaryButton("reviewed", "Saved", counts.reviewed)}
+      ${summaryButton("rejected", "Rejected", counts.rejected)}
+    </nav>
+  </details>`;
 }
 
 function renderEmptyRecords() {
@@ -345,11 +348,11 @@ function translationStatusMessage(queryMatched, visible) {
   const counts = summaryCounts(queryMatched);
   if (!queryMatched.length) return "No translations found.";
   if (!visible.length) return `No translations match this status. ${counts.generated.toLocaleString()} to check.`;
-  const shown = `${visible.length.toLocaleString()} translations`;
+  const shown = `${visible.length.toLocaleString()} shown`;
   if (counts.generated > 0) {
-    return `${shown} · ${counts.generated.toLocaleString()} to check.`;
+    return `${counts.generated.toLocaleString()} to check.`;
   }
-  return `${shown} · all clear.`;
+  return `All clear. ${shown}.`;
 }
 
 function renderRecord(record) {

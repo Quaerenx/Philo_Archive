@@ -401,8 +401,8 @@ def check_translations_ui() -> None:
     css = read_site_file("assets/translations.css")
     for needle in [
         "/assets/notes.css?v=notes15",
-        "/assets/translations.css?v=trans7",
-        "/assets/translations.js?v=trans15",
+        "/assets/translations.css?v=trans8",
+        "/assets/translations.js?v=trans16",
         'id="translationsSubmit"',
         'id="translationsClear"',
         'id="translationsReviewQueue"',
@@ -444,7 +444,7 @@ def check_translations_ui() -> None:
         "function removeFilter",
         "function renderSummary",
         "function translationStatusMessage",
-        "all clear",
+        "All clear.",
         "function renderRecord",
         "translation-record-heading",
         "translation-record-title",
@@ -473,6 +473,7 @@ def check_translations_ui() -> None:
         "Saved.",
         "next translation ready",
         "function updateRecordReview",
+        "translation-record-summary-tools",
         "data-translation-summary-filter",
         "review_state: reviewState",
         "/api/sentence-translations/export",
@@ -498,9 +499,11 @@ def check_translations_ui() -> None:
     )
     for needle in [
         ".translations-form",
+        ".translation-record-summary-tools",
+        ".translation-record-summary-tools summary",
+        ".translation-record-summary-tools[open] summary::after",
         ".translation-record-summary",
         "background: transparent",
-        "border-top: 1px solid #e8e8e8",
         ".translation-review-queue",
         ".translation-review-queue:not(:disabled)",
         ".review-export-row .export-tools",
