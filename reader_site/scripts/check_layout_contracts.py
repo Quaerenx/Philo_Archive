@@ -474,7 +474,7 @@ def check_translations_ui() -> None:
     for needle in [
         "/assets/notes.css?v=notes19",
         "/assets/translations.css?v=trans16",
-        "/assets/translations.js?v=trans38",
+        "/assets/translations.js?v=trans39",
         '<option value="">All corpora</option>',
         'id="translationsListTools"',
         "Search and filters</summary>",
@@ -523,7 +523,8 @@ def check_translations_ui() -> None:
         "function updateTranslationsListChrome",
         "form.hidden = !showTools",
         "No translations yet.",
-        "Translation and commentary will appear here for review.",
+        "const bodyMarkup = body ?",
+        "Find work",
         "Study",
         "function clearFilters",
         "queryInput.focus();",

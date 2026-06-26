@@ -361,16 +361,17 @@ function renderEmptyRecords() {
   const title = filtered ? "No translations match these filters." : "No translations yet.";
   const body = filtered
     ? "Clear filters, or choose a broader status and work id."
-    : "Open a work and click a sentence. Translation and commentary will appear here for review.";
+    : "";
   const clearAction = filtered
     ? '<button type="button" data-empty-action="clear-filters">Clear filters</button>'
     : "";
+  const bodyMarkup = body ? `<p>${escapeHtml(body)}</p>` : "";
   return `<section class="empty empty-state">
     <h2>${escapeHtml(title)}</h2>
-    <p>${escapeHtml(body)}</p>
+    ${bodyMarkup}
     <div class="empty-actions">
       ${clearAction}
-      <a href="/search">Find a work</a>
+      <a href="/search">Find work</a>
       <a href="/study">Study</a>
     </div>
   </section>`;

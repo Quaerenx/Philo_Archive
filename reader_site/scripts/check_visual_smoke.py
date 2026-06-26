@@ -216,7 +216,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translationsReviewQueue",
             "aria-busy=\"false\"",
             "translations.css?v=trans16",
-            "translations.js?v=trans38",
+            "translations.js?v=trans39",
             "translationsListTools",
             "Search and filters</summary>",
             "filter-panel",
@@ -471,6 +471,28 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       if (!studyPageState.emptyActions.includes('Working notes') || !studyPageState.emptyActions.includes('Find work')) {
         throw new Error(`empty study page should keep concise actions: ${JSON.stringify(studyPageState)}`);
+      }
+    }
+  }
+  if (parsed.pathname === '/translations' && !parsed.search) {
+    await page.waitForSelector('#translationsResults .translation-record-card:not(.notes-skeleton), #translationsResults .empty-state', { timeout: 7000 }).catch(() => {});
+    const translationsPageState = await page.evaluate(() => {
+      const empty = document.querySelector('#translationsResults .empty-state');
+      return {
+        hasRecords: document.querySelectorAll('#translationsResults .translation-record-card:not(.notes-skeleton)').length > 0,
+        formHidden: Boolean(document.querySelector('#translationsForm')?.hidden),
+        emptyTitle: empty?.querySelector('h2')?.textContent.trim() || '',
+        emptyBodyCount: empty ? empty.querySelectorAll('p').length : 0,
+        emptyActions: Array.from(empty?.querySelectorAll('.empty-actions a') || []).map((node) => node.textContent.trim())
+      };
+    });
+    if (!translationsPageState.hasRecords) {
+      if (!translationsPageState.formHidden) throw new Error(`empty translations page should hide filter form: ${JSON.stringify(translationsPageState)}`);
+      if (translationsPageState.emptyTitle !== 'No translations yet.' || translationsPageState.emptyBodyCount !== 0) {
+        throw new Error(`empty translations page should stay quiet: ${JSON.stringify(translationsPageState)}`);
+      }
+      if (!translationsPageState.emptyActions.includes('Find work') || !translationsPageState.emptyActions.includes('Study')) {
+        throw new Error(`empty translations page should keep concise actions: ${JSON.stringify(translationsPageState)}`);
       }
     }
   }
