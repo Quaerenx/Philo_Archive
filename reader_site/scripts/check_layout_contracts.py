@@ -1295,7 +1295,7 @@ def check_work_source_bundle_ui() -> None:
             f"{function_name} reading-first translation layout",
         )
     require_contains(template, "/assets/reader-work.js?v=common133", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common106", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common107", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
         "reading-desk",
@@ -1549,6 +1549,7 @@ def check_work_source_bundle_ui() -> None:
         ".translation-output .translation-empty-copy",
         ".translation-reading-actions",
         ".translation-reading-actions button",
+        ".translation-reading-actions button[data-translation-quick-action=\"next-sentence\"]:not(:disabled)",
         ".translation-reading-actions .translation-quick-state",
         ".translation-pending-result",
         ".translation-pending-copy",

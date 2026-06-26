@@ -1589,6 +1589,12 @@ h1 {
   border: 1px solid #d4d4d4;
 }
 
+.translation-reading-actions button[data-translation-quick-action="next-sentence"]:not(:disabled) {
+  color: #9a0000;
+  background: #fffafa;
+  border-color: #b00000;
+}
+
 .translation-reading-actions button:disabled {
   color: #888;
   background: #f7f7f7;

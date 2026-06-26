@@ -290,7 +290,7 @@ def check_route_markup(route: str, html: str) -> None:
             "Study pack</div>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common106",
+            "reader-work.css?v=common107",
             "reader-work.js?v=common133",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
@@ -588,6 +588,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         readingNextVisible: Boolean(readingNext && window.getComputedStyle(readingNext).display !== 'none'),
         readingNextText: readingNext ? readingNext.textContent.trim() : '',
         readingNextLabel: readingNext ? readingNext.getAttribute('aria-label') || '' : '',
+        readingNextBorderColor: readingNext ? window.getComputedStyle(readingNext).borderColor : '',
         readingSaveLabel: readingSave ? readingSave.getAttribute('aria-label') || '' : '',
         readingNoteLabel: readingNote ? readingNote.getAttribute('aria-label') || '' : '',
         readingActions,
@@ -609,6 +610,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (state.readingNextLabel !== 'Select and translate next sentence') {
       throw new Error(`reading mode next action should keep a clear accessible label: ${JSON.stringify(state)}`);
+    }
+    if (state.readingNextBorderColor !== 'rgb(176, 0, 0)') {
+      throw new Error(`reading mode next action should be visually primary: ${JSON.stringify(state)}`);
     }
     if (!['Save translation', 'Saved translation'].includes(state.readingSaveLabel) || state.readingNoteLabel !== 'Add note from translation') {
       throw new Error(`reading mode quick actions should keep clear accessible labels: ${JSON.stringify(state)}`);
