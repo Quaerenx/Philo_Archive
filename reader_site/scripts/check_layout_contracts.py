@@ -295,8 +295,8 @@ def check_notes_ui() -> None:
     script = read_site_file("assets/notes.js")
     css = read_site_file("assets/notes.css")
     for needle in [
-        "/assets/notes.css?v=notes14",
-        "/assets/notes.js?v=notes15",
+        "/assets/notes.css?v=notes15",
+        "/assets/notes.js?v=notes16",
         'id="notesSubmit"',
         'id="notesClear"',
         'id="notesActiveFilters"',
@@ -318,6 +318,9 @@ def check_notes_ui() -> None:
         "function notesSummaryCounts",
         "function notesSummaryButton",
         "function renderNotesSummary",
+        "function renderNoteFooter",
+        "note-footer",
+        "Open target",
         "data-notes-summary-filter",
         "recentlyChangedNoteId",
         "function revealRecentlyChangedNote",
@@ -368,10 +371,12 @@ def check_notes_ui() -> None:
         ".note-card.is-recent:focus",
         ".note-card.is-editing",
         ".note-title > a",
-        ".note-title .review-badge",
-        ".note-title .note-meta",
+        ".note-footer",
+        ".note-footer .note-meta",
+        ".note-actions a",
         ".note-edit-actions",
         "grid-template-columns: repeat(2, minmax(0, 1fr))",
+        "justify-content: flex-end",
         "@keyframes archive-note-highlight",
         ".notes-form.is-loading #notesSubmit",
         ".empty-state",
@@ -392,7 +397,7 @@ def check_translations_ui() -> None:
     base_css = read_site_file("assets/notes.css")
     css = read_site_file("assets/translations.css")
     for needle in [
-        "/assets/notes.css?v=notes14",
+        "/assets/notes.css?v=notes15",
         "/assets/translations.css?v=trans7",
         "/assets/translations.js?v=trans14",
         'id="translationsSubmit"',

@@ -191,7 +191,7 @@ function setActionButtonBusy(button, isBusy) {
 }
 
 function renderNotesPending() {
-  statusEl.textContent = "Loading notes...";
+  statusEl.textContent = "Loading...";
   resultsEl.innerHTML = `
     <article class="note-card notes-skeleton" aria-hidden="true">
       <span class="notes-skeleton-line title"></span>
@@ -233,9 +233,18 @@ function renderNotesSummary(notes) {
   </nav>`;
 }
 
+function renderNoteFooter(meta, actions) {
+  const cleanMeta = cleanText(meta || "");
+  if (!cleanMeta && !actions) return "";
+  return `<footer class="note-footer">
+    ${cleanMeta ? `<div class="note-meta">${escapeHtml(cleanMeta)}</div>` : "<div></div>"}
+    ${actions ? `<div class="note-actions">${actions}</div>` : ""}
+  </footer>`;
+}
+
 function renderNotes(notes) {
   lastNotes = notes;
-  statusEl.textContent = notes.length ? `${notes.length.toLocaleString()} notes` : "";
+  statusEl.textContent = notes.length ? `${notes.length.toLocaleString()} shown` : "";
   resultsEl.innerHTML = notes.length
     ? renderNotesSummary(notes) + notes.map((note) => {
       const titleParts = [note.corpus_id, note.work_id, note.target_label || note.target_id].filter(Boolean);
@@ -250,20 +259,23 @@ function renderNotes(notes) {
       const href = note.url ? `<a href="${escapeHtml(note.url)}">${escapeHtml(title || "Open note target")}</a>` : escapeHtml(title || "Untitled note");
       const isRecent = note.id === recentlyChangedNoteId;
       const recentAttrs = isRecent ? ' tabindex="-1" aria-label="Recently changed note"' : "";
+      const meta = [
+        date,
+        tags ? `# ${tags}` : "",
+        reviewLabel
+      ].filter(Boolean).join(" / ");
+      const actions = `
+          ${note.url ? `<a href="${escapeHtml(note.url)}">Open target</a>` : ""}
+          <button type="button" data-action="${escapeHtml(reviewAction)}">${escapeHtml(reviewActionLabel)}</button>
+          <button type="button" data-action="edit">Edit</button>
+          <button type="button" data-action="delete">Delete</button>`;
       return `<article class="note-card${isRecent ? " is-recent" : ""}" data-note-id="${escapeHtml(note.id)}" data-corpus-id="${escapeHtml(note.corpus_id)}" data-review-state="${escapeHtml(reviewState)}"${recentAttrs}>
         <div class="note-title">
           ${href}
-          <span class="note-meta">${escapeHtml(cleanText(date))}</span>
-          <span class="review-badge ${escapeHtml(reviewState)}">${escapeHtml(reviewLabel)}</span>
         </div>
-        ${tags ? `<div class="note-tags">${escapeHtml(tags)}</div>` : ""}
         <p class="note-text">${escapeHtml(cleanText(note.note))}</p>
         ${quote}
-        <div class="note-actions">
-          <button type="button" data-action="${escapeHtml(reviewAction)}">${escapeHtml(reviewActionLabel)}</button>
-          <button type="button" data-action="edit">Edit</button>
-          <button type="button" data-action="delete">Delete</button>
-        </div>
+        ${renderNoteFooter(meta, actions)}
         <form class="note-edit-form" hidden>
           <label>Tags<input name="tags" value="${escapeHtml(tags)}" autocomplete="off"></label>
           <label>Note<textarea name="note" required>${escapeHtml(note.note)}</textarea></label>

@@ -123,6 +123,7 @@ h1 {
 .notes-form button,
 .note-edit-form input,
 .note-edit-form textarea,
+.note-actions a,
 .note-actions button,
 .note-edit-actions button {
   min-height: 28px;
@@ -142,10 +143,16 @@ h1 {
 }
 
 .notes-form button,
+.note-actions a,
 .note-actions button,
 .note-edit-actions button {
   position: relative;
   padding: 4px 12px;
+}
+
+.notes-form button,
+.note-actions button,
+.note-edit-actions button {
   cursor: pointer;
 }
 
@@ -457,28 +464,20 @@ h1 {
 }
 
 .note-title {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: baseline;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 4px;
   margin-bottom: 4px;
   line-height: 1.35;
 }
 
 .note-title > a {
-  order: 1;
+  min-width: 0;
+  overflow: hidden;
   color: #111;
   font-weight: bold;
-}
-
-.note-title .review-badge {
-  order: 2;
-}
-
-.note-title .note-meta {
-  order: 3;
-  flex-basis: 100%;
-  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .review-badge {
@@ -507,12 +506,34 @@ h1 {
   border-left: 2px solid #d4d4d4;
 }
 
+.note-footer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: end;
+  margin-top: 8px;
+  padding-top: 7px;
+  border-top: 1px solid #eeeeee;
+}
+
+.note-footer .note-meta {
+  overflow-wrap: anywhere;
+  font-size: 10px;
+}
+
 .note-actions,
 .note-edit-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 8px;
+  justify-content: flex-end;
+  margin-top: 0;
+}
+
+.note-actions a {
+  display: inline-flex;
+  align-items: center;
+  color: #000;
 }
 
 .note-edit-actions {
@@ -641,5 +662,13 @@ h1 {
   .empty-actions button,
   .empty-actions a {
     min-height: 32px;
+  }
+
+  .note-footer {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .note-actions {
+    justify-content: flex-start;
   }
 }
