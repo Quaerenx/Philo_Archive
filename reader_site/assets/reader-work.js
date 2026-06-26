@@ -185,13 +185,13 @@ function studyPanelToggleSummary() {
   if (!selectedSentence) return "Select sentence";
   const position = selectedSentencePositionLabel();
   if (translationCard && translationCard.classList.contains("is-loading")) {
-    return `${position} / working`;
+    return `${position} / translating`;
   }
   if (translationOutput && translationOutput.querySelector(".translation-error")) {
-    return `${position} / retry needed`;
+    return `${position} / needs retry`;
   }
   if (selectedTranslationRecord) {
-    return `${position} / ready`;
+    return position;
   }
   return position;
 }
