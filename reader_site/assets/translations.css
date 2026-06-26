@@ -159,6 +159,16 @@
   font-weight: normal;
 }
 
+.translation-record-group-actions {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.translation-record-group-actions a {
+  color: #b00000;
+}
+
 .translation-record-group .translation-record-card:first-of-type {
   border-top: 0;
 }

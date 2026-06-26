@@ -404,15 +404,47 @@ function groupedTranslationRecords(records) {
     if (!group) {
       group = {
         key,
+        corpusId: cleanText(record.corpus_id || ""),
+        workId: cleanText(record.work_id || ""),
         label: recordContext(record) || corpusDisplayName(record.corpus_id) || "Translations",
-        records: []
+        records: [],
+        reviewedCount: 0
       };
       indexes.set(key, group);
       groups.push(group);
     }
+    if (normalizedReviewState(record) === "reviewed") {
+      group.reviewedCount += 1;
+    }
     group.records.push(record);
   }
   return groups;
+}
+
+function groupWorkUrl(group) {
+  if (!group.corpusId || !group.workId) return "";
+  return `/work/${encodeURIComponent(group.corpusId)}/${encodeURIComponent(group.workId)}`;
+}
+
+function groupSavedExportUrl(group) {
+  if (!group.corpusId || !group.reviewedCount) return "";
+  const params = new URLSearchParams({
+    format: "markdown",
+    review_state: "reviewed",
+    corpus_id: group.corpusId
+  });
+  if (group.workId) params.set("work_id", group.workId);
+  return `/api/sentence-translations/export?${params}`;
+}
+
+function renderGroupActions(group) {
+  const workUrl = groupWorkUrl(group);
+  const savedExportUrl = groupSavedExportUrl(group);
+  const actions = [
+    workUrl ? `<a href="${escapeHtml(workUrl)}">Read</a>` : "",
+    savedExportUrl ? `<a href="${escapeHtml(savedExportUrl)}">Saved</a>` : ""
+  ].filter(Boolean).join("");
+  return actions ? `<span class="translation-record-group-actions">${actions}</span>` : "";
 }
 
 function visibleReviewStates(records) {
@@ -476,6 +508,7 @@ function renderRecordGroups(records, options) {
       <div class="translation-record-group-title">
         <span>${escapeHtml(group.label)}</span>
         <strong>${group.records.length.toLocaleString()} ${group.records.length === 1 ? "translation" : "translations"}</strong>
+        ${renderGroupActions(group)}
       </div>
       ${group.records.map((record) => renderRecord(record, { ...options, showContext: false })).join("")}
     </section>`).join("");
