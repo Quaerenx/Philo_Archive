@@ -864,7 +864,9 @@ def check_work_source_bundle_ui() -> None:
         "function noteTargetHref",
         "Open target",
         "notes-list-skeleton",
-        "No notes found for this work.",
+        "No notes yet.",
+        "No matching notes.",
+        "No concepts yet.",
         "copyStudyCard",
         "function translationNoteDraftText",
         "function focusNoteComposer",
@@ -937,7 +939,7 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common95", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common96", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common86", "templates/work.html")
     for needle in [
         "reading-desk",

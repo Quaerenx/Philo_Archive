@@ -2475,7 +2475,9 @@ function renderNotesList(notes) {
   notesList.setAttribute("aria-busy", "false");
   if (noteListSummary) {
     const sortLabel = noteSort && noteSort.value === "target" ? "target order" : "recent first";
-    noteListSummary.textContent = `${items.length} notes${filter ? " matching filter" : ""} / ${sortLabel}`;
+    noteListSummary.textContent = items.length
+      ? `${items.length} notes / ${sortLabel}`
+      : (filter ? "No matching notes." : "No notes yet.");
   }
   if (!items.length) {
     notesList.innerHTML = filter
@@ -2485,7 +2487,7 @@ function renderNotesList(notes) {
             <button type="button" data-notes-empty-action="clear-filter">Clear filter</button>
           </div>
         </div>`
-      : '<div class="notes-empty">No notes found for this work.</div>';
+      : '<div class="notes-empty">No notes yet.</div>';
     return;
   }
   notesList.innerHTML = items.map((note) => {
@@ -2976,7 +2978,7 @@ function initializeStudyCompanion() {
   }
   const conceptsPanel = document.querySelector('[data-study-panel="concepts"]');
   if (conceptsPanel && !conceptsPanel.textContent.trim()) {
-    conceptsPanel.innerHTML = '<section class="research-card"><h2>Concepts</h2><p class="source-notes">No concept notes for this work.</p></section>';
+    conceptsPanel.innerHTML = '<section class="research-card"><h2>Concepts</h2><p class="source-notes">No concepts yet.</p></section>';
   }
   selectSentenceFromHash();
   if (selectedSentence) {
