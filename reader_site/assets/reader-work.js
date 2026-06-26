@@ -1202,6 +1202,18 @@ function citationText() {
   return `${author}, ${researchData.title} (${researchData.work_id})${position}. Personal Archive of Literature. ${target.url}`;
 }
 
+function citationPreviewText() {
+  const target = currentTarget();
+  if (researchData.corpus_id === "bible") {
+    const source = researchData.source_label || researchData.variant_id || "Bible";
+    const label = target.id === "work" ? (researchData.citation_title || researchData.title) : target.label;
+    return `${label}, ${source}. Personal Archive of Literature.`;
+  }
+  const position = target.id === "work" ? "" : `, ${target.label}`;
+  const author = researchData.author || researchData.corpus_title || researchData.corpus_id;
+  return `${author}, ${researchData.title} (${researchData.work_id})${position}. Personal Archive of Literature.`;
+}
+
 function sourceBundleUrl() {
   const target = currentTarget();
   if (!sourceBundleTargetTypes.has(target.type) || !target.id || target.id === "work") {
@@ -2329,7 +2341,10 @@ async function copyStudyCard() {
 }
 
 function updateCitationPreview() {
-  citationPreview.textContent = citationText();
+  const preview = citationPreviewText();
+  citationPreview.textContent = preview;
+  citationPreview.title = "Copy includes source URL.";
+  citationPreview.setAttribute("aria-label", `${preview} Source URL included when copied.`);
 }
 
 async function copyText(value) {

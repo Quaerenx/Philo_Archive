@@ -795,6 +795,11 @@ def check_work_source_bundle_ui() -> None:
     script = read_site_file("assets/reader-work.js")
     for needle in [
         "function sourceBundleUrl",
+        "function citationPreviewText",
+        "function updateCitationPreview",
+        "citationPreview.title = \"Copy includes source URL.\"",
+        "Source URL included when copied.",
+        "await copyText(citationText())",
         "function targetSnapshot",
         "function selectedSentenceTargetSnapshot",
         "function noteTargetForSave",
@@ -1167,6 +1172,15 @@ def check_work_source_bundle_ui() -> None:
     ]:
         require_contains(script, needle, "assets/reader-work.js")
     require_ordered_markers(
+        js_function_body(script, "updateCitationPreview"),
+        [
+            "citationPreviewText()",
+            "citationPreview.textContent = preview",
+            "Copy includes source URL.",
+        ],
+        "updateCitationPreview screen preview stays shorter than copied citation",
+    )
+    require_ordered_markers(
         js_function_body(script, "renderTranslationEmptyState"),
         [
             '<section class="translation-section translation-section-primary"',
@@ -1199,7 +1213,7 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common119", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common120", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common103", "templates/work.html")
     for needle in [
         "reading-desk",
