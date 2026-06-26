@@ -348,7 +348,7 @@ def check_notes_ui() -> None:
     css = read_site_file("assets/notes.css")
     for needle in [
         "/assets/notes.css?v=notes19",
-        "/assets/notes.js?v=notes26",
+        "/assets/notes.js?v=notes27",
         'id="notesSubmit"',
         'id="notesClear"',
         'id="notesActiveFilters"',
@@ -382,7 +382,6 @@ def check_notes_ui() -> None:
         'statusEl.textContent = "";',
         "function renderNoteFooter",
         "note-footer",
-        "Open target",
         "note-danger-actions",
         "More</summary>",
         "data-notes-summary-filter",
@@ -421,6 +420,13 @@ def check_notes_ui() -> None:
         'error.name === "AbortError"',
     ]:
         require_contains(script, needle, "assets/notes.js")
+    for noisy_action in [
+        "Open target",
+        "Open work",
+        "Manage note",
+        "Edit note",
+    ]:
+        require(noisy_action not in script, f"assets/notes.js should keep Notes actions concise without {noisy_action!r}")
     for needle in [
         ".notes-form.is-loading",
         ".notes-form[hidden]",

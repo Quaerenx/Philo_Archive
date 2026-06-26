@@ -202,7 +202,7 @@ def check_route_markup(route: str, html: str) -> None:
             "notesStatus",
             "aria-busy=\"false\"",
             "notes.css?v=notes19",
-            "notes.js?v=notes26",
+            "notes.js?v=notes27",
             "filter-panel",
             "export-tools",
         ]:
@@ -477,6 +477,11 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       if (!notesPageState.emptyActions.includes('Find work')) {
         throw new Error(`empty notes page should keep a concise find action: ${JSON.stringify(notesPageState)}`);
+      }
+    } else {
+      const notesActionText = await page.evaluate(() => Array.from(document.querySelectorAll('#notesResults .note-actions')).map((node) => node.textContent.trim()).join(' '));
+      if (/Open target|Open work|Manage note|Edit note/.test(notesActionText)) {
+        throw new Error(`notes page actions should stay concise: ${notesActionText}`);
       }
     }
   }

@@ -311,7 +311,6 @@ function renderNotes(notes) {
         tags ? `# ${tags}` : ""
       ].filter(Boolean).join(" / ");
       const actions = `
-          ${note.url ? `<a href="${escapeHtml(note.url)}">Open target</a>` : ""}
           <button type="button" data-action="${escapeHtml(reviewAction)}">${escapeHtml(reviewActionLabel)}</button>
           <button type="button" data-action="edit">Edit</button>
           <details class="note-danger-actions">
