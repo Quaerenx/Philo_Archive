@@ -467,6 +467,58 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (state.visibleExtraCount !== 0) throw new Error(`reading mode exposed study-only translation extras: ${JSON.stringify(state)}`);
     if (state.activeTab !== 'Translation') throw new Error(`selected work route did not keep Translation tab active: ${JSON.stringify(state)}`);
     if (state.studyToolsOpen) throw new Error(`study tools should stay collapsed in default reading mode: ${JSON.stringify(state)}`);
+    await page.click('#study-tab-notes');
+    await page.waitForSelector('#study-panel-notes:not([hidden])', { timeout: 5000 });
+    const notesState = await page.evaluate(() => ({
+      notePlaceholder: document.querySelector('#noteText')?.getAttribute('placeholder') || '',
+      noteLabelHidden: Boolean(document.querySelector('#noteText')?.closest('label')?.querySelector('.visually-hidden')),
+      saveText: document.querySelector('#noteForm button[type="submit"]')?.textContent.trim() || '',
+      saveLabel: document.querySelector('#noteForm button[type="submit"]')?.getAttribute('aria-label') || '',
+      tagsSummary: document.querySelector('.note-options summary')?.textContent.trim() || '',
+      savedSummary: document.querySelector('.notes-filter-tools summary')?.textContent.trim() || ''
+    }));
+    if (notesState.notePlaceholder !== 'Write a note...' || !notesState.noteLabelHidden) {
+      throw new Error(`notes tab should keep the editor quiet but accessible: ${JSON.stringify(notesState)}`);
+    }
+    if (notesState.saveText !== 'Save' || notesState.saveLabel !== 'Save note') {
+      throw new Error(`notes tab save control should stay concise: ${JSON.stringify(notesState)}`);
+    }
+    if (notesState.tagsSummary !== 'Tags' || notesState.savedSummary !== 'Saved') {
+      throw new Error(`notes tab details labels should stay concise: ${JSON.stringify(notesState)}`);
+    }
+    await page.click('#study-tab-citation');
+    await page.waitForSelector('#study-panel-citation:not([hidden])', { timeout: 5000 });
+    await page.click('.citation-copy-options summary');
+    await page.waitForSelector('.citation-copy-options[open]', { timeout: 3000 });
+    const citationState = await page.evaluate(() => {
+      const preview = document.querySelector('#citationPreview');
+      const copied = window.citationText ? window.citationText() : '';
+      return {
+        copyText: document.querySelector('#copyCitation')?.textContent.trim() || '',
+        copyLabel: document.querySelector('#copyCitation')?.getAttribute('aria-label') || '',
+        moreText: document.querySelector('.citation-copy-options summary')?.textContent.trim() || '',
+        previewHasUrl: /https?:\/\//.test(preview?.textContent || ''),
+        copiedHasUrl: /https?:\/\//.test(copied),
+        urlText: document.querySelector('#copyUrl')?.textContent.trim() || '',
+        urlLabel: document.querySelector('#copyUrl')?.getAttribute('aria-label') || '',
+        bundleText: document.querySelector('#copySourceBundle')?.textContent.trim() || '',
+        bundleLabel: document.querySelector('#copySourceBundle')?.getAttribute('aria-label') || ''
+      };
+    });
+    if (citationState.copyText !== 'Copy' || citationState.copyLabel !== 'Copy citation') {
+      throw new Error(`citation tab primary copy control should stay concise: ${JSON.stringify(citationState)}`);
+    }
+    if (citationState.moreText !== 'More') {
+      throw new Error(`citation tab secondary copy summary should stay concise: ${JSON.stringify(citationState)}`);
+    }
+    if (citationState.previewHasUrl || !citationState.copiedHasUrl) {
+      throw new Error(`citation preview should hide URL while copied citation keeps it: ${JSON.stringify(citationState)}`);
+    }
+    if (citationState.urlText !== 'URL' || citationState.urlLabel !== 'Copy URL' || citationState.bundleText !== 'Source bundle' || citationState.bundleLabel !== 'Copy source bundle') {
+      throw new Error(`citation secondary copy controls should stay concise: ${JSON.stringify(citationState)}`);
+    }
+    await page.click('#study-tab-translation');
+    await page.waitForSelector('#study-panel-translation:not([hidden])', { timeout: 5000 });
   }
   if (parsed.pathname === '/translations' && parsed.searchParams.get('review_state') === 'generated') {
     await page.waitForSelector('#translationsResults .translation-record-card, #translationsResults .empty-state', { timeout: 7000 }).catch(() => {});
