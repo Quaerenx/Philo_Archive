@@ -320,7 +320,7 @@ function renderResults(payload, query) {
         reviewStateLabel(result.review_state)
       ]);
       const tags = (result.tags || []).map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join("");
-      const actions = result.url ? `<a href="${escapeHtml(result.url)}">Source</a>` : "";
+      const actions = result.url ? `<a href="${escapeHtml(result.url)}">Read</a>` : "";
       return `<article class="result note-result">
         <div class="result-title">
           ${resultKind("Note", "note")}

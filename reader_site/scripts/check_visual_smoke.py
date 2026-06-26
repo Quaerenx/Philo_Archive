@@ -239,7 +239,7 @@ def check_route_markup(route: str, html: str) -> None:
             "searchStatus",
             "aria-busy=\"false\"",
             "search.css?v=phase19",
-            "search.js?v=phase27",
+            "search.js?v=phase28",
             "Translations",
             "filter-panel",
         ]:
@@ -461,9 +461,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       throw new Error(`single search result actions should be visible without More: ${JSON.stringify(searchPageState)}`);
     }
     if (searchPageState.hasResults && searchPageState.inlineActionCount === 0) {
-      throw new Error(`search result actions should expose direct Read, Notes, or Source links: ${JSON.stringify(searchPageState)}`);
+      throw new Error(`search result actions should expose direct Read or Notes links: ${JSON.stringify(searchPageState)}`);
     }
-    if (searchPageState.hasResults && !/Read|Source/.test(searchPageState.actionText)) {
+    if (searchPageState.hasResults && !/Read/.test(searchPageState.actionText)) {
       throw new Error(`search result actions should make the primary destination explicit: ${JSON.stringify(searchPageState)}`);
     }
   }

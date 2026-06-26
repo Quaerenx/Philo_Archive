@@ -228,7 +228,7 @@ def check_search_ui() -> None:
     css = read_site_file("assets/search.css")
     for needle in [
         "/assets/search.css?v=phase19",
-        "/assets/search.js?v=phase27",
+        "/assets/search.js?v=phase28",
         'href="/translations"',
         "Translations",
         'class="filter-panel"',
@@ -276,7 +276,6 @@ def check_search_ui() -> None:
         "search-results-notes",
         "result-group-count",
         "result-kind",
-        "Source",
         "searchClear.addEventListener",
         "activeFiltersEl.addEventListener",
         "filter-chip",
