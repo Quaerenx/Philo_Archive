@@ -100,10 +100,10 @@ function updateStudyClearState(isBusy = form.classList.contains("is-loading")) {
 
 function renderEmptyStudy() {
   const filtered = hasActiveFilters();
-  const title = filtered ? "No reviewed notes match these filters." : "No reviewed study notes yet.";
+  const title = filtered ? "No saved notes match these filters." : "No saved study notes yet.";
   const body = filtered
-    ? "Clear filters, or mark stronger drafts as reviewed."
-    : "Review drafts; reviewed notes appear here.";
+    ? "Clear filters, or save notes from the Notes page."
+    : "Saved notes appear here.";
   const clearAction = filtered
     ? '<button type="button" data-empty-action="clear-filters">Clear filters</button>'
     : "";
@@ -112,7 +112,7 @@ function renderEmptyStudy() {
     <p>${escapeHtml(body)}</p>
     <div class="empty-actions">
       ${clearAction}
-      <a href="/notes?review_state=raw">Review drafts</a>
+      <a href="/notes?review_state=raw">Open working notes</a>
       <a href="/search">Find a work</a>
     </div>
   </section>`;
@@ -246,7 +246,7 @@ function renderStudy(payload) {
   statusEl.textContent = count ? `${count.toLocaleString()} shown` : "";
   resultsEl.innerHTML = groups.length
     ? groups.map((group) => {
-      const title = [group.corpus_id, group.work_id].filter(Boolean).join(" / ") || "Reviewed notes";
+      const title = [group.corpus_id, group.work_id].filter(Boolean).join(" / ") || "Saved notes";
       const workHref = group.corpus_id && group.work_id ? `/work/${encodeURIComponent(group.corpus_id)}/${encodeURIComponent(group.work_id)}` : "";
       const notesHref = `/notes?corpus_id=${encodeURIComponent(group.corpus_id)}&work_id=${encodeURIComponent(group.work_id)}&review_state=reviewed`;
       const tagCounts = (group.tag_counts || [])
@@ -305,7 +305,7 @@ async function loadStudy() {
     const response = await fetch(`/api/study?${currentParams("json")}`, { signal: controller.signal });
     if (requestId !== activeStudyRequest) return;
     if (!response.ok) {
-      statusEl.textContent = "Could not load reviewed notes.";
+      statusEl.textContent = "Could not load saved notes.";
       resultsEl.innerHTML = "";
       return;
     }
@@ -316,7 +316,7 @@ async function loadStudy() {
       return;
     }
     if (requestId === activeStudyRequest) {
-      statusEl.textContent = "Could not load reviewed notes.";
+      statusEl.textContent = "Could not load saved notes.";
       resultsEl.innerHTML = "";
     }
   } finally {

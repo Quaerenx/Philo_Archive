@@ -119,7 +119,7 @@ function renderEmptyNotes() {
   const title = filtered ? "No notes match these filters." : "No notes yet.";
   const body = filtered
     ? "Clear filters, or broaden the work, tag, and status fields."
-    : "Open a work, read the source, and draft notes.";
+    : "Open a work, read the source, and add notes.";
   const clearAction = filtered
     ? '<button type="button" data-empty-action="clear-filters">Clear filters</button>'
     : "";
@@ -228,8 +228,8 @@ function renderNotesSummary(notes) {
   const counts = notesSummaryCounts(notes);
   return `<nav class="notes-summary-nav" aria-label="Visible notes by status">
     ${notesSummaryButton("", "All", counts.total)}
-    ${notesSummaryButton("raw", "Draft", counts.raw)}
-    ${notesSummaryButton("reviewed", "Reviewed", counts.reviewed)}
+    ${notesSummaryButton("raw", "Working", counts.raw)}
+    ${notesSummaryButton("reviewed", "Saved", counts.reviewed)}
   </nav>`;
 }
 
@@ -250,19 +250,15 @@ function renderNotes(notes) {
       const titleParts = [note.corpus_id, note.work_id, note.target_label || note.target_id].filter(Boolean);
       const title = titleParts.join(" / ");
       const tags = (note.tags || []).join(", ");
-      const date = note.updated_at || note.created_at || "";
       const reviewState = note.review_state || "raw";
-      const reviewLabel = reviewState === "reviewed" ? "Reviewed" : "Draft";
       const reviewAction = reviewState === "reviewed" ? "mark-raw" : "mark-reviewed";
-      const reviewActionLabel = reviewState === "reviewed" ? "Move to draft" : "Mark reviewed";
+      const reviewActionLabel = reviewState === "reviewed" ? "Reopen" : "Save";
       const quote = note.quote ? `<blockquote class="note-quote">${escapeHtml(cleanText(note.quote))}</blockquote>` : "";
       const href = note.url ? `<a href="${escapeHtml(note.url)}">${escapeHtml(title || "Open note target")}</a>` : escapeHtml(title || "Untitled note");
       const isRecent = note.id === recentlyChangedNoteId;
       const recentAttrs = isRecent ? ' tabindex="-1" aria-label="Recently changed note"' : "";
       const meta = [
-        date,
-        tags ? `# ${tags}` : "",
-        reviewLabel
+        tags ? `# ${tags}` : ""
       ].filter(Boolean).join(" / ");
       const actions = `
           ${note.url ? `<a href="${escapeHtml(note.url)}">Open target</a>` : ""}
@@ -505,7 +501,9 @@ resultsEl.addEventListener("click", async (event) => {
       if (ok) {
         recentlyChangedNoteId = noteId;
       }
-      statusEl.textContent = ok ? "Status updated." : "Could not update status.";
+      statusEl.textContent = ok
+        ? (nextState === "reviewed" ? "Saved." : "Reopened.")
+        : "Could not save.";
       await loadNotes();
     } finally {
       setActionButtonBusy(button, false);

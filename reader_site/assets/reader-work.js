@@ -1492,7 +1492,7 @@ function translationQuickActions(reviewState) {
     : '<button type="button" data-translation-quick-action="mark-reviewed">Save</button>';
   return `<div class="translation-quick-actions" aria-label="Study actions">
       ${reviewAction}
-      <button type="button" data-translation-quick-action="draft-note">Draft note</button>
+      <button type="button" data-translation-quick-action="draft-note">Add note</button>
       <button type="button" data-translation-quick-action="continue">Next</button>
     </div>`;
 }
@@ -1743,7 +1743,7 @@ function sessionPreviewItems(items, kind) {
       return `<li${index >= 3 ? ' class="session-preview-extra"' : ""}>
         <div>
           <strong>${escapeHtml(label)}</strong>
-          <span>${escapeHtml(body || "Reviewed study item")}</span>
+          <span>${escapeHtml(body || "Saved study item")}</span>
         </div>
         ${targetId ? `<button type="button" data-session-preview-target="${escapeHtml(targetId)}">Open</button>` : ""}
       </li>`;
@@ -2169,11 +2169,11 @@ function draftNoteFromTranslation() {
   setStudyPanelExpanded(true);
   focusNoteComposer();
   if (alreadyDrafted) {
-    noteStatus.textContent = "This translation is already in the note. Review and save.";
+    noteStatus.textContent = "This translation is already in the note.";
     setTranslationStatus("Translation is already in Notes.");
     return;
   }
-  noteStatus.textContent = existingNote ? "Translation appended to this note. Review and save." : "Translation drafted into this note. Review and save.";
+  noteStatus.textContent = existingNote ? "Translation appended to this note. Edit and save." : "Translation drafted into this note. Edit and save.";
   setTranslationStatus(existingNote ? "Translation appended to Notes." : "Translation drafted into Notes.");
 }
 
@@ -2366,7 +2366,7 @@ function normalizedNoteReviewState(note) {
 }
 
 function noteReviewLabel(reviewState) {
-  return reviewState === "reviewed" ? "Reviewed" : "Draft";
+  return reviewState === "reviewed" ? "Saved" : "Working";
 }
 
 function noteReviewAction(reviewState) {
@@ -2374,7 +2374,7 @@ function noteReviewAction(reviewState) {
 }
 
 function noteReviewActionLabel(reviewState) {
-  return reviewState === "reviewed" ? "Move to draft" : "Mark reviewed";
+  return reviewState === "reviewed" ? "Reopen" : "Save";
 }
 
 function noteTargetHref(note) {
@@ -2907,7 +2907,7 @@ notesList.addEventListener("click", async (event) => {
     setActionButtonBusy(button, true);
     const updatedNote = await updateNoteReview(noteId, nextState);
     noteStatus.textContent = updatedNote
-      ? (nextState === "reviewed" ? "Note marked reviewed." : "Note moved to drafts.")
+      ? (nextState === "reviewed" ? "Note saved." : "Note reopened.")
       : "Could not update note.";
     if (updatedNote) {
       recentlyChangedNoteId = updatedNote.id || noteId;
