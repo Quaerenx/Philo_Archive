@@ -288,7 +288,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common106",
-            "reader-work.js?v=common130",
+            "reader-work.js?v=common131",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
 
@@ -584,6 +584,12 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (!state.readingActions.includes(actionText) && !(actionText === 'Save' && state.readingActions.includes('Saved'))) {
         throw new Error(`reading mode should expose immediate study action ${actionText}: ${JSON.stringify(state)}`);
       }
+    }
+    const firstAction = state.readingActions[0] || '';
+    const secondAction = state.readingActions[1] || '';
+    const thirdAction = state.readingActions[2] || '';
+    if (!['Save', 'Saved'].includes(firstAction) || secondAction !== 'Add note' || thirdAction !== 'Next sentence') {
+      throw new Error(`reading mode should order actions as Save, Add note, then Next sentence: ${JSON.stringify(state)}`);
     }
     if (state.visibleExtraCount !== 0) throw new Error(`reading mode exposed study-only translation extras: ${JSON.stringify(state)}`);
     if (state.activeTab !== 'Translation') throw new Error(`selected work route did not keep Translation tab active: ${JSON.stringify(state)}`);

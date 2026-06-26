@@ -1236,7 +1236,7 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common130", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common131", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common106", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
