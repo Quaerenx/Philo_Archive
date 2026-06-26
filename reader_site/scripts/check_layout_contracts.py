@@ -516,8 +516,8 @@ def check_study_ui() -> None:
     script = read_site_file("assets/study.js")
     css = read_site_file("assets/study.css")
     for needle in [
-        "/assets/study.css?v=study11",
-        "/assets/study.js?v=study11",
+        "/assets/study.css?v=study12",
+        "/assets/study.js?v=study12",
         'id="studySubmit"',
         'id="studyClear"',
         'id="studyActiveFilters"',
@@ -536,7 +536,7 @@ def check_study_ui() -> None:
         "setStudyBusy",
         "renderStudyPending",
         "function renderEmptyStudy",
-        "Review drafts and mark the strongest notes as reviewed; they become the study bundle.",
+        "Review drafts; reviewed notes appear here.",
         "Find a work",
         "function clearStudyFilters",
         "function updateStudyClearState",
@@ -566,6 +566,11 @@ def check_study_ui() -> None:
         ".active-filters.has-filters",
         ".filter-chip",
         ".study-form.is-loading #studySubmit",
+        ".group-meta",
+        ".group-range",
+        ".study-note + .study-note",
+        ".note-title > a",
+        ".note-title .note-meta",
         ".empty-state",
         ".empty-actions",
         ".empty-actions a",

@@ -103,7 +103,7 @@ function renderEmptyStudy() {
   const title = filtered ? "No reviewed notes match these filters." : "No reviewed study notes yet.";
   const body = filtered
     ? "Clear filters, or mark stronger drafts as reviewed."
-    : "Review drafts and mark the strongest notes as reviewed; they become the study bundle.";
+    : "Review drafts; reviewed notes appear here.";
   const clearAction = filtered
     ? '<button type="button" data-empty-action="clear-filters">Clear filters</button>'
     : "";
