@@ -193,9 +193,9 @@ def check_study_target_ui() -> None:
 
     css = read_site_file("assets/study.css")
     for needle in [
-        ".target-meta",
         "overflow-wrap: anywhere;",
-        ".target-warning",
+        ".note-footer",
+        ".note-footer .note-meta",
         ".note-actions",
     ]:
         require_contains(css, needle, "assets/study.css")
@@ -544,8 +544,8 @@ def check_study_ui() -> None:
     script = read_site_file("assets/study.js")
     css = read_site_file("assets/study.css")
     for needle in [
-        "/assets/study.css?v=study12",
-        "/assets/study.js?v=study12",
+        "/assets/study.css?v=study13",
+        "/assets/study.js?v=study13",
         'id="studySubmit"',
         'id="studyClear"',
         'id="studyActiveFilters"',
@@ -564,6 +564,8 @@ def check_study_ui() -> None:
         "setStudyBusy",
         "renderStudyPending",
         "function renderEmptyStudy",
+        "function renderNoteFooter",
+        "function studyGroupMeta",
         "Review drafts; reviewed notes appear here.",
         "Find a work",
         "function clearStudyFilters",
@@ -595,10 +597,10 @@ def check_study_ui() -> None:
         ".filter-chip",
         ".study-form.is-loading #studySubmit",
         ".group-meta",
-        ".group-range",
         ".study-note + .study-note",
         ".note-title > a",
-        ".note-title .note-meta",
+        ".note-footer",
+        ".note-footer .note-meta",
         ".empty-state",
         ".empty-actions",
         ".empty-actions a",

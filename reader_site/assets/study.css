@@ -83,7 +83,6 @@ h1 {
 .meta-line,
 .study-status,
 .group-meta,
-.group-range,
 .note-meta,
 .note-tags,
 .note-quote,
@@ -94,8 +93,7 @@ h1 {
 
 .toolbar,
 .export-row,
-.group-actions,
-.note-actions {
+.group-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
@@ -379,17 +377,8 @@ h1 {
   margin: 6px 0 12px;
 }
 
-.group-meta,
-.group-range {
+.group-meta {
   font-size: 10px;
-}
-
-.note-actions {
-  margin-top: 7px;
-}
-
-.group-range {
-  margin-top: 3px;
 }
 
 .study-tags {
@@ -420,46 +409,19 @@ h1 {
 }
 
 .note-title {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: baseline;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 4px;
   line-height: 1.35;
 }
 
 .note-title > a {
-  order: 1;
+  min-width: 0;
+  overflow: hidden;
   color: #111;
   font-weight: bold;
-}
-
-.note-title .note-meta {
-  order: 2;
-  flex-basis: 100%;
-  font-size: 10px;
-}
-
-.target-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-top: 4px;
-  color: #666;
-  line-height: 1.45;
-}
-
-.target-meta span {
-  max-width: 100%;
-  padding: 1px 5px;
-  overflow-wrap: anywhere;
-  border: 1px solid #d4d4d4;
-  background: #fafafa;
-}
-
-.target-meta .target-warning {
-  color: #8a2d00;
-  border-color: #d8a37f;
-  background: #fff6ef;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .note-text {
@@ -473,6 +435,28 @@ h1 {
   margin: 7px 0 0;
   padding-left: 12px;
   border-left: 2px solid #d4d4d4;
+}
+
+.note-footer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: end;
+  margin-top: 8px;
+  padding-top: 7px;
+  border-top: 1px solid #eeeeee;
+}
+
+.note-footer .note-meta {
+  overflow-wrap: anywhere;
+  font-size: 10px;
+}
+
+.note-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: flex-end;
 }
 
 .study-skeleton {
@@ -554,6 +538,14 @@ h1 {
   .empty-actions button,
   .empty-actions a {
     min-height: 32px;
+  }
+
+  .note-footer {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .note-actions {
+    justify-content: flex-start;
   }
 }
 

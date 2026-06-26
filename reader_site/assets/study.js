@@ -152,7 +152,7 @@ function setStudyBusy(isBusy) {
 }
 
 function renderStudyPending() {
-  statusEl.textContent = "Loading reviewed notes...";
+  statusEl.textContent = "Loading...";
   resultsEl.innerHTML = `
     <section class="study-group study-skeleton" aria-hidden="true">
       <span class="study-skeleton-line title"></span>
@@ -189,6 +189,15 @@ function noteTargetMeta(note) {
   return parts;
 }
 
+function renderNoteFooter(meta, actions) {
+  const cleanMeta = cleanText(meta || "");
+  if (!cleanMeta && !actions) return "";
+  return `<footer class="note-footer">
+    ${cleanMeta ? `<div class="note-meta">${escapeHtml(cleanMeta)}</div>` : "<div></div>"}
+    ${actions ? `<div class="note-actions">${actions}</div>` : ""}
+  </footer>`;
+}
+
 function renderNote(note) {
   const target = note.target_label || note.target_id || "Target";
   const date = note.reviewed_at || note.updated_at || note.created_at || "";
@@ -198,31 +207,43 @@ function renderNote(note) {
     ? `<a href="${escapeHtml(note.url)}">${escapeHtml(target)}</a>`
     : escapeHtml(target);
   const targetMeta = noteTargetMeta(note)
-    .map((item) => `<span>${escapeHtml(item)}</span>`)
-    .join("");
-  const missingTarget = note.url ? "" : `<span class="target-warning">Target URL missing</span>`;
+    .join(" / ");
+  const missingTarget = note.url ? "" : "Target URL missing";
   const openTarget = note.url ? `<a href="${escapeHtml(note.url)}">Open target</a>` : "";
   const manageHref = noteManageHref(note);
+  const meta = [
+    date,
+    tags ? `# ${tags}` : "",
+    targetMeta,
+    missingTarget
+  ].filter(Boolean).join(" / ");
+  const actions = `
+      ${openTarget}
+      <a href="${escapeHtml(manageHref)}">Manage note</a>`;
   return `<article class="study-note">
     <div class="note-title">
       ${targetLink}
-      <span class="note-meta">${escapeHtml(cleanText(date))}</span>
     </div>
-    ${targetMeta || missingTarget ? `<div class="target-meta">${targetMeta}${missingTarget}</div>` : ""}
-    ${tags ? `<div class="note-tags">${escapeHtml(tags)}</div>` : ""}
     <p class="note-text">${escapeHtml(cleanText(note.note))}</p>
     ${quote}
-    <div class="note-actions">
-      ${openTarget}
-      <a href="${escapeHtml(manageHref)}">Manage note</a>
-    </div>
+    ${renderNoteFooter(meta, actions)}
   </article>`;
+}
+
+function studyGroupMeta(group) {
+  const noteCount = Number(group.count || group.notes?.length || 0);
+  const targetCount = Number(group.target_count || 0);
+  const parts = [
+    noteCount ? `${noteCount.toLocaleString()} notes` : "",
+    targetCount ? `${targetCount.toLocaleString()} targets` : ""
+  ].filter(Boolean);
+  return parts.join(" · ");
 }
 
 function renderStudy(payload) {
   const groups = payload.groups || [];
   const count = payload.count || 0;
-  statusEl.textContent = count ? `${count.toLocaleString()} reviewed notes` : "";
+  statusEl.textContent = count ? `${count.toLocaleString()} shown` : "";
   resultsEl.innerHTML = groups.length
     ? groups.map((group) => {
       const title = [group.corpus_id, group.work_id].filter(Boolean).join(" / ") || "Reviewed notes";
@@ -231,14 +252,9 @@ function renderStudy(payload) {
       const tagCounts = (group.tag_counts || [])
         .map((item) => `<span class="study-tag">${escapeHtml(item.tag)} <span>${Number(item.count || 0).toLocaleString()}</span></span>`)
         .join("");
-      const reviewedRange = group.reviewed_range || {};
-      const rangeText = reviewedRange.start || reviewedRange.end
-        ? `${cleanText(reviewedRange.start)} - ${cleanText(reviewedRange.end)}`
-        : "";
       return `<section class="study-group">
         <h2>${escapeHtml(title)}</h2>
-        <div class="group-meta">${escapeHtml(group.summary || `${group.notes.length.toLocaleString()} reviewed notes`)}</div>
-        ${rangeText ? `<div class="group-range">${escapeHtml(rangeText)}</div>` : ""}
+        <div class="group-meta">${escapeHtml(studyGroupMeta(group))}</div>
         ${tagCounts ? `<div class="study-tags">${tagCounts}</div>` : ""}
         <div class="group-actions">
           ${workHref ? `<a href="${escapeHtml(workHref)}">Open work</a>` : ""}

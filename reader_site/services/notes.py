@@ -314,35 +314,28 @@ def export_notes_markdown(notes: list[dict]) -> str:
 
 def export_study_markdown(groups: list[dict]) -> str:
     total_notes = sum(int(group.get("count") or len(group.get("notes", []))) for group in groups)
-    lines = ["# Study Notes", "", f"{total_notes} reviewed notes", ""]
+    lines = ["# Study Notes", "", f"{total_notes} notes", ""]
     for group in groups:
         title = group.get("title") or "Reviewed notes"
         lines.extend([f"## {title}", ""])
-        if group.get("summary"):
-            lines.extend([str(group["summary"]), ""])
-        reviewed_range = group.get("reviewed_range") or {}
-        if reviewed_range.get("start") or reviewed_range.get("end"):
-            lines.append(f"- Reviewed range: {reviewed_range.get('start', '')} - {reviewed_range.get('end', '')}")
-        tag_counts = group.get("tag_counts") or []
-        if tag_counts:
-            tags = ", ".join(f"{item['tag']} ({item['count']})" for item in tag_counts)
-            lines.append(f"- Tags: {tags}")
-        if reviewed_range.get("start") or reviewed_range.get("end") or tag_counts:
-            lines.append("")
+        group_count = int(group.get("count") or len(group.get("notes", [])))
+        if group_count:
+            lines.extend([f"{group_count} notes", ""])
         for note in group.get("notes", []):
             target_label = note.get("target_label") or note.get("target_id") or "Target"
             lines.extend([f"### {target_label}", ""])
+            if note.get("note"):
+                lines.extend([str(note["note"]), ""])
+            if note.get("quote"):
+                lines.extend(["> " + str(note["quote"]).replace("\n", "\n> "), ""])
+            note_meta = []
             if note.get("url"):
-                lines.append(f"- URL: {note['url']}")
-            if note.get("reviewed_at"):
-                lines.append(f"- Reviewed: {note['reviewed_at']}")
+                note_meta.append(f"Source: {note['url']}")
             tags = ", ".join(str(tag) for tag in note.get("tags", []))
             if tags:
-                lines.append(f"- Tags: {tags}")
-            if note.get("quote"):
-                lines.extend(["", "> " + str(note["quote"]).replace("\n", "\n> ")])
-            if note.get("note"):
-                lines.extend(["", str(note["note"])])
+                note_meta.append(f"Tags: {tags}")
+            if note_meta:
+                lines.extend(note_meta)
             lines.append("")
     return "\n".join(lines).rstrip() + "\n"
 
