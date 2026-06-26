@@ -936,6 +936,12 @@ def check_work_source_bundle_ui() -> None:
         "Translation appended to Notes.",
         "noteText.setSelectionRange",
         "translationStudyCardText",
+        "function translationQuickActions",
+        "translation-quick-actions",
+        "data-translation-quick-action",
+        "Mark reviewed",
+        "Draft note",
+        "Selected source",
         "Clipboard copy failed",
         "function revealFreshTranslationResult",
         "has-fresh-result",
@@ -988,8 +994,8 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common105", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common92", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common106", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common93", "templates/work.html")
     for needle in [
         "reading-desk",
         "toolbar-more",
@@ -1356,6 +1362,9 @@ def check_work_source_bundle_ui() -> None:
         "overflow: visible",
         "will-change: transform",
         ".translation-output:focus-visible",
+        ".translation-quick-actions",
+        ".translation-quick-actions button",
+        ".translation-quick-state",
         "@media (prefers-reduced-motion: reduce)",
     ]:
         require_contains(css, needle, "assets/reader-work.css")

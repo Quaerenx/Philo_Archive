@@ -74,8 +74,12 @@ def check_selected_sentence_dom(html: str, viewport_label: str) -> None:
         f"{context} did not mark a source sentence selected",
     )
     require(
-        f'<strong class="translation-target-id">{TARGET_SENTENCE_ID}</strong>' in html,
-        f"{context} did not render selected sentence in the study panel",
+        '<span class="translation-target-label">Selected source</span>' in html,
+        f"{context} did not render human-readable source target label",
+    )
+    require(
+        re.search(r'<strong class="translation-target-id">Sentence \d+ of \d+</strong>', html) is not None,
+        f"{context} did not render selected sentence position in the study panel",
     )
     require("translation-target-excerpt" in html, f"{context} missing selected sentence excerpt")
     require("study-panel-toggle-action\">Close" in html, f"{context} did not expand study panel after selection")

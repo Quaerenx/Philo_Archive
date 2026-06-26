@@ -849,8 +849,8 @@ function renderTranslationTarget() {
   const sourceText = cleanText(selectedSentence.text || "");
   translationTarget.innerHTML = `
     <div class="translation-target-main">
-      <span class="translation-target-label">${escapeHtml(position)}</span>
-      <strong class="translation-target-id">${escapeHtml(selectedSentence.sentenceId)}</strong>
+      <span class="translation-target-label">Selected source</span>
+      <strong class="translation-target-id">${escapeHtml(position)}</strong>
       <span class="translation-target-status" data-selected-source-status></span>
       <p class="translation-target-excerpt" title="${escapeHtml(sourceText)}">${escapeHtml(sourceText)}</p>
     </div>
@@ -1485,6 +1485,18 @@ function translationResultToolbar(record, cached, reviewState) {
   </details>`;
 }
 
+function translationQuickActions(reviewState) {
+  const normalizedReviewState = normalizedTranslationReviewState(reviewState);
+  const reviewAction = normalizedReviewState === "reviewed"
+    ? '<span class="translation-quick-state" data-review-state="reviewed">Reviewed</span>'
+    : '<button type="button" data-translation-quick-action="mark-reviewed">Mark reviewed</button>';
+  return `<div class="translation-quick-actions" aria-label="Study actions">
+      ${reviewAction}
+      <button type="button" data-translation-quick-action="draft-note">Draft note</button>
+      <button type="button" data-translation-quick-action="continue">Next</button>
+    </div>`;
+}
+
 function setTranslationReviewVisualState(reviewState) {
   if (!translationCard) return;
   const normalizedReviewState = reviewState ? normalizedTranslationReviewState(reviewState) : "";
@@ -1900,6 +1912,7 @@ function renderTranslationRecord(record, cached, reviewFlashState = "") {
         <p class="translation-primary">${escapeHtml(cleanText(record.translation || ""))}</p>
       </section>
       ${renderCommentary(record.commentary || record.interpretation || "")}
+      ${translationQuickActions(reviewState)}
       ${optionalCautions(record)}
       ${translationResultToolbar(record, cached, reviewState)}
     </div>
@@ -2652,6 +2665,22 @@ if (readingPosition) {
 }
 
 translationOutput.addEventListener("click", (event) => {
+  const quickAction = event.target.closest("[data-translation-quick-action]");
+  if (quickAction) {
+    const action = quickAction.dataset.translationQuickAction || "";
+    if (action === "mark-reviewed") {
+      updateTranslationReview("reviewed");
+      return;
+    }
+    if (action === "draft-note") {
+      draftNoteFromTranslation();
+      return;
+    }
+    if (action === "continue") {
+      continueStudy();
+      return;
+    }
+  }
   const sourceJump = event.target.closest("[data-selected-source-jump]");
   if (sourceJump) {
     focusSelectedSourceSentence();

@@ -1594,6 +1594,41 @@ h1 {
   border-color: #999;
 }
 
+.translation-quick-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  padding-top: 10px;
+  border-top: 1px solid #eeeeee;
+}
+
+.translation-quick-actions button,
+.translation-quick-state {
+  display: inline-flex;
+  min-width: 0;
+  min-height: 28px;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 3px 7px;
+  overflow: hidden;
+  color: #333;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  line-height: 1.25;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: #fff;
+  border: 1px solid #cfcfcf;
+}
+
+.translation-quick-state[data-review-state="reviewed"] {
+  color: #24523a;
+  background: #edf7ef;
+  border-color: #9fcaa8;
+}
+
 .translation-output.reading-mode .translation-extra {
   display: none;
 }
