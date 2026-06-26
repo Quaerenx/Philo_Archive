@@ -213,7 +213,7 @@ def check_search_ui() -> None:
     script = read_site_file("assets/search.js")
     css = read_site_file("assets/search.css")
     for needle in [
-        "/assets/search.css?v=phase16",
+        "/assets/search.css?v=phase17",
         "/assets/search.js?v=phase19",
         'href="/translations"',
         "Translations",
@@ -269,6 +269,11 @@ def check_search_ui() -> None:
         require_contains(script, needle, "assets/search.js")
     for needle in [
         ".search-form.is-searching",
+        ".spacer",
+        "height: 136px",
+        ".reader-header",
+        "margin-bottom: 16px",
+        "padding-bottom: 10px",
         ".form-actions",
         ".secondary-action",
         ".filter-panel",
@@ -290,6 +295,7 @@ def check_search_ui() -> None:
         "grid-template-columns: minmax(0, 1fr) auto",
         "justify-content: flex-end",
         ".search-form.is-searching #searchSubmit",
+        "padding-bottom: 12px",
         ".empty-state",
         ".search-start",
         ".search-start-links",
@@ -308,7 +314,7 @@ def check_notes_ui() -> None:
     script = read_site_file("assets/notes.js")
     css = read_site_file("assets/notes.css")
     for needle in [
-        "/assets/notes.css?v=notes15",
+        "/assets/notes.css?v=notes16",
         "/assets/notes.js?v=notes21",
         'id="notesSubmit"',
         'id="notesClear"',
@@ -373,6 +379,11 @@ def check_notes_ui() -> None:
         require_contains(script, needle, "assets/notes.js")
     for needle in [
         ".notes-form.is-loading",
+        ".spacer",
+        "height: 136px",
+        ".reader-header",
+        "margin-bottom: 16px",
+        "padding-bottom: 10px",
         ".form-actions",
         ".secondary-action",
         ".filter-panel",
@@ -398,6 +409,7 @@ def check_notes_ui() -> None:
         "justify-content: flex-end",
         "@keyframes archive-note-highlight",
         ".notes-form.is-loading #notesSubmit",
+        "padding-bottom: 12px",
         ".empty-state",
         ".empty-actions",
         ".empty-actions a",
@@ -416,7 +428,7 @@ def check_translations_ui() -> None:
     base_css = read_site_file("assets/notes.css")
     css = read_site_file("assets/translations.css")
     for needle in [
-        "/assets/notes.css?v=notes15",
+        "/assets/notes.css?v=notes16",
         "/assets/translations.css?v=trans10",
         "/assets/translations.js?v=trans23",
         '<option value="">All corpora</option>',
@@ -580,7 +592,7 @@ def check_study_ui() -> None:
     script = read_site_file("assets/study.js")
     css = read_site_file("assets/study.css")
     for needle in [
-        "/assets/study.css?v=study14",
+        "/assets/study.css?v=study15",
         "/assets/study.js?v=study18",
         'id="studySubmit"',
         'id="studyClear"',
@@ -627,6 +639,11 @@ def check_study_ui() -> None:
         require_contains(script, needle, "assets/study.js")
     for needle in [
         ".study-form.is-loading",
+        ".spacer",
+        "height: 136px",
+        ".reader-header",
+        "margin-bottom: 16px",
+        "padding-bottom: 10px",
         ".form-actions",
         ".secondary-action",
         ".filter-panel",
@@ -639,6 +656,7 @@ def check_study_ui() -> None:
         ".active-filters.has-filters",
         ".filter-chip",
         ".study-form.is-loading #studySubmit",
+        "padding-bottom: 12px",
         ".group-meta",
         ".study-tags-panel",
         ".study-tags-panel summary",

@@ -636,14 +636,31 @@ h1 {
     border-left: 0;
   }
 
+  .spacer {
+    height: 136px;
+  }
+
   .reader {
     width: auto;
     margin: 0 10px 24px;
     padding: 22px 18px 30px;
   }
 
+  .reader-header {
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+  }
+
+  .toolbar {
+    gap: 10px;
+    margin-top: 8px;
+  }
+
   .notes-form {
     grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
   }
 
   .form-actions button {
