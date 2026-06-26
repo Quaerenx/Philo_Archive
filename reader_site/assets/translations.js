@@ -350,11 +350,10 @@ function translationStatusMessage(queryMatched, visible) {
   const counts = summaryCounts(queryMatched);
   if (!queryMatched.length) return "No translations found.";
   if (!visible.length) return `No translations match this status. ${counts.generated.toLocaleString()} to check.`;
-  const shown = `${visible.length.toLocaleString()} shown`;
   if (counts.generated > 0) {
-    return `${counts.generated.toLocaleString()} to check.`;
+    return "";
   }
-  return `All clear. ${shown}.`;
+  return "All clear.";
 }
 
 function renderRecord(record) {
