@@ -186,10 +186,11 @@ def check_route_markup(route: str, html: str) -> None:
             "studySubmit",
             "studyClear",
             "studyActiveFilters",
+            "studyOverview",
             "studyStatus",
             "aria-busy=\"false\"",
-            "study.css?v=study19",
-            "study.js?v=study25",
+            "study.css?v=study20",
+            "study.js?v=study26",
             "filter-panel",
             "export-tools",
         ]:
@@ -496,6 +497,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       return {
         hasGroups: document.querySelectorAll('#studyResults .study-group:not(.study-skeleton)').length > 0,
         formHidden: Boolean(document.querySelector('#studyForm')?.hidden),
+        overviewHidden: Boolean(document.querySelector('#studyOverview')?.hidden),
+        overviewText: document.querySelector('#studyOverview')?.textContent.trim() || '',
         emptyTitle: empty?.querySelector('h2')?.textContent.trim() || '',
         emptyBodyCount: empty ? empty.querySelectorAll('p').length : 0,
         emptyActions: Array.from(empty?.querySelectorAll('.empty-actions a') || []).map((node) => node.textContent.trim())
@@ -508,6 +511,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       if (!studyPageState.emptyActions.includes('Working notes') || !studyPageState.emptyActions.includes('Find work')) {
         throw new Error(`empty study page should keep concise actions: ${JSON.stringify(studyPageState)}`);
+      }
+      if (!studyPageState.overviewHidden && !/To check|Saved translations/.test(studyPageState.overviewText)) {
+        throw new Error(`empty study page overview should point to translation study status when present: ${JSON.stringify(studyPageState)}`);
       }
     }
   }

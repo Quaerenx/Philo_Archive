@@ -6,6 +6,7 @@ const tagInput = document.getElementById("studyTag");
 const studySubmit = document.getElementById("studySubmit");
 const studyClear = document.getElementById("studyClear");
 const activeFiltersEl = document.getElementById("studyActiveFilters");
+const studyOverview = document.getElementById("studyOverview");
 const statusEl = document.getElementById("studyStatus");
 const resultsEl = document.getElementById("studyResults");
 const exportTools = document.getElementById("studyExportTools");
@@ -66,6 +67,15 @@ function currentParams(format = "json") {
 function updateLinks() {
   const exportParams = currentParams("markdown");
   exportMarkdown.href = `/api/study/export?${exportParams}`;
+}
+
+function translationSummaryParams() {
+  const params = new URLSearchParams();
+  const corpusId = corpusSelect.value;
+  const workId = workInput.value.trim();
+  if (corpusId) params.set("corpus_id", corpusId);
+  if (workId) params.set("work_id", workId);
+  return params;
 }
 
 function updateUrl() {
@@ -241,6 +251,40 @@ function studyCountLabel(count, singular, plural = `${singular}s`) {
   return `${count.toLocaleString()} ${count === 1 ? singular : plural}`;
 }
 
+function translationStatusLink(reviewState, label, count) {
+  if (!count) return "";
+  const params = translationSummaryParams();
+  params.set("review_state", reviewState);
+  return `<a href="/translations?${params}"><span>${escapeHtml(label)}</span><strong>${Number(count || 0).toLocaleString()}</strong></a>`;
+}
+
+function renderStudyOverview(payload, translationSummary) {
+  if (!studyOverview) return;
+  const noteCount = Number(payload.count || 0);
+  const groupCount = Number(payload.group_count || payload.groups?.length || 0);
+  const counts = translationSummary?.review_state_counts || {};
+  const generated = Number(counts.generated || 0);
+  const reviewed = Number(counts.reviewed || 0);
+  const rejected = Number(counts.rejected || 0);
+  const translationCount = generated + reviewed + rejected;
+  const hasOverview = noteCount > 0 || translationCount > 0;
+  studyOverview.hidden = !hasOverview;
+  if (!hasOverview) {
+    studyOverview.innerHTML = "";
+    return;
+  }
+  const notesLabel = groupCount > 1
+    ? `${studyCountLabel(noteCount, "saved note")} / ${studyCountLabel(groupCount, "work")}`
+    : studyCountLabel(noteCount, "saved note");
+  const translationLinks = [
+    translationStatusLink("generated", "To check", generated),
+    translationStatusLink("reviewed", "Saved translations", reviewed),
+    translationStatusLink("rejected", "Rejected", rejected)
+  ].filter(Boolean).join("");
+  studyOverview.innerHTML = `<div class="study-overview-notes">${escapeHtml(notesLabel)}</div>
+    ${translationLinks ? `<nav class="study-overview-translations" aria-label="Translation study status">${translationLinks}</nav>` : ""}`;
+}
+
 function studyGroupMeta(group) {
   const noteCount = Number(group.count || group.notes?.length || 0);
   const targetCount = Number(group.target_count || 0);
@@ -251,10 +295,11 @@ function studyGroupMeta(group) {
   return parts.join(" / ");
 }
 
-function renderStudy(payload) {
+function renderStudy(payload, translationSummary = null) {
   const groups = payload.groups || [];
   const count = payload.count || 0;
   updateStudyListChrome(count);
+  renderStudyOverview(payload, translationSummary);
   if (exportTools) {
     exportTools.hidden = count === 0;
     if (count === 0) exportTools.open = false;
@@ -332,7 +377,17 @@ async function loadStudy() {
       return;
     }
     const payload = await response.json();
-    renderStudy(payload);
+    let translationSummary = null;
+    try {
+      const summaryResponse = await fetch(`/api/sentence-translations/summary?${translationSummaryParams()}`, { signal: controller.signal });
+      if (summaryResponse.ok) {
+        translationSummary = await summaryResponse.json();
+      }
+    } catch (error) {
+      if (error && error.name === "AbortError") return;
+    }
+    if (requestId !== activeStudyRequest) return;
+    renderStudy(payload, translationSummary);
   } catch (error) {
     if (error && error.name === "AbortError") {
       return;

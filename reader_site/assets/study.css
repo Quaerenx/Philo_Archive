@@ -222,6 +222,55 @@ h1 {
   margin-right: 2px;
 }
 
+.study-overview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  align-items: center;
+  margin: -2px 0 14px;
+  padding-bottom: 10px;
+  color: #555;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.study-overview[hidden] {
+  display: none;
+}
+
+.study-overview-notes {
+  line-height: 1.4;
+}
+
+.study-overview-translations {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: center;
+}
+
+.study-overview-translations a {
+  display: inline-grid;
+  grid-template-columns: minmax(0, auto) auto;
+  gap: 5px;
+  align-items: center;
+  min-height: 24px;
+  padding: 2px 7px;
+  color: #333;
+  background: #fff;
+  border: 1px solid #d4d4d4;
+}
+
+.study-overview-translations a:hover,
+.study-overview-translations a:focus-visible {
+  border-color: #999;
+  text-decoration: none;
+}
+
+.study-overview-translations strong {
+  color: #555;
+  font-weight: normal;
+}
+
 .filter-chip {
   display: inline-flex;
   align-items: center;
