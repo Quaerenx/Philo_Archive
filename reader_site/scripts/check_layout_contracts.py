@@ -206,7 +206,7 @@ def check_search_ui() -> None:
     css = read_site_file("assets/search.css")
     for needle in [
         "/assets/search.css?v=phase16",
-        "/assets/search.js?v=phase17",
+        "/assets/search.js?v=phase18",
         'href="/translations"',
         "Review",
         'class="filter-panel"',

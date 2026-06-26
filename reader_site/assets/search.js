@@ -208,8 +208,8 @@ function searchStatusText(workCount, segmentCount, noteCount, query, direct) {
     workCount ? compactCount(workCount, "work") : "",
     segmentCount ? compactCount(segmentCount, "passage") : "",
     noteCount ? compactCount(noteCount, "note") : ""
-  ].filter(Boolean).join(" · ");
-  return direct ? `Bible reference · ${parts}` : parts;
+  ].filter(Boolean).join(" / ");
+  return direct ? `Bible reference / ${parts}` : parts;
 }
 
 function resultFooter(meta, actions) {
