@@ -1458,9 +1458,9 @@ function translationResultToolbar(record, cached, reviewState) {
   const stateHint = TRANSLATION_REVIEW_CHIP_HINTS[normalizedReviewState] || stateLabel;
   const sourceLabel = cached ? "Cached result" : "New result";
   const reviewLabel = `${stateHint}; ${sourceLabel}`;
-  return `<details class="translation-result-toolbar translation-result-details">
+  return `<details class="translation-result-toolbar translation-result-details translation-extra">
     <summary>
-      <span>Details</span>
+      <span>Source details</span>
     </summary>
     <div class="translation-result-detail-body">
       <div class="translation-result-meta">
