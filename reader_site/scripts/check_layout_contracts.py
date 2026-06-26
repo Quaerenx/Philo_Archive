@@ -758,8 +758,9 @@ def check_work_source_bundle_ui() -> None:
         "setStudyPanelExpanded(true)",
         "studyPanelToggleSummary",
         "updateStudyPanelToggleLabel",
-        "translation ready",
-        "Full study panel",
+        "Select sentence",
+        "retry needed",
+        "const action = expanded ? \"Close\" : \"Study\"",
         "prefersReducedMotion",
         "sentenceScrollBlock",
         "activeTranslationController",
@@ -935,7 +936,7 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common93", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common94", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common85", "templates/work.html")
     for needle in [
         "reading-desk",
@@ -973,7 +974,7 @@ def check_work_source_bundle_ui() -> None:
         "Export session",
         "studySessionSummary",
         "Study bundle</div>",
-        "aria-label=\"Full study panel. Select a sentence\"",
+        "aria-label=\"Study. Select sentence\"",
         'aria-controls="studyCompanionPanel"',
         'aria-labelledby="translationCardTitle"',
         'id="translationCardTitle"',

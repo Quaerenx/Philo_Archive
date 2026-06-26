@@ -187,22 +187,22 @@ function rememberStudyPanelExpanded(expanded) {
 }
 
 function selectedSentencePositionLabel() {
-  if (!selectedSentence) return "Select a sentence";
+  if (!selectedSentence) return "Select sentence";
   const index = sentenceIndex(selectedSentence.sentenceId);
   return index >= 0 ? `Sentence ${index + 1} of ${sentenceNodes.length}` : selectedSentence.sentenceId;
 }
 
 function studyPanelToggleSummary() {
-  if (!selectedSentence) return "Select a sentence";
+  if (!selectedSentence) return "Select sentence";
   const position = selectedSentencePositionLabel();
   if (translationCard && translationCard.classList.contains("is-loading")) {
-    return `${position} / studying`;
+    return `${position} / working`;
   }
   if (translationOutput && translationOutput.querySelector(".translation-error")) {
-    return `${position} / unavailable`;
+    return `${position} / retry needed`;
   }
   if (selectedTranslationRecord) {
-    return `${position} / translation ready`;
+    return `${position} / ready`;
   }
   return position;
 }
@@ -210,7 +210,7 @@ function studyPanelToggleSummary() {
 function updateStudyPanelToggleLabel() {
   if (!studyPage || !studyPanelToggle) return;
   const expanded = studyPage.classList.contains("is-expanded");
-  const action = expanded ? "Compact study panel" : "Full study panel";
+  const action = expanded ? "Close" : "Study";
   const summary = studyPanelToggleSummary();
   studyPanelToggle.innerHTML = `
     <span class="study-panel-toggle-action">${escapeHtml(action)}</span>
