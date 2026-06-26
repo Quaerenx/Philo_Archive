@@ -256,8 +256,10 @@ def check_study_session_export() -> None:
         {"corpus_id": ["nietzsche"], "work_id": ["GM"], "format": ["markdown"]}
     )
     require(markdown["kind"] == "text", "study session markdown export should be text")
-    require("Study Session Export" in markdown["body"], "study session export heading missing")
-    require("Generated Translation & Commentary" in markdown["body"], "study session export AI section missing")
+    require("Study Bundle" in markdown["body"], "study session export heading missing")
+    require("Translations And Commentary" in markdown["body"], "study session export translation section missing")
+    require("Review:" not in markdown["body"], "study session export should hide review-state metadata")
+    require("AI output below" not in markdown["body"], "study session export should avoid log-like AI disclaimers")
     payload = study_session_export_from_query(
         {"corpus_id": ["nietzsche"], "work_id": ["GM"], "format": ["json"]}
     )

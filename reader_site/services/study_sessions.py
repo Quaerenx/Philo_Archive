@@ -56,12 +56,9 @@ def study_session_payload_from_query(query: dict[str, list[str]]) -> dict[str, A
 
 def export_study_session_markdown(payload: dict[str, Any]) -> str:
     lines = [
-        "# Study Session Export",
+        "# Study Bundle",
         "",
-        f"- Corpus: {payload.get('corpus_id', '')}",
-        f"- Work: {payload.get('work_id', '') or 'all works'}",
-        f"- Notes: {payload.get('note_count', 0)} ({payload.get('notes_review_state', 'reviewed')})",
-        f"- Gemma translations: {payload.get('translation_count', 0)} ({payload.get('translation_review_state', 'reviewed')})",
+        f"{payload.get('note_count', 0)} notes · {payload.get('translation_count', 0)} translations",
         "",
         "## Notes",
         "",
@@ -72,23 +69,24 @@ def export_study_session_markdown(payload: dict[str, Any]) -> str:
     for note in notes:
         target_label = note.get("target_label") or note.get("target_id") or "Target"
         lines.extend([f"### {target_label}", ""])
+        if note.get("note"):
+            lines.extend([str(note["note"]), ""])
+        if note.get("quote"):
+            lines.extend(["> " + markdown_quote(note["quote"]), ""])
+        note_meta = []
         if note.get("url"):
-            lines.append(f"- URL: {note['url']}")
-        if note.get("review_state"):
-            lines.append(f"- Review: {note['review_state']}")
+            note_meta.append(f"Source: {note['url']}")
         tags = ", ".join(str(tag) for tag in note.get("tags", []))
         if tags:
-            lines.append(f"- Tags: {tags}")
-        if note.get("quote"):
-            lines.extend(["", "> " + markdown_quote(note["quote"])])
-        if note.get("note"):
-            lines.extend(["", str(note["note"])])
+            note_meta.append(f"Tags: {tags}")
+        if note_meta:
+            lines.extend(note_meta)
         lines.append("")
 
-    lines.extend(["## Generated Translation & Commentary", "", "AI output below is a study aid, not source text.", ""])
+    lines.extend(["## Translations And Commentary", ""])
     translations = payload.get("translations") if isinstance(payload.get("translations"), list) else []
     if not translations:
-        lines.extend(["No matching generated translations.", ""])
+        lines.extend(["No matching translations.", ""])
     for record in translations:
         title = " / ".join(
             item
@@ -99,16 +97,14 @@ def export_study_session_markdown(payload: dict[str, Any]) -> str:
             if item
         )
         lines.extend([f"### {title or 'Sentence translation'}", ""])
-        if record.get("target_url"):
-            lines.append(f"- URL: {record['target_url']}")
-        if record.get("review_state"):
-            lines.append(f"- Review: {record['review_state']}")
-        if record.get("source_text_excerpt"):
-            lines.extend(["", "Original excerpt:", "", "> " + markdown_quote(record["source_text_excerpt"])])
         if record.get("translation"):
-            lines.extend(["", "Translation:", "", str(record["translation"])])
+            lines.extend(["Translation", "", str(record["translation"]), ""])
         if record.get("commentary"):
-            lines.extend(["", "Commentary:", "", str(record["commentary"])])
+            lines.extend(["Commentary", "", str(record["commentary"]), ""])
+        if record.get("source_text_excerpt"):
+            lines.extend(["Original", "", "> " + markdown_quote(record["source_text_excerpt"]), ""])
+        if record.get("target_url"):
+            lines.append(f"Source: {record['target_url']}")
         lines.append("")
     return "\n".join(lines).rstrip() + "\n"
 

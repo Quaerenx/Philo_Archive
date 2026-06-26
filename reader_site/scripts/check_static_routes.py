@@ -120,7 +120,7 @@ def check_routes(base_url: str) -> None:
     translation_page = fetch_text(base_url, "/translations?corpus_id=nietzsche&work_id=GM")
     require("translationsSubmit" in translation_page and "translationsResults" in translation_page, "translations page invalid")
     session_export = fetch_text(base_url, "/api/study-session/export?corpus_id=nietzsche&work_id=GM&format=markdown")
-    require("Study Session Export" in session_export, "study session export invalid")
+    require("Study Bundle" in session_export, "study session export invalid")
     target = fetch_json(base_url, "/api/source-target?corpus_id=nietzsche&work_id=GM&target_id=p-0023")
     target_record = target.get("target") or {}
     require(target_record.get("record_type") == "source_target_bundle", "source target api record_type invalid")

@@ -478,8 +478,8 @@ function updateStudyProgress() {
       continueStudyButton.textContent = "Preview session";
       continueStudyButton.dataset.studyAction = "preview-session";
       continueStudyButton.disabled = false;
-      continueStudyButton.title = "Preview reviewed notes and reviewed translations";
-      continueStudyButton.setAttribute("aria-label", "Preview reviewed study session");
+      continueStudyButton.title = "Preview notes and translations";
+      continueStudyButton.setAttribute("aria-label", "Preview study bundle");
     } else {
       continueStudyButton.textContent = wantsReview ? "Review next" : "Continue study";
       continueStudyButton.dataset.studyAction = wantsReview ? "review-generated" : "continue";
@@ -573,7 +573,7 @@ function updateStudySessionExportLink(noteCount, translationCount) {
   exportStudySession.classList.toggle("is-empty", total === 0);
   exportStudySession.title = total
     ? `Download study bundle: ${noteCount} notes and ${translationCount} translations`
-    : "No reviewed notes or translations for this bundle yet";
+    : "No notes or translations for this bundle yet";
 }
 
 function studySessionExportUrl(format = "json") {
@@ -598,7 +598,7 @@ async function loadStudySessionSummary() {
     const noteCount = Number(payload.note_count || 0);
     const translationCount = Number(payload.translation_count || 0);
     setStudySessionSummary(
-      `Study bundle: ${noteCount} reviewed notes / ${translationCount} reviewed translations`,
+      `Study bundle: ${noteCount} notes / ${translationCount} translations`,
       noteCount + translationCount ? "has-content" : "empty"
     );
     updateStudySessionExportLink(noteCount, translationCount);
@@ -1715,7 +1715,7 @@ function renderStudySessionPreviewPending() {
       <span class="loading-spinner" aria-hidden="true"></span>
       <span class="translation-loading-copy">
         <strong>Loading study session preview</strong>
-        <span>Reviewed notes and translations</span>
+        <span>Notes and translations</span>
       </span>
     </div>
     <div class="translation-skeleton translation-study-skeleton" aria-hidden="true">
@@ -1729,7 +1729,7 @@ function renderStudySessionPreviewPending() {
 
 function sessionPreviewItems(items, kind) {
   if (!Array.isArray(items) || !items.length) {
-    return `<p class="session-preview-empty">No reviewed ${escapeHtml(kind)} in this session.</p>`;
+    return `<p class="session-preview-empty">No ${escapeHtml(kind)} in this bundle.</p>`;
   }
   const hasMore = items.length > 3;
   return `<div class="session-preview-group${hasMore ? " is-collapsed" : ""}" data-session-preview-group>
@@ -1838,15 +1838,15 @@ function renderStudySessionPreview(payload) {
         </div>
       </div>
       <div class="study-session-preview-counts" aria-label="Study session counts">
-        <span>${noteCount} reviewed notes</span>
-        <span>${translationCount} reviewed translations</span>
+        <span>${noteCount} notes</span>
+        <span>${translationCount} translations</span>
       </div>
       <section>
-        <h3>Reviewed notes</h3>
+        <h3>Notes</h3>
         ${sessionPreviewItems(payload.notes, "notes")}
       </section>
       <section>
-        <h3>Reviewed translations</h3>
+        <h3>Translations</h3>
         ${sessionPreviewItems(payload.translations, "translations")}
       </section>
     </div>`;
@@ -2973,7 +2973,7 @@ function initializeStudyCompanion() {
   }
   if (exportStudySession) {
     exportStudySession.href = studySessionExportUrl("markdown");
-    exportStudySession.title = "Export reviewed notes and reviewed translations for this work";
+    exportStudySession.title = "Export notes and translations for this work";
   }
   const conceptsPanel = document.querySelector('[data-study-panel="concepts"]');
   if (conceptsPanel && !conceptsPanel.textContent.trim()) {
