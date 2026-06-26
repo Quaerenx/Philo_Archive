@@ -618,7 +618,7 @@ def check_work_source_bundle_ui() -> None:
         "function setGemmaRuntimeIndicator",
         "async function checkGemmaRuntimeStatus",
         "/api/health",
-        "setGemmaRuntimeIndicator(\"checking\", \"AI status\",",
+        "setGemmaRuntimeIndicator(\"checking\", \"Checking local AI\",",
         "AI ready",
         "AI offline",
         "AI unavailable",
@@ -752,7 +752,7 @@ def check_work_source_bundle_ui() -> None:
         "renderTranslationEmptyState",
         "translation-empty-state",
         "translation-empty-copy",
-        "문장을 누르면 번역과 해설이 여기에 표시됩니다.",
+        "Click a sentence to read translation and commentary.",
         "setCommentaryExpanded",
         "syncTranslationModeDensity",
         "translationJumpNav",
@@ -971,7 +971,7 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common101", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common102", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common90", "templates/work.html")
     for needle in [
         "reading-desk",
@@ -993,7 +993,7 @@ def check_work_source_bundle_ui() -> None:
         "gemmaRuntimeStatusText",
         "gemmaRuntimeCheck",
         "Local AI status",
-        ">AI status</span>",
+        ">Checking local AI</span>",
         "translationRecordsSummary",
         "studyProgress",
         "studyProgressText",
@@ -1056,7 +1056,7 @@ def check_work_source_bundle_ui() -> None:
         "Translation display mode",
         "Reading controls",
         "Review",
-        "Tools",
+        "Reading tools",
         "study-tabs",
         "previousSentence",
         "nextUnstudiedSentence",
