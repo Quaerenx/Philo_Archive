@@ -9,6 +9,7 @@ const notesClear = document.getElementById("notesClear");
 const activeFiltersEl = document.getElementById("notesActiveFilters");
 const statusEl = document.getElementById("notesStatus");
 const resultsEl = document.getElementById("notesResults");
+const exportTools = document.getElementById("notesExportTools");
 const exportJson = document.getElementById("exportJson");
 const exportJsonl = document.getElementById("exportJsonl");
 const exportMarkdown = document.getElementById("exportMarkdown");
@@ -244,6 +245,10 @@ function renderNoteFooter(meta, actions) {
 
 function renderNotes(notes) {
   lastNotes = notes;
+  if (exportTools) {
+    exportTools.hidden = notes.length === 0;
+    if (!notes.length) exportTools.open = false;
+  }
   statusEl.textContent = notes.length ? `${notes.length.toLocaleString()} shown` : "";
   resultsEl.innerHTML = notes.length
     ? renderNotesSummary(notes) + notes.map((note) => {

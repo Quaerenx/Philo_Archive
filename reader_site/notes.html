@@ -62,8 +62,8 @@
       </form>
       <div id="notesActiveFilters" class="active-filters" aria-live="polite" aria-label="Active notes filters"></div>
 
-      <details class="export-tools">
-        <summary>Export</summary>
+      <details id="notesExportTools" class="export-tools" hidden>
+        <summary>Export results</summary>
         <div class="export-row" aria-label="Export notes">
           <a id="exportMarkdown" href="/api/notes/export?format=markdown">Markdown</a>
           <a id="exportJson" href="/api/notes/export?format=json">JSON</a>
@@ -75,6 +75,6 @@
       <section id="notesResults" class="notes-results" aria-live="polite" aria-busy="false"></section>
     </main>
   </div>
-  <script src="/assets/notes.js?v=notes18"></script>
+  <script src="/assets/notes.js?v=notes19"></script>
 </body>
 </html>

@@ -8,6 +8,7 @@ const studyClear = document.getElementById("studyClear");
 const activeFiltersEl = document.getElementById("studyActiveFilters");
 const statusEl = document.getElementById("studyStatus");
 const resultsEl = document.getElementById("studyResults");
+const exportTools = document.getElementById("studyExportTools");
 const exportMarkdown = document.getElementById("studyExportMarkdown");
 const manageLink = document.getElementById("studyManageLink");
 let requestedCorpusId = "";
@@ -228,6 +229,10 @@ function studyGroupMeta(group) {
 function renderStudy(payload) {
   const groups = payload.groups || [];
   const count = payload.count || 0;
+  if (exportTools) {
+    exportTools.hidden = count === 0;
+    if (count === 0) exportTools.open = false;
+  }
   statusEl.textContent = count ? studyCountLabel(count, "saved note") : "";
   resultsEl.innerHTML = groups.length
     ? groups.map((group) => {

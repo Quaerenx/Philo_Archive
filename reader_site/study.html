@@ -54,8 +54,8 @@
       </form>
       <div id="studyActiveFilters" class="active-filters" aria-live="polite" aria-label="Active study filters"></div>
 
-      <details class="export-tools">
-        <summary>Export</summary>
+      <details id="studyExportTools" class="export-tools" hidden>
+        <summary>Export and edit</summary>
         <div class="export-row" aria-label="Export or edit study notes">
           <a id="studyExportMarkdown" href="/api/study/export?format=markdown">Markdown</a>
           <a id="studyManageLink" href="/notes?review_state=reviewed">Edit notes</a>
@@ -66,6 +66,6 @@
       <section id="studyResults" class="study-results" aria-live="polite" aria-busy="false"></section>
     </main>
   </div>
-  <script src="/assets/study.js?v=study15"></script>
+  <script src="/assets/study.js?v=study16"></script>
 </body>
 </html>
