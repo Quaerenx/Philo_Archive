@@ -854,7 +854,7 @@ def check_work_source_bundle_ui() -> None:
         "Select sentence",
         "translating",
         "needs retry",
-        "const action = expanded ? \"Close\" : \"Study\"",
+        "const action = expanded ? \"Back to text\" : \"Study\"",
         "prefersReducedMotion",
         "sentenceScrollBlock",
         "activeTranslationController",

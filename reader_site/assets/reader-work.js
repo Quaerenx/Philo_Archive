@@ -199,7 +199,7 @@ function studyPanelToggleSummary() {
 function updateStudyPanelToggleLabel() {
   if (!studyPage || !studyPanelToggle) return;
   const expanded = studyPage.classList.contains("is-expanded");
-  const action = expanded ? "Close" : "Study";
+  const action = expanded ? "Back to text" : "Study";
   const summary = studyPanelToggleSummary();
   studyPanelToggle.innerHTML = `
     <span class="study-panel-toggle-action">${escapeHtml(action)}</span>
