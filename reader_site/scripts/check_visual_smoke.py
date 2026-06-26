@@ -222,7 +222,7 @@ def check_route_markup(route: str, html: str) -> None:
             "Search and filters</summary>",
             "filter-panel",
             "export-tools",
-            "Export results</summary>",
+            "Export</summary>",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
     if route.startswith("/search"):
