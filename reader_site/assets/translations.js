@@ -278,6 +278,7 @@ function generatedRecords(records) {
 function updateReviewQueueButton(records = lastRecords) {
   if (!reviewQueueButton) return;
   const generatedCount = generatedRecords(records).length;
+  reviewQueueButton.hidden = generatedCount === 0;
   reviewQueueButton.textContent = generatedCount
     ? `Next to check (${generatedCount.toLocaleString()})`
     : "Next to check";
