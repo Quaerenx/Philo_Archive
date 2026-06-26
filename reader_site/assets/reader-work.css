@@ -1963,6 +1963,30 @@ h1 {
   outline-offset: 2px;
 }
 
+.note-item-title {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: baseline;
+}
+
+.note-item-title .review-badge {
+  padding: 1px 5px;
+  color: #6b5a16;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 9px;
+  font-weight: normal;
+  line-height: 1.35;
+  background: #fff8dc;
+  border: 1px solid #d8c56d;
+}
+
+.note-item-title .review-badge.reviewed {
+  color: #24523a;
+  background: #edf7ef;
+  border-color: #9fcaa8;
+}
+
 .note-text {
   margin: 2px 0;
 }

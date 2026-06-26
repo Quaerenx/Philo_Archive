@@ -893,6 +893,10 @@ def check_work_source_bundle_ui() -> None:
         "function updateNoteFilterClearState",
         "function clearNoteFilter",
         "Note filter cleared.",
+        "function normalizedNoteReviewState",
+        "function noteReviewLabel",
+        "function noteReviewAction",
+        "function noteReviewActionLabel",
         "noteListSummary",
         "function sortedNotes",
         "function renderNotesPending",
@@ -907,6 +911,10 @@ def check_work_source_bundle_ui() -> None:
         "data-notes-empty-action=\"clear-filter\"",
         "function noteTargetHref",
         "Open target",
+        "Mark reviewed",
+        "Move to draft",
+        "mark-reviewed-note",
+        "mark-raw-note",
         "notes-list-skeleton",
         "No notes yet.",
         "Notes unavailable.",
@@ -915,6 +923,7 @@ def check_work_source_bundle_ui() -> None:
         "function translationNoteDraftText",
         "function focusNoteComposer",
         "function noteAlreadyIncludesDraft",
+        "function updateNoteReview",
         "This translation is already in the note. Review and save.",
         "Translation is already in Notes.",
         "noteForm.scrollIntoView",
@@ -979,8 +988,8 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common104", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common91", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common105", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common92", "templates/work.html")
     for needle in [
         "reading-desk",
         "toolbar-more",
@@ -1277,6 +1286,9 @@ def check_work_source_bundle_ui() -> None:
         ".commentary-toggle:focus-visible",
         ".note-item.is-recent",
         ".note-item.is-recent:focus",
+        ".note-item-title",
+        ".note-item-title .review-badge",
+        ".note-item-title .review-badge.reviewed",
         "@keyframes archive-note-highlight",
         ".study-panel-toggle",
         ".study-panel-toggle::before",

@@ -2348,6 +2348,22 @@ function clearNoteFilter() {
   noteFilter.focus();
 }
 
+function normalizedNoteReviewState(note) {
+  return note && note.review_state === "reviewed" ? "reviewed" : "raw";
+}
+
+function noteReviewLabel(reviewState) {
+  return reviewState === "reviewed" ? "Reviewed" : "Draft";
+}
+
+function noteReviewAction(reviewState) {
+  return reviewState === "reviewed" ? "mark-raw-note" : "mark-reviewed-note";
+}
+
+function noteReviewActionLabel(reviewState) {
+  return reviewState === "reviewed" ? "Move to draft" : "Mark reviewed";
+}
+
 function noteTargetHref(note) {
   const url = cleanText(note.url || "");
   if (url.startsWith("/work/") || url.startsWith("/read?") || url.startsWith("/source?")) {
@@ -2412,12 +2428,17 @@ function renderNotesList(notes) {
     const recentClass = isRecent ? " is-recent" : "";
     const recentAttrs = isRecent ? ' tabindex="-1" aria-label="Recently changed note"' : "";
     const targetHref = noteTargetHref(note);
-    return `<div class="note-item${recentClass}" data-note-id="${escapeHtml(note.id)}" data-note-tags="${escapeHtml(tags)}"${recentAttrs}>
-      <strong>${escapeHtml(cleanText(note.target_label))}</strong><br>
+    const reviewState = normalizedNoteReviewState(note);
+    return `<div class="note-item${recentClass}" data-note-id="${escapeHtml(note.id)}" data-note-tags="${escapeHtml(tags)}" data-review-state="${escapeHtml(reviewState)}"${recentAttrs}>
+      <div class="note-item-title">
+        <strong>${escapeHtml(cleanText(note.target_label))}</strong>
+        <span class="review-badge ${escapeHtml(reviewState)}">${escapeHtml(noteReviewLabel(reviewState))}</span>
+      </div>
       <div class="note-text">${escapeHtml(cleanText(note.note))}</div>
       <small>${escapeHtml(cleanText(tags))}${escapeHtml(updated)}</small>
       <div class="note-actions">
         <a class="note-target-link" href="${escapeHtml(targetHref)}">Open target</a>
+        <button type="button" data-action="${escapeHtml(noteReviewAction(reviewState))}" data-note-id="${escapeHtml(note.id)}">${escapeHtml(noteReviewActionLabel(reviewState))}</button>
         <button type="button" data-action="edit-note" data-note-id="${escapeHtml(note.id)}">Edit</button>
         <button type="button" data-action="delete-note" data-note-id="${escapeHtml(note.id)}">Delete</button>
       </div>
@@ -2487,6 +2508,24 @@ async function updateNote(noteId, note, tags) {
         corpus_id: researchData.corpus_id || researchData.author_id,
         note,
         tags
+      })
+    });
+    if (!response.ok) return null;
+    const payload = await response.json().catch(() => ({}));
+    return payload.note || null;
+  } catch (error) {
+    return null;
+  }
+}
+
+async function updateNoteReview(noteId, reviewState) {
+  try {
+    const response = await fetch(`/api/notes/${encodeURIComponent(noteId)}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        corpus_id: researchData.corpus_id || researchData.author_id,
+        review_state: reviewState
       })
     });
     if (!response.ok) return null;
@@ -2834,6 +2873,21 @@ notesList.addEventListener("click", async (event) => {
   const item = button.closest(".note-item");
   const currentText = item ? cleanText(item.querySelector(".note-text")?.textContent || "") : "";
   const currentTags = item ? cleanText(item.dataset.noteTags || "") : "";
+  if (button.dataset.action === "mark-reviewed-note" || button.dataset.action === "mark-raw-note") {
+    const nextState = button.dataset.action === "mark-reviewed-note" ? "reviewed" : "raw";
+    setActionButtonBusy(button, true);
+    const updatedNote = await updateNoteReview(noteId, nextState);
+    noteStatus.textContent = updatedNote
+      ? (nextState === "reviewed" ? "Note marked reviewed." : "Note moved to drafts.")
+      : "Could not update note.";
+    if (updatedNote) {
+      recentlyChangedNoteId = updatedNote.id || noteId;
+      await loadNotes();
+      await loadStudySessionSummary();
+    }
+    setActionButtonBusy(button, false);
+    return;
+  }
   if (button.dataset.action === "edit-note") {
     const nextNote = window.prompt("Edit note", currentText);
     if (nextNote === null) return;
