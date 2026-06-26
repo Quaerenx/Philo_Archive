@@ -6,7 +6,7 @@
   <title>Saved Translations / Personal Archive of Literature</title>
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
-  <link rel="stylesheet" href="/assets/notes.css?v=notes11">
+  <link rel="stylesheet" href="/assets/notes.css?v=notes12">
   <link rel="stylesheet" href="/assets/translations.css?v=trans4">
 </head>
 <body>
@@ -64,10 +64,15 @@
       </form>
       <div id="translationsActiveFilters" class="active-filters" aria-live="polite" aria-label="Active translation filters"></div>
 
-      <div class="export-row" aria-label="Export saved translations">
-        <a id="translationsExportMarkdown" href="/api/sentence-translations/export?corpus_id=nietzsche&format=markdown&review_state=all">Markdown</a>
-        <a id="translationsExportJson" href="/api/sentence-translations/export?corpus_id=nietzsche&format=json&review_state=all">JSON</a>
+      <div class="review-export-row">
         <button id="translationsReviewQueue" type="button" class="translation-review-queue" aria-keyshortcuts="Q" title="Start with the first translation needing review" disabled>Review next</button>
+        <details class="export-tools">
+          <summary>Export</summary>
+          <div class="export-row" aria-label="Export saved translations">
+            <a id="translationsExportMarkdown" href="/api/sentence-translations/export?corpus_id=nietzsche&format=markdown&review_state=all">Markdown</a>
+            <a id="translationsExportJson" href="/api/sentence-translations/export?corpus_id=nietzsche&format=json&review_state=all">JSON</a>
+          </div>
+        </details>
       </div>
 
       <div id="translationsStatus" class="notes-status translations-status" role="status" aria-live="polite" aria-atomic="true"></div>

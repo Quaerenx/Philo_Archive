@@ -275,7 +275,41 @@ h1 {
 }
 
 .export-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 8px 0 0;
+}
+
+.export-tools {
   margin: 0 0 14px;
+}
+
+.export-tools summary {
+  display: inline-grid;
+  grid-template-columns: minmax(0, auto) auto;
+  gap: 8px;
+  align-items: center;
+  min-height: 24px;
+  padding: 2px 8px;
+  color: #444;
+  background: #fff;
+  border: 1px solid #d4d4d4;
+  cursor: pointer;
+  list-style: none;
+}
+
+.export-tools summary::-webkit-details-marker {
+  display: none;
+}
+
+.export-tools summary::after {
+  color: #777;
+  content: "+";
+}
+
+.export-tools[open] summary::after {
+  content: "-";
 }
 
 .empty-state {

@@ -6,7 +6,7 @@
   <title>Research Notes / Personal Archive of Literature</title>
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
-  <link rel="stylesheet" href="/assets/notes.css?v=notes11">
+  <link rel="stylesheet" href="/assets/notes.css?v=notes12">
 </head>
 <body>
   <div class="page">
@@ -62,11 +62,14 @@
       </form>
       <div id="notesActiveFilters" class="active-filters" aria-live="polite" aria-label="Active notes filters"></div>
 
-      <div class="export-row" aria-label="Export notes">
-        <a id="exportJson" href="/api/notes/export?format=json">JSON</a>
-        <a id="exportJsonl" href="/api/notes/export?format=jsonl">JSONL</a>
-        <a id="exportMarkdown" href="/api/notes/export?format=markdown">Markdown</a>
-      </div>
+      <details class="export-tools">
+        <summary>Export</summary>
+        <div class="export-row" aria-label="Export notes">
+          <a id="exportJson" href="/api/notes/export?format=json">JSON</a>
+          <a id="exportJsonl" href="/api/notes/export?format=jsonl">JSONL</a>
+          <a id="exportMarkdown" href="/api/notes/export?format=markdown">Markdown</a>
+        </div>
+      </details>
 
       <div id="notesStatus" class="notes-status" role="status" aria-live="polite" aria-atomic="true"></div>
       <section id="notesResults" class="notes-results" aria-live="polite" aria-busy="false"></section>

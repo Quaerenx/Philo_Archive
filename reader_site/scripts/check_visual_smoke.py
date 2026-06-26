@@ -125,9 +125,10 @@ def check_route_markup(route: str, html: str) -> None:
             "studyActiveFilters",
             "studyStatus",
             "aria-busy=\"false\"",
-            "study.css?v=study9",
+            "study.css?v=study10",
             "study.js?v=study8",
             "filter-panel",
+            "export-tools",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
     if route == "/notes":
@@ -137,9 +138,10 @@ def check_route_markup(route: str, html: str) -> None:
             "notesActiveFilters",
             "notesStatus",
             "aria-busy=\"false\"",
-            "notes.css?v=notes11",
+            "notes.css?v=notes12",
             "notes.js?v=notes11",
             "filter-panel",
+            "export-tools",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
     if route == "/translations":
@@ -154,6 +156,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translations.css?v=trans4",
             "translations.js?v=trans7",
             "filter-panel",
+            "export-tools",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
     if route == "/search":

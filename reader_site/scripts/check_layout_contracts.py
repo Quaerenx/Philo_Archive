@@ -284,13 +284,15 @@ def check_notes_ui() -> None:
     script = read_site_file("assets/notes.js")
     css = read_site_file("assets/notes.css")
     for needle in [
-        "/assets/notes.css?v=notes11",
+        "/assets/notes.css?v=notes12",
         "/assets/notes.js?v=notes11",
         'id="notesSubmit"',
         'id="notesClear"',
         'id="notesActiveFilters"',
         'class="filter-panel"',
         'class="filter-panel-fields"',
+        'class="export-tools"',
+        'class="export-row"',
         'class="form-actions"',
         'role="status"',
         'aria-busy="false"',
@@ -340,6 +342,9 @@ def check_notes_ui() -> None:
         ".filter-panel",
         ".filter-panel summary",
         ".filter-panel-fields",
+        ".export-tools",
+        ".export-tools summary",
+        ".export-tools[open] summary::after",
         ".active-filters",
         ".active-filters.has-filters",
         ".filter-chip",
@@ -370,7 +375,7 @@ def check_translations_ui() -> None:
     base_css = read_site_file("assets/notes.css")
     css = read_site_file("assets/translations.css")
     for needle in [
-        "/assets/notes.css?v=notes11",
+        "/assets/notes.css?v=notes12",
         "/assets/translations.css?v=trans4",
         "/assets/translations.js?v=trans7",
         'id="translationsSubmit"',
@@ -383,6 +388,8 @@ def check_translations_ui() -> None:
         'id="translationsExportJson"',
         'class="filter-panel"',
         'class="filter-panel-fields"',
+        'class="review-export-row"',
+        'class="export-tools"',
         'role="status"',
         'aria-busy="false"',
     ]:
@@ -463,6 +470,9 @@ def check_translations_ui() -> None:
         ".filter-panel",
         ".filter-panel summary",
         ".filter-panel-fields",
+        ".export-tools",
+        ".export-tools summary",
+        ".review-export-row",
     ]:
         require_contains(base_css, needle, "assets/notes.css")
 
@@ -472,13 +482,15 @@ def check_study_ui() -> None:
     script = read_site_file("assets/study.js")
     css = read_site_file("assets/study.css")
     for needle in [
-        "/assets/study.css?v=study9",
+        "/assets/study.css?v=study10",
         "/assets/study.js?v=study8",
         'id="studySubmit"',
         'id="studyClear"',
         'id="studyActiveFilters"',
         'class="filter-panel"',
         'class="filter-panel-fields"',
+        'class="export-tools"',
+        'class="export-row"',
         'class="form-actions"',
         'role="status"',
         'aria-busy="false"',
@@ -511,6 +523,9 @@ def check_study_ui() -> None:
         ".filter-panel",
         ".filter-panel summary",
         ".filter-panel-fields",
+        ".export-tools",
+        ".export-tools summary",
+        ".export-tools[open] summary::after",
         ".active-filters",
         ".active-filters.has-filters",
         ".filter-chip",
