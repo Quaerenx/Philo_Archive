@@ -220,6 +220,10 @@ def tag_counts_for_notes(notes: list[dict]) -> list[dict]:
     ]
 
 
+def count_label(count: int, singular: str, plural: str | None = None) -> str:
+    return f"{count} {singular if count == 1 else (plural or singular + 's')}"
+
+
 def reviewed_range_for_notes(notes: list[dict]) -> dict:
     dates = sorted(
         str(note.get("reviewed_at") or note.get("updated_at") or note.get("created_at") or "")
@@ -235,7 +239,7 @@ def study_group_summary(group: dict) -> str:
     target_count = len({str(note.get("target_id", "")) for note in notes if str(note.get("target_id", ""))})
     tag_counts = tag_counts_for_notes(notes)
     top_tags = ", ".join(item["tag"] for item in tag_counts[:5])
-    summary_parts = [f"{note_count} reviewed notes"]
+    summary_parts = [count_label(note_count, "note")]
     if target_count:
         summary_parts.append(f"{target_count} targets")
     if top_tags:
@@ -253,7 +257,7 @@ def study_note_groups(notes: list[dict]) -> list[dict]:
             groups[key] = {
                 "corpus_id": corpus_id,
                 "work_id": work_id,
-                "title": " / ".join(item for item in [corpus_id, work_id] if item) or "Reviewed notes",
+                "title": " / ".join(item for item in [corpus_id, work_id] if item) or "Notes",
                 "count": 0,
                 "notes": [],
             }
@@ -285,42 +289,38 @@ def export_notes_jsonl(notes: list[dict]) -> str:
 
 
 def export_notes_markdown(notes: list[dict]) -> str:
-    lines = ["# Personal Archive Notes", "", f"{len(notes)} notes", ""]
+    lines = ["# Personal Archive Notes", "", count_label(len(notes), "note"), ""]
     for note in notes:
         corpus_id = note.get("corpus_id", "")
         work_id = note.get("work_id", "")
         target_label = note.get("target_label") or note.get("target_id") or "Work"
         title = " / ".join(str(item) for item in [corpus_id, work_id, target_label] if item)
         lines.extend([f"## {title}", ""])
+        if note.get("note"):
+            lines.extend([str(note["note"]), ""])
+        if note.get("quote"):
+            lines.extend(["> " + str(note["quote"]).replace("\n", "\n> "), ""])
+        note_meta = []
         if note.get("url"):
-            lines.extend([f"- URL: {note['url']}"])
-        if note.get("created_at"):
-            lines.extend([f"- Created: {note['created_at']}"])
-        if note.get("updated_at"):
-            lines.extend([f"- Updated: {note['updated_at']}"])
-        lines.extend([f"- Review: {normalize_review_state(note.get('review_state', 'raw'))}"])
-        if note.get("reviewed_at"):
-            lines.extend([f"- Reviewed: {note['reviewed_at']}"])
+            note_meta.append(f"Source: {note['url']}")
         tags = ", ".join(str(tag) for tag in note.get("tags", []))
         if tags:
-            lines.extend([f"- Tags: {tags}"])
-        if note.get("quote"):
-            lines.extend(["", "> " + str(note["quote"]).replace("\n", "\n> ")])
-        if note.get("note"):
-            lines.extend(["", str(note["note"])])
+            note_meta.append(f"Tags: {tags}")
+        if note_meta:
+            lines.extend(note_meta)
         lines.append("")
     return "\n".join(lines).rstrip() + "\n"
 
 
 def export_study_markdown(groups: list[dict]) -> str:
     total_notes = sum(int(group.get("count") or len(group.get("notes", []))) for group in groups)
-    lines = ["# Study Notes", "", f"{total_notes} notes", ""]
+    lines = ["# Study Notes", "", count_label(total_notes, "note"), ""]
     for group in groups:
-        title = group.get("title") or "Reviewed notes"
+        title = group.get("title") or "Notes"
         lines.extend([f"## {title}", ""])
         group_count = int(group.get("count") or len(group.get("notes", [])))
         if group_count:
-            lines.extend([f"{group_count} notes", ""])
+            lines.extend([count_label(group_count, "note"), ""])
         for note in group.get("notes", []):
             target_label = note.get("target_label") or note.get("target_id") or "Target"
             lines.extend([f"### {target_label}", ""])
