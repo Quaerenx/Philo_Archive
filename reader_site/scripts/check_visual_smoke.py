@@ -233,7 +233,7 @@ def check_route_markup(route: str, html: str) -> None:
             "searchStatus",
             "aria-busy=\"false\"",
             "search.css?v=phase19",
-            "search.js?v=phase24",
+            "search.js?v=phase25",
             "Translations",
             "filter-panel",
         ]:
@@ -437,7 +437,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         hasResults: document.querySelectorAll('#results .result:not(.search-skeleton)').length > 0,
         emptyTitle: empty?.querySelector('h2')?.textContent.trim() || '',
         emptyBodyCount: empty ? empty.querySelectorAll('p').length : 0,
-        actionText: Array.from(document.querySelectorAll('#results .result-more-actions')).map((node) => node.textContent.trim()).join(' ')
+        actionText: Array.from(document.querySelectorAll('#results .result-actions')).map((node) => node.textContent.trim()).join(' '),
+        moreActionCount: document.querySelectorAll('#results .result-more-actions').length,
+        inlineActionCount: document.querySelectorAll('#results .result-actions-inline').length
       };
     });
     if (searchPageState.statusText) {
@@ -448,6 +450,12 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (/Open work|Open source|Open target|Manage note/.test(searchPageState.actionText)) {
       throw new Error(`search result actions should not repeat title-link navigation: ${JSON.stringify(searchPageState)}`);
+    }
+    if (searchPageState.hasResults && searchPageState.moreActionCount > 0) {
+      throw new Error(`single search result actions should be visible without More: ${JSON.stringify(searchPageState)}`);
+    }
+    if (searchPageState.hasResults && searchPageState.inlineActionCount === 0) {
+      throw new Error(`search result actions should expose direct Notes or Source links: ${JSON.stringify(searchPageState)}`);
     }
   }
   if (parsed.pathname === '/notes' && !parsed.search) {

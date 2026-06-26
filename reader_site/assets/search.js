@@ -237,16 +237,26 @@ function searchStatusText(workCount, segmentCount, noteCount, query, direct) {
   return "";
 }
 
+function actionLinkCount(actions) {
+  return (String(actions || "").match(/<a\b/g) || []).length;
+}
+
 function resultFooter(meta, actions) {
   const cleanMeta = cleanText(meta || "");
   const cleanActions = cleanText(actions || "");
+  const singleAction = actionLinkCount(actions) === 1;
+  const actionsMarkup = !cleanActions
+    ? ""
+    : singleAction
+      ? `<nav class="result-actions result-actions-inline" aria-label="Result action">${actions}</nav>`
+      : `<details class="result-more-actions">
+        <summary>More</summary>
+        <div class="result-actions">${actions}</div>
+      </details>`;
   if (!cleanMeta && !cleanActions) return "";
   return `<footer class="result-footer">
     ${cleanMeta ? `<div class="result-meta">${escapeHtml(cleanMeta)}</div>` : ""}
-    ${cleanActions ? `<details class="result-more-actions">
-      <summary>More</summary>
-      <div class="result-actions">${actions}</div>
-    </details>` : ""}
+    ${actionsMarkup}
   </footer>`;
 }
 

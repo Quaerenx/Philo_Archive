@@ -229,7 +229,7 @@ def check_search_ui() -> None:
     css = read_site_file("assets/search.css")
     for needle in [
         "/assets/search.css?v=phase19",
-        "/assets/search.js?v=phase24",
+        "/assets/search.js?v=phase25",
         'href="/translations"',
         "Translations",
         'class="filter-panel"',
@@ -268,6 +268,8 @@ def check_search_ui() -> None:
         "function reviewStateLabel",
         "function resultMeta",
         "function resultFooter",
+        "function actionLinkCount",
+        "result-actions-inline",
         "search-results-works",
         "search-results-segments",
         "Passage",
@@ -322,6 +324,7 @@ def check_search_ui() -> None:
         ".result-more-actions",
         ".result-more-actions summary",
         ".result-more-actions[open]",
+        ".result-actions-inline",
         ".snippet-link",
         "grid-template-columns: minmax(0, 1fr) auto",
         "justify-content: flex-end",
