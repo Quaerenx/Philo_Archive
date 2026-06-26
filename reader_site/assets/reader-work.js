@@ -1518,19 +1518,19 @@ function translationResultToolbar(record, _cached, reviewState) {
 function translationQuickActions(reviewState) {
   const normalizedReviewState = normalizedTranslationReviewState(reviewState);
   const reviewAction = normalizedReviewState === "reviewed"
-    ? '<span class="translation-quick-state" data-review-state="reviewed">Saved</span>'
-    : '<button type="button" data-translation-quick-action="mark-reviewed">Save</button>';
+    ? '<span class="translation-quick-state" data-review-state="reviewed" title="Saved translation" aria-label="Saved translation">Saved</span>'
+    : '<button type="button" data-translation-quick-action="mark-reviewed" title="Save translation" aria-label="Save translation">Save</button>';
   const selectedIndex = selectedSentence ? sentenceIndex(selectedSentence.sentenceId) : -1;
   const nextSentenceDisabled = selectedIndex < 0 || selectedIndex >= sentenceNodes.length - 1
     ? " disabled"
     : "";
   return `<div class="translation-reading-actions" aria-label="Study actions">
       ${reviewAction}
-      <button type="button" data-translation-quick-action="draft-note">Add note</button>
-      <button type="button" data-translation-quick-action="next-sentence"${nextSentenceDisabled}>Next sentence</button>
+      <button type="button" data-translation-quick-action="draft-note" title="Add note from translation" aria-label="Add note from translation">Add note</button>
+      <button type="button" data-translation-quick-action="next-sentence" title="Select and translate next sentence" aria-label="Select and translate next sentence"${nextSentenceDisabled}>Next sentence</button>
     </div>
     <div class="translation-quick-actions translation-extra" aria-label="Study queue">
-      <button type="button" data-translation-quick-action="continue">Continue study</button>
+      <button type="button" data-translation-quick-action="continue" title="Continue study">Continue study</button>
     </div>`;
 }
 

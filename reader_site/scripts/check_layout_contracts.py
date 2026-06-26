@@ -1168,6 +1168,9 @@ def check_work_source_bundle_ui() -> None:
         "function translationQuickActions",
         "translation-reading-actions",
         "data-translation-quick-action=\"next-sentence\"",
+        "Select and translate next sentence",
+        "Save translation",
+        "Add note from translation",
         "Next sentence",
         "translation-quick-actions translation-extra",
         "data-translation-quick-action",
@@ -1236,7 +1239,7 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common131", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common132", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common106", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',

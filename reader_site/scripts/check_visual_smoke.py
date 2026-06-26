@@ -288,7 +288,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common106",
-            "reader-work.js?v=common131",
+            "reader-work.js?v=common132",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
 
@@ -550,6 +550,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       const card = document.querySelector('.translation-card');
       const activeTab = document.querySelector('.study-tab.active');
       const readingNext = document.querySelector('[data-translation-quick-action="next-sentence"]');
+      const readingSave = document.querySelector('[data-translation-quick-action="mark-reviewed"], .translation-quick-state[data-review-state="reviewed"]');
+      const readingNote = document.querySelector('[data-translation-quick-action="draft-note"]');
       const readingActions = Array.from(document.querySelectorAll('.translation-reading-actions > *'))
         .filter((node) => window.getComputedStyle(node).display !== 'none')
         .map((node) => node.textContent.trim());
@@ -564,6 +566,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         cardBoxShadow: card ? window.getComputedStyle(card).boxShadow : '',
         readingNextVisible: Boolean(readingNext && window.getComputedStyle(readingNext).display !== 'none'),
         readingNextText: readingNext ? readingNext.textContent.trim() : '',
+        readingNextLabel: readingNext ? readingNext.getAttribute('aria-label') || '' : '',
+        readingSaveLabel: readingSave ? readingSave.getAttribute('aria-label') || '' : '',
+        readingNoteLabel: readingNote ? readingNote.getAttribute('aria-label') || '' : '',
         readingActions,
         visibleExtraCount: visibleExtras.length,
         activeTab: activeTab ? activeTab.textContent.trim() : '',
@@ -579,6 +584,12 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (!state.readingNextVisible || state.readingNextText !== 'Next sentence') {
       throw new Error(`reading mode should expose the next sentence action: ${JSON.stringify(state)}`);
+    }
+    if (state.readingNextLabel !== 'Select and translate next sentence') {
+      throw new Error(`reading mode next action should keep a clear accessible label: ${JSON.stringify(state)}`);
+    }
+    if (!['Save translation', 'Saved translation'].includes(state.readingSaveLabel) || state.readingNoteLabel !== 'Add note from translation') {
+      throw new Error(`reading mode quick actions should keep clear accessible labels: ${JSON.stringify(state)}`);
     }
     for (const actionText of ['Next sentence', 'Save', 'Add note']) {
       if (!state.readingActions.includes(actionText) && !(actionText === 'Save' && state.readingActions.includes('Saved'))) {
