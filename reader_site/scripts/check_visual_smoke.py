@@ -233,7 +233,7 @@ def check_route_markup(route: str, html: str) -> None:
             "searchStatus",
             "aria-busy=\"false\"",
             "search.css?v=phase19",
-            "search.js?v=phase23",
+            "search.js?v=phase24",
             "Translations",
             "filter-panel",
         ]:
@@ -436,7 +436,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         statusText: document.querySelector('#searchStatus')?.textContent.trim() || '',
         hasResults: document.querySelectorAll('#results .result:not(.search-skeleton)').length > 0,
         emptyTitle: empty?.querySelector('h2')?.textContent.trim() || '',
-        emptyBodyCount: empty ? empty.querySelectorAll('p').length : 0
+        emptyBodyCount: empty ? empty.querySelectorAll('p').length : 0,
+        actionText: Array.from(document.querySelectorAll('#results .result-more-actions')).map((node) => node.textContent.trim()).join(' ')
       };
     });
     if (searchPageState.statusText) {
@@ -444,6 +445,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (!searchPageState.hasResults && searchPageState.emptyTitle !== 'No matching passages.') {
       throw new Error(`empty search should use a concise title: ${JSON.stringify(searchPageState)}`);
+    }
+    if (/Open work|Open source|Open target|Manage note/.test(searchPageState.actionText)) {
+      throw new Error(`search result actions should not repeat title-link navigation: ${JSON.stringify(searchPageState)}`);
     }
   }
   if (parsed.pathname === '/notes' && !parsed.search) {

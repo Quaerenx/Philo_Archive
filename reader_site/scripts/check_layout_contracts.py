@@ -229,7 +229,7 @@ def check_search_ui() -> None:
     css = read_site_file("assets/search.css")
     for needle in [
         "/assets/search.css?v=phase19",
-        "/assets/search.js?v=phase23",
+        "/assets/search.js?v=phase24",
         'href="/translations"',
         "Translations",
         'class="filter-panel"',
@@ -275,7 +275,7 @@ def check_search_ui() -> None:
         "search-results-notes",
         "result-group-count",
         "result-kind",
-        "Open source",
+        "Source",
         "searchClear.addEventListener",
         "activeFiltersEl.addEventListener",
         "filter-chip",
@@ -287,6 +287,13 @@ def check_search_ui() -> None:
         "Could not complete search.",
     ]:
         require_contains(script, needle, "assets/search.js")
+    for noisy_action in [
+        "Open work",
+        "Open source",
+        "Open target",
+        "Manage note",
+    ]:
+        require(noisy_action not in script, f"assets/search.js should not expose redundant search action {noisy_action!r}")
     for needle in [
         ".search-form.is-searching",
         ".spacer",
