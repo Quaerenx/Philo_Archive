@@ -53,6 +53,17 @@ Local AI models: 1
 
 If `Reader` is not ready, start `run_reader_with_gemma.ps1` again. If `Local AI` is not ready, sentence clicks can still select text, but translation/commentary will show an offline state until the sidecar is started.
 
+## Startup Failures
+
+`run_reader_with_gemma.ps1` checks common startup problems before it starts the reader:
+
+- Missing Python: install Python or add it to `PATH`.
+- Reader port `8793` already in use: open the existing reader, stop the stale process, or run with `-ReaderPort 8795`.
+- Missing GGUF model: pass the correct model path with `-ModelPath`.
+- Missing `llama-server.exe`: add the llama.cpp folder to `PATH`.
+- Gemma port `8794` already in use by a different process: stop that process or run with `-GemmaPort 8795`.
+- Local AI does not become ready: check `data\runtime.local\llama-server.*.log` or try `-ContextSize 4096`.
+
 ## Study Workflow
 
 1. Open `Archive index` or `Research search`.

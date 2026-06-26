@@ -12,13 +12,51 @@ $ErrorActionPreference = "Stop"
 $Site = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RuntimeDir = Join-Path $Site "data\runtime.local"
 $GemmaBaseUrl = "http://${GemmaHost}:${GemmaPort}"
+$ReaderBaseUrl = if ($ReaderHost -eq "0.0.0.0") { "http://127.0.0.1:${ReaderPort}" } else { "http://${ReaderHost}:${ReaderPort}" }
 $StartedGemma = $false
 $GemmaProcess = $null
+
+function Stop-WithHint {
+    param(
+        [string]$Message,
+        [string[]]$Hints = @()
+    )
+    $lines = @(
+        "",
+        "Philo Archive startup check failed:",
+        "  ${Message}"
+    )
+    if ($Hints.Count) {
+        $lines += ""
+        $lines += "What to do:"
+        foreach ($hint in $Hints) {
+            if ($hint) {
+                $lines += "  - ${hint}"
+            }
+        }
+    }
+    throw ($lines -join [Environment]::NewLine)
+}
 
 function Test-PortListening {
     param([int]$Port)
     $connection = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue
     return $null -ne $connection
+}
+
+function Get-PortOwnerHint {
+    param([int]$Port)
+    $connection = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
+    if (!$connection) {
+        return ""
+    }
+    $processId = $connection.OwningProcess
+    try {
+        $process = Get-Process -Id $processId -ErrorAction Stop
+        return "Port ${Port} is used by PID ${processId} ($($process.ProcessName))."
+    } catch {
+        return "Port ${Port} is used by PID ${processId}."
+    }
 }
 
 function Wait-GemmaReady {
@@ -34,16 +72,51 @@ function Wait-GemmaReady {
     throw "Gemma runtime did not become ready at ${BaseUrl}"
 }
 
-if (!(Test-Path $ModelPath)) {
-    throw "Model file not found: ${ModelPath}"
+if (!(Get-Command python -ErrorAction SilentlyContinue)) {
+    Stop-WithHint "Python was not found in PATH." @(
+        "Install Python or add it to PATH.",
+        "Verify with: python --version"
+    )
+}
+
+if (Test-PortListening -Port $ReaderPort) {
+    Stop-WithHint "Reader port ${ReaderPort} is already in use." @(
+        (Get-PortOwnerHint -Port $ReaderPort),
+        "Open the existing reader: ${ReaderBaseUrl}",
+        "If that old process is stale, stop it and run this script again.",
+        "To use another port: .\run_reader_with_gemma.ps1 -ReaderPort 8795"
+    )
+}
+
+if (!(Test-Path -LiteralPath $ModelPath)) {
+    Stop-WithHint "Model file not found: ${ModelPath}" @(
+        "Check that the GGUF model exists at the path above.",
+        "Or pass a model explicitly: .\run_reader_with_gemma.ps1 -ModelPath ""D:\models\gemma.gguf"""
+    )
 }
 
 New-Item -ItemType Directory -Force -Path $RuntimeDir | Out-Null
 
 if (Test-PortListening -Port $GemmaPort) {
     Write-Host "Gemma runtime already listening at ${GemmaBaseUrl}"
+    try {
+        Wait-GemmaReady -BaseUrl $GemmaBaseUrl
+    } catch {
+        Stop-WithHint "A process is listening on Gemma port ${GemmaPort}, but it did not respond like llama.cpp server." @(
+            (Get-PortOwnerHint -Port $GemmaPort),
+            "If this is a stale process, stop it and run this script again.",
+            "If you intentionally use another Gemma port: .\run_reader_with_gemma.ps1 -GemmaPort 8795"
+        )
+    }
 } else {
-    $llamaServer = Get-Command llama-server.exe -ErrorAction Stop
+    $llamaServer = Get-Command llama-server.exe -ErrorAction SilentlyContinue
+    if (!$llamaServer) {
+        Stop-WithHint "llama-server.exe was not found in PATH." @(
+            "Install or build llama.cpp for Windows.",
+            "Add the folder containing llama-server.exe to PATH.",
+            "Verify with: Get-Command llama-server.exe"
+        )
+    }
     $stdout = Join-Path $RuntimeDir "llama-server.out.log"
     $stderr = Join-Path $RuntimeDir "llama-server.err.log"
     $args = @(
@@ -56,7 +129,18 @@ if (Test-PortListening -Port $GemmaPort) {
     Write-Host "Starting Gemma runtime at ${GemmaBaseUrl}"
     $GemmaProcess = Start-Process -WindowStyle Hidden -PassThru -FilePath $llamaServer.Source -ArgumentList $args -RedirectStandardOutput $stdout -RedirectStandardError $stderr
     $StartedGemma = $true
-    Wait-GemmaReady -BaseUrl $GemmaBaseUrl
+    try {
+        Wait-GemmaReady -BaseUrl $GemmaBaseUrl
+    } catch {
+        if ($StartedGemma -and $GemmaProcess -and !$GemmaProcess.HasExited) {
+            Stop-Process -Id $GemmaProcess.Id
+        }
+        Stop-WithHint "Gemma runtime did not become ready at ${GemmaBaseUrl}." @(
+            "Check stdout log: ${stdout}",
+            "Check stderr log: ${stderr}",
+            "Try a smaller context size: .\run_reader_with_gemma.ps1 -ContextSize 4096"
+        )
+    }
 }
 
 $env:PHILO_GEMMA_BASE_URL = $GemmaBaseUrl
@@ -65,6 +149,8 @@ $env:PHILO_GEMMA_RUNTIME = "llama.cpp b9371-f12cc6d0f"
 
 try {
     Write-Host "Starting Philo Archive reader at http://${ReaderHost}:${ReaderPort}"
+    Write-Host "Open: ${ReaderBaseUrl}"
+    Write-Host "Health check: python .\scripts\check_local_runtime.py --plain"
     Push-Location $Site
     python .\server.py --host $ReaderHost --port $ReaderPort
 } finally {
