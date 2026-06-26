@@ -382,8 +382,8 @@ def check_translations_ui() -> None:
     css = read_site_file("assets/translations.css")
     for needle in [
         "/assets/notes.css?v=notes13",
-        "/assets/translations.css?v=trans4",
-        "/assets/translations.js?v=trans11",
+        "/assets/translations.css?v=trans5",
+        "/assets/translations.js?v=trans12",
         'id="translationsSubmit"',
         'id="translationsClear"',
         'id="translationsReviewQueue"',
@@ -421,6 +421,9 @@ def check_translations_ui() -> None:
         "function removeFilter",
         "function renderSummary",
         "function renderRecord",
+        "aria-label=\"Commentary\"",
+        "<h3>Commentary</h3>",
+        "Original source",
         "function generatedRecords",
         "function updateReviewQueueButton",
         "function focusFirstReviewQueueRecord",
@@ -452,6 +455,16 @@ def check_translations_ui() -> None:
         "Open work",
     ]:
         require_contains(script, needle, "assets/translations.js")
+    require_ordered_markers(
+        js_function_body(script, "renderRecord"),
+        [
+            "translation-text",
+            "translation-commentary",
+            "Original source",
+            "translation-actions",
+        ],
+        "renderRecord review-first translation card layout",
+    )
     for needle in [
         ".translations-form",
         ".translation-record-summary",
@@ -462,8 +475,11 @@ def check_translations_ui() -> None:
         ".translation-record-card.is-review-target",
         ".translation-record-card[data-review-state=\"generated\"]",
         ".translation-source",
+        ".translation-source summary",
+        ".translation-source blockquote",
         ".translation-text",
         ".translation-commentary",
+        ".translation-commentary h3",
         ".translation-actions",
         ".translation-actions .primary-review-action:not(:disabled)",
         ".translation-actions button.is-working",

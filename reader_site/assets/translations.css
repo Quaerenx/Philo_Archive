@@ -112,13 +112,6 @@
   border-color: #d7a0a0;
 }
 
-.translation-source {
-  margin: 7px 0 0;
-  padding-left: 12px;
-  color: #555;
-  border-left: 2px solid #d4d4d4;
-}
-
 .translation-text {
   margin: 7px 0 0;
   font-family: Georgia, "Times New Roman", serif;
@@ -131,14 +124,36 @@
   color: #444;
 }
 
-.translation-commentary summary {
+.translation-commentary h3 {
+  margin: 0 0 4px;
   color: #555;
-  cursor: pointer;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  font-weight: normal;
+  line-height: 1.35;
 }
 
 .translation-commentary p {
-  margin: 6px 0 0;
+  margin: 0;
   line-height: 1.55;
+}
+
+.translation-source {
+  margin: 8px 0 0;
+  color: #555;
+}
+
+.translation-source summary {
+  color: #555;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.translation-source blockquote {
+  margin: 6px 0 0;
+  padding-left: 12px;
+  border-left: 2px solid #d4d4d4;
 }
 
 .translation-actions {
@@ -236,7 +251,7 @@
     grid-template-columns: minmax(0, 1fr) auto;
   }
 
-  .translation-source {
+  .translation-source blockquote {
     max-height: 6.4em;
     overflow: hidden;
   }

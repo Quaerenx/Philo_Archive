@@ -330,9 +330,9 @@ function renderRecord(record) {
       <span class="note-meta">${escapeHtml(cleanText(date))}</span>
       <span class="review-badge ${escapeHtml(reviewState)}">${escapeHtml(REVIEW_LABELS[reviewState] || reviewState)}</span>
     </div>
-    ${source ? `<blockquote class="translation-source">${escapeHtml(source)}</blockquote>` : ""}
     ${translation ? `<p class="translation-text">${escapeHtml(translation)}</p>` : ""}
-    ${commentary ? `<details class="translation-commentary"><summary>Commentary</summary><p>${escapeHtml(commentary)}</p></details>` : ""}
+    ${commentary ? `<section class="translation-commentary" aria-label="Commentary"><h3>Commentary</h3><p>${escapeHtml(commentary)}</p></section>` : ""}
+    ${source ? `<details class="translation-source"><summary>Original source</summary><blockquote>${escapeHtml(source)}</blockquote></details>` : ""}
     <div class="translation-actions">
       ${actions}
     </div>
