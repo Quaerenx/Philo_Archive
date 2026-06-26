@@ -623,8 +623,8 @@ def check_work_source_bundle_ui() -> None:
         "function toggleSessionPreviewGroup",
         "data-session-preview-copy",
         "async function copyStudySessionMarkdown",
-        "Copy Markdown",
-        "Study session Markdown copied.",
+        "Copy bundle",
+        "Study bundle copied.",
         "Show less",
         "Show all ${group.querySelectorAll(\"li\").length}",
         "function renderStudySessionPreview",
@@ -632,7 +632,7 @@ def check_work_source_bundle_ui() -> None:
         "async function previewStudySession",
         "Study session preview ready.",
         "Study session preview unavailable",
-        "Open Markdown export",
+        "Open bundle",
         "need review",
         "All sentences have translations.",
         "No unstudied sentence after current position.",
@@ -928,7 +928,7 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common98", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common99", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common89", "templates/work.html")
     for needle in [
         "reading-desk",
@@ -961,9 +961,9 @@ def check_work_source_bundle_ui() -> None:
         "translation-export-links",
         "Export</summary>",
         "exportAllTranslations",
-        "Export all",
+        "All records",
         "exportStudySession",
-        "Export session",
+        "Study bundle",
         "studySessionSummary",
         "Study bundle</div>",
         "aria-label=\"Study. Select sentence\"",

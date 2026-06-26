@@ -415,14 +415,14 @@ function updateTranslationExportLinks(total, reviewed) {
     exportReviewedTranslations.dataset.exportCount = String(reviewed);
     exportReviewedTranslations.classList.toggle("is-empty", reviewed === 0);
     exportReviewedTranslations.title = reviewed
-      ? `Export ${reviewed} reviewed translation records`
-      : "No reviewed translation records yet";
+      ? `Download ${reviewed} reviewed translations`
+      : "No reviewed translations yet";
   }
   if (exportAllTranslations) {
     exportAllTranslations.dataset.exportCount = String(total);
     exportAllTranslations.classList.toggle("is-empty", total === 0);
     exportAllTranslations.title = total
-      ? `Export ${total} translation records`
+      ? `Download ${total} translation records`
       : "No translation records yet";
   }
 }
@@ -570,8 +570,8 @@ function updateStudySessionExportLink(noteCount, translationCount) {
   exportStudySession.dataset.exportCount = String(total);
   exportStudySession.classList.toggle("is-empty", total === 0);
   exportStudySession.title = total
-    ? `Export reviewed study session: ${noteCount} notes and ${translationCount} translations`
-    : "No reviewed notes or reviewed translations for this session yet";
+    ? `Download study bundle: ${noteCount} notes and ${translationCount} translations`
+    : "No reviewed notes or translations for this bundle yet";
 }
 
 function studySessionExportUrl(format = "json") {
@@ -1781,17 +1781,17 @@ function toggleSessionPreviewGroup(button) {
 
 async function copyStudySessionMarkdown(button) {
   setActionButtonBusy(button, true);
-  setTranslationStatus("Copying study session Markdown...", true);
+  setTranslationStatus("Copying study bundle...", true);
   try {
     const response = await fetch(studySessionExportUrl("markdown"));
     if (!response.ok) {
-      throw new Error("Could not load study session Markdown.");
+      throw new Error("Could not load study bundle.");
     }
     const markdown = await response.text();
     await copyText(markdown);
-    setTranslationStatus("Study session Markdown copied.");
+    setTranslationStatus("Study bundle copied.");
   } catch (error) {
-    const message = cleanText(error && error.message ? error.message : "Could not copy study session Markdown.");
+    const message = cleanText(error && error.message ? error.message : "Could not copy study bundle.");
     setTranslationStatus(message, true);
   } finally {
     setActionButtonBusy(button, false);
@@ -1816,8 +1816,8 @@ function renderStudySessionPreview(payload) {
         <span>Study session</span>
         <strong>${escapeHtml(researchData.title || researchData.work_id || "Current work")}</strong>
         <div class="study-session-preview-actions">
-          <button type="button" data-session-preview-copy>Copy Markdown</button>
-          <a href="${escapeHtml(exportUrl)}">Open Markdown export</a>
+          <button type="button" data-session-preview-copy>Copy bundle</button>
+          <a href="${escapeHtml(exportUrl)}">Open bundle</a>
         </div>
       </div>
       <div class="study-session-preview-counts" aria-label="Study session counts">
@@ -1848,7 +1848,7 @@ function renderStudySessionPreviewError(message) {
       <h3>Study session preview unavailable</h3>
       <p>${escapeHtml(cleanText(message || "Could not load the reviewed study session."))}</p>
       <div class="translation-error-actions">
-        <a href="${escapeHtml(studySessionExportUrl("markdown"))}">Open Markdown export</a>
+        <a href="${escapeHtml(studySessionExportUrl("markdown"))}">Open bundle</a>
       </div>
     </div>`;
   updateStudyPanelToggleLabel();
