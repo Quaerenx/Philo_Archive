@@ -228,8 +228,8 @@ def check_search_ui() -> None:
     script = read_site_file("assets/search.js")
     css = read_site_file("assets/search.css")
     for needle in [
-        "/assets/search.css?v=phase18",
-        "/assets/search.js?v=phase21",
+        "/assets/search.css?v=phase19",
+        "/assets/search.js?v=phase22",
         'href="/translations"',
         "Translations",
         'class="filter-panel"',
@@ -259,6 +259,7 @@ def check_search_ui() -> None:
         "function removeSearchFilter",
         "function resultGroupHeader",
         "function resultKind",
+        "function resultSnippet",
         "function resultSummaryNav",
         "function compactCount",
         "function searchStatusText",
@@ -314,6 +315,7 @@ def check_search_ui() -> None:
         ".result-more-actions",
         ".result-more-actions summary",
         ".result-more-actions[open]",
+        ".snippet-link",
         "grid-template-columns: minmax(0, 1fr) auto",
         "justify-content: flex-end",
         ".search-form.is-searching #searchSubmit",

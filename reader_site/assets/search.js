@@ -197,6 +197,15 @@ function resultKind(label, className) {
   return `<span class="result-kind ${escapeHtml(className)}">${escapeHtml(label)}</span>`;
 }
 
+function resultSnippet(href, text, query) {
+  const content = highlight(text || "", query);
+  const cleanHref = cleanText(href || "");
+  if (!cleanHref) {
+    return `<p class="snippet">${content}</p>`;
+  }
+  return `<a class="snippet snippet-link" href="${escapeHtml(cleanHref)}">${content}</a>`;
+}
+
 function resultSummaryNav(groups) {
   if (!Array.isArray(groups) || groups.length < 2) return "";
   const links = groups
@@ -283,7 +292,7 @@ function renderResults(payload, query) {
           ${resultKind("Work", "work")}
           <a href="${escapeHtml(result.url)}">${escapeHtml(result.title || result.work_id)}</a>
         </div>
-        <p class="snippet">${highlight(result.snippet || "", query)}</p>
+        ${resultSnippet(result.url, result.snippet || "", query)}
         ${variants ? `<div class="tag-row">${variants}</div>` : ""}
         ${resultFooter(meta, actions)}
       </article>`;
@@ -304,7 +313,7 @@ function renderResults(payload, query) {
           ${resultKind("Passage", "segment")}
           <a href="${escapeHtml(result.url)}">${escapeHtml(result.title || result.work_id)}</a>
         </div>
-        <p class="snippet">${highlight(result.snippet || "", query)}</p>
+        ${resultSnippet(result.url, result.snippet || "", query)}
         ${resultFooter(meta, actions)}
       </article>`;
     })
@@ -326,7 +335,7 @@ function renderResults(payload, query) {
           ${resultKind("Note", "note")}
           <a href="${escapeHtml(result.manage_url || notesHref(result))}">${escapeHtml(result.title || "Research note")}</a>
         </div>
-        <p class="snippet">${highlight(result.snippet || "", query)}</p>
+        ${resultSnippet(result.manage_url || notesHref(result), result.snippet || "", query)}
         ${tags ? `<div class="tag-row">${tags}</div>` : ""}
         ${resultFooter(meta, actions)}
       </article>`;

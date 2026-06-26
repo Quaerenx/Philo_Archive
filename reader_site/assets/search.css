@@ -543,6 +543,21 @@ h1 {
   line-height: 1.55;
 }
 
+.snippet-link {
+  display: block;
+  color: #111;
+  text-decoration: none;
+}
+
+.snippet-link:hover,
+.snippet-link:focus-visible {
+  color: #111;
+  text-decoration: none;
+  background: #fffdf2;
+  outline: 1px solid #d8d1a8;
+  outline-offset: 2px;
+}
+
 .tag-row {
   display: flex;
   flex-wrap: wrap;
