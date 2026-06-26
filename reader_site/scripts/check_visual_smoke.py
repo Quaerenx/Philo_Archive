@@ -192,7 +192,7 @@ def check_route_markup(route: str, html: str) -> None:
             "studyStatus",
             "aria-busy=\"false\"",
             "study.css?v=study20",
-            "study.js?v=study27",
+            "study.js?v=study28",
             "filter-panel",
             "export-tools",
         ]:
@@ -516,6 +516,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       if (!studyPageState.overviewHidden && !/To check|Saved translations/.test(studyPageState.overviewText)) {
         throw new Error(`empty study page overview should point to translation study status when present: ${JSON.stringify(studyPageState)}`);
+      }
+      if (studyPageState.overviewText.includes('0 saved notes')) {
+        throw new Error(`empty study page overview should not repeat zero notes: ${JSON.stringify(studyPageState)}`);
       }
     }
   }

@@ -291,15 +291,20 @@ function renderStudyOverview(payload, translationSummary) {
     studyOverview.innerHTML = "";
     return;
   }
-  const notesLabel = groupCount > 1
-    ? `${studyCountLabel(noteCount, "saved note")} / ${studyCountLabel(groupCount, "work")}`
-    : studyCountLabel(noteCount, "saved note");
+  const notesLabel = noteCount > 0
+    ? (groupCount > 1
+      ? `${studyCountLabel(noteCount, "saved note")} / ${studyCountLabel(groupCount, "work")}`
+      : studyCountLabel(noteCount, "saved note"))
+    : "";
+  const notesMarkup = notesLabel
+    ? `<div class="study-overview-notes">${escapeHtml(notesLabel)}</div>`
+    : "";
   const translationLinks = [
     translationStatusLink("generated", "To check", generated),
     translationStatusLink("reviewed", "Saved translations", reviewed),
     translationStatusLink("rejected", "Rejected", rejected)
   ].filter(Boolean).join("");
-  studyOverview.innerHTML = `<div class="study-overview-notes">${escapeHtml(notesLabel)}</div>
+  studyOverview.innerHTML = `${notesMarkup}
     ${translationLinks ? `<nav class="study-overview-translations" aria-label="Translation study status">${translationLinks}</nav>` : ""}`;
 }
 
