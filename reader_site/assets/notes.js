@@ -100,7 +100,7 @@ function updateNotesFilterSummary() {
   if (corpusSelect.value) chips.push(renderFilterChip("corpus", "Corpus", selectedOptionText(corpusSelect)));
   if (workId) chips.push(renderFilterChip("work", "Work", workId));
   if (tag) chips.push(renderFilterChip("tag", "Tag", tag));
-  if (reviewSelect.value) chips.push(renderFilterChip("review", "Review", selectedOptionText(reviewSelect)));
+  if (reviewSelect.value) chips.push(renderFilterChip("review", "Status", selectedOptionText(reviewSelect)));
   if (requestedTargetId) chips.push(renderFilterChip("target", "Target", requestedTargetId));
   activeFiltersEl.classList.toggle("has-filters", chips.length > 0);
   activeFiltersEl.innerHTML = chips.length
@@ -118,7 +118,7 @@ function renderEmptyNotes() {
   const filtered = hasActiveFilters();
   const title = filtered ? "No notes match these filters." : "No research notes yet.";
   const body = filtered
-    ? "Try clearing the filters, or broaden the work, tag, and review fields."
+    ? "Try clearing the filters, or broaden the work, tag, and status fields."
     : "Create notes from a work page while reading original sources, then return here to review and export them.";
   const clearAction = filtered
     ? '<button type="button" data-empty-action="clear-filters">Clear filters</button>'
@@ -226,7 +226,7 @@ function notesSummaryButton(filter, label, count) {
 function renderNotesSummary(notes) {
   if (!notes.length) return "";
   const counts = notesSummaryCounts(notes);
-  return `<nav class="notes-summary-nav" aria-label="Visible notes by review state">
+  return `<nav class="notes-summary-nav" aria-label="Visible notes by status">
     ${notesSummaryButton("", "All", counts.total)}
     ${notesSummaryButton("raw", "Draft", counts.raw)}
     ${notesSummaryButton("reviewed", "Reviewed", counts.reviewed)}
@@ -493,7 +493,7 @@ resultsEl.addEventListener("click", async (event) => {
       if (ok) {
         recentlyChangedNoteId = noteId;
       }
-      statusEl.textContent = ok ? "Review state updated." : "Could not update review state.";
+      statusEl.textContent = ok ? "Status updated." : "Could not update status.";
       await loadNotes();
     } finally {
       setActionButtonBusy(button, false);

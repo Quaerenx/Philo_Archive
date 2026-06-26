@@ -149,7 +149,7 @@ function updateFilterSummary() {
   }
   if (workId) chips.push(renderFilterChip("work", "Work", workId));
   if (reviewSelect.value !== "all") {
-    chips.push(renderFilterChip("review", "Review", selectedOptionText(reviewSelect)));
+    chips.push(renderFilterChip("review", "Status", selectedOptionText(reviewSelect)));
   }
   activeFiltersEl.classList.toggle("has-filters", chips.length > 0);
   activeFiltersEl.innerHTML = chips.length
@@ -271,7 +271,7 @@ function summaryButton(filter, label, count) {
 
 function renderSummary(records) {
   const counts = summaryCounts(records);
-  return `<nav class="translation-record-summary" aria-label="Visible translations by review state">
+  return `<nav class="translation-record-summary" aria-label="Visible translations by status">
     ${summaryButton("all", "All", counts.total)}
     ${summaryButton("generated", "Needs review", counts.generated)}
     ${summaryButton("reviewed", "Reviewed", counts.reviewed)}
@@ -283,7 +283,7 @@ function renderEmptyRecords() {
   const filtered = hasActiveFilters();
   const title = filtered ? "No translations match these filters." : "No translations for this corpus yet.";
   const body = filtered
-    ? "Try clearing the filters, or choose a broader review state and work id."
+    ? "Try clearing the filters, or choose a broader status and work id."
     : "Open a work, click a sentence, and save a local translation here.";
   const clearAction = filtered
     ? '<button type="button" data-empty-action="clear-filters">Clear filters</button>'
