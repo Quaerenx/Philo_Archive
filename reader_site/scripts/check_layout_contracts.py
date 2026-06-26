@@ -943,7 +943,7 @@ def check_work_source_bundle_ui() -> None:
             f"{function_name} reading-first translation layout",
         )
     require_contains(template, "/assets/reader-work.js?v=common96", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common88", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common89", "templates/work.html")
     for needle in [
         "reading-desk",
         "toolbar-more",
@@ -992,6 +992,9 @@ def check_work_source_bundle_ui() -> None:
         "lockNoteTarget",
         "Lock target",
         'aria-pressed="false"',
+        "note-options",
+        "Options</summary>",
+        "noteTags",
         "notes-filter-tools",
         "Find notes</summary>",
         "notes-list-tools",
@@ -1280,6 +1283,11 @@ def check_work_source_bundle_ui() -> None:
         ".citation-copy-options summary::after",
         ".citation-copy-options[open] summary::after",
         ".citation-copy-actions",
+        ".note-options",
+        ".note-options summary",
+        ".note-options summary::-webkit-details-marker",
+        ".note-options summary::after",
+        ".note-options[open] summary::after",
         ".note-target-tools",
         ".note-target-preview",
         ".note-target-preview.is-locked",

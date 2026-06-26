@@ -6,7 +6,7 @@
   <title>{{TITLE}} / {{CORPUS_TITLE}}</title>
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
-  <link rel="stylesheet" href="/assets/reader-work.css?v=common88">
+  <link rel="stylesheet" href="/assets/reader-work.css?v=common89">
 </head>
 <body class="{{BODY_CLASS}}">
   <div class="page">
@@ -118,8 +118,11 @@
                 <button type="button" id="lockNoteTarget" class="note-target-lock" aria-pressed="false">Lock target</button>
               </div>
               <form id="noteForm">
-                <label>Tags<input id="noteTags" name="tags" autocomplete="off"></label>
                 <label>Note<textarea id="noteText" name="note" aria-describedby="noteStatus" required></textarea></label>
+                <details class="note-options">
+                  <summary>Options</summary>
+                  <label>Tags<input id="noteTags" name="tags" autocomplete="off"></label>
+                </details>
                 <button type="submit">Save note</button>
               </form>
               <div id="noteStatus" class="note-status" role="status" aria-live="polite" aria-atomic="true"></div>

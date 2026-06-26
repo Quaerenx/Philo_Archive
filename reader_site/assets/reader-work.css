@@ -392,6 +392,33 @@ h1 {
   resize: vertical;
 }
 
+.note-options {
+  margin-top: 8px;
+}
+
+.note-options summary {
+  color: #555;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  line-height: 1.35;
+  cursor: pointer;
+  list-style: none;
+}
+
+.note-options summary::-webkit-details-marker {
+  display: none;
+}
+
+.note-options summary::after {
+  margin-left: 4px;
+  color: #777;
+  content: "+";
+}
+
+.note-options[open] summary::after {
+  content: "-";
+}
+
 .translation-card {
   position: relative;
   display: flex;
