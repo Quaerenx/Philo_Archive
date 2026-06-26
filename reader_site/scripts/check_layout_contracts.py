@@ -788,7 +788,9 @@ def check_work_source_bundle_ui() -> None:
         'id="copyCitation" aria-label="Copy citation"',
         'class="citation-copy-options" aria-label="More copy options"',
         "More</summary>",
-        "Copy source bundle",
+        'id="copyUrl" aria-label="Copy URL"',
+        'id="copySourceBundle" aria-label="Copy source bundle"',
+        ">Source bundle</button>",
     ]:
         require_contains(template, needle, "templates/work.html")
 
