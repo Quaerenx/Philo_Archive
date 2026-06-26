@@ -6,7 +6,7 @@
   <title>{{TITLE}} / {{CORPUS_TITLE}}</title>
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
-  <link rel="stylesheet" href="/assets/reader-work.css?v=common87">
+  <link rel="stylesheet" href="/assets/reader-work.css?v=common88">
 </head>
 <body class="{{BODY_CLASS}}">
   <div class="page">
@@ -143,8 +143,13 @@
               <h2>Citation</h2>
               <div id="citationPreview" class="citation-preview"></div>
               <button type="button" id="copyCitation">Copy citation</button>
-              <button type="button" id="copyUrl">Copy URL</button>
-              <button type="button" id="copySourceBundle">Copy source bundle</button>
+              <details class="citation-copy-options">
+                <summary>More copy options</summary>
+                <div class="citation-copy-actions">
+                  <button type="button" id="copyUrl">Copy URL</button>
+                  <button type="button" id="copySourceBundle">Copy source bundle</button>
+                </div>
+              </details>
             </section>
           </section>
           <section id="study-panel-concepts" class="study-panel" role="tabpanel" aria-labelledby="study-tab-concepts" tabindex="0" data-study-panel="concepts" hidden>

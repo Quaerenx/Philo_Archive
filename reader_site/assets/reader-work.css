@@ -1818,6 +1818,41 @@ h1 {
   word-break: break-word;
 }
 
+.citation-copy-options {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #eeeeee;
+}
+
+.citation-copy-options summary {
+  color: #555;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  line-height: 1.35;
+  cursor: pointer;
+  list-style: none;
+}
+
+.citation-copy-options summary::-webkit-details-marker {
+  display: none;
+}
+
+.citation-copy-options summary::after {
+  margin-left: 4px;
+  color: #777;
+  content: "+";
+}
+
+.citation-copy-options[open] summary::after {
+  content: "-";
+}
+
+.citation-copy-actions {
+  display: grid;
+  gap: 7px;
+  margin-top: 8px;
+}
+
 .note-target-tools {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

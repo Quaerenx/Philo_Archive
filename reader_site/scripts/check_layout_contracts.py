@@ -545,6 +545,9 @@ def check_work_source_bundle_ui() -> None:
     template = read_site_file("templates/work.html")
     for needle in [
         'id="copySourceBundle"',
+        "citation-copy-options",
+        "citation-copy-actions",
+        "More copy options</summary>",
         "Copy source bundle",
     ]:
         require_contains(template, needle, "templates/work.html")
@@ -940,7 +943,7 @@ def check_work_source_bundle_ui() -> None:
             f"{function_name} reading-first translation layout",
         )
     require_contains(template, "/assets/reader-work.js?v=common96", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common87", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common88", "templates/work.html")
     for needle in [
         "reading-desk",
         "toolbar-more",
@@ -1271,6 +1274,12 @@ def check_work_source_bundle_ui() -> None:
         ".reading-position button",
         ".reading-position-current",
         ".reader-sentence.reading-cue",
+        ".citation-copy-options",
+        ".citation-copy-options summary",
+        ".citation-copy-options summary::-webkit-details-marker",
+        ".citation-copy-options summary::after",
+        ".citation-copy-options[open] summary::after",
+        ".citation-copy-actions",
         ".note-target-tools",
         ".note-target-preview",
         ".note-target-preview.is-locked",
