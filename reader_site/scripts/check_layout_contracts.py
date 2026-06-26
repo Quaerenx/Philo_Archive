@@ -486,7 +486,7 @@ def check_translations_ui() -> None:
     css = read_site_file("assets/translations.css")
     for needle in [
         "/assets/notes.css?v=notes19",
-        "/assets/translations.css?v=trans20",
+        "/assets/translations.css?v=trans21",
         "/assets/translations.js?v=trans49",
         '<option value="">All corpora</option>',
         'id="translationsListTools"',
@@ -681,6 +681,7 @@ def check_translations_ui() -> None:
         ".translation-text",
         ".translation-commentary",
         ".translation-commentary h3",
+        "clip: rect(0, 0, 0, 0)",
         ".translation-actions",
         ".translation-more-actions",
         ".translation-more-actions summary",

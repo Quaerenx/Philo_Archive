@@ -219,7 +219,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translationsResults",
             "translationsReviewQueue",
             "aria-busy=\"false\"",
-            "translations.css?v=trans20",
+            "translations.css?v=trans21",
             "translations.js?v=trans49",
             "translationsListTools",
             "Search and filters</summary>",
@@ -744,12 +744,16 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         const card = document.querySelector('#translationsResults .translation-record-card.is-review-target');
         const reject = card?.querySelector('.translation-more-actions');
         const source = card?.querySelector('.translation-source');
+        const commentaryHeading = card?.querySelector('.translation-commentary h3');
+        const commentaryHeadingBox = commentaryHeading?.getBoundingClientRect();
         return {
           hasReviewTarget: Boolean(card),
           rejectText: reject?.textContent.trim() || '',
           rejectDisplay: reject ? window.getComputedStyle(reject).display : '',
           sourceOpen: Boolean(source?.open),
           sourceText: source?.textContent.trim() || '',
+          commentaryHeadingWidth: commentaryHeadingBox?.width || 0,
+          commentaryHeadingHeight: commentaryHeadingBox?.height || 0,
           statusText: document.querySelector('#translationsStatus')?.textContent.trim() || ''
         };
       });
@@ -761,6 +765,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       if (reviewTargetState.statusText.includes('translations /')) {
         throw new Error(`review queue should avoid duplicate count status text: ${JSON.stringify(reviewTargetState)}`);
+      }
+      if (reviewTargetState.commentaryHeadingWidth > 2 || reviewTargetState.commentaryHeadingHeight > 2) {
+        throw new Error(`review queue should keep repeated commentary headings visually quiet: ${JSON.stringify(reviewTargetState)}`);
       }
     }
   }
