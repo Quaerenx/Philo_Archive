@@ -1525,9 +1525,9 @@ function translationQuickActions(reviewState) {
     ? " disabled"
     : "";
   return `<div class="translation-reading-actions" aria-label="Study actions">
-      ${reviewAction}
-      <button type="button" data-translation-quick-action="draft-note" title="Add note from translation" aria-label="Add note from translation">Add note</button>
       <button type="button" data-translation-quick-action="next-sentence" title="Select and translate next sentence" aria-label="Select and translate next sentence"${nextSentenceDisabled}>Next sentence</button>
+      <button type="button" data-translation-quick-action="draft-note" title="Add note from translation" aria-label="Add note from translation">Add note</button>
+      ${reviewAction}
     </div>
     <div class="translation-quick-actions translation-extra" aria-label="Study queue">
       <button type="button" data-translation-quick-action="continue" title="Continue study">Continue study</button>
