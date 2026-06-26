@@ -220,7 +220,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translationsReviewQueue",
             "aria-busy=\"false\"",
             "translations.css?v=trans20",
-            "translations.js?v=trans48",
+            "translations.js?v=trans49",
             "translationsListTools",
             "Search and filters</summary>",
             "filter-panel",
@@ -549,7 +549,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (translationsPageState.reviewBadgeCount !== 0) {
         throw new Error(`default translations list should hide review-state badges: ${JSON.stringify(translationsPageState)}`);
       }
-      if (translationsPageState.reviewQueueText && !translationsPageState.reviewQueueText.startsWith('To check')) {
+      if (translationsPageState.reviewQueueText && !translationsPageState.reviewQueueText.startsWith('Review')) {
         throw new Error(`translations review entry should stay concise: ${JSON.stringify(translationsPageState)}`);
       }
       if (!translationsPageState.summaryButtons.some((text) => text.startsWith('All'))) {

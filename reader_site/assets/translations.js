@@ -308,8 +308,8 @@ function updateReviewQueueButton(records = lastRecords) {
   const generatedCount = generatedRecords(records).length;
   reviewQueueButton.hidden = generatedCount === 0;
   reviewQueueButton.textContent = generatedCount
-    ? `To check (${generatedCount.toLocaleString()})`
-    : "To check";
+    ? `Review (${generatedCount.toLocaleString()})`
+    : "Review";
   reviewQueueButton.disabled = form.classList.contains("is-loading") || generatedCount === 0;
   reviewQueueButton.title = generatedCount
     ? `${generatedCount.toLocaleString()} translations to check`
