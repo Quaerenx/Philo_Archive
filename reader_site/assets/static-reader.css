@@ -99,8 +99,46 @@ h1 {
   overflow-wrap: anywhere;
 }
 
-.source-mode .path {
-  margin-bottom: 24px;
+.source-links {
+  margin-bottom: 6px;
+  color: var(--archive-muted-color, #555555);
+  line-height: 1.45;
+}
+
+.source-details {
+  margin: 4px 0 22px;
+  color: var(--archive-muted-color, #555555);
+  line-height: 1.45;
+}
+
+.reader-header .source-details {
+  margin: 6px 0 0;
+}
+
+.source-details summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #555;
+  cursor: pointer;
+  list-style: none;
+}
+
+.source-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.source-details summary::after {
+  color: #999;
+  content: "+";
+}
+
+.source-details[open] summary::after {
+  content: "-";
+}
+
+.source-details .path {
+  margin-top: 5px;
 }
 
 .toolbar {

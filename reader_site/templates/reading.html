@@ -6,7 +6,7 @@
   <title>{{TITLE}}</title>
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
-  <link rel="stylesheet" href="/assets/static-reader.css?v=static1">
+  <link rel="stylesheet" href="/assets/static-reader.css?v=static2">
 </head>
 <body>
   <div class="page">
@@ -14,7 +14,10 @@
     <main class="reader reading-mode">
       <header class="reader-header">
         <h1>{{TITLE}}</h1>
-        <div class="path">{{SOURCE_PATH}}</div>
+        <details class="source-details">
+          <summary>Source details</summary>
+          <div class="path">{{SOURCE_PATH}}</div>
+        </details>
         <nav class="toolbar" aria-label="Reader navigation">
           <a href="/">Archive</a>
           <a href="{{SOURCE_HREF}}">Source</a>

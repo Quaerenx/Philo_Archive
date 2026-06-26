@@ -95,6 +95,9 @@ def check_html_entrypoints() -> None:
             require_contains(html, "Translations", relative_path)
             require_contains(html, "/styles.css?v=home2", relative_path)
             require_contains(html, "/app.js?v=home7", relative_path)
+        if relative_path in {"templates/reading.html", "templates/source.html"}:
+            require_contains(html, "/assets/static-reader.css?v=static2", relative_path)
+            require_contains(html, "Source details</summary>", relative_path)
 
 
 def check_page_frame_css(relative_path: str, css: str) -> None:
@@ -122,6 +125,14 @@ def check_reader_css(relative_path: str, css: str) -> None:
     if relative_path == "assets/reader-work.css":
         require_contains(css, "width: calc(100% - 64px);", relative_path)
         require_contains(css, "grid-template-columns: minmax(0, 1fr) 340px;", relative_path)
+    elif relative_path == "assets/static-reader.css":
+        for needle in [
+            ".source-links",
+            ".source-details",
+            ".source-details summary",
+            ".source-details[open] summary::after",
+        ]:
+            require_contains(css, needle, relative_path)
     else:
         require_contains(css, "width: var(--reader-column-width", relative_path)
 

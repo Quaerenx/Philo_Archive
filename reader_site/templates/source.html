@@ -6,14 +6,18 @@
   <title>{{TITLE}}</title>
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
-  <link rel="stylesheet" href="/assets/static-reader.css?v=static1">
+  <link rel="stylesheet" href="/assets/static-reader.css?v=static2">
 </head>
 <body>
   <div class="page">
     <div class="spacer"></div>
     <main class="reader source-mode">
       <h1>{{TITLE}}</h1>
-      <div class="path">{{MODE_LINKS}}<br>{{SOURCE_PATH}}</div>
+      <div class="source-links">{{MODE_LINKS}}</div>
+      <details class="source-details">
+        <summary>Source details</summary>
+        <div class="path">{{SOURCE_PATH}}</div>
+      </details>
       <pre>{{SOURCE_TEXT}}</pre>
     </main>
   </div>
