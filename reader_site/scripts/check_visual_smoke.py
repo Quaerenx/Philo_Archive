@@ -246,7 +246,7 @@ def check_route_markup(route: str, html: str) -> None:
             "study-tabs",
             "study-tab-secondary",
             "citation-copy-options",
-            "More copy options</summary>",
+            "More</summary>",
             "studyPanelToggle",
             "studyPanelScrim",
             "study-panel-toggle-action",
