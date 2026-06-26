@@ -495,38 +495,6 @@ h1 {
   border-top: 0;
 }
 
-.result-more-actions {
-  justify-self: end;
-}
-
-.result-more-actions summary {
-  display: inline-flex;
-  align-items: center;
-  min-height: 20px;
-  gap: 4px;
-  color: #666;
-  cursor: pointer;
-  list-style: none;
-}
-
-.result-more-actions summary::-webkit-details-marker {
-  display: none;
-}
-
-.result-more-actions summary::after {
-  color: #999;
-  content: "+";
-}
-
-.result-more-actions[open] {
-  grid-column: 1 / -1;
-  justify-self: stretch;
-}
-
-.result-more-actions[open] summary::after {
-  content: "-";
-}
-
 .result-actions {
   display: flex;
   flex-wrap: wrap;
