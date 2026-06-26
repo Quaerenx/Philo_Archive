@@ -479,7 +479,7 @@ function updateStudyProgress() {
       continueStudyButton.dataset.studyAction = "preview-session";
       continueStudyButton.disabled = false;
       continueStudyButton.title = "Preview notes and translations";
-      continueStudyButton.setAttribute("aria-label", "Preview study bundle");
+      continueStudyButton.setAttribute("aria-label", "Preview study pack");
     } else {
       continueStudyButton.textContent = wantsReview ? "Next to check" : "Continue study";
       continueStudyButton.dataset.studyAction = wantsReview ? "review-generated" : "continue";
@@ -572,8 +572,8 @@ function updateStudySessionExportLink(noteCount, translationCount) {
   exportStudySession.dataset.exportCount = String(total);
   exportStudySession.classList.toggle("is-empty", total === 0);
   exportStudySession.title = total
-    ? `Download study bundle: ${noteCount} notes and ${translationCount} translations`
-    : "No notes or translations for this bundle yet";
+    ? `Download study pack: ${noteCount} notes and ${translationCount} translations`
+    : "No notes or translations for this pack yet";
 }
 
 function studySessionExportUrl(format = "json") {
@@ -598,12 +598,12 @@ async function loadStudySessionSummary() {
     const noteCount = Number(payload.note_count || 0);
     const translationCount = Number(payload.translation_count || 0);
     setStudySessionSummary(
-      `Study bundle: ${noteCount} notes / ${translationCount} translations`,
+      `Study pack: ${noteCount} notes / ${translationCount} translations`,
       noteCount + translationCount ? "has-content" : "empty"
     );
     updateStudySessionExportLink(noteCount, translationCount);
   } catch (error) {
-    setStudySessionSummary("Study bundle unavailable.", "unavailable");
+    setStudySessionSummary("Study pack unavailable.", "unavailable");
     updateStudySessionExportLink(0, 0);
   }
 }
@@ -1729,7 +1729,7 @@ function renderStudySessionPreviewPending() {
 
 function sessionPreviewItems(items, kind) {
   if (!Array.isArray(items) || !items.length) {
-    return `<p class="session-preview-empty">No ${escapeHtml(kind)} in this bundle.</p>`;
+    return `<p class="session-preview-empty">No ${escapeHtml(kind)} in this pack.</p>`;
   }
   const hasMore = items.length > 3;
   return `<div class="session-preview-group${hasMore ? " is-collapsed" : ""}" data-session-preview-group>
@@ -1798,17 +1798,17 @@ function toggleSessionPreviewGroup(button) {
 
 async function copyStudySessionMarkdown(button) {
   setActionButtonBusy(button, true);
-  setTranslationStatus("Copying study bundle...", true);
+  setTranslationStatus("Copying study pack...", true);
   try {
     const response = await fetch(studySessionExportUrl("markdown"));
     if (!response.ok) {
-      throw new Error("Could not load study bundle.");
+      throw new Error("Could not load study pack.");
     }
     const markdown = await response.text();
     await copyText(markdown);
-    setTranslationStatus("Study bundle copied.");
+    setTranslationStatus("Study pack copied.");
   } catch (error) {
-    const message = cleanText(error && error.message ? error.message : "Could not copy study bundle.");
+    const message = cleanText(error && error.message ? error.message : "Could not copy study pack.");
     setTranslationStatus(message, true);
   } finally {
     setActionButtonBusy(button, false);
@@ -1833,8 +1833,8 @@ function renderStudySessionPreview(payload) {
         <span>Study session</span>
         <strong>${escapeHtml(researchData.title || researchData.work_id || "Current work")}</strong>
         <div class="study-session-preview-actions">
-          <button type="button" data-session-preview-copy>Copy bundle</button>
-          <a href="${escapeHtml(exportUrl)}">Open bundle</a>
+          <button type="button" data-session-preview-copy>Copy pack</button>
+          <a href="${escapeHtml(exportUrl)}">Open pack</a>
         </div>
       </div>
       <div class="study-session-preview-counts" aria-label="Study session counts">
@@ -1865,7 +1865,7 @@ function renderStudySessionPreviewError(message) {
       <h3>Study session preview unavailable</h3>
       <p>${escapeHtml(cleanText(message || "Could not load the reviewed study session."))}</p>
       <div class="translation-error-actions">
-        <a href="${escapeHtml(studySessionExportUrl("markdown"))}">Open bundle</a>
+        <a href="${escapeHtml(studySessionExportUrl("markdown"))}">Open pack</a>
       </div>
     </div>`;
   updateStudyPanelToggleLabel();

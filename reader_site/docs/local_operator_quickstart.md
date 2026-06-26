@@ -27,7 +27,7 @@ The local AI sidecar is intentionally local-only. LAN users may open the reader 
 
 ## Reader Only
 
-Use this when you only need browsing, search, notes, and study bundles without sentence translation:
+Use this when you only need browsing, search, notes, and study packs without sentence translation:
 
 ```powershell
 cd .\reader_site
@@ -74,7 +74,7 @@ If `Reader` is not ready, start `run_reader_with_gemma.ps1` again. If `Local AI`
 6. Add notes from the study panel when needed.
 7. Review notes in `Notes`.
 8. Use `Review` for generated translations.
-9. Use `Study` as the saved study bundle.
+9. Use `Study` as the saved study pack.
 
 ## If Something Looks Stale
 
