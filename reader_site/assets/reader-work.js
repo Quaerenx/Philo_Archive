@@ -81,18 +81,18 @@ const STUDY_PANEL_DRAG_THRESHOLD = 36;
 const ACTION_CONFIRM_MS = 4500;
 const GEMMA_RUNTIME_COMMAND = ".\\run_reader_with_gemma.ps1";
 const TRANSLATION_STATE_LABELS = {
-  generated: "Needs review",
-  reviewed: "Reviewed translation",
+  generated: "To check",
+  reviewed: "Saved translation",
   rejected: "Rejected translation"
 };
 const TRANSLATION_REVIEW_CHIP_LABELS = {
-  generated: "Needs review",
-  reviewed: "Reviewed",
+  generated: "To check",
+  reviewed: "Saved",
   rejected: "Rejected"
 };
 const TRANSLATION_REVIEW_CHIP_HINTS = {
-  generated: "Translation awaiting review",
-  reviewed: "Reviewed translation",
+  generated: "Translation to check",
+  reviewed: "Saved translation",
   rejected: "Rejected translation"
 };
 const TRANSLATION_STATE_SHORT = {
@@ -394,11 +394,11 @@ function setTranslationRecordsSummary(text, state = "empty", counts = null) {
   const reviewed = Number(counts.reviewed || 0);
   const rejected = Number(counts.rejected || 0);
   const reviewHint = total
-    ? (generated ? `${generated} need review.` : "No review needed.")
+    ? (generated ? `${generated} to check.` : "All saved.")
     : "No translations yet.";
   translationRecordsSummary.setAttribute(
     "aria-label",
-    `${text}. ${total} translation records, ${sentenceCount} sentences, ${generated} generated, ${reviewed} reviewed, ${rejected} rejected. ${reviewHint}`
+    `${text}. ${total} translation records, ${sentenceCount} sentences, ${generated} to check, ${reviewed} saved, ${rejected} rejected. ${reviewHint}`
   );
   translationRecordsSummary.innerHTML = `
     <span class="translation-records-summary-main">${escapeHtml(text)}</span>
@@ -406,8 +406,8 @@ function setTranslationRecordsSummary(text, state = "empty", counts = null) {
     <span class="translation-record-counts" aria-hidden="true">
       ${translationRecordSummaryChip("Total", total)}
       ${translationRecordSummaryChip("Sentences", sentenceCount)}
-      ${translationRecordSummaryChip("Review", generated, "generated")}
-      ${translationRecordSummaryChip("Reviewed", reviewed, "reviewed")}
+      ${translationRecordSummaryChip("To check", generated, "generated")}
+      ${translationRecordSummaryChip("Saved", reviewed, "reviewed")}
       ${translationRecordSummaryChip("Rejected", rejected, "rejected")}
     </span>`;
 }
@@ -417,8 +417,8 @@ function updateTranslationExportLinks(total, reviewed) {
     exportReviewedTranslations.dataset.exportCount = String(reviewed);
     exportReviewedTranslations.classList.toggle("is-empty", reviewed === 0);
     exportReviewedTranslations.title = reviewed
-      ? `Download ${reviewed} reviewed translations`
-      : "No reviewed translations yet";
+      ? `Download ${reviewed} saved translations`
+      : "No saved translations yet";
   }
   if (exportAllTranslations) {
     exportAllTranslations.dataset.exportCount = String(total);
@@ -467,8 +467,8 @@ function updateStudyProgress() {
   const state = remaining > 0
     ? (studied ? "active" : "empty")
     : (pendingReview ? "review" : "complete");
-  const reviewText = pendingReview ? ` · ${pendingReview} review` : "";
-  setStudyProgress(`${studied}/${total} translated · ${remaining} left${reviewText}`, state);
+  const reviewText = pendingReview ? ` / ${pendingReview} to check` : "";
+  setStudyProgress(`${studied}/${total} translated / ${remaining} left${reviewText}`, state);
   if (continueStudyButton) {
     const wantsReview = remaining === 0 && pendingReview > 0;
     const wantsPreview = remaining === 0 && pendingReview === 0 && stateCounts.reviewed > 0;
@@ -481,15 +481,15 @@ function updateStudyProgress() {
       continueStudyButton.title = "Preview notes and translations";
       continueStudyButton.setAttribute("aria-label", "Preview study bundle");
     } else {
-      continueStudyButton.textContent = wantsReview ? "Review next" : "Continue study";
+      continueStudyButton.textContent = wantsReview ? "Next to check" : "Continue study";
       continueStudyButton.dataset.studyAction = wantsReview ? "review-generated" : "continue";
       continueStudyButton.disabled = nextIndex < 0;
       continueStudyButton.title = nextIndex >= 0
-        ? `${wantsReview ? "Review" : "Continue at"} ${nextLabel}`
-        : (wantsReview ? "No translations need review" : "All sentences have translations");
+        ? `${wantsReview ? "Check" : "Continue at"} ${nextLabel}`
+        : (wantsReview ? "Nothing waiting to check" : "All sentences have translations");
       continueStudyButton.setAttribute("aria-label", nextIndex >= 0
-        ? `${wantsReview ? "Review translation at" : "Continue study at"} ${nextLabel}`
-        : (wantsReview ? "No translations need review" : "Study progress complete"));
+        ? `${wantsReview ? "Check translation at" : "Continue study at"} ${nextLabel}`
+        : (wantsReview ? "Nothing waiting to check" : "Study progress complete"));
     }
   }
 }
@@ -1051,12 +1051,12 @@ function updateSentenceControls() {
     nextReviewSentenceButton.disabled = nextReviewIndex < 0;
     const nextReviewLabel = nextReviewIndex >= 0
       ? sentencePositionText(sentenceNodeId(sentenceNodes[nextReviewIndex]))
-      : (translationSentenceStatesLoaded ? "No translations need review" : "Translation states are loading");
+      : (translationSentenceStatesLoaded ? "Nothing waiting to check" : "Translation states are loading");
     nextReviewSentenceButton.title = nextReviewIndex >= 0
-      ? `Review ${nextReviewLabel}`
+      ? `Check ${nextReviewLabel}`
       : nextReviewLabel;
     nextReviewSentenceButton.setAttribute("aria-label", nextReviewIndex >= 0
-      ? `Next translation to review, ${nextReviewLabel}`
+      ? `Next translation to check, ${nextReviewLabel}`
       : nextReviewLabel);
   }
   updateStudyProgress();
@@ -1357,7 +1357,7 @@ function navigateToNextReviewSentence() {
   if (nextIndex < 0) {
     setTranslationStatus(
       translationSentenceStatesLoaded
-        ? "No translations need review."
+        ? "Nothing waiting to check."
         : "Translation states are still loading.",
       true
     );
@@ -1385,7 +1385,7 @@ function continueStudy() {
   if (nextIndex < 0) {
     setTranslationStatus(
       translationSentenceStatesLoaded
-        ? (action === "review-generated" ? "No translations need review." : "All sentences have translations.")
+        ? (action === "review-generated" ? "Nothing waiting to check." : "All sentences have translations.")
         : "Translation states are still loading.",
       true
     );
@@ -1488,8 +1488,8 @@ function translationResultToolbar(record, cached, reviewState) {
 function translationQuickActions(reviewState) {
   const normalizedReviewState = normalizedTranslationReviewState(reviewState);
   const reviewAction = normalizedReviewState === "reviewed"
-    ? '<span class="translation-quick-state" data-review-state="reviewed">Reviewed</span>'
-    : '<button type="button" data-translation-quick-action="mark-reviewed">Mark reviewed</button>';
+    ? '<span class="translation-quick-state" data-review-state="reviewed">Saved</span>'
+    : '<button type="button" data-translation-quick-action="mark-reviewed">Save</button>';
   return `<div class="translation-quick-actions" aria-label="Study actions">
       ${reviewAction}
       <button type="button" data-translation-quick-action="draft-note">Draft note</button>
@@ -2073,7 +2073,7 @@ async function updateTranslationReview(reviewState) {
   clearActionConfirmations();
   const actionButton = reviewState === "reviewed" ? markTranslationReviewedButton : rejectTranslationButton;
   setActionButtonBusy(actionButton, true);
-  setTranslationStatus(reviewState === "reviewed" ? "Marking reviewed..." : "Updating review state...", true);
+  setTranslationStatus(reviewState === "reviewed" ? "Saving..." : "Updating...", true);
   try {
     const response = await fetch(`/api/sentence-translations/${encodeURIComponent(selectedTranslationRecord.id)}`, {
       method: "PUT",
@@ -2085,15 +2085,15 @@ async function updateTranslationReview(reviewState) {
     });
     const payload = await response.json().catch(() => ({}));
     if (!response.ok || !payload.ok) {
-      setTranslationStatus(payload.error || "Could not update translation review.", true);
+      setTranslationStatus(payload.error || "Could not save translation.", true);
       return;
     }
     renderTranslationRecord(payload.record, true, reviewState);
     loadTranslationRecordsSummary();
     loadStudySessionSummary();
-    setTranslationStatus(reviewState === "reviewed" ? "Translation marked reviewed." : "Translation rejected.");
+    setTranslationStatus(reviewState === "reviewed" ? "Saved." : "Rejected.");
   } catch (error) {
-    const message = error && error.message ? error.message : "Could not update translation review.";
+    const message = error && error.message ? error.message : "Could not save translation.";
     setTranslationStatus(message, true);
   } finally {
     setActionButtonBusy(actionButton, false);

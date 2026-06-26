@@ -78,14 +78,14 @@
                       <button type="button" id="previousSentence" aria-keyshortcuts="ArrowUp K" title="Previous sentence" disabled>Previous</button>
                       <button type="button" id="nextSentence" aria-keyshortcuts="ArrowDown J" title="Next sentence" disabled>Next</button>
                       <button type="button" id="nextUnstudiedSentence" title="Next sentence without a translation" aria-label="Next unstudied sentence" disabled>Next unstudied</button>
-                      <button type="button" id="nextReviewSentence" title="Next generated translation to review" aria-label="Next generated translation to review" disabled>Next review</button>
+                      <button type="button" id="nextReviewSentence" title="Next translation to check" aria-label="Next translation to check" disabled>Next to check</button>
                       <button type="button" id="regenerateSentence" title="Regenerate translation" aria-label="Regenerate translation" disabled>Regenerate</button>
                     </div>
                   </section>
-                  <section class="translation-utility-group" aria-label="Review">
-                    <div class="translation-utility-group-label">Review</div>
+                  <section class="translation-utility-group" aria-label="Study actions">
+                    <div class="translation-utility-group-label">Actions</div>
                     <div class="translation-review-actions" aria-label="Translation review actions">
-                      <button type="button" id="markTranslationReviewed" title="Mark translation reviewed" aria-label="Mark translation reviewed" disabled>Mark reviewed</button>
+                      <button type="button" id="markTranslationReviewed" title="Save translation" aria-label="Save translation" disabled>Save</button>
                       <button type="button" id="rejectTranslation" title="Reject translation" aria-label="Reject translation" disabled>Reject</button>
                       <button type="button" id="copyStudyCard" title="Copy study card" aria-label="Copy study card" disabled>Copy study card</button>
                       <button type="button" id="draftTranslationNote" title="Draft note from translation" aria-label="Draft note from translation" disabled>Draft note</button>
@@ -99,7 +99,7 @@
                     <details class="translation-export-tools">
                       <summary>Export</summary>
                       <div class="translation-export-links" aria-label="Translation export links">
-                        <a id="exportReviewedTranslations" class="translation-export-link reviewed-export-link" href="/api/sentence-translations/export?format=markdown&review_state=reviewed">Reviewed only</a>
+                        <a id="exportReviewedTranslations" class="translation-export-link reviewed-export-link" href="/api/sentence-translations/export?format=markdown&review_state=reviewed">Saved only</a>
                         <a id="exportAllTranslations" class="translation-export-link" href="/api/sentence-translations/export?format=markdown&review_state=all">All records</a>
                         <a id="exportStudySession" class="translation-export-link" href="/api/study-session/export?format=markdown">Study bundle</a>
                       </div>
@@ -163,6 +163,6 @@
     </main>
   </div>
   <script id="researchData" type="application/json">{{RESEARCH_JSON}}</script>
-  <script src="/assets/reader-work.js?v=common107"></script>
+  <script src="/assets/reader-work.js?v=common108"></script>
 </body>
 </html>
