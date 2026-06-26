@@ -82,7 +82,7 @@ function updateStudyFilterSummary() {
   const query = queryInput.value.trim();
   const workId = workInput.value.trim();
   const tag = tagInput.value.trim().replace(/^#/, "");
-  if (query) chips.push(renderFilterChip("query", "Query", query));
+  if (query) chips.push(renderFilterChip("query", "Text", query));
   if (corpusSelect.value) chips.push(renderFilterChip("corpus", "Corpus", selectedOptionText(corpusSelect)));
   if (workId) chips.push(renderFilterChip("work", "Work", workId));
   if (tag) chips.push(renderFilterChip("tag", "Tag", tag));

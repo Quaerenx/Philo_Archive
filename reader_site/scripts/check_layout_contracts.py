@@ -206,7 +206,7 @@ def check_search_ui() -> None:
     css = read_site_file("assets/search.css")
     for needle in [
         "/assets/search.css?v=phase16",
-        "/assets/search.js?v=phase16",
+        "/assets/search.js?v=phase17",
         'href="/translations"',
         "Review",
         'class="filter-panel"',
@@ -299,7 +299,7 @@ def check_notes_ui() -> None:
     css = read_site_file("assets/notes.css")
     for needle in [
         "/assets/notes.css?v=notes15",
-        "/assets/notes.js?v=notes17",
+        "/assets/notes.js?v=notes18",
         'id="notesSubmit"',
         'id="notesClear"',
         'id="notesActiveFilters"',
@@ -402,7 +402,7 @@ def check_translations_ui() -> None:
     for needle in [
         "/assets/notes.css?v=notes15",
         "/assets/translations.css?v=trans8",
-        "/assets/translations.js?v=trans16",
+        "/assets/translations.js?v=trans17",
         'id="translationsSubmit"',
         'id="translationsClear"',
         'id="translationsReviewQueue"',
@@ -551,7 +551,7 @@ def check_study_ui() -> None:
     css = read_site_file("assets/study.css")
     for needle in [
         "/assets/study.css?v=study14",
-        "/assets/study.js?v=study14",
+        "/assets/study.js?v=study15",
         'id="studySubmit"',
         'id="studyClear"',
         'id="studyActiveFilters"',

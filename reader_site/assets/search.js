@@ -76,7 +76,7 @@ function updateSearchFilterSummary() {
   if (!activeFiltersEl) return;
   const chips = [];
   const query = queryInput.value.trim();
-  if (query) chips.push(renderFilterChip("query", "Query", query));
+  if (query) chips.push(renderFilterChip("query", "Text", query));
   if (corpusSelect.value) chips.push(renderFilterChip("corpus", "Corpus", selectedOptionText(corpusSelect)));
   if (!workSelect.disabled && workSelect.value) chips.push(renderFilterChip("work", "Work", selectedOptionText(workSelect)));
   if (!variantSelect.disabled && variantSelect.value) chips.push(renderFilterChip("variant", "Variant", selectedOptionText(variantSelect)));

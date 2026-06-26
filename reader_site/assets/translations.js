@@ -177,7 +177,7 @@ function updateFilterSummary() {
   const chips = [];
   const query = queryInput.value.trim();
   const workId = workInput.value.trim();
-  if (query) chips.push(renderFilterChip("query", "Query", query));
+  if (query) chips.push(renderFilterChip("query", "Text", query));
   if (corpusSelect.value && corpusSelect.value !== DEFAULT_CORPUS) {
     chips.push(renderFilterChip("corpus", "Corpus", selectedOptionText(corpusSelect)));
   }
