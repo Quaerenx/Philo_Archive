@@ -42,6 +42,28 @@ function highlight(value, query) {
   return output;
 }
 
+function cleanText(value) {
+  return String(value ?? "").replace(/\s+/g, " ").trim();
+}
+
+function corpusLabel(value) {
+  const corpusId = String(value || "");
+  const entry = startCorpora.find(([id]) => id === corpusId);
+  return entry ? entry[1] : variantLabel(corpusId);
+}
+
+function reviewStateLabel(value) {
+  const state = String(value || "").toLowerCase();
+  if (state === "reviewed") return "Reviewed";
+  if (state === "rejected") return "Rejected";
+  if (state === "generated") return "Generated";
+  return state ? variantLabel(state) : "";
+}
+
+function resultMeta(parts) {
+  return parts.map(cleanText).filter(Boolean).join(" / ");
+}
+
 function updateUrl(query, corpusId, workId, variantId) {
   const params = new URLSearchParams();
   if (query) params.set("q", query);
@@ -160,7 +182,7 @@ function notesHref(result) {
 }
 
 function pluralize(count, singular, plural = `${singular}s`) {
-  return `${Number(count || 0).toLocaleString()} ${count === 1 ? singular : plural} shown`;
+  return `${Number(count || 0).toLocaleString()} ${count === 1 ? singular : plural}`;
 }
 
 function resultGroupHeader(label, count, noun) {
@@ -204,20 +226,19 @@ function searchStatusText(workCount, segmentCount, noteCount, query, direct) {
   if (!workCount && !segmentCount && !noteCount) {
     return query ? "No matching passages." : "";
   }
-  const parts = [
-    workCount ? compactCount(workCount, "work") : "",
-    segmentCount ? compactCount(segmentCount, "passage") : "",
-    noteCount ? compactCount(noteCount, "note") : ""
-  ].filter(Boolean).join(" / ");
-  return direct ? `Bible reference / ${parts}` : parts;
+  return direct ? "Bible reference results." : "";
 }
 
 function resultFooter(meta, actions) {
   const cleanMeta = cleanText(meta || "");
-  if (!cleanMeta && !actions) return "";
+  const cleanActions = cleanText(actions || "");
+  if (!cleanMeta && !cleanActions) return "";
   return `<footer class="result-footer">
-    ${cleanMeta ? `<div class="result-meta">${escapeHtml(cleanMeta)}</div>` : "<div></div>"}
-    ${actions ? `<div class="result-actions">${actions}</div>` : ""}
+    ${cleanMeta ? `<div class="result-meta">${escapeHtml(cleanMeta)}</div>` : ""}
+    ${cleanActions ? `<details class="result-more-actions">
+      <summary>More</summary>
+      <div class="result-actions">${actions}</div>
+    </details>` : ""}
   </footer>`;
 }
 
@@ -248,11 +269,10 @@ function renderResults(payload, query) {
   statusEl.textContent = searchStatusText(workCount, segmentCount, noteCount, query, Boolean(payload.direct));
   const workMarkup = (payload.work_results || [])
     .map((result) => {
-      const meta = [
-        result.corpus_id,
-        result.work_id,
+      const meta = resultMeta([
+        corpusLabel(result.corpus_id),
         result.category_title || result.label
-      ].filter(Boolean).join(" / ");
+      ]);
       const variants = (result.variant_ids || []).slice(0, 8).map((variantId) => `<span class="tag">${escapeHtml(variantLabel(variantId))}</span>`).join("");
       const actions = `
           <a href="${escapeHtml(result.url)}">Open work</a>
@@ -270,12 +290,11 @@ function renderResults(payload, query) {
     .join("");
   const segmentMarkup = segmentResults
     .map((result) => {
-      const meta = [
-        result.corpus_id,
-        result.work_id,
-        result.variant_id,
-        result.label
-      ].filter(Boolean).join(" / ");
+      const meta = resultMeta([
+        corpusLabel(result.corpus_id),
+        result.label,
+        result.variant_id ? variantLabel(result.variant_id) : ""
+      ]);
       const actions = `
           <a href="${escapeHtml(result.url)}">Open source</a>
           <a href="${escapeHtml(notesHref(result))}">Notes</a>`;
@@ -291,12 +310,11 @@ function renderResults(payload, query) {
     .join("");
   const noteMarkup = noteResults
     .map((result) => {
-      const meta = [
-        result.corpus_id,
-        result.work_id,
+      const meta = resultMeta([
+        corpusLabel(result.corpus_id),
         result.target_label,
-        result.review_state
-      ].filter(Boolean).join(" / ");
+        reviewStateLabel(result.review_state)
+      ]);
       const tags = (result.tags || []).map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join("");
       const targetLink = result.url ? `<a href="${escapeHtml(result.url)}">Open target</a>` : "";
       const actions = `
