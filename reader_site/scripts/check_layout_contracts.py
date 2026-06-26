@@ -678,7 +678,7 @@ def check_work_source_bundle_ui() -> None:
         "Still generating locally",
         "Source locked",
         "translation-progress-steps",
-        "Generation details",
+        "Details</span>",
         "class=\"done\"",
         "selectedSentencePositionLabel()",
         "renderTranslationError",
@@ -711,7 +711,8 @@ def check_work_source_bundle_ui() -> None:
         "setActionButtonBusy",
         "translation-pending-result",
         "translation-pending-copy",
-        "Commentary will appear after local generation.",
+        "Preparing translation and commentary",
+        "Refreshing study card",
         "Could not save note.",
         "renderCommentary",
         "renderTranslationEmptyState",
@@ -913,7 +914,7 @@ def check_work_source_bundle_ui() -> None:
         "renderTranslationEmptyState quiet empty layout",
     )
     for function_name, commentary_marker, trailing_marker in [
-        ("renderTranslationPending", '<section class="translation-section translation-commentary"', "translation-loading"),
+        ("renderTranslationPending", "translation-generation-details", "translation-loading"),
         ("renderTranslationError", '<section class="translation-section translation-commentary"', "translation-recovery-panel"),
         ("renderTranslationCancelled", '<section class="translation-section translation-commentary"', "translation-recovery-panel"),
         (
@@ -936,7 +937,7 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common94", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common95", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common85", "templates/work.html")
     for needle in [
         "reading-desk",

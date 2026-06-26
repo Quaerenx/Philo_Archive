@@ -1647,7 +1647,7 @@ function renderTranslationPending(regenerate = false) {
   translationOutput.classList.toggle("study-mode", translationMode === "study");
   setTranslationBusy(true);
   resetTranslationOutputScroll();
-  const actionLabel = regenerate ? "Regenerating study note" : "Studying selected sentence";
+  const actionLabel = regenerate ? "Refreshing study card" : "Preparing translation and commentary";
   const position = selectedSentencePositionLabel();
   const sourceText = cleanText(selectedSentence?.text || "");
   translationOutput.innerHTML = `
@@ -1662,20 +1662,9 @@ function renderTranslationPending(regenerate = false) {
           </div>
         </div>
       </section>
-      <section class="translation-section translation-commentary" data-translation-section="commentary">
-        <h3>Commentary</h3>
-        <p class="translation-pending-copy">Commentary will appear after local generation.</p>
-        <div class="translation-skeleton translation-study-skeleton" aria-hidden="true">
-          <div class="translation-skeleton-block commentary">
-            <span class="translation-skeleton-line wide"></span>
-            <span class="translation-skeleton-line"></span>
-            <span class="translation-skeleton-line short"></span>
-          </div>
-        </div>
-      </section>
       <details class="translation-result-toolbar translation-generation-details">
         <summary>
-          <span>Generation details</span>
+          <span>Details</span>
         </summary>
         <div class="translation-result-detail-body">
           <div class="translation-loading" aria-label="Translation progress">
