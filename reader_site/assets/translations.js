@@ -349,16 +349,6 @@ function recordTitle(record) {
   ].filter(Boolean).join(" / ");
 }
 
-function translationStatusMessage(queryMatched, visible) {
-  const counts = summaryCounts(queryMatched);
-  if (!queryMatched.length) return "No translations found.";
-  if (!visible.length) return `No translations match this status. ${counts.generated.toLocaleString()} to check.`;
-  if (counts.generated > 0) {
-    return "";
-  }
-  return "All clear.";
-}
-
 function renderRecord(record) {
   const reviewState = normalizedReviewState(record);
   const title = recordTitle(record) || "Translation record";
@@ -407,7 +397,7 @@ function renderRecords(records) {
     exportTools.hidden = visible.length === 0;
     if (!visible.length) exportTools.open = false;
   }
-  statusEl.textContent = translationStatusMessage(queryMatched, visible);
+  statusEl.textContent = "";
   resultsEl.innerHTML = queryMatched.length
     ? renderSummary(queryMatched) + (visible.length ? visible.map(renderRecord).join("") : renderEmptyRecords())
     : renderEmptyRecords();

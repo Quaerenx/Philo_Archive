@@ -234,7 +234,7 @@ function renderStudy(payload) {
     exportTools.hidden = count === 0;
     if (count === 0) exportTools.open = false;
   }
-  statusEl.textContent = count ? studyCountLabel(count, "saved note") : "";
+  statusEl.textContent = "";
   resultsEl.innerHTML = groups.length
     ? groups.map((group) => {
       const title = [group.corpus_id, group.work_id].filter(Boolean).join(" / ") || "Saved notes";

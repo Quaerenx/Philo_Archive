@@ -250,7 +250,7 @@ function renderNotes(notes) {
     exportTools.hidden = notes.length === 0;
     if (!notes.length) exportTools.open = false;
   }
-  statusEl.textContent = notes.length ? `${notes.length.toLocaleString()} shown` : "";
+  statusEl.textContent = "";
   resultsEl.innerHTML = notes.length
     ? renderNotesSummary(notes) + notes.map((note) => {
       const titleParts = [note.corpus_id, note.work_id, note.target_label || note.target_id].filter(Boolean);
