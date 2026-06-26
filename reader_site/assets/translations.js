@@ -343,14 +343,14 @@ function renderEmptyRecords() {
 }
 
 function recordTitle(record) {
-  return workDisplayName(record.corpus_id, record.work_id) || corpusDisplayName(record.corpus_id) || "Translation record";
+  return cleanText(record.target_label || sentenceDisplayName(record) || record.work_id || "Translation record");
 }
 
 function recordContext(record) {
   const hasWork = Boolean(cleanText(record.work_id || ""));
   return [
-    hasWork ? corpusDisplayName(record.corpus_id) : "",
-    sentenceDisplayName(record)
+    corpusDisplayName(record.corpus_id),
+    hasWork ? workDisplayName(record.corpus_id, record.work_id) : ""
   ].filter(Boolean).join(" / ");
 }
 
