@@ -23,8 +23,8 @@ let pendingReviewQueueMessage = "";
 const DEFAULT_CORPUS = "nietzsche";
 const REVIEW_LABELS = {
   all: "All",
-  generated: "Needs review",
-  reviewed: "Reviewed",
+  generated: "To check",
+  reviewed: "Saved",
   rejected: "Rejected"
 };
 
@@ -274,12 +274,12 @@ function updateReviewQueueButton(records = lastRecords) {
   if (!reviewQueueButton) return;
   const generatedCount = generatedRecords(records).length;
   reviewQueueButton.textContent = generatedCount
-    ? `Review next (${generatedCount.toLocaleString()})`
-    : "Review next";
+    ? `Next to check (${generatedCount.toLocaleString()})`
+    : "Next to check";
   reviewQueueButton.disabled = form.classList.contains("is-loading") || generatedCount === 0;
   reviewQueueButton.title = generatedCount
-    ? `Start with the first of ${generatedCount.toLocaleString()} translations needing review`
-    : "Review queue is clear";
+    ? `Open the first of ${generatedCount.toLocaleString()} translations to check`
+    : "Nothing waiting to check";
 }
 
 function recordMatchesReview(record) {
@@ -307,8 +307,8 @@ function renderSummary(records) {
   const counts = summaryCounts(records);
   return `<nav class="translation-record-summary" aria-label="Visible translations by status">
     ${summaryButton("all", "All", counts.total)}
-    ${summaryButton("generated", "Needs review", counts.generated)}
-    ${summaryButton("reviewed", "Reviewed", counts.reviewed)}
+    ${summaryButton("generated", "To check", counts.generated)}
+    ${summaryButton("reviewed", "Saved", counts.reviewed)}
     ${summaryButton("rejected", "Rejected", counts.rejected)}
   </nav>`;
 }
@@ -344,35 +344,30 @@ function recordTitle(record) {
 function translationStatusMessage(queryMatched, visible) {
   const counts = summaryCounts(queryMatched);
   if (!queryMatched.length) return "No translations found.";
-  if (!visible.length) return `No translations match this status. ${counts.generated.toLocaleString()} still need review.`;
-  const shown = `${visible.length.toLocaleString()} shown`;
+  if (!visible.length) return `No translations match this status. ${counts.generated.toLocaleString()} to check.`;
+  const shown = `${visible.length.toLocaleString()} translations`;
   if (counts.generated > 0) {
-    return `${shown} · ${counts.generated.toLocaleString()} need review.`;
+    return `${shown} · ${counts.generated.toLocaleString()} to check.`;
   }
-  return `${shown} · review queue clear.`;
+  return `${shown} · all clear.`;
 }
 
 function renderRecord(record) {
   const reviewState = normalizedReviewState(record);
   const title = recordTitle(record) || "Translation record";
-  const date = record.updated_at || record.reviewed_at || record.generated_at || record.created_at || "";
   const source = cleanText(record.source_text_excerpt || "");
   const translation = cleanText(record.translation || "");
   const commentary = cleanText(record.commentary || record.interpretation || "");
   const targetUrl = cleanText(record.target_url || "");
   const isRecent = record.id === recentlyChangedRecordId;
   const reviewLabel = REVIEW_LABELS[reviewState] || reviewState;
-  const metaItems = [
-    date ? `<span>${escapeHtml(cleanText(date))}</span>` : "",
-    `<span class="review-badge ${escapeHtml(reviewState)}">${escapeHtml(reviewLabel)}</span>`
-  ].filter(Boolean).join("");
   const actions = [
     reviewState !== "reviewed"
-      ? '<button type="button" class="primary-review-action" data-review-state="reviewed" aria-keyshortcuts="R" title="Mark reviewed">Mark reviewed</button>'
+      ? '<button type="button" class="primary-review-action" data-review-state="reviewed" aria-keyshortcuts="R" title="Save translation">Save</button>'
       : "",
     targetUrl ? `<a href="${escapeHtml(targetUrl)}" data-open-source aria-keyshortcuts="O" title="Open work">Open work</a>` : "",
     reviewState !== "generated"
-      ? '<button type="button" data-review-state="generated" aria-keyshortcuts="G" title="Mark as needs review">Needs review</button>'
+      ? '<button type="button" data-review-state="generated" aria-keyshortcuts="G" title="Move back to check">To check</button>'
       : "",
     reviewState !== "rejected"
       ? '<button type="button" data-review-state="rejected" aria-keyshortcuts="X" title="Reject">Reject</button>'
@@ -386,7 +381,7 @@ function renderRecord(record) {
     ${commentary ? `<section class="translation-commentary" aria-label="Commentary"><h3>Commentary</h3><p>${escapeHtml(commentary)}</p></section>` : ""}
     ${source ? `<details class="translation-source"><summary>Original source</summary><blockquote>${escapeHtml(source)}</blockquote></details>` : ""}
     <footer class="translation-record-footer">
-      <div class="translation-record-meta" aria-label="Translation record status">${metaItems}</div>
+      <div class="translation-record-meta" aria-label="Translation status: ${escapeHtml(reviewLabel)}"></div>
       <div class="translation-actions">
         ${actions}
       </div>
@@ -409,10 +404,10 @@ function renderRecords(records) {
     pendingReviewQueueMessage = "";
     if (focusFirstReviewQueueRecord()) {
       statusEl.textContent = reviewMessage
-        ? `${reviewMessage} Next translation ready for review.`
-        : `${visible.length.toLocaleString()} translations / next translation ready for review.`;
+        ? `${reviewMessage} Next translation ready.`
+        : `${visible.length.toLocaleString()} translations / next translation ready.`;
     } else if (reviewSelect.value === "generated") {
-      statusEl.textContent = reviewMessage ? `${reviewMessage} Review queue complete.` : "Review queue complete.";
+      statusEl.textContent = reviewMessage ? `${reviewMessage} Nothing waiting to check.` : "Nothing waiting to check.";
     }
   }
   recentlyChangedRecordId = "";
@@ -426,7 +421,7 @@ function focusFirstReviewQueueRecord() {
 
 function openReviewQueue() {
   if (!generatedRecords(lastRecords).length) {
-    statusEl.textContent = "Review queue is clear.";
+    statusEl.textContent = "Nothing waiting to check.";
     return;
   }
   queryInput.value = "";
@@ -687,9 +682,9 @@ resultsEl.addEventListener("click", async (event) => {
     if (ok) {
       recentlyChangedRecordId = recordId;
       pendingReviewQueueFocus = reviewSelect.value === "generated" && nextState !== "generated";
-      pendingReviewQueueMessage = pendingReviewQueueFocus ? "Review saved." : "";
+      pendingReviewQueueMessage = pendingReviewQueueFocus ? "Saved." : "";
     }
-    statusEl.textContent = ok ? "Review saved." : "Could not update review.";
+    statusEl.textContent = ok ? "Saved." : "Could not save.";
     await loadRecords();
   } finally {
     setActionButtonBusy(reviewButton, false);

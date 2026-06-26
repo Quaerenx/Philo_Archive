@@ -15,7 +15,7 @@
     <main class="reader">
       <header class="reader-header">
         <h1>Translation Review</h1>
-        <div class="meta-line">Personal Archive of Literature / sentence translations to review</div>
+        <div class="meta-line">Personal Archive of Literature / saved translations and commentary</div>
         <nav class="toolbar" aria-label="Translation review navigation">
           <a href="/">Archive index</a>
           <a href="/search">Research search</a>
@@ -50,8 +50,8 @@
               Status
               <select id="translationsReview" name="review_state">
                 <option value="all">All</option>
-                <option value="generated">Needs review</option>
-                <option value="reviewed">Reviewed</option>
+                <option value="generated">To check</option>
+                <option value="reviewed">Saved</option>
                 <option value="rejected">Rejected</option>
               </select>
             </label>
@@ -65,11 +65,11 @@
       <div id="translationsActiveFilters" class="active-filters" aria-live="polite" aria-label="Active translation filters"></div>
 
       <div class="review-export-row">
-        <button id="translationsReviewQueue" type="button" class="translation-review-queue" aria-keyshortcuts="Q" title="Start with the first translation needing review" disabled>Review next</button>
+        <button id="translationsReviewQueue" type="button" class="translation-review-queue" aria-keyshortcuts="Q" title="Open the first translation to check" disabled>Next to check</button>
         <details class="export-tools">
           <summary>Export</summary>
-          <div class="export-row" aria-label="Export translation review">
-            <a id="translationsExportMarkdown" href="/api/sentence-translations/export?corpus_id=nietzsche&format=markdown&review_state=all">Readable review</a>
+          <div class="export-row" aria-label="Export translations">
+            <a id="translationsExportMarkdown" href="/api/sentence-translations/export?corpus_id=nietzsche&format=markdown&review_state=all">Markdown</a>
             <a id="translationsExportJson" href="/api/sentence-translations/export?corpus_id=nietzsche&format=json&review_state=all">Data file</a>
           </div>
         </details>
@@ -79,6 +79,6 @@
       <section id="translationsResults" class="notes-results translations-results" aria-live="polite" aria-busy="false"></section>
     </main>
   </div>
-  <script src="/assets/translations.js?v=trans14"></script>
+  <script src="/assets/translations.js?v=trans15"></script>
 </body>
 </html>
