@@ -600,6 +600,13 @@ async function updateRecordReview(recordId, corpusId, reviewState) {
   return response.ok;
 }
 
+function reviewActionMessage(reviewState) {
+  if (reviewState === "reviewed") return "Saved.";
+  if (reviewState === "rejected") return "Rejected.";
+  if (reviewState === "generated") return "Moved to check.";
+  return "Updated.";
+}
+
 async function loadCorpora() {
   try {
     const response = await fetch("/api/archive");
@@ -736,12 +743,13 @@ resultsEl.addEventListener("click", async (event) => {
   setActionButtonBusy(reviewButton, true);
   try {
     const ok = await updateRecordReview(recordId, corpusId, nextState);
+    const actionMessage = reviewActionMessage(nextState);
     if (ok) {
       recentlyChangedRecordId = recordId;
       pendingReviewQueueFocus = reviewSelect.value === "generated" && nextState !== "generated";
-      pendingReviewQueueMessage = pendingReviewQueueFocus ? "Saved." : "";
+      pendingReviewQueueMessage = pendingReviewQueueFocus ? actionMessage : "";
     }
-    statusEl.textContent = ok ? "Saved." : "Could not save.";
+    statusEl.textContent = ok ? actionMessage : "Could not save.";
     await loadRecords();
   } finally {
     setActionButtonBusy(reviewButton, false);
