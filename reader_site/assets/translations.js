@@ -371,7 +371,12 @@ function recordContext(record) {
   ].filter(Boolean).join(" / ");
 }
 
-function renderRecord(record) {
+function visibleReviewStates(records) {
+  return new Set(records.map(normalizedReviewState));
+}
+
+function renderRecord(record, options) {
+  options = options || {};
   const reviewState = normalizedReviewState(record);
   const title = recordTitle(record) || "Translation record";
   const context = recordContext(record);
@@ -381,6 +386,12 @@ function renderRecord(record) {
   const targetUrl = cleanText(record.target_url || "");
   const isRecent = record.id === recentlyChangedRecordId;
   const reviewLabel = REVIEW_LABELS[reviewState] || reviewState;
+  const showReviewBadge = options.showReviewBadge !== false;
+  const reviewKicker = showReviewBadge
+    ? `<div class="translation-record-kicker">
+        <span class="review-badge" aria-label="Review status: ${escapeHtml(reviewLabel)}">${escapeHtml(reviewLabel)}</span>
+      </div>`
+    : "";
   const rejectAction = reviewState !== "rejected"
     ? `<details class="translation-more-actions">
         <summary>More</summary>
@@ -400,9 +411,7 @@ function renderRecord(record) {
   return `<article class="translation-record-card${isRecent ? " is-recent" : ""}" tabindex="-1" data-record-id="${escapeHtml(record.id)}" data-corpus-id="${escapeHtml(record.corpus_id)}" data-review-state="${escapeHtml(reviewState)}">
     <header class="translation-record-heading">
       <h2 class="translation-record-title">${targetUrl ? `<a href="${escapeHtml(targetUrl)}">${escapeHtml(title)}</a>` : escapeHtml(title)}</h2>
-      <div class="translation-record-kicker">
-        <span class="review-badge" aria-label="Review status: ${escapeHtml(reviewLabel)}">${escapeHtml(reviewLabel)}</span>
-      </div>
+      ${reviewKicker}
       ${context ? `<div class="translation-record-context">${escapeHtml(context)}</div>` : ""}
     </header>
     ${translation ? `<p class="translation-text">${escapeHtml(translation)}</p>` : ""}
@@ -426,9 +435,10 @@ function renderRecords(records) {
     exportTools.hidden = visible.length === 0;
     if (!visible.length) exportTools.open = false;
   }
+  const showReviewBadges = visibleReviewStates(visible).size > 1;
   statusEl.textContent = "";
   resultsEl.innerHTML = queryMatched.length
-    ? renderSummary(queryMatched) + (visible.length ? visible.map(renderRecord).join("") : renderEmptyRecords())
+    ? renderSummary(queryMatched) + (visible.length ? visible.map((record) => renderRecord(record, { showReviewBadge: showReviewBadges })).join("") : renderEmptyRecords())
     : renderEmptyRecords();
   if (pendingReviewQueueFocus) {
     const reviewMessage = pendingReviewQueueMessage;

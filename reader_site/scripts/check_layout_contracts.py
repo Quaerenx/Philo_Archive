@@ -474,7 +474,7 @@ def check_translations_ui() -> None:
     for needle in [
         "/assets/notes.css?v=notes19",
         "/assets/translations.css?v=trans14",
-        "/assets/translations.js?v=trans32",
+        "/assets/translations.js?v=trans33",
         '<option value="">All corpora</option>',
         'id="translationsListTools"',
         "Search and filters</summary>",
@@ -534,6 +534,8 @@ def check_translations_ui() -> None:
         'statusEl.textContent = "";',
         "function renderRecord",
         "function recordContext",
+        "function visibleReviewStates",
+        "showReviewBadge",
         "record.target_label || sentenceDisplayName(record)",
         "corpusDisplayName(record.corpus_id)",
         "workDisplayName(record.corpus_id, record.work_id)",
@@ -588,7 +590,6 @@ def check_translations_ui() -> None:
         [
             "translation-record-heading",
             "translation-record-title",
-            "translation-record-kicker",
             "translation-text",
             "translation-commentary",
             "Original source",
