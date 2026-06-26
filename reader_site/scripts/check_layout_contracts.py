@@ -382,7 +382,7 @@ def check_translations_ui() -> None:
     css = read_site_file("assets/translations.css")
     for needle in [
         "/assets/notes.css?v=notes13",
-        "/assets/translations.css?v=trans5",
+        "/assets/translations.css?v=trans6",
         "/assets/translations.js?v=trans12",
         'id="translationsSubmit"',
         'id="translationsClear"',
@@ -468,8 +468,11 @@ def check_translations_ui() -> None:
     for needle in [
         ".translations-form",
         ".translation-record-summary",
+        "background: transparent",
+        "border-top: 1px solid #e8e8e8",
         ".translation-review-queue",
         ".translation-review-queue:not(:disabled)",
+        ".review-export-row .export-tools",
         ".translation-record-card",
         ".translation-record-card:focus",
         ".translation-record-card.is-review-target",
@@ -486,7 +489,8 @@ def check_translations_ui() -> None:
         "@keyframes archive-review-target",
         "@media (prefers-reduced-motion: reduce)",
         "@media (max-width: 860px)",
-        "grid-template-columns: repeat(2, minmax(0, 1fr))",
+        "overflow-x: auto",
+        "scrollbar-width: thin",
         "max-height: 6.4em",
         "justify-content: center",
     ]:

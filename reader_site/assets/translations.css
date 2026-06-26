@@ -5,11 +5,11 @@
 .translation-record-summary {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 5px;
   align-items: center;
-  padding: 8px;
-  background: #fbfbfb;
-  border: 1px solid #e0e0e0;
+  padding: 6px 0 0;
+  background: transparent;
+  border-top: 1px solid #e8e8e8;
 }
 
 .translation-record-summary button {
@@ -17,8 +17,8 @@
   grid-template-columns: minmax(0, auto) auto;
   gap: 5px;
   align-items: center;
-  min-height: 26px;
-  padding: 3px 7px;
+  min-height: 24px;
+  padding: 2px 7px;
   color: #333;
   font-family: Verdana, Arial, Helvetica, sans-serif;
   font-size: 10px;
@@ -62,6 +62,16 @@
 .translation-review-queue:not(:disabled) {
   background: #fffdf2;
   border-color: #d8c56d;
+}
+
+.review-export-row {
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.review-export-row .export-tools {
+  margin: 0;
 }
 
 .translation-record-card {
@@ -242,12 +252,14 @@
   }
 
   .translation-record-summary {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: thin;
   }
 
   .translation-record-summary button {
-    width: 100%;
+    flex: 0 0 auto;
     grid-template-columns: minmax(0, 1fr) auto;
   }
 
