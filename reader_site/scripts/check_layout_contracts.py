@@ -490,7 +490,7 @@ def check_translations_ui() -> None:
     for needle in [
         "/assets/notes.css?v=notes19",
         "/assets/translations.css?v=trans16",
-        "/assets/translations.js?v=trans42",
+        "/assets/translations.js?v=trans43",
         '<option value="">All corpora</option>',
         'id="translationsListTools"',
         "Search and filters</summary>",
@@ -603,7 +603,8 @@ def check_translations_ui() -> None:
         'params.set("q", query)',
         "primary-review-action",
         "translation-more-actions",
-        "More</summary>",
+        "<summary>Reject</summary>",
+        "Confirm reject",
         'title="Source"',
         "reviewActionsVisible() && visibleReviewStates(visible).size > 1",
     ]:

@@ -413,8 +413,8 @@ function renderRecord(record, options) {
     : "";
   const rejectAction = reviewState !== "rejected"
     ? `<details class="translation-more-actions">
-        <summary>More</summary>
-        <button type="button" data-review-state="rejected" aria-keyshortcuts="X" title="Reject">Reject</button>
+        <summary>Reject</summary>
+        <button type="button" data-review-state="rejected" aria-keyshortcuts="X" title="Confirm reject">Confirm</button>
       </details>`
     : "";
   const actions = showReviewActions ? [
