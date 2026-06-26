@@ -97,7 +97,7 @@ def check_html_entrypoints() -> None:
             require_contains(html, "/app.js?v=home7", relative_path)
         if relative_path in {"templates/reading.html", "templates/source.html"}:
             require_contains(html, "/assets/static-reader.css?v=static2", relative_path)
-            require_contains(html, "Source details</summary>", relative_path)
+            require_contains(html, "Path</summary>", relative_path)
 
 
 def check_page_frame_css(relative_path: str, css: str) -> None:
