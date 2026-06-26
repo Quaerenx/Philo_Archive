@@ -1718,6 +1718,27 @@ h1 {
   color: #4b3030;
 }
 
+.translation-runtime-details {
+  margin: 0 0 8px;
+}
+
+.translation-runtime-details summary {
+  display: inline-flex;
+  min-height: 24px;
+  align-items: center;
+  padding: 2px 7px;
+  color: #333;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  background: #fff;
+  border: 1px solid #d4d4d4;
+  cursor: pointer;
+}
+
+.translation-runtime-details[open] summary {
+  margin-bottom: 6px;
+}
+
 .translation-runtime-command {
   display: block;
   max-width: 100%;

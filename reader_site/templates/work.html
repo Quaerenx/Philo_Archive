@@ -6,7 +6,7 @@
   <title>{{TITLE}} / {{CORPUS_TITLE}}</title>
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
-  <link rel="stylesheet" href="/assets/reader-work.css?v=common95">
+  <link rel="stylesheet" href="/assets/reader-work.css?v=common96">
 </head>
 <body class="{{BODY_CLASS}}">
   <div class="page">
@@ -62,10 +62,10 @@
                   </section>
                   <section class="translation-utility-group" aria-label="Reading controls">
                     <div class="translation-utility-group-label">Reading</div>
-                    <div id="gemmaRuntimeStatus" class="runtime-status" data-runtime-state="checking" title="Local AI status">
+                    <div id="gemmaRuntimeStatus" class="runtime-status" data-runtime-state="checking" title="Translation service status">
                       <span class="runtime-status-dot" aria-hidden="true"></span>
-                      <span id="gemmaRuntimeStatusText" class="runtime-status-text" role="status" aria-live="polite" aria-atomic="true">Checking local AI</span>
-                      <button type="button" id="gemmaRuntimeCheck" title="Check local AI">Check</button>
+                      <span id="gemmaRuntimeStatusText" class="runtime-status-text" role="status" aria-live="polite" aria-atomic="true">Checking translator</span>
+                      <button type="button" id="gemmaRuntimeCheck" title="Check translator">Check</button>
                     </div>
                     <div id="translationTarget" class="translation-target">Select a sentence in the source page.</div>
                     <div id="readingPosition" class="reading-position" aria-label="Current reading position">Reading position</div>
@@ -164,6 +164,6 @@
     </main>
   </div>
   <script id="researchData" type="application/json">{{RESEARCH_JSON}}</script>
-  <script src="/assets/reader-work.js?v=common110"></script>
+  <script src="/assets/reader-work.js?v=common111"></script>
 </body>
 </html>

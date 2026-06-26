@@ -332,7 +332,7 @@ async function checkGemmaRuntimeStatus(announce = false) {
   const controller = new AbortController();
   gemmaRuntimeCheckController = controller;
   const timeout = window.setTimeout(() => controller.abort(), 2500);
-  setGemmaRuntimeIndicator("checking", "Checking local AI", "Local AI status");
+  setGemmaRuntimeIndicator("checking", "Checking translator", "Translation service status");
   setActionButtonBusy(gemmaRuntimeCheckButton, true);
   try {
     const response = await fetch("/api/health", { signal: controller.signal });
@@ -343,24 +343,24 @@ async function checkGemmaRuntimeStatus(announce = false) {
     const gemma = payload.gemma || {};
     if (gemma.reachable) {
       const model = Array.isArray(gemma.models) ? cleanText(gemma.models[0] || "") : "";
-      const title = model ? `Local AI ready: ${model}` : "Local AI ready";
-      setGemmaRuntimeIndicator("ready", "AI ready", title);
+      const title = model ? `Translator ready: ${model}` : "Translator ready";
+      setGemmaRuntimeIndicator("ready", "Translator ready", title);
       if (announce) {
-        setTranslationStatus("AI ready.");
+        setTranslationStatus("Translator ready.");
       }
       return;
     }
-    const error = cleanText(gemma.error || "Start .\\run_reader_with_gemma.ps1, then check again.");
-    setGemmaRuntimeIndicator("offline", "AI offline", error);
+    const error = cleanText(gemma.error || "Start the translation service, then check again.");
+    setGemmaRuntimeIndicator("offline", "Translator offline", error);
     if (announce) {
-      setTranslationStatus("AI offline.", true);
+      setTranslationStatus("Translator offline.", true);
     }
   } catch (error) {
     if (error && error.name === "AbortError" && gemmaRuntimeCheckController !== controller) {
       return;
     }
-    const label = error && error.name === "AbortError" ? "AI check timed out" : "AI unavailable";
-    setGemmaRuntimeIndicator("unavailable", label, "Check whether the reader server and local AI are running.");
+    const label = error && error.name === "AbortError" ? "Translator check timed out" : "Translator unavailable";
+    setGemmaRuntimeIndicator("unavailable", label, "Check whether the reader server and translation service are running.");
     if (announce) {
       setTranslationStatus(label, true);
     }
@@ -1613,6 +1613,7 @@ function translationErrorIsRuntime(message) {
   return (
     text.includes("gemma runtime") ||
     text.includes("runtime is not") ||
+    text.includes("translation service is not running") ||
     text.includes("failed to fetch") ||
     text.includes("networkerror") ||
     text.includes("load failed")
@@ -1621,25 +1622,28 @@ function translationErrorIsRuntime(message) {
 
 function translationErrorDisplayMessage(message) {
   return translationErrorIsRuntime(message)
-    ? "Local AI is not running. Start it, then try this sentence again."
+    ? "The translation service is not running. Start it, then try this sentence again."
     : cleanText(message || "Translation unavailable.");
 }
 
 function runtimeRecoveryMarkup(message) {
   if (!translationErrorIsRuntime(message)) return "";
   return `
-      <p class="translation-runtime-hint">Start local AI, then retry this sentence.</p>
-      <div class="translation-runtime-command-row">
-        <code class="translation-runtime-command">${escapeHtml(GEMMA_RUNTIME_COMMAND)}</code>
-        <button type="button" data-translation-copy-runtime>Copy command</button>
-      </div>`;
+      <p class="translation-runtime-hint">Start the translation service, then retry this sentence.</p>
+      <details class="translation-runtime-details">
+        <summary>Startup command</summary>
+        <div class="translation-runtime-command-row">
+          <code class="translation-runtime-command">${escapeHtml(GEMMA_RUNTIME_COMMAND)}</code>
+          <button type="button" data-translation-copy-runtime>Copy startup command</button>
+        </div>
+      </details>`;
 }
 
 function renderTranslationError(message) {
   selectedTranslationRecord = null;
   const retryMode = pendingTranslationRegenerate ? "regenerate" : "translate";
   const retryLabel = pendingTranslationRegenerate ? "Regenerate again" : "Try again";
-  const cleanMessage = cleanText(message || "Local AI is not running.");
+  const cleanMessage = cleanText(message || "The translation service is not running.");
   const isRuntimeError = translationErrorIsRuntime(cleanMessage);
   const displayMessage = translationErrorDisplayMessage(cleanMessage);
   pendingTranslationRegenerate = false;
@@ -1663,7 +1667,7 @@ function renderTranslationError(message) {
         ${runtimeRecoveryMarkup(cleanMessage)}
         <div class="translation-error-actions">
           <button type="button" data-translation-retry="${escapeHtml(retryMode)}">${escapeHtml(retryLabel)}</button>
-          ${isRuntimeError ? '<button type="button" data-translation-check-runtime>Check runtime</button>' : ""}
+          ${isRuntimeError ? '<button type="button" data-translation-check-runtime>Check translator</button>' : ""}
         </div>
       </div>
     </div>`;
@@ -2027,14 +2031,14 @@ async function requestSentenceTranslation(regenerate = false) {
     if (!response.ok || !payload.ok) {
       const message = cleanText(payload.error || "Gemma runtime is not running.");
       if (message.includes("Gemma runtime")) {
-        setGemmaRuntimeIndicator("offline", "AI offline", "Start .\\run_reader_with_gemma.ps1, then retry.");
+        setGemmaRuntimeIndicator("offline", "Translator offline", "Start the translation service, then retry.");
       }
       setTranslationStatus(translationErrorDisplayMessage(message), true);
       renderTranslationError(message);
       return;
     }
     if (!payload.cached) {
-      setGemmaRuntimeIndicator("ready", "AI ready", "Local AI responded to this request.");
+      setGemmaRuntimeIndicator("ready", "Translator ready", "Translation service responded to this request.");
     }
     renderTranslationRecord(payload.record, payload.cached);
     if (!payload.cached) {
@@ -2048,7 +2052,7 @@ async function requestSentenceTranslation(regenerate = false) {
     if (requestId === activeTranslationRequest) {
       const message = cleanText(error && error.message ? error.message : "Gemma runtime is not running.");
       if (message.includes("Gemma runtime")) {
-        setGemmaRuntimeIndicator("offline", "AI offline", "Start .\\run_reader_with_gemma.ps1, then retry.");
+        setGemmaRuntimeIndicator("offline", "Translator offline", "Start the translation service, then retry.");
       }
       setTranslationStatus(translationErrorDisplayMessage(message), true);
       renderTranslationError(message);
