@@ -124,11 +124,11 @@
               <h2>Notes</h2>
               <form id="noteForm">
                 <label><span class="visually-hidden">Note</span><textarea id="noteText" name="note" aria-describedby="noteStatus" placeholder="Write a note..." required></textarea></label>
-                <details class="note-options">
-                  <summary>Options</summary>
+                <details class="note-options" aria-label="Note tags">
+                  <summary>Tags</summary>
                   <label>Tags<input id="noteTags" name="tags" autocomplete="off"></label>
                 </details>
-                <button type="submit">Save note</button>
+                <button type="submit" aria-label="Save note">Save</button>
               </form>
               <details class="note-target-tools">
                 <summary>Target</summary>
@@ -138,8 +138,8 @@
                 </div>
               </details>
               <div id="noteStatus" class="note-status" role="status" aria-live="polite" aria-atomic="true"></div>
-              <details class="notes-filter-tools">
-                <summary>Saved notes</summary>
+              <details class="notes-filter-tools" aria-label="Saved notes and filters">
+                <summary>Saved</summary>
                 <div class="notes-list-tools">
                   <label>Filter<input id="noteFilter" name="note_filter" autocomplete="off"></label>
                   <button type="button" id="noteFilterClear" class="note-filter-clear" disabled>Clear filter</button>
