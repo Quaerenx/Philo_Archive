@@ -1136,8 +1136,12 @@ def check_work_source_bundle_ui() -> None:
         "noteText.setSelectionRange",
         "translationStudyCardText",
         "function translationQuickActions",
+        "translation-reading-actions",
+        "data-translation-quick-action=\"next-sentence\"",
+        "Next sentence",
         "translation-quick-actions translation-extra",
         "data-translation-quick-action",
+        "Continue study",
         "Save",
         "Add note",
         "Selected source",
@@ -1193,8 +1197,8 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common118", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common102", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common119", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common103", "templates/work.html")
     for needle in [
         "reading-desk",
         "toolbar-more",
@@ -1438,6 +1442,9 @@ def check_work_source_bundle_ui() -> None:
         ".translation-empty-state .translation-section-primary",
         ".translation-empty-state .translation-section h3",
         ".translation-output .translation-empty-copy",
+        ".translation-reading-actions",
+        ".translation-reading-actions button",
+        ".translation-output.study-mode .translation-reading-actions",
         ".translation-pending-result",
         ".translation-pending-copy",
         ".study-session-preview",

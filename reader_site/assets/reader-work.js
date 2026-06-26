@@ -1509,10 +1509,17 @@ function translationQuickActions(reviewState) {
   const reviewAction = normalizedReviewState === "reviewed"
     ? '<span class="translation-quick-state" data-review-state="reviewed">Saved</span>'
     : '<button type="button" data-translation-quick-action="mark-reviewed">Save</button>';
-  return `<div class="translation-quick-actions translation-extra" aria-label="Study actions">
+  const selectedIndex = selectedSentence ? sentenceIndex(selectedSentence.sentenceId) : -1;
+  const nextSentenceDisabled = selectedIndex < 0 || selectedIndex >= sentenceNodes.length - 1
+    ? " disabled"
+    : "";
+  return `<div class="translation-reading-actions" aria-label="Reading flow">
+      <button type="button" data-translation-quick-action="next-sentence"${nextSentenceDisabled}>Next sentence</button>
+    </div>
+    <div class="translation-quick-actions translation-extra" aria-label="Study actions">
       ${reviewAction}
       <button type="button" data-translation-quick-action="draft-note">Add note</button>
-      <button type="button" data-translation-quick-action="continue">Next</button>
+      <button type="button" data-translation-quick-action="continue">Continue study</button>
     </div>`;
 }
 
@@ -2694,6 +2701,10 @@ translationOutput.addEventListener("click", (event) => {
   const quickAction = event.target.closest("[data-translation-quick-action]");
   if (quickAction) {
     const action = quickAction.dataset.translationQuickAction || "";
+    if (action === "next-sentence") {
+      navigateSentence(1);
+      return;
+    }
     if (action === "mark-reviewed") {
       updateTranslationReview("reviewed");
       return;
