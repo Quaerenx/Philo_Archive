@@ -342,9 +342,13 @@ function renderEmptyRecords() {
 }
 
 function recordTitle(record) {
+  return workDisplayName(record.corpus_id, record.work_id) || corpusDisplayName(record.corpus_id) || "Translation record";
+}
+
+function recordContext(record) {
+  const hasWork = Boolean(cleanText(record.work_id || ""));
   return [
-    corpusDisplayName(record.corpus_id),
-    workDisplayName(record.corpus_id, record.work_id),
+    hasWork ? corpusDisplayName(record.corpus_id) : "",
     sentenceDisplayName(record)
   ].filter(Boolean).join(" / ");
 }
@@ -352,6 +356,7 @@ function recordTitle(record) {
 function renderRecord(record) {
   const reviewState = normalizedReviewState(record);
   const title = recordTitle(record) || "Translation record";
+  const context = recordContext(record);
   const source = cleanText(record.source_text_excerpt || "");
   const translation = cleanText(record.translation || "");
   const commentary = cleanText(record.commentary || record.interpretation || "");
@@ -380,6 +385,7 @@ function renderRecord(record) {
       <div class="translation-record-kicker">
         <span class="review-badge" aria-label="Review status: ${escapeHtml(reviewLabel)}">${escapeHtml(reviewLabel)}</span>
       </div>
+      ${context ? `<div class="translation-record-context">${escapeHtml(context)}</div>` : ""}
     </header>
     ${translation ? `<p class="translation-text">${escapeHtml(translation)}</p>` : ""}
     ${commentary ? `<section class="translation-commentary" aria-label="Commentary"><h3>Commentary</h3><p>${escapeHtml(commentary)}</p></section>` : ""}

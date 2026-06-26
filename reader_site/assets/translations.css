@@ -182,6 +182,14 @@
   line-height: 1.35;
 }
 
+.translation-record-context {
+  grid-column: 1 / -1;
+  color: #777;
+  font-size: 10px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
 .translation-record-title {
   display: -webkit-box;
   min-width: 0;
