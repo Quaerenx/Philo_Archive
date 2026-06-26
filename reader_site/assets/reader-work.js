@@ -1071,9 +1071,12 @@ function updateSentenceControls() {
 function currentTarget() {
   const id = decodeURIComponent(location.hash.replace(/^#/, "")) || "work";
   const node = id === "work" ? null : document.getElementById(id);
-  const label = node ? cleanText(node.dataset.label || node.textContent) : researchData.title;
+  const isSentence = Boolean(node && node.classList.contains("reader-sentence"));
+  const label = node
+    ? (isSentence ? sentencePositionText(id) : cleanText(node.dataset.label || node.textContent))
+    : researchData.title;
   const type = node
-    ? (node.classList.contains("reader-sentence") ? "sentence" : (node.dataset.targetType || researchData.default_target_type || "segment"))
+    ? (isSentence ? "sentence" : (node.dataset.targetType || researchData.default_target_type || "segment"))
     : "work";
   const baseUrl = location.origin + location.pathname + location.search;
   const url = id === "work"
@@ -2850,8 +2853,8 @@ notesList.addEventListener("click", async (event) => {
 });
 
 window.addEventListener("hashchange", () => {
-  syncTargetDependentViews();
   selectSentenceFromHash();
+  syncTargetDependentViews();
   updateSentenceControls();
 });
 
