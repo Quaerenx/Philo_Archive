@@ -28,42 +28,38 @@ def require(condition: bool, message: str) -> None:
         raise AssertionError(message)
 
 
-def dump_dom(browser: str, url: str, width: int, height: int) -> str:
-    profile_dir = Path(tempfile.mkdtemp(prefix="philo-reader-interaction-"))
-    try:
-        command = [
-            browser,
-            "--headless=new",
-            "--disable-gpu",
-            "--disable-gpu-sandbox",
-            "--disable-background-networking",
-            "--disable-breakpad",
-            "--disable-crash-reporter",
-            "--disable-features=DawnGraphite,Vulkan,UseSkiaRenderer,CanvasOopRasterization",
-            "--no-default-browser-check",
-            "--no-first-run",
-            "--use-angle=swiftshader",
-            f"--user-data-dir={profile_dir.resolve().as_posix()}",
-            f"--window-size={width},{height}",
-            "--virtual-time-budget=4000",
-            "--dump-dom",
-            url,
-        ]
-        result = subprocess.run(
-            command,
-            cwd=SITE,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            timeout=45,
-        )
-        stderr = (result.stderr or "").strip()
-        require(result.returncode == 0, f"browser DOM dump failed for {url}: {stderr}")
-        require("<html" in result.stdout.lower(), f"browser DOM dump did not return HTML for {url}")
-        return result.stdout
-    finally:
-        shutil.rmtree(profile_dir, ignore_errors=True)
+def dump_dom_with_profile(browser: str, url: str, width: int, height: int, profile_dir: Path) -> str:
+    command = [
+        browser,
+        "--headless=new",
+        "--disable-gpu",
+        "--disable-gpu-sandbox",
+        "--disable-background-networking",
+        "--disable-breakpad",
+        "--disable-crash-reporter",
+        "--disable-features=DawnGraphite,Vulkan,UseSkiaRenderer,CanvasOopRasterization",
+        "--no-default-browser-check",
+        "--no-first-run",
+        "--use-angle=swiftshader",
+        f"--user-data-dir={profile_dir.resolve().as_posix()}",
+        f"--window-size={width},{height}",
+        "--virtual-time-budget=4000",
+        "--dump-dom",
+        url,
+    ]
+    result = subprocess.run(
+        command,
+        cwd=SITE,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        timeout=45,
+    )
+    stderr = (result.stderr or "").strip()
+    require(result.returncode == 0, f"browser DOM dump failed for {url}: {stderr}")
+    require("<html" in result.stdout.lower(), f"browser DOM dump did not return HTML for {url}")
+    return result.stdout
 
 
 def check_selected_sentence_dom(html: str, viewport_label: str) -> None:
@@ -87,6 +83,14 @@ def check_selected_sentence_dom(html: str, viewport_label: str) -> None:
     require("문장을 누르면 번역과 해설이 여기에 표시됩니다." not in html, f"{context} still shows empty translation state")
 
 
+def check_recent_work_dom(html: str, viewport_label: str) -> None:
+    context = f"home recent work {viewport_label}"
+    require("Continue reading" in html, f"{context} missing continue reading entry")
+    require("recent-work" in html, f"{context} missing recent work markup")
+    require("/work/nietzsche/GM#p-0023.s001" in html, f"{context} missing recent sentence link")
+    require("Zur Genealogie der Moral" in html, f"{context} missing recent work title")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Validate reader sentence selection interaction in a headless browser.", allow_abbrev=False)
     parser.add_argument("--browser", default="", help="Path to Edge/Chrome/Chromium. Defaults to common local installs.")
@@ -106,8 +110,14 @@ def main() -> None:
         wait_for_health(base_url, server)
         url = f"{base_url}{TARGET_ROUTE}"
         for viewport_label, width, height in VIEWPORTS:
-            html = dump_dom(browser, url, width, height)
-            check_selected_sentence_dom(html, viewport_label)
+            profile_dir = Path(tempfile.mkdtemp(prefix="philo-reader-interaction-"))
+            try:
+                html = dump_dom_with_profile(browser, url, width, height, profile_dir)
+                check_selected_sentence_dom(html, viewport_label)
+                home_html = dump_dom_with_profile(browser, f"{base_url}/", width, height, profile_dir)
+                check_recent_work_dom(home_html, viewport_label)
+            finally:
+                shutil.rmtree(profile_dir, ignore_errors=True)
         print("reader interaction smoke ok")
     finally:
         server.terminate()

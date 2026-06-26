@@ -129,6 +129,34 @@ img {
   width: auto;
 }
 
+.recent-work {
+  margin: 0 0 16px;
+  padding: 10px 0 12px;
+  line-height: 1.4;
+  border-top: 1px solid #d4d4d4;
+  border-bottom: 1px solid #d4d4d4;
+}
+
+.recent-work strong,
+.recent-work a,
+.recent-work-meta {
+  display: block;
+}
+
+.recent-work strong {
+  margin-bottom: 4px;
+  color: #333;
+}
+
+.recent-work a {
+  font-size: 11px;
+}
+
+.recent-work-meta {
+  margin-top: 3px;
+  color: #555;
+}
+
 .back-link {
   display: inline-block;
   margin-bottom: 18px;

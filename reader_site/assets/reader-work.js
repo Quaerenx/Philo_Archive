@@ -76,6 +76,7 @@ let pendingActionConfirmation = "";
 let actionConfirmationTimer = 0;
 const visibleSentenceNodes = new Set();
 const COMMENTARY_COLLAPSE_LENGTH = 420;
+const RECENT_WORK_STORAGE_KEY = "philo.reader.recentWork";
 const STUDY_PANEL_STORAGE_KEY = "philo.reader.studyPanelExpanded";
 const STUDY_PANEL_DRAG_THRESHOLD = 36;
 const ACTION_CONFIRM_MS = 4500;
@@ -109,6 +110,27 @@ const NOTE_DRAFT_STORAGE_KEY = [
 
 function cleanText(value) {
   return String(value || "").replace(/[#¶]/g, "").replace(/\s+/g, " ").trim();
+}
+
+function currentWorkHref() {
+  return `${location.pathname}${location.search}${location.hash || ""}`;
+}
+
+function rememberRecentWork() {
+  try {
+    const storage = window.localStorage;
+    if (!storage) return;
+    storage.setItem(RECENT_WORK_STORAGE_KEY, JSON.stringify({
+      href: currentWorkHref(),
+      title: cleanText(researchData.title || document.title || researchData.work_id || "Current work"),
+      corpus_id: cleanText(researchData.corpus_id || researchData.author_id || ""),
+      corpus_title: cleanText(researchData.corpus_title || ""),
+      work_id: cleanText(researchData.work_id || ""),
+      updated_at: new Date().toISOString()
+    }));
+  } catch (error) {
+    return;
+  }
 }
 
 function escapeHtml(value) {
@@ -1232,6 +1254,7 @@ function selectSentence(node, updateHash = true) {
   if (updateHash) {
     history.replaceState(null, "", `${location.pathname}${location.search}#${encodeURIComponent(sentence.sentenceId)}`);
   }
+  rememberRecentWork();
   syncTargetDependentViews();
 }
 
@@ -2958,6 +2981,7 @@ window.addEventListener("hashchange", () => {
 });
 
 function initializeStudyCompanion() {
+  rememberRecentWork();
   setTranslationMode("reading");
   restoreNoteDraft();
   setStudyPanelExpanded(storedStudyPanelExpanded());

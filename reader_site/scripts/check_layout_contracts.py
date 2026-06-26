@@ -93,7 +93,7 @@ def check_html_entrypoints() -> None:
         require_contains(html, 'class="page"', relative_path)
         if relative_path == "index.html":
             require_contains(html, "Translations", relative_path)
-            require_contains(html, "/app.js?v=home5", relative_path)
+            require_contains(html, "/app.js?v=home6", relative_path)
 
 
 def check_page_frame_css(relative_path: str, css: str) -> None:
@@ -135,6 +135,8 @@ def check_home_css() -> None:
         "background: var(--reader-background",
         "border: 1px solid var(--reader-border",
         ".reading-path-link.primary",
+        ".recent-work",
+        ".recent-work-meta",
         "@media (max-width: 860px)",
     ]:
         require_contains(css, needle, relative_path)
@@ -153,6 +155,7 @@ def check_home_script() -> None:
     script = read_site_file("app.js")
     for needle in [
         "START_READING_LIMIT",
+        "RECENT_WORK_STORAGE_KEY",
         "START_READING_WORK_IDS",
         "START_READING_LABELS",
         "ROOT_LINK_LABELS",
@@ -168,6 +171,9 @@ def check_home_script() -> None:
         "function startReadingLabel",
         "function startReadingTitle",
         "function rootLinkLabel",
+        "function storedRecentWork",
+        "function recentWorkMarkup",
+        "Continue reading",
         "linksByWorkId",
         "START_READING_WORK_IDS[corpus.id]",
         "START_READING_LIMIT",
@@ -846,6 +852,8 @@ def check_work_source_bundle_ui() -> None:
         "pointercancel",
         'event.key === "Escape"',
         "selectedSentencePositionLabel",
+        "rememberRecentWork",
+        "RECENT_WORK_STORAGE_KEY",
         "sentencePositionText",
         "function selectSentenceFromHash",
         "setStudyPanelExpanded(true)",

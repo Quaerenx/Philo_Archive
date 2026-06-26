@@ -4,6 +4,7 @@ const state = {
   activeSection: "all",
 };
 
+const RECENT_WORK_STORAGE_KEY = "philo.reader.recentWork";
 const START_READING_LIMIT = 6;
 const START_READING_WORK_IDS = {
   nietzsche: ["M", "FW", "Za-I", "JGB", "GM", "GD"],
@@ -56,8 +57,45 @@ function escapeHtml(value) {
     .replaceAll('"', "&quot;");
 }
 
+function cleanText(value) {
+  return String(value ?? "").replace(/\s+/g, " ").trim();
+}
+
 function normalize(value) {
   return String(value ?? "").toLowerCase();
+}
+
+function storedRecentWork() {
+  try {
+    const storage = window.localStorage;
+    const raw = storage ? storage.getItem(RECENT_WORK_STORAGE_KEY) : "";
+    if (!raw) return null;
+    const item = JSON.parse(raw);
+    if (!item || typeof item !== "object") return null;
+    const href = cleanText(item.href || "");
+    if (!href.startsWith("/work/")) return null;
+    const title = cleanText(item.title || item.work_id || "Recent work");
+    const corpus = cleanText(item.corpus_title || item.corpus_id || "");
+    const workId = cleanText(item.work_id || "");
+    return {
+      href,
+      title,
+      meta: [corpus, workId].filter(Boolean).join(" / ")
+    };
+  } catch (error) {
+    return null;
+  }
+}
+
+function recentWorkMarkup() {
+  const recent = storedRecentWork();
+  if (!recent) return "";
+  const meta = recent.meta ? `<span class="recent-work-meta">${escapeHtml(recent.meta)}</span>` : "";
+  return `<section class="recent-work">
+    <strong>Continue reading</strong>
+    <a href="${escapeHtml(recent.href)}">${escapeHtml(recent.title)}</a>
+    ${meta}
+  </section>`;
 }
 
 function currentCategoryId() {
@@ -155,9 +193,12 @@ function renderArchive() {
     return;
   }
 
-  el.archiveLinks.innerHTML = visibleCorpora
-    .map((corpus) => `<a class="root-link" href="/category/${encodeURIComponent(corpus.id)}">${escapeHtml(rootLinkLabel(corpus))}</a>`)
-    .join("");
+  el.archiveLinks.innerHTML = [
+    recentWorkMarkup(),
+    visibleCorpora
+      .map((corpus) => `<a class="root-link" href="/category/${encodeURIComponent(corpus.id)}">${escapeHtml(rootLinkLabel(corpus))}</a>`)
+      .join("")
+  ].join("");
 }
 
 function renderCategory(categoryId) {
