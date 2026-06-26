@@ -235,9 +235,7 @@ function renderNotesSummary(notes) {
 
 function renderNotes(notes) {
   lastNotes = notes;
-  statusEl.textContent = notes.length
-    ? `${notes.length.toLocaleString()} notes`
-    : "No notes found.";
+  statusEl.textContent = notes.length ? `${notes.length.toLocaleString()} notes` : "";
   resultsEl.innerHTML = notes.length
     ? renderNotesSummary(notes) + notes.map((note) => {
       const titleParts = [note.corpus_id, note.work_id, note.target_label || note.target_id].filter(Boolean);
