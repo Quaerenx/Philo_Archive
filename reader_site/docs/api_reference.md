@@ -445,8 +445,9 @@ Exports local sentence translation records for study review.
 
 Query parameters:
 
-- `corpus_id`: required corpus id.
+- `corpus_id`: optional corpus id; omit it to export all corpora.
 - `work_id`: optional work id filter.
+- `q`: optional text filter matching corpus/work ids, source excerpts, translations, and commentary.
 - `review_state`: `reviewed` by default; also accepts `generated`, `rejected`, or `all`.
 - `format`: `markdown` by default; `json` returns structured records.
 

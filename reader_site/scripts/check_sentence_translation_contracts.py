@@ -180,6 +180,8 @@ def check_cache_and_review_compatibility(target: dict) -> None:
             bible_record["id"] = "bible-demo-translation"
             bible_record["corpus_id"] = "bible"
             bible_record["work_id"] = "demo2"
+            bible_record["translation"] = "bible generated translation"
+            bible_record["commentary"] = "bible generated commentary"
             bible_record["review_state"] = "generated"
             bible_path = sentence_translation_service.ai_record_path("bible")
             bible_path.write_text(json.dumps(bible_record, ensure_ascii=False) + "\n", encoding="utf-8")
@@ -188,6 +190,11 @@ def check_cache_and_review_compatibility(target: dict) -> None:
                 {record["corpus_id"] for record in all_records} == {"nietzsche", "bible"},
                 "sentence translation export without corpus_id should include all corpora",
             )
+            filtered_records = sentence_translations_for_export({"review_state": ["all"], "q": ["newest"]})
+            require(len(filtered_records) == 1, "sentence translation export q filter count failed")
+            require(filtered_records[0]["translation"] == "newest translation", "sentence translation export q filter mismatch")
+            empty_filtered_records = sentence_translations_for_export({"review_state": ["all"], "q": ["not-present"]})
+            require(empty_filtered_records == [], "sentence translation export q filter should allow empty results")
             all_summary = sentence_translations_summary_from_query({"review_state": ["all"]})
             require(all_summary["count"] == 2, "sentence translation summary without corpus_id should count all corpora")
             require(all_summary["review_state_counts"]["generated"] == 1, "all-corpus summary generated count failed")

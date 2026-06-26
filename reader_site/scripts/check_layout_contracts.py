@@ -486,6 +486,7 @@ def check_translations_ui() -> None:
         "Could not save.",
         "translationsExportMarkdown",
         "translationsExportJson",
+        'params.set("q", query)',
         "primary-review-action",
         "Open work",
     ]:

@@ -47,6 +47,10 @@ def valid_record_id(value: Any) -> str:
     return candidate
 
 
+def clean_text(value: Any) -> str:
+    return re.sub(r"\s+", " ", str(value or "")).strip()
+
+
 def safe_corpus_id(value: str) -> str:
     value = str(value or "").strip()
     require(re.fullmatch(r"[A-Za-z0-9_-]+", value) is not None, "invalid corpus_id")
@@ -377,9 +381,30 @@ def update_sentence_translation_review(payload: dict[str, Any], record_id: str) 
     return {"ok": True, "record": public_translation_record(updated)}
 
 
+def translation_record_matches_text_query(record: dict[str, Any], text_query: str) -> bool:
+    needle = clean_text(text_query).lower()
+    if not needle:
+        return True
+    haystack = " ".join(
+        clean_text(record.get(field))
+        for field in (
+            "corpus_id",
+            "work_id",
+            "variant_id",
+            "segment_id",
+            "sentence_id",
+            "source_text_excerpt",
+            "translation",
+            "commentary",
+        )
+    ).lower()
+    return needle in haystack
+
+
 def sentence_translations_for_export(query: dict[str, list[str]]) -> list[dict[str, Any]]:
     corpus_id = query_corpus_id(query)
     work_id = str((query.get("work_id") or [""])[0]).strip()
+    text_query = str((query.get("q") or [""])[0]).strip()
     review_state = str((query.get("review_state") or ["reviewed"])[0]).strip().lower() or "reviewed"
     require(review_state in {"generated", "reviewed", "rejected", "all"}, "invalid review_state")
     records = [
@@ -390,6 +415,8 @@ def sentence_translations_for_export(query: dict[str, list[str]]) -> list[dict[s
     ]
     if work_id:
         records = [record for record in records if record.get("work_id") == work_id]
+    if text_query:
+        records = [record for record in records if translation_record_matches_text_query(record, text_query)]
     if review_state != "all":
         records = [record for record in records if record.get("review_state") == review_state]
     return sorted(

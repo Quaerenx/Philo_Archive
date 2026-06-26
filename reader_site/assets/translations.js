@@ -134,6 +134,8 @@ function exportParams(format = "markdown") {
     format,
     review_state: reviewSelect.value || "all"
   });
+  const query = queryInput.value.trim();
+  if (query) params.set("q", query);
   if (corpusSelect.value) params.set("corpus_id", corpusSelect.value);
   const workId = workInput.value.trim();
   if (workId) params.set("work_id", workId);
