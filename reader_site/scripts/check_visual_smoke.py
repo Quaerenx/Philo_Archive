@@ -220,7 +220,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translationsReviewQueue",
             "aria-busy=\"false\"",
             "translations.css?v=trans20",
-            "translations.js?v=trans47",
+            "translations.js?v=trans48",
             "translationsListTools",
             "Search and filters</summary>",
             "filter-panel",
@@ -743,14 +743,20 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       const reviewTargetState = await page.evaluate(() => {
         const card = document.querySelector('#translationsResults .translation-record-card.is-review-target');
         const reject = card?.querySelector('.translation-more-actions');
+        const source = card?.querySelector('.translation-source');
         return {
           hasReviewTarget: Boolean(card),
           rejectText: reject?.textContent.trim() || '',
-          rejectDisplay: reject ? window.getComputedStyle(reject).display : ''
+          rejectDisplay: reject ? window.getComputedStyle(reject).display : '',
+          sourceOpen: Boolean(source?.open),
+          sourceText: source?.textContent.trim() || ''
         };
       });
       if (!reviewTargetState.hasReviewTarget || !reviewTargetState.rejectText.includes('Reject') || reviewTargetState.rejectDisplay === 'none') {
         throw new Error(`review queue should expose Reject on the active review card: ${JSON.stringify(reviewTargetState)}`);
+      }
+      if (!reviewTargetState.sourceOpen || !reviewTargetState.sourceText.includes('Original')) {
+        throw new Error(`review queue should open the active source text: ${JSON.stringify(reviewTargetState)}`);
       }
     }
   }

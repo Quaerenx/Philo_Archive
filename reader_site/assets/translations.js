@@ -580,11 +580,17 @@ function clearReviewTargetHighlight() {
   });
 }
 
+function openReviewTargetSource(card) {
+  const source = card?.querySelector(".translation-source");
+  if (source) source.open = true;
+}
+
 function focusRecordCard(card, reviewTarget = false) {
   if (!card) return false;
   clearReviewTargetHighlight();
   if (reviewTarget) {
     card.classList.add("is-review-target");
+    openReviewTargetSource(card);
   }
   if (typeof card.scrollIntoView === "function") {
     card.scrollIntoView({
