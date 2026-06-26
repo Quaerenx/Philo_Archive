@@ -228,7 +228,7 @@ function renderNotesSummary(notes) {
   const counts = notesSummaryCounts(notes);
   return `<nav class="notes-summary-nav" aria-label="Visible notes by review state">
     ${notesSummaryButton("", "All", counts.total)}
-    ${notesSummaryButton("raw", "Raw", counts.raw)}
+    ${notesSummaryButton("raw", "Draft", counts.raw)}
     ${notesSummaryButton("reviewed", "Reviewed", counts.reviewed)}
   </nav>`;
 }
@@ -243,9 +243,9 @@ function renderNotes(notes) {
       const tags = (note.tags || []).join(", ");
       const date = note.updated_at || note.created_at || "";
       const reviewState = note.review_state || "raw";
-      const reviewLabel = reviewState === "reviewed" ? "Reviewed" : "Raw";
+      const reviewLabel = reviewState === "reviewed" ? "Reviewed" : "Draft";
       const reviewAction = reviewState === "reviewed" ? "mark-raw" : "mark-reviewed";
-      const reviewActionLabel = reviewState === "reviewed" ? "Mark raw" : "Mark reviewed";
+      const reviewActionLabel = reviewState === "reviewed" ? "Move to draft" : "Mark reviewed";
       const quote = note.quote ? `<blockquote class="note-quote">${escapeHtml(cleanText(note.quote))}</blockquote>` : "";
       const href = note.url ? `<a href="${escapeHtml(note.url)}">${escapeHtml(title || "Open note target")}</a>` : escapeHtml(title || "Untitled note");
       const isRecent = note.id === recentlyChangedNoteId;

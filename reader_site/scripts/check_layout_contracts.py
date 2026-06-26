@@ -285,7 +285,7 @@ def check_notes_ui() -> None:
     css = read_site_file("assets/notes.css")
     for needle in [
         "/assets/notes.css?v=notes12",
-        "/assets/notes.js?v=notes12",
+        "/assets/notes.js?v=notes13",
         'id="notesSubmit"',
         'id="notesClear"',
         'id="notesActiveFilters"',
@@ -483,7 +483,7 @@ def check_study_ui() -> None:
     css = read_site_file("assets/study.css")
     for needle in [
         "/assets/study.css?v=study10",
-        "/assets/study.js?v=study9",
+        "/assets/study.js?v=study10",
         'id="studySubmit"',
         'id="studyClear"',
         'id="studyActiveFilters"',

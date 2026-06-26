@@ -112,7 +112,7 @@ function renderEmptyStudy() {
     <p>${escapeHtml(body)}</p>
     <div class="empty-actions">
       ${clearAction}
-      <a href="/notes?review_state=raw">Review raw notes</a>
+      <a href="/notes?review_state=raw">Review drafts</a>
       <a href="/search">Search works</a>
     </div>
   </section>`;
