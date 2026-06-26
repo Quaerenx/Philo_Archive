@@ -264,7 +264,7 @@ def check_route_markup(route: str, html: str) -> None:
             "note-options",
             "Options</summary>",
             "notes-filter-tools",
-            "Find notes</summary>",
+            "Saved notes</summary>",
             "noteSort",
             "gemmaRuntimeStatus",
             "Translation service status",
@@ -282,8 +282,8 @@ def check_route_markup(route: str, html: str) -> None:
             "Study pack</div>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common100",
-            "reader-work.js?v=common115",
+            "reader-work.css?v=common101",
+            "reader-work.js?v=common116",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
 

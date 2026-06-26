@@ -6,7 +6,7 @@
   <title>{{TITLE}} / {{CORPUS_TITLE}}</title>
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
-  <link rel="stylesheet" href="/assets/reader-work.css?v=common100">
+  <link rel="stylesheet" href="/assets/reader-work.css?v=common101">
 </head>
 <body class="{{BODY_CLASS}}">
   <div class="page">
@@ -122,10 +122,6 @@
           <section id="study-panel-notes" class="study-panel" role="tabpanel" aria-labelledby="study-tab-notes" tabindex="0" data-study-panel="notes" hidden>
             <section class="research-card notes-card">
               <h2>Notes</h2>
-              <div class="note-target-tools">
-                <div id="noteTargetPreview" class="note-target-preview" aria-label="Note target">Note target</div>
-                <button type="button" id="lockNoteTarget" class="note-target-lock" aria-pressed="false">Lock target</button>
-              </div>
               <form id="noteForm">
                 <label>Note<textarea id="noteText" name="note" aria-describedby="noteStatus" required></textarea></label>
                 <details class="note-options">
@@ -134,9 +130,16 @@
                 </details>
                 <button type="submit">Save note</button>
               </form>
+              <details class="note-target-tools">
+                <summary>Target</summary>
+                <div class="note-target-body">
+                  <div id="noteTargetPreview" class="note-target-preview" aria-label="Note target">Note target</div>
+                  <button type="button" id="lockNoteTarget" class="note-target-lock" aria-pressed="false">Lock target</button>
+                </div>
+              </details>
               <div id="noteStatus" class="note-status" role="status" aria-live="polite" aria-atomic="true"></div>
               <details class="notes-filter-tools">
-                <summary>Find notes</summary>
+                <summary>Saved notes</summary>
                 <div class="notes-list-tools">
                   <label>Filter<input id="noteFilter" name="note_filter" autocomplete="off"></label>
                   <button type="button" id="noteFilterClear" class="note-filter-clear" disabled>Clear filter</button>
@@ -172,6 +175,6 @@
     </main>
   </div>
   <script id="researchData" type="application/json">{{RESEARCH_JSON}}</script>
-  <script src="/assets/reader-work.js?v=common115"></script>
+  <script src="/assets/reader-work.js?v=common116"></script>
 </body>
 </html>
