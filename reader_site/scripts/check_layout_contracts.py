@@ -208,8 +208,7 @@ def check_study_target_ui() -> None:
     for needle in [
         "function noteManageHref",
         "Target URL missing",
-        "Open target",
-        "Edit note",
+        ">Edit</a>",
     ]:
         require_contains(script, needle, "assets/study.js")
 
@@ -687,8 +686,8 @@ def check_study_ui() -> None:
     script = read_site_file("assets/study.js")
     css = read_site_file("assets/study.css")
     for needle in [
-        "/assets/study.css?v=study18",
-        "/assets/study.js?v=study24",
+        "/assets/study.css?v=study19",
+        "/assets/study.js?v=study25",
         'id="studySubmit"',
         'id="studyClear"',
         'id="studyActiveFilters"',
@@ -717,8 +716,8 @@ def check_study_ui() -> None:
         "function archiveCorpusById",
         "function corpusDisplayName",
         "function workDisplayName",
-        "study-note-more-actions",
-        "<summary>More</summary>",
+        ">Read</a>",
+        ">Notes</a>",
         "function studyCountLabel",
         "function studyGroupMeta",
         "archiveCorpora = payload.corpora || []",
@@ -741,6 +740,14 @@ def check_study_ui() -> None:
         'error.name === "AbortError"',
     ]:
         require_contains(script, needle, "assets/study.js")
+    for noisy_action in [
+        "Open work",
+        "Edit notes",
+        "Open target",
+        "Edit note",
+        "study-note-more-actions",
+    ]:
+        require(noisy_action not in script, f"assets/study.js should keep Study actions concise without {noisy_action!r}")
     for needle in [
         ".study-form.is-loading",
         ".study-form[hidden]",
@@ -773,12 +780,6 @@ def check_study_ui() -> None:
         ".note-title > a",
         ".note-footer",
         ".note-footer .note-meta",
-        ".study-note-more-actions",
-        ".study-note-more-actions summary",
-        ".study-note-more-actions summary::-webkit-details-marker",
-        ".study-note-more-actions summary::after",
-        ".study-note-more-actions[open] summary::after",
-        ".study-note-more-actions a",
         ".empty-state",
         ".empty-actions",
         ".empty-actions a",

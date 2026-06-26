@@ -221,18 +221,12 @@ function renderNote(note) {
     ? `<a href="${escapeHtml(note.url)}">${escapeHtml(target)}</a>`
     : escapeHtml(target);
   const missingTarget = note.url ? "" : "Target URL missing";
-  const openTarget = note.url ? `<a href="${escapeHtml(note.url)}">Open target</a>` : "";
   const manageHref = noteManageHref(note);
   const meta = [
     tags ? `# ${tags}` : "",
     missingTarget
   ].filter(Boolean).join(" / ");
-  const actions = `
-      ${openTarget}
-      <details class="study-note-more-actions">
-        <summary>More</summary>
-        <a href="${escapeHtml(manageHref)}">Edit note</a>
-      </details>`;
+  const actions = `<a href="${escapeHtml(manageHref)}">Edit</a>`;
   return `<article class="study-note">
     <div class="note-title">
       ${targetLink}
@@ -285,8 +279,8 @@ function renderStudy(payload) {
         ${tagsPanel}
         ${group.notes.map(renderNote).join("")}
         <div class="group-actions">
-          ${workHref ? `<a href="${escapeHtml(workHref)}">Open work</a>` : ""}
-          <a href="${escapeHtml(notesHref)}">Edit notes</a>
+          ${workHref ? `<a href="${escapeHtml(workHref)}">Read</a>` : ""}
+          <a href="${escapeHtml(notesHref)}">Notes</a>
         </div>
       </section>`;
     }).join("")
