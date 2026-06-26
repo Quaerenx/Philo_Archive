@@ -207,7 +207,7 @@ def check_search_ui() -> None:
     css = read_site_file("assets/search.css")
     for needle in [
         "/assets/search.css?v=phase16",
-        "/assets/search.js?v=phase15",
+        "/assets/search.js?v=phase16",
         'href="/translations"',
         "Translation review",
         'class="filter-panel"',
@@ -226,6 +226,8 @@ def check_search_ui() -> None:
         "setSearchBusy",
         "renderSearchPending",
         "function renderEmptySearch",
+        "function renderSearchStart",
+        "search-start-links",
         "Search the archive.",
         "No matching passages.",
         "Find a work, phrase, or note, then open the source to read and study.",
@@ -280,6 +282,8 @@ def check_search_ui() -> None:
         "justify-content: flex-end",
         ".search-form.is-searching #searchSubmit",
         ".empty-state",
+        ".search-start",
+        ".search-start-links",
         ".empty-actions",
         ".empty-actions a",
         ".search-skeleton-line",

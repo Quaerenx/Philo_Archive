@@ -227,7 +227,7 @@ def check_route_markup(route: str, html: str) -> None:
             "searchStatus",
             "aria-busy=\"false\"",
             "search.css?v=phase16",
-            "search.js?v=phase15",
+            "search.js?v=phase16",
             "Translation review",
             "filter-panel",
         ]:

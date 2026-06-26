@@ -17,6 +17,12 @@ const metadataEndpoints = {
   kierkegaard: "/api/kierkegaard/metadata",
   wittgenstein: "/api/wittgenstein/metadata"
 };
+const startCorpora = [
+  ["nietzsche", "Nietzsche"],
+  ["bible", "Bible"],
+  ["kierkegaard", "Kierkegaard"],
+  ["wittgenstein", "Wittgenstein"]
+];
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -110,6 +116,18 @@ function renderEmptySearch(query) {
       ${clearAction}
       <a href="${escapeHtml(notesSearchHref(query))}">Search notes</a>
       <a href="/">Archive index</a>
+    </div>
+  </section>`;
+}
+
+function renderSearchStart() {
+  const links = startCorpora
+    .map(([corpusId, label]) => `<a href="/category/${escapeHtml(corpusId)}">${escapeHtml(label)}</a>`)
+    .join("");
+  return `<section class="search-start" aria-label="Browse archive">
+    <h2>Browse</h2>
+    <div class="search-start-links">
+      ${links}
     </div>
   </section>`;
 }
@@ -417,7 +435,7 @@ async function runSearch() {
   updateSearchClearState();
   if (!query) {
     statusEl.textContent = "";
-    resultsEl.innerHTML = "";
+    resultsEl.innerHTML = renderSearchStart();
     setSearchBusy(false);
     return;
   }
@@ -496,5 +514,7 @@ populateFilters(initialWorkId, initialVariantId).then(() => {
   updateSearchClearState();
   if (queryInput.value) {
     runSearch();
+  } else {
+    resultsEl.innerHTML = renderSearchStart();
   }
 });

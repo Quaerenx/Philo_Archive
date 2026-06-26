@@ -320,6 +320,44 @@ h1 {
   line-height: 1.45;
 }
 
+.search-start {
+  display: grid;
+  gap: 10px;
+  padding: 0;
+  background: transparent;
+}
+
+.search-start h2 {
+  margin: 0;
+  color: #555;
+  font-size: 11px;
+  font-weight: normal;
+  line-height: 1.35;
+}
+
+.search-start-links {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.search-start-links a {
+  display: flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 8px;
+  color: #222;
+  background: #fff;
+  border: 1px solid #d4d4d4;
+}
+
+.search-start-links a:hover,
+.search-start-links a:focus-visible {
+  text-decoration: none;
+  border-color: #999;
+}
+
 .empty-actions {
   display: flex;
   flex-wrap: wrap;
@@ -548,6 +586,10 @@ mark {
 
   .search-form {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .search-start-links {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .form-actions button {
