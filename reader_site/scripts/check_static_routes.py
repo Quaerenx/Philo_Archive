@@ -68,6 +68,9 @@ def check_routes(base_url: str) -> None:
     static_cases = {
         "/": "Personal Archive",
         "/category/nietzsche": "Personal Archive",
+        "/category/bible": "Personal Archive",
+        "/category/kierkegaard": "Personal Archive",
+        "/category/wittgenstein": "Personal Archive",
         "/search": "Search",
         "/notes": "Notes",
         "/study": "Study",

@@ -25,6 +25,9 @@ PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 ROUTES = [
     ("home", "/", True),
     ("nietzsche-category", "/category/nietzsche", True),
+    ("bible-category", "/category/bible", True),
+    ("kierkegaard-category", "/category/kierkegaard", True),
+    ("wittgenstein-category", "/category/wittgenstein", True),
     ("nietzsche-work", "/work/nietzsche/GM", True),
     ("nietzsche-work-selected", "/work/nietzsche/GM#p-0023.s001", True),
     ("search", "/search", True),
