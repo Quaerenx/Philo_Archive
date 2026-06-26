@@ -395,19 +395,13 @@ async function checkGemmaRuntimeStatus(announce = false) {
   }
 }
 
-function translationRecordSummaryChip(label, value, reviewState = "") {
-  return `<span class="translation-record-chip"${reviewState ? ` data-review-state="${escapeHtml(reviewState)}"` : ""}>
-    <span>${escapeHtml(label)}</span>
-    <strong>${Number(value || 0).toLocaleString()}</strong>
-  </span>`;
-}
-
 function setTranslationRecordsSummary(text, state = "empty", counts = null) {
   if (!translationRecordsSummary) return;
   translationRecordsSummary.dataset.recordsState = state;
   if (!counts) {
     translationRecordsSummary.textContent = text;
     translationRecordsSummary.removeAttribute("aria-label");
+    translationRecordsSummary.removeAttribute("title");
     return;
   }
   const total = Number(counts.total || 0);
@@ -416,22 +410,19 @@ function setTranslationRecordsSummary(text, state = "empty", counts = null) {
   const reviewed = Number(counts.reviewed || 0);
   const rejected = Number(counts.rejected || 0);
   const reviewHint = total
-    ? (generated ? `${generated} to check.` : "All saved.")
-    : "No translations yet.";
+    ? (generated
+      ? `${generated.toLocaleString()} to check`
+      : `${reviewed || total} saved`)
+    : "No translations yet";
+  const detailLabel = `${text}. ${total} translation records, ${sentenceCount} sentences, ${generated} to check, ${reviewed} saved, ${rejected} rejected.`;
   translationRecordsSummary.setAttribute(
     "aria-label",
-    `${text}. ${total} translation records, ${sentenceCount} sentences, ${generated} to check, ${reviewed} saved, ${rejected} rejected. ${reviewHint}`
+    detailLabel
   );
+  translationRecordsSummary.title = detailLabel;
   translationRecordsSummary.innerHTML = `
     <span class="translation-records-summary-main">${escapeHtml(text)}</span>
-    <span class="translation-records-summary-hint">${escapeHtml(reviewHint)}</span>
-    <span class="translation-record-counts" aria-hidden="true">
-      ${translationRecordSummaryChip("Total", total)}
-      ${translationRecordSummaryChip("Sentences", sentenceCount)}
-      ${translationRecordSummaryChip("To check", generated, "generated")}
-      ${translationRecordSummaryChip("Saved", reviewed, "reviewed")}
-      ${translationRecordSummaryChip("Rejected", rejected, "rejected")}
-    </span>`;
+    <span class="translation-records-summary-hint">${escapeHtml(reviewHint)}</span>`;
 }
 
 function updateTranslationExportLinks(total, reviewed) {

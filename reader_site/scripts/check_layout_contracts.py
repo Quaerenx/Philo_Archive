@@ -691,9 +691,8 @@ def check_work_source_bundle_ui() -> None:
         "gemmaRuntimeCheckButton.addEventListener",
         "translationRecordsSummary",
         "function setTranslationRecordsSummary",
-        "function translationRecordSummaryChip",
         "translation-records-summary-main",
-        "translation-record-counts",
+        "translationRecordsSummary.title = detailLabel",
         "needs-review",
         "function updateTranslationExportLinks",
         "translationSentenceStates",
@@ -1061,8 +1060,8 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common111", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common96", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common112", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common97", "templates/work.html")
     for needle in [
         "reading-desk",
         "toolbar-more",
@@ -1241,9 +1240,6 @@ def check_work_source_bundle_ui() -> None:
         ".translation-records-summary",
         ".translation-records-summary[data-records-state=\"has-records\"]",
         ".translation-records-summary[data-records-state=\"needs-review\"]",
-        ".translation-record-counts",
-        ".translation-record-chip",
-        ".translation-record-chip[data-review-state=\"generated\"]",
         ".study-progress",
         ".study-progress[data-progress-state=\"active\"]",
         ".study-progress[data-progress-state=\"complete\"]",
