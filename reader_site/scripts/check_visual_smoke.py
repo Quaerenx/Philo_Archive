@@ -222,7 +222,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translations.css?v=trans21",
             "translations.js?v=trans49",
             "translationsListTools",
-            "Search and filters</summary>",
+            "Filter</summary>",
             "filter-panel",
             "export-tools",
             "Export</summary>",

@@ -490,7 +490,7 @@ def check_translations_ui() -> None:
         "/assets/translations.js?v=trans49",
         '<option value="">All corpora</option>',
         'id="translationsListTools"',
-        "Search and filters</summary>",
+        "Filter</summary>",
         'id="translationsSubmit"',
         'id="translationsClear"',
         'id="translationsReviewQueue"',
