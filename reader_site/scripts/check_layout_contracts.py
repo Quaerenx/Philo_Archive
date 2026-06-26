@@ -936,7 +936,7 @@ def check_work_source_bundle_ui() -> None:
             f"{function_name} reading-first translation layout",
         )
     require_contains(template, "/assets/reader-work.js?v=common93", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common84", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common85", "templates/work.html")
     for needle in [
         "reading-desk",
         "toolbar-more",
@@ -996,6 +996,7 @@ def check_work_source_bundle_ui() -> None:
         'role="tablist"',
         'role="tab"',
         'role="tabpanel"',
+        "study-tab-secondary",
         'aria-controls="study-panel-translation"',
         'aria-labelledby="study-tab-translation"',
         'aria-selected="true"',
@@ -1092,8 +1093,11 @@ def check_work_source_bundle_ui() -> None:
         "#nextUnstudiedSentence",
         "#nextReviewSentence",
         ".study-tabs",
+        "grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) repeat(2, minmax(58px, 0.78fr))",
         ".study-tab:focus-visible",
         ".study-tab.active::after",
+        ".study-tab-secondary",
+        ".study-tab-secondary.active",
         ".runtime-status",
         ".runtime-status-dot",
         ".runtime-status-text",
@@ -1122,7 +1126,7 @@ def check_work_source_bundle_ui() -> None:
         ".sentence-controls button.needs-confirm",
         ".translation-review-actions button.needs-confirm",
         "min-height: 38px",
-        "grid-template-columns: repeat(4, minmax(72px, 1fr))",
+        "grid-template-columns: minmax(104px, 1.35fr) minmax(80px, 1fr) repeat(2, minmax(68px, 0.78fr))",
         "overscroll-behavior-x: contain",
         "scrollbar-width: thin",
         "@keyframes archive-panel-in",
