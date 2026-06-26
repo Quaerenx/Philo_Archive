@@ -804,8 +804,8 @@ def check_work_source_bundle_ui() -> None:
         "citation-copy-options",
         "citation-copy-actions",
         'id="copyCitation" aria-label="Copy citation"',
-        'class="citation-copy-options" aria-label="More copy options"',
-        "More</summary>",
+        'class="citation-copy-options" aria-label="Copy options"',
+        "Copy</summary>",
         'id="copyUrl" aria-label="Copy URL"',
         'id="copySourceBundle" aria-label="Copy source bundle"',
         ">Source bundle</button>",
@@ -1237,13 +1237,13 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common124", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common125", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common103", "templates/work.html")
     for needle in [
         "reading-desk",
         "toolbar-more",
         "toolbar-more-links",
-        "More</summary>",
+        "Workspace</summary>",
         'href="{{SOURCE_HREF}}">Source</a>',
         "source-page",
         "study-page",

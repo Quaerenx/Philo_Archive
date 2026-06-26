@@ -242,12 +242,12 @@ def check_route_markup(route: str, html: str) -> None:
         for needle in [
             "reading-desk",
             "toolbar-more",
-            "More</summary>",
+            "Workspace</summary>",
             "Source</a>",
             "study-tabs",
             "study-tab-secondary",
             "citation-copy-options",
-            "More</summary>",
+            "Copy</summary>",
             "studyPanelToggle",
             "studyPanelScrim",
             "study-panel-toggle-action",
@@ -288,7 +288,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common103",
-            "reader-work.js?v=common124",
+            "reader-work.js?v=common125",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
 
@@ -616,7 +616,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       return {
         copyText: document.querySelector('#copyCitation')?.textContent.trim() || '',
         copyLabel: document.querySelector('#copyCitation')?.getAttribute('aria-label') || '',
-        moreText: document.querySelector('.citation-copy-options summary')?.textContent.trim() || '',
+        copyOptionsText: document.querySelector('.citation-copy-options summary')?.textContent.trim() || '',
         previewHasUrl: /https?:\/\//.test(preview?.textContent || ''),
         copiedHasUrl: /https?:\/\//.test(copied),
         urlText: document.querySelector('#copyUrl')?.textContent.trim() || '',
@@ -628,8 +628,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (citationState.copyText !== 'Copy' || citationState.copyLabel !== 'Copy citation') {
       throw new Error(`citation tab primary copy control should stay concise: ${JSON.stringify(citationState)}`);
     }
-    if (citationState.moreText !== 'More') {
-      throw new Error(`citation tab secondary copy summary should stay concise: ${JSON.stringify(citationState)}`);
+    if (citationState.copyOptionsText !== 'Copy') {
+      throw new Error(`citation tab secondary copy summary should stay task-specific: ${JSON.stringify(citationState)}`);
     }
     if (citationState.previewHasUrl || !citationState.copiedHasUrl) {
       throw new Error(`citation preview should hide URL while copied citation keeps it: ${JSON.stringify(citationState)}`);
