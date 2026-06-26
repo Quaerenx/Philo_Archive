@@ -358,6 +358,12 @@ function renderRecord(record) {
   const targetUrl = cleanText(record.target_url || "");
   const isRecent = record.id === recentlyChangedRecordId;
   const reviewLabel = REVIEW_LABELS[reviewState] || reviewState;
+  const rejectAction = reviewState !== "rejected"
+    ? `<details class="translation-more-actions">
+        <summary>More</summary>
+        <button type="button" data-review-state="rejected" aria-keyshortcuts="X" title="Reject">Reject</button>
+      </details>`
+    : "";
   const actions = [
     reviewState !== "reviewed"
       ? '<button type="button" class="primary-review-action" data-review-state="reviewed" aria-keyshortcuts="R" title="Save translation">Save</button>'
@@ -366,9 +372,7 @@ function renderRecord(record) {
     reviewState !== "generated"
       ? '<button type="button" data-review-state="generated" aria-keyshortcuts="G" title="Move back to check">To check</button>'
       : "",
-    reviewState !== "rejected"
-      ? '<button type="button" data-review-state="rejected" aria-keyshortcuts="X" title="Reject">Reject</button>'
-      : ""
+    rejectAction
   ].filter(Boolean).join("");
   return `<article class="translation-record-card${isRecent ? " is-recent" : ""}" tabindex="-1" data-record-id="${escapeHtml(record.id)}" data-corpus-id="${escapeHtml(record.corpus_id)}" data-review-state="${escapeHtml(reviewState)}">
     <header class="translation-record-heading">

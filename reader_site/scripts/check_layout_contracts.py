@@ -436,8 +436,8 @@ def check_translations_ui() -> None:
     css = read_site_file("assets/translations.css")
     for needle in [
         "/assets/notes.css?v=notes17",
-        "/assets/translations.css?v=trans10",
-        "/assets/translations.js?v=trans23",
+        "/assets/translations.css?v=trans11",
+        "/assets/translations.js?v=trans24",
         '<option value="">All corpora</option>',
         'id="translationsSubmit"',
         'id="translationsClear"',
@@ -527,6 +527,8 @@ def check_translations_ui() -> None:
         "translationsExportJson",
         'params.set("q", query)',
         "primary-review-action",
+        "translation-more-actions",
+        "More</summary>",
         "Open work",
     ]:
         require_contains(script, needle, "assets/translations.js")
@@ -572,6 +574,11 @@ def check_translations_ui() -> None:
         ".translation-commentary",
         ".translation-commentary h3",
         ".translation-actions",
+        ".translation-more-actions",
+        ".translation-more-actions summary",
+        ".translation-more-actions summary::after",
+        ".translation-more-actions[open] summary::after",
+        ".translation-more-actions button",
         ".translation-actions .primary-review-action:not(:disabled)",
         ".translation-actions button.is-working",
         "@keyframes archive-review-target",

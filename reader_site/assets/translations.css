@@ -309,6 +309,43 @@
   animation: archive-spin 850ms linear infinite;
 }
 
+.translation-more-actions {
+  margin: 0;
+}
+
+.translation-more-actions summary {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  padding: 4px 10px;
+  color: #555;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  background: #fff;
+  border: 1px solid #bdbdbd;
+  cursor: pointer;
+  list-style: none;
+}
+
+.translation-more-actions summary::-webkit-details-marker {
+  display: none;
+}
+
+.translation-more-actions summary::after {
+  margin-left: 5px;
+  color: #777;
+  content: "+";
+}
+
+.translation-more-actions[open] summary::after {
+  content: "-";
+}
+
+.translation-more-actions button {
+  color: #7b2f2f;
+  border-color: #d7a0a0;
+}
+
 @keyframes archive-review-target {
   0% {
     background: #fff4c8;
@@ -375,6 +412,8 @@
 
   .translation-actions a,
   .translation-actions button,
+  .translation-more-actions,
+  .translation-more-actions summary,
   .translation-review-queue {
     width: 100%;
     min-width: 0;
