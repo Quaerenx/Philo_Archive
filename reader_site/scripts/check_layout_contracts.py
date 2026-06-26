@@ -93,7 +93,7 @@ def check_html_entrypoints() -> None:
         require_contains(html, 'class="page"', relative_path)
         if relative_path == "index.html":
             require_contains(html, "Translations", relative_path)
-            require_contains(html, "/app.js?v=home4", relative_path)
+            require_contains(html, "/app.js?v=home5", relative_path)
 
 
 def check_page_frame_css(relative_path: str, css: str) -> None:
@@ -155,6 +155,7 @@ def check_home_script() -> None:
         "START_READING_LIMIT",
         "START_READING_WORK_IDS",
         "START_READING_LABELS",
+        "ROOT_LINK_LABELS",
         'nietzsche: ["M", "FW", "Za-I", "JGB", "GM", "GD"]',
         '"oshb.Gen", "oshb.Ps", "oshb.Isa", "sblgnt.Matt", "sblgnt.John", "sblgnt.Rom"',
         'kierkegaard: ["ee1", "ee2", "fb", "g", "ba", "ps"]',
@@ -166,6 +167,7 @@ def check_home_script() -> None:
         "function uniqueLinks",
         "function startReadingLabel",
         "function startReadingTitle",
+        "function rootLinkLabel",
         "linksByWorkId",
         "START_READING_WORK_IDS[corpus.id]",
         "START_READING_LIMIT",

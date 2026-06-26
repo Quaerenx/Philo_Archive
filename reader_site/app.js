@@ -35,6 +35,13 @@ const START_READING_LABELS = {
   Group_RPPCorpus: "Remarks on Psychology",
 };
 
+const ROOT_LINK_LABELS = {
+  nietzsche: "니체 / Nietzsche",
+  bible: "성경 / Bible",
+  kierkegaard: "키르케고르 / Kierkegaard",
+  wittgenstein: "비트겐슈타인 / Wittgenstein",
+};
+
 const el = {
   archiveLinks: document.querySelector("#archiveLinks"),
   pageSubtitle: document.querySelector("#pageSubtitle"),
@@ -120,6 +127,10 @@ function startReadingTitle(link) {
   return displayLabel !== link.label ? ` title="${escapeHtml(link.label)}"` : "";
 }
 
+function rootLinkLabel(corpus) {
+  return ROOT_LINK_LABELS[corpus.id] || corpus.title;
+}
+
 function renderShell(title, subtitle) {
   el.pageTitle.textContent = title;
   el.pageSubtitle.textContent = subtitle;
@@ -145,7 +156,7 @@ function renderArchive() {
   }
 
   el.archiveLinks.innerHTML = visibleCorpora
-    .map((corpus) => `<a class="root-link" href="/category/${encodeURIComponent(corpus.id)}">${escapeHtml(corpus.title)}</a>`)
+    .map((corpus) => `<a class="root-link" href="/category/${encodeURIComponent(corpus.id)}">${escapeHtml(rootLinkLabel(corpus))}</a>`)
     .join("");
 }
 
