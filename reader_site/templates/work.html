@@ -16,15 +16,15 @@
         <h1>{{TITLE}}</h1>
         <div class="meta-line">{{CORPUS_TITLE}} / {{WORK_ID}} / {{SECTION}} / {{META}}</div>
         <nav class="toolbar" aria-label="Reader navigation">
-          <a href="/">Archive index</a>
+          <a href="/">Archive</a>
           <a href="{{CATEGORY_HREF}}">{{CORPUS_TITLE}}</a>
           <details class="toolbar-more">
             <summary>More</summary>
             <div class="toolbar-more-links">
-              <a href="/notes">Research notes</a>
-              <a href="/study">Study notes</a>
-              <a href="/translations?corpus_id={{CORPUS_ID}}&work_id={{WORK_ID}}">Translation review</a>
-              <a href="{{SOURCE_HREF}}">Source mode</a>
+              <a href="/notes">Notes</a>
+              <a href="/study">Study</a>
+              <a href="/translations?corpus_id={{CORPUS_ID}}&work_id={{WORK_ID}}">Review</a>
+              <a href="{{SOURCE_HREF}}">Source</a>
             </div>
             <div class="toolbar-source-path" aria-label="Source file">
               <span>Source file</span>
@@ -92,7 +92,7 @@
                     <details class="translation-review-tools">
                       <summary>Review and export</summary>
                       <div class="translation-review-tools-body">
-                        <div class="translation-review-actions" aria-label="Translation review actions">
+                        <div class="translation-review-actions" aria-label="Review actions">
                           <button type="button" id="markTranslationReviewed" title="Save translation" aria-label="Save translation" disabled>Save</button>
                           <button type="button" id="rejectTranslation" title="Reject translation" aria-label="Reject translation" disabled>Reject</button>
                           <button type="button" id="copyStudyCard" title="Copy study card" aria-label="Copy study card" disabled>Copy study card</button>

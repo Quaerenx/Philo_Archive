@@ -154,7 +154,7 @@ function renderCategory(categoryId) {
   if (!corpus) {
     renderShell("Not found", "Unknown category");
     el.archiveLinks.innerHTML = [
-      `<a class="back-link" href="/">Archive index</a>`,
+      `<a class="back-link" href="/">Archive</a>`,
       `<div class="empty">Category not found.</div>`,
     ].join("");
     return;
@@ -168,7 +168,7 @@ function renderCategory(categoryId) {
   const sections = filteredCategorySections(corpus);
   if (!sections.length) {
     el.archiveLinks.innerHTML = [
-      `<a class="back-link" href="/">Archive index</a>`,
+      `<a class="back-link" href="/">Archive</a>`,
       categoryControls(corpus, baseSections),
       `<div class="empty">No works match this filter.</div>`,
     ].join("");
@@ -176,7 +176,7 @@ function renderCategory(categoryId) {
   }
 
   el.archiveLinks.innerHTML = [
-    `<a class="back-link" href="/">Archive index</a>`,
+    `<a class="back-link" href="/">Archive</a>`,
     categoryControls(corpus, baseSections),
     sections
       .map((section) => {

@@ -66,15 +66,15 @@ If `Reader` is not ready, start `run_reader_with_gemma.ps1` again. If `Local AI`
 
 ## Study Workflow
 
-1. Open `Archive index` or `Research search`.
+1. Open `Archive` or `Search`.
 2. Open a work page.
 3. Read the source text.
 4. Click a sentence to generate translation and commentary.
 5. Mark useful translations as reviewed.
 6. Add notes from the study panel when needed.
-7. Review notes in `Research Notes`.
-8. Use `Translation Review` for generated translations.
-9. Use `Study Notes` as the reviewed study bundle.
+7. Review notes in `Notes`.
+8. Use `Review` for generated translations.
+9. Use `Study` as the saved study bundle.
 
 ## If Something Looks Stale
 

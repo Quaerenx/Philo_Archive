@@ -115,7 +115,7 @@ function renderEmptySearch(query) {
     <div class="empty-actions">
       ${clearAction}
       <a href="${escapeHtml(notesSearchHref(query))}">Search notes</a>
-      <a href="/">Archive index</a>
+      <a href="/">Archive</a>
     </div>
   </section>`;
 }

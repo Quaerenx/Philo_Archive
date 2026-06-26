@@ -171,10 +171,10 @@ def fetch_html(url: str) -> str:
 def check_route_markup(route: str, html: str) -> None:
     if route == "/":
         for needle in [
-            "Research search",
-            "Research notes",
-            "Study notes",
-            "Translation review",
+            "Search",
+            "Notes",
+            "Study",
+            "Review",
             "app.js?v=home4",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
@@ -228,7 +228,7 @@ def check_route_markup(route: str, html: str) -> None:
             "aria-busy=\"false\"",
             "search.css?v=phase16",
             "search.js?v=phase16",
-            "Translation review",
+            "Review",
             "filter-panel",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")

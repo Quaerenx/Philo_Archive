@@ -92,7 +92,7 @@ def check_html_entrypoints() -> None:
         require_contains(html, "/assets/design-tokens.css", relative_path)
         require_contains(html, 'class="page"', relative_path)
         if relative_path == "index.html":
-            require_contains(html, "Translation review", relative_path)
+            require_contains(html, "Review", relative_path)
             require_contains(html, "/app.js?v=home4", relative_path)
 
 
@@ -208,7 +208,7 @@ def check_search_ui() -> None:
         "/assets/search.css?v=phase16",
         "/assets/search.js?v=phase16",
         'href="/translations"',
-        "Translation review",
+        "Review",
         'class="filter-panel"',
         'class="filter-panel-fields"',
         'id="searchSubmit"',
