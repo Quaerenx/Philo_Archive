@@ -310,6 +310,7 @@ h1 {
 }
 
 .research-card button.is-working {
+  position: relative;
   padding-right: 24px;
   color: #000;
   background: #fffaf0;

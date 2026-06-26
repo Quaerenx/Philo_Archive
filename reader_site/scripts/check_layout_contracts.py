@@ -834,7 +834,7 @@ def check_work_source_bundle_ui() -> None:
         "Source bundle requires a section, paragraph, or verse target.",
         "Source bundle URL copied.",
         "navigateSentence(1)",
-        "updateTranslationReview(\"reviewed\")",
+        "updateTranslationReview(\"reviewed\", quickAction)",
         "setTranslationMode(\"reading\")",
         "gemmaRuntimeStatus",
         "gemmaRuntimeStatusText",
@@ -1236,8 +1236,8 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common129", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common104", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common130", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common105", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
         "reading-desk",

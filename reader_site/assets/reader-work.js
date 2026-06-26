@@ -2108,7 +2108,7 @@ async function requestSentenceTranslation(regenerate = false) {
   }
 }
 
-async function updateTranslationReview(reviewState) {
+async function updateTranslationReview(reviewState, triggerButton = null) {
   if (!selectedTranslationRecord || !selectedTranslationRecord.id) {
     setTranslationStatus("No translation record selected.", true);
     return;
@@ -2116,6 +2116,9 @@ async function updateTranslationReview(reviewState) {
   clearActionConfirmations();
   const actionButton = reviewState === "reviewed" ? markTranslationReviewedButton : rejectTranslationButton;
   setActionButtonBusy(actionButton, true);
+  if (triggerButton && triggerButton !== actionButton) {
+    setActionButtonBusy(triggerButton, true);
+  }
   setTranslationStatus(reviewState === "reviewed" ? "Saving..." : "Updating...", true);
   try {
     const response = await fetch(`/api/sentence-translations/${encodeURIComponent(selectedTranslationRecord.id)}`, {
@@ -2140,6 +2143,9 @@ async function updateTranslationReview(reviewState) {
     setTranslationStatus(message, true);
   } finally {
     setActionButtonBusy(actionButton, false);
+    if (triggerButton && triggerButton !== actionButton) {
+      setActionButtonBusy(triggerButton, false);
+    }
     updateSentenceControls();
   }
 }
@@ -2727,7 +2733,7 @@ translationOutput.addEventListener("click", (event) => {
       return;
     }
     if (action === "mark-reviewed") {
-      updateTranslationReview("reviewed");
+      updateTranslationReview("reviewed", quickAction);
       return;
     }
     if (action === "draft-note") {
