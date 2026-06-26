@@ -236,7 +236,7 @@ function setActionButtonBusy(button, isBusy) {
 }
 
 function renderPending() {
-  statusEl.textContent = "Loading...";
+  statusEl.textContent = "";
   resultsEl.innerHTML = `
     <article class="translation-record-card notes-skeleton" aria-hidden="true">
       <span class="notes-skeleton-line title"></span>

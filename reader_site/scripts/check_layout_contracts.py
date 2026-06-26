@@ -315,7 +315,7 @@ def check_notes_ui() -> None:
     css = read_site_file("assets/notes.css")
     for needle in [
         "/assets/notes.css?v=notes17",
-        "/assets/notes.js?v=notes22",
+        "/assets/notes.js?v=notes23",
         'id="notesSubmit"',
         'id="notesClear"',
         'id="notesActiveFilters"',
@@ -437,7 +437,7 @@ def check_translations_ui() -> None:
     for needle in [
         "/assets/notes.css?v=notes17",
         "/assets/translations.css?v=trans11",
-        "/assets/translations.js?v=trans24",
+        "/assets/translations.js?v=trans25",
         '<option value="">All corpora</option>',
         'id="translationsSubmit"',
         'id="translationsClear"',
@@ -607,7 +607,7 @@ def check_study_ui() -> None:
     css = read_site_file("assets/study.css")
     for needle in [
         "/assets/study.css?v=study16",
-        "/assets/study.js?v=study19",
+        "/assets/study.js?v=study20",
         'id="studySubmit"',
         'id="studyClear"',
         'id="studyActiveFilters"',

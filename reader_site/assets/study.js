@@ -154,7 +154,7 @@ function setStudyBusy(isBusy) {
 }
 
 function renderStudyPending() {
-  statusEl.textContent = "Loading...";
+  statusEl.textContent = "";
   resultsEl.innerHTML = `
     <section class="study-group study-skeleton" aria-hidden="true">
       <span class="study-skeleton-line title"></span>

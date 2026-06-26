@@ -193,7 +193,7 @@ function setActionButtonBusy(button, isBusy) {
 }
 
 function renderNotesPending() {
-  statusEl.textContent = "Loading...";
+  statusEl.textContent = "";
   resultsEl.innerHTML = `
     <article class="note-card notes-skeleton" aria-hidden="true">
       <span class="notes-skeleton-line title"></span>
