@@ -144,6 +144,7 @@ function clearNotesFilters() {
   requestedCorpusId = "";
   requestedTargetId = "";
   loadNotes();
+  queryInput.focus();
 }
 
 function removeNotesFilter(filterName) {

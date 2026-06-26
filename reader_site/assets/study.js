@@ -126,6 +126,7 @@ function clearStudyFilters() {
   tagInput.value = "";
   requestedCorpusId = "";
   loadStudy();
+  queryInput.focus();
 }
 
 function removeStudyFilter(filterName) {

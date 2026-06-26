@@ -532,6 +532,7 @@ function clearFilters() {
   workInput.value = "";
   reviewSelect.value = "all";
   loadRecords();
+  queryInput.focus();
 }
 
 function removeFilter(filterName) {

@@ -307,7 +307,7 @@ def check_notes_ui() -> None:
     css = read_site_file("assets/notes.css")
     for needle in [
         "/assets/notes.css?v=notes15",
-        "/assets/notes.js?v=notes19",
+        "/assets/notes.js?v=notes20",
         'id="notesSubmit"',
         'id="notesClear"',
         'id="notesActiveFilters"',
@@ -354,6 +354,7 @@ def check_notes_ui() -> None:
         "Find a work",
         "Study",
         "function clearNotesFilters",
+        "queryInput.focus();",
         "function updateNotesClearState",
         "function updateNotesFilterSummary",
         "function removeNotesFilter",
@@ -414,7 +415,7 @@ def check_translations_ui() -> None:
     for needle in [
         "/assets/notes.css?v=notes15",
         "/assets/translations.css?v=trans10",
-        "/assets/translations.js?v=trans21",
+        "/assets/translations.js?v=trans22",
         '<option value="">All corpora</option>',
         'id="translationsSubmit"',
         'id="translationsClear"',
@@ -459,6 +460,7 @@ def check_translations_ui() -> None:
         "Translation and commentary will appear here for review.",
         "Study",
         "function clearFilters",
+        "queryInput.focus();",
         "function updateFilterSummary",
         "function removeFilter",
         "function renderSummary",
@@ -577,7 +579,7 @@ def check_study_ui() -> None:
     css = read_site_file("assets/study.css")
     for needle in [
         "/assets/study.css?v=study14",
-        "/assets/study.js?v=study16",
+        "/assets/study.js?v=study17",
         'id="studySubmit"',
         'id="studyClear"',
         'id="studyActiveFilters"',
@@ -606,6 +608,7 @@ def check_study_ui() -> None:
         "Save notes while reading, then return here to study them.",
         "Find a work",
         "function clearStudyFilters",
+        "queryInput.focus();",
         "function updateStudyClearState",
         "function updateStudyFilterSummary",
         "function removeStudyFilter",
