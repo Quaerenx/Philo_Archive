@@ -28,8 +28,10 @@ Check the running local reader and Gemma sidecar:
 
 ```powershell
 cd .\reader_site
-python .\scripts\check_local_runtime.py
+python .\scripts\check_local_runtime.py --plain
 ```
+
+For the short internal-user runbook, see `docs/local_operator_quickstart.md`.
 
 The source corpus root defaults to the parent directory of `reader_site`. On another machine, either keep the same sibling-folder layout or set:
 

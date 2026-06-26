@@ -39,8 +39,10 @@ python .\server.py --port 8793
 To confirm that the reader and local translator are reachable:
 
 ```powershell
-python .\scripts\check_local_runtime.py
+python .\scripts\check_local_runtime.py --plain
 ```
+
+For the short internal-user runbook, see `reader_site/docs/local_operator_quickstart.md`.
 
 ## Expected Local Layout
 
