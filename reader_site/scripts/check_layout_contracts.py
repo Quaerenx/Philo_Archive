@@ -1155,16 +1155,14 @@ def check_work_source_bundle_ui() -> None:
         "function focusNoteComposer",
         "function noteAlreadyIncludesDraft",
         "function updateNoteReview",
-        "This translation is already in the note.",
-        "Translation is already in Notes.",
+        "Already in this note.",
+        "Already in Notes.",
         "noteForm.scrollIntoView",
         "preventScroll: isMobileStudyLayout()",
-        "Translation & commentary",
-        "Original source",
-        "Korean translation",
-        "Translation drafted into this note. Edit and save.",
-        "Translation appended to this note. Edit and save.",
-        "Translation appended to Notes.",
+        "Ready to save.",
+        "Ready to save in Notes.",
+        "Added to this note. Review and save.",
+        "Added to Notes.",
         "noteText.setSelectionRange",
         "translationStudyCardText",
         "function translationQuickActions",
@@ -1238,7 +1236,7 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common128", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common129", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common104", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',

@@ -2146,21 +2146,15 @@ async function updateTranslationReview(reviewState) {
 
 function translationNoteDraftText(record) {
   if (!record) return "";
-  const source = cleanText(record.source_text_excerpt || selectedSentence?.text || "");
   const translation = cleanText(record.translation || "");
   const commentary = cleanText(record.commentary || record.interpretation || "");
-  const lines = [
-    "Translation & commentary",
-    `Target: ${selectedSentencePositionLabel()} / ${selectedSentence?.sentenceId || ""}`
-  ];
-  if (source) {
-    lines.push("", "Original source", source);
-  }
+  const lines = [];
   if (translation) {
-    lines.push("", "Korean translation", translation);
+    lines.push("Translation", translation);
   }
   if (commentary) {
-    lines.push("", "Commentary", commentary);
+    if (lines.length) lines.push("");
+    lines.push("Commentary", commentary);
   }
   return lines.join("\n");
 }
@@ -2212,12 +2206,12 @@ function draftNoteFromTranslation() {
   setStudyPanelExpanded(true);
   focusNoteComposer();
   if (alreadyDrafted) {
-    noteStatus.textContent = "This translation is already in the note.";
-    setTranslationStatus("Translation is already in Notes.");
+    noteStatus.textContent = "Already in this note.";
+    setTranslationStatus("Already in Notes.");
     return;
   }
-  noteStatus.textContent = existingNote ? "Translation appended to this note. Edit and save." : "Translation drafted into this note. Edit and save.";
-  setTranslationStatus(existingNote ? "Translation appended to Notes." : "Translation drafted into Notes.");
+  noteStatus.textContent = existingNote ? "Added to this note. Review and save." : "Ready to save.";
+  setTranslationStatus(existingNote ? "Added to Notes." : "Ready to save in Notes.");
 }
 
 function translationStudyCardText(record) {

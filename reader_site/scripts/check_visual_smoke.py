@@ -288,7 +288,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common104",
-            "reader-work.js?v=common128",
+            "reader-work.js?v=common129",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
 
@@ -588,8 +588,42 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (state.visibleExtraCount !== 0) throw new Error(`reading mode exposed study-only translation extras: ${JSON.stringify(state)}`);
     if (state.activeTab !== 'Translation') throw new Error(`selected work route did not keep Translation tab active: ${JSON.stringify(state)}`);
     if (state.studyToolsOpen) throw new Error(`study tools should stay collapsed in default reading mode: ${JSON.stringify(state)}`);
-    await page.click('#study-tab-notes');
+    await page.click('[data-translation-quick-action="draft-note"]');
     await page.waitForSelector('#study-panel-notes:not([hidden])', { timeout: 5000 });
+    await page.waitForFunction(() => document.activeElement?.id === 'noteText', null, { timeout: 3000 }).catch(() => {});
+    const draftState = await page.evaluate(() => {
+      const note = document.querySelector('#noteText')?.value || '';
+      return {
+        activeTab: document.querySelector('.study-tab.active')?.textContent.trim() || '',
+        note,
+        tags: document.querySelector('#noteTags')?.value || '',
+        noteStatus: document.querySelector('#noteStatus')?.textContent.trim() || '',
+        translationStatus: document.querySelector('#translationStatus')?.textContent.trim() || '',
+        activeElementId: document.activeElement?.id || ''
+      };
+    });
+    if (draftState.activeTab !== 'Notes') {
+      throw new Error(`Add note should switch to Notes tab: ${JSON.stringify(draftState)}`);
+    }
+    for (const expectedText of ['Translation', 'Commentary']) {
+      if (!draftState.note.includes(expectedText)) {
+        throw new Error(`Add note should draft concise ${expectedText} content: ${JSON.stringify(draftState)}`);
+      }
+    }
+    for (const noisyText of ['Target:', 'Original source', 'Korean translation']) {
+      if (draftState.note.includes(noisyText)) {
+        throw new Error(`Add note should avoid noisy draft label ${noisyText}: ${JSON.stringify(draftState)}`);
+      }
+    }
+    if (!draftState.tags.includes('ai-translation')) {
+      throw new Error(`Add note should keep the translation tag: ${JSON.stringify(draftState)}`);
+    }
+    if (!/Ready to save|Added to this note/.test(draftState.noteStatus)) {
+      throw new Error(`Add note should tell the reader what to do next: ${JSON.stringify(draftState)}`);
+    }
+    if (draftState.activeElementId !== 'noteText') {
+      throw new Error(`Add note should focus the note editor: ${JSON.stringify(draftState)}`);
+    }
     const notesState = await page.evaluate(() => ({
       notePlaceholder: document.querySelector('#noteText')?.getAttribute('placeholder') || '',
       noteLabelHidden: Boolean(document.querySelector('#noteText')?.closest('label')?.querySelector('.visually-hidden')),
