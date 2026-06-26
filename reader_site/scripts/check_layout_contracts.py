@@ -485,7 +485,7 @@ def check_translations_ui() -> None:
     css = read_site_file("assets/translations.css")
     for needle in [
         "/assets/notes.css?v=notes19",
-        "/assets/translations.css?v=trans21",
+        "/assets/translations.css?v=trans22",
         "/assets/translations.js?v=trans51",
         '<option value="">All corpora</option>',
         'id="translationsListTools"',
