@@ -58,9 +58,9 @@
                   </section>
                   <section class="translation-utility-group" aria-label="Reading controls">
                     <div class="translation-utility-group-label">Reading</div>
-                    <div id="gemmaRuntimeStatus" class="runtime-status" data-runtime-state="checking" title="Checking local translator">
+                    <div id="gemmaRuntimeStatus" class="runtime-status" data-runtime-state="checking" title="Local translator status">
                       <span class="runtime-status-dot" aria-hidden="true"></span>
-                      <span id="gemmaRuntimeStatusText" class="runtime-status-text" role="status" aria-live="polite" aria-atomic="true">Translator checking...</span>
+                      <span id="gemmaRuntimeStatusText" class="runtime-status-text" role="status" aria-live="polite" aria-atomic="true">Translator</span>
                       <button type="button" id="gemmaRuntimeCheck" title="Check local translator">Check</button>
                     </div>
                     <div id="translationTarget" class="translation-target">Select a sentence in the source page.</div>
@@ -83,9 +83,9 @@
                       <button type="button" id="draftTranslationNote" title="Draft note from translation" aria-label="Draft note from translation" disabled>Draft note</button>
                     </div>
                     <div id="translationStatus" class="translation-status" role="status" aria-live="polite" aria-atomic="true"></div>
-                    <div id="translationRecordsSummary" class="translation-records-summary" role="status" aria-live="polite" aria-atomic="true">Saved translations: checking...</div>
+                    <div id="translationRecordsSummary" class="translation-records-summary" role="status" aria-live="polite" aria-atomic="true">Saved translations</div>
                     <div id="studyProgress" class="study-progress" data-progress-state="loading" role="status" aria-live="polite" aria-atomic="true">
-                      <span id="studyProgressText">Study progress: checking...</span>
+                      <span id="studyProgressText">Study progress</span>
                       <button type="button" id="continueStudy" title="Continue with the next sentence without a translation" disabled>Continue study</button>
                     </div>
                     <div class="translation-export-links" aria-label="Translation export links">
@@ -93,7 +93,7 @@
                       <a id="exportAllTranslations" class="translation-export-link" href="/api/sentence-translations/export?format=markdown&review_state=all">Export all</a>
                       <a id="exportStudySession" class="translation-export-link" href="/api/study-session/export?format=markdown">Export session</a>
                     </div>
-                    <div id="studySessionSummary" class="study-session-summary" role="status" aria-live="polite" aria-atomic="true">Study bundle: checking...</div>
+                    <div id="studySessionSummary" class="study-session-summary" role="status" aria-live="polite" aria-atomic="true">Study bundle</div>
                   </section>
                 </div>
               </details>
@@ -141,6 +141,6 @@
     </main>
   </div>
   <script id="researchData" type="application/json">{{RESEARCH_JSON}}</script>
-  <script src="/assets/reader-work.js?v=common91"></script>
+  <script src="/assets/reader-work.js?v=common92"></script>
 </body>
 </html>

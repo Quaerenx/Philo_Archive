@@ -508,7 +508,7 @@ def check_work_source_bundle_ui() -> None:
         "function setGemmaRuntimeIndicator",
         "async function checkGemmaRuntimeStatus",
         "/api/health",
-        "Translator checking...",
+        "setGemmaRuntimeIndicator(\"checking\", \"Translator\",",
         "Translator ready",
         "Translator offline",
         "Translator status unavailable",
@@ -861,7 +861,7 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common91", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common92", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common81", "templates/work.html")
     for needle in [
         "reading-desk",
@@ -876,20 +876,21 @@ def check_work_source_bundle_ui() -> None:
         "gemmaRuntimeStatus",
         "gemmaRuntimeStatusText",
         "gemmaRuntimeCheck",
-        "Translator checking...",
+        "Local translator status",
+        ">Translator</span>",
         "translationRecordsSummary",
         "studyProgress",
         "studyProgressText",
         "continueStudy",
         "Continue study",
-        "Saved translations: checking...",
+        "Saved translations</div>",
         "translation-export-links",
         "exportAllTranslations",
         "Export all",
         "exportStudySession",
         "Export session",
         "studySessionSummary",
-        "Study bundle: checking...",
+        "Study bundle</div>",
         "aria-label=\"Full study panel. Select a sentence\"",
         'aria-controls="studyCompanionPanel"',
         'aria-labelledby="translationCardTitle"',

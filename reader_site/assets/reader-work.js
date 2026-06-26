@@ -343,7 +343,7 @@ async function checkGemmaRuntimeStatus(announce = false) {
   const controller = new AbortController();
   gemmaRuntimeCheckController = controller;
   const timeout = window.setTimeout(() => controller.abort(), 2500);
-  setGemmaRuntimeIndicator("checking", "Translator checking...", "Checking local translator");
+  setGemmaRuntimeIndicator("checking", "Translator", "Local translator status");
   setActionButtonBusy(gemmaRuntimeCheckButton, true);
   try {
     const response = await fetch("/api/health", { signal: controller.signal });
@@ -357,14 +357,14 @@ async function checkGemmaRuntimeStatus(announce = false) {
       const title = model ? `Local translator ready: ${model}` : "Local translator ready";
       setGemmaRuntimeIndicator("ready", "Translator ready", title);
       if (announce) {
-        setTranslationStatus("Local translator is ready.");
+        setTranslationStatus("Translator ready.");
       }
       return;
     }
     const error = cleanText(gemma.error || "Start .\\run_reader_with_gemma.ps1, then check again.");
     setGemmaRuntimeIndicator("offline", "Translator offline", error);
     if (announce) {
-      setTranslationStatus("Local translator is not reachable.", true);
+      setTranslationStatus("Translator offline.", true);
     }
   } catch (error) {
     if (error && error.name === "AbortError" && gemmaRuntimeCheckController !== controller) {
@@ -459,7 +459,7 @@ function translationStateCountsFromSentences() {
 function updateStudyProgress() {
   if (!studyProgress) return;
   if (!translationSentenceStatesLoaded) {
-    setStudyProgress("Study progress: checking...", "loading");
+    setStudyProgress("Study progress", "loading");
     if (continueStudyButton) {
       continueStudyButton.textContent = "Continue study";
       continueStudyButton.disabled = true;
