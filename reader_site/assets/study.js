@@ -102,8 +102,8 @@ function renderEmptyStudy() {
   const filtered = hasActiveFilters();
   const title = filtered ? "No reviewed notes match these filters." : "No reviewed study notes yet.";
   const body = filtered
-    ? "Clear the filters, or manage research notes and mark the strongest ones as reviewed."
-    : "Mark research notes as reviewed when they are ready for focused study; they will appear here as a reading bundle.";
+    ? "Clear filters, or mark stronger drafts as reviewed."
+    : "Review drafts and mark the strongest notes as reviewed; they become the study bundle.";
   const clearAction = filtered
     ? '<button type="button" data-empty-action="clear-filters">Clear filters</button>'
     : "";
@@ -113,7 +113,7 @@ function renderEmptyStudy() {
     <div class="empty-actions">
       ${clearAction}
       <a href="/notes?review_state=raw">Review drafts</a>
-      <a href="/search">Search works</a>
+      <a href="/search">Find a work</a>
     </div>
   </section>`;
 }

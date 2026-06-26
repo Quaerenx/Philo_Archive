@@ -116,10 +116,10 @@ function updateNotesClearState(isBusy = form.classList.contains("is-loading")) {
 
 function renderEmptyNotes() {
   const filtered = hasActiveFilters();
-  const title = filtered ? "No notes match these filters." : "No research notes yet.";
+  const title = filtered ? "No notes match these filters." : "No notes yet.";
   const body = filtered
-    ? "Try clearing the filters, or broaden the work, tag, and status fields."
-    : "Create notes from a work page while reading original sources, then return here to review and export them.";
+    ? "Clear filters, or broaden the work, tag, and status fields."
+    : "Open a work, read the source, and draft notes.";
   const clearAction = filtered
     ? '<button type="button" data-empty-action="clear-filters">Clear filters</button>'
     : "";
@@ -128,8 +128,8 @@ function renderEmptyNotes() {
     <p>${escapeHtml(body)}</p>
     <div class="empty-actions">
       ${clearAction}
-      <a href="/search">Search works</a>
-      <a href="/study">Study reviewed notes</a>
+      <a href="/search">Find a work</a>
+      <a href="/study">Study bundle</a>
     </div>
   </section>`;
 }

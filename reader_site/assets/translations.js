@@ -281,10 +281,10 @@ function renderSummary(records) {
 
 function renderEmptyRecords() {
   const filtered = hasActiveFilters();
-  const title = filtered ? "No translations match these filters." : "No translations for this corpus yet.";
+  const title = filtered ? "No translations match these filters." : "No translations yet.";
   const body = filtered
-    ? "Try clearing the filters, or choose a broader status and work id."
-    : "Open a work, click a sentence, and save a local translation here.";
+    ? "Clear filters, or choose a broader status and work id."
+    : "Open a work and click a sentence. Translation and commentary will appear here for review.";
   const clearAction = filtered
     ? '<button type="button" data-empty-action="clear-filters">Clear filters</button>'
     : "";
@@ -294,7 +294,7 @@ function renderEmptyRecords() {
     <div class="empty-actions">
       ${clearAction}
       <a href="/search">Find a work</a>
-      <a href="/study">Study reviewed notes</a>
+      <a href="/study">Study bundle</a>
     </div>
   </section>`;
 }

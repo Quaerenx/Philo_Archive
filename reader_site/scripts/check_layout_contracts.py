@@ -207,7 +207,7 @@ def check_search_ui() -> None:
     css = read_site_file("assets/search.css")
     for needle in [
         "/assets/search.css?v=phase14",
-        "/assets/search.js?v=phase13",
+        "/assets/search.js?v=phase14",
         'href="/translations"',
         "Translation review",
         'class="filter-panel"',
@@ -226,6 +226,9 @@ def check_search_ui() -> None:
         "setSearchBusy",
         "renderSearchPending",
         "function renderEmptySearch",
+        "Search the archive.",
+        "No matching passages.",
+        "Find a work, phrase, or note, then open the source to read and study.",
         "function clearSearchFilters",
         "function updateSearchClearState",
         "function updateSearchFilterSummary",
@@ -285,7 +288,7 @@ def check_notes_ui() -> None:
     css = read_site_file("assets/notes.css")
     for needle in [
         "/assets/notes.css?v=notes13",
-        "/assets/notes.js?v=notes14",
+        "/assets/notes.js?v=notes15",
         'id="notesSubmit"',
         'id="notesClear"',
         'id="notesActiveFilters"',
@@ -321,6 +324,9 @@ def check_notes_ui() -> None:
         "Edit cancelled.",
         "editForm.requestSubmit",
         "function renderEmptyNotes",
+        "No notes yet.",
+        "Find a work",
+        "Study bundle",
         "function clearNotesFilters",
         "function updateNotesClearState",
         "function updateNotesFilterSummary",
@@ -377,7 +383,7 @@ def check_translations_ui() -> None:
     for needle in [
         "/assets/notes.css?v=notes13",
         "/assets/translations.css?v=trans4",
-        "/assets/translations.js?v=trans10",
+        "/assets/translations.js?v=trans11",
         'id="translationsSubmit"',
         'id="translationsClear"',
         'id="translationsReviewQueue"',
@@ -407,6 +413,9 @@ def check_translations_ui() -> None:
         "function archiveWorkOptions",
         "function updateWorkOptions",
         "function renderEmptyRecords",
+        "No translations yet.",
+        "Translation and commentary will appear here for review.",
+        "Study bundle",
         "function clearFilters",
         "function updateFilterSummary",
         "function removeFilter",
@@ -483,7 +492,7 @@ def check_study_ui() -> None:
     css = read_site_file("assets/study.css")
     for needle in [
         "/assets/study.css?v=study11",
-        "/assets/study.js?v=study10",
+        "/assets/study.js?v=study11",
         'id="studySubmit"',
         'id="studyClear"',
         'id="studyActiveFilters"',
@@ -502,6 +511,8 @@ def check_study_ui() -> None:
         "setStudyBusy",
         "renderStudyPending",
         "function renderEmptyStudy",
+        "Review drafts and mark the strongest notes as reviewed; they become the study bundle.",
+        "Find a work",
         "function clearStudyFilters",
         "function updateStudyClearState",
         "function updateStudyFilterSummary",

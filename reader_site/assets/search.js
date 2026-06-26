@@ -96,10 +96,10 @@ function notesSearchHref(query) {
 
 function renderEmptySearch(query) {
   const filtered = searchHasActiveFilters();
-  const title = query ? "No matching results." : "Enter a search query.";
+  const title = query ? "No matching passages." : "Search the archive.";
   const body = query
-    ? "Try a broader word, clear corpus/work filters, or continue through the notes and archive index."
-    : "Search across works, source segments, and personal notes in the archive.";
+    ? "Try a broader term, clear filters, or check saved notes."
+    : "Find a work, phrase, or note, then open the source to read and study.";
   const clearAction = filtered
     ? '<button type="button" data-empty-action="clear-search">Clear search</button>'
     : "";
@@ -206,7 +206,7 @@ function renderResults(payload, query) {
   } else {
     statusEl.textContent = workCount || segmentCount || noteCount
     ? `${workCount.toLocaleString()} matching works, ${segmentCount.toLocaleString()} matching segments, ${noteCount.toLocaleString()} matching notes`
-    : query ? "No matching results." : "";
+    : query ? "No matching passages." : "";
   }
   const workMarkup = (payload.work_results || [])
     .map((result) => {
