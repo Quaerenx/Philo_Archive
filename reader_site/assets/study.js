@@ -300,7 +300,7 @@ function renderStudyOverview(payload, translationSummary) {
     ? `<div class="study-overview-notes">${escapeHtml(notesLabel)}</div>`
     : "";
   const translationLinks = [
-    translationStatusLink("generated", "Review", generated),
+    translationStatusLink("generated", "Review translations", generated),
     translationStatusLink("reviewed", "Saved translations", reviewed),
     translationStatusLink("rejected", "Rejected", rejected)
   ].filter(Boolean).join("");
