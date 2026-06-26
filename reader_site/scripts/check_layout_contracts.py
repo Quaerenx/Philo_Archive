@@ -722,7 +722,7 @@ def check_study_ui() -> None:
     css = read_site_file("assets/study.css")
     for needle in [
         "/assets/study.css?v=study20",
-        "/assets/study.js?v=study28",
+        "/assets/study.js?v=study29",
         'id="studySubmit"',
         'id="studyClear"',
         'id="studyActiveFilters"',
@@ -761,6 +761,7 @@ def check_study_ui() -> None:
         "function translationStatusLink",
         "function renderStudyOverview",
         "const notesMarkup = notesLabel",
+        "Review",
         "Translation study status",
         "Saved translations",
         "renderStudy(payload, translationSummary)",
