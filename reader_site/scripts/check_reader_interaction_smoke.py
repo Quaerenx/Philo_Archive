@@ -87,7 +87,7 @@ def check_selected_sentence_dom(html: str, viewport_label: str) -> None:
     require("translation-primary" in html, f"{context} missing readable translation body")
     require("translation-commentary" in html, f"{context} missing readable commentary body")
     require("문장을 누르면 번역과 해설이 여기에 표시됩니다." not in html, f"{context} still shows empty translation state")
-    for noisy_text in ("source_text_sha256", "sentence_text_sha256", "prompt_sha256", "Literal gloss", "Key terms"):
+    for noisy_text in ("source_text_sha256", "sentence_text_sha256", "prompt_sha256", "Literal gloss", "Key terms", "Cached result", "New result"):
         require(noisy_text not in html, f"{context} exposes noisy translation metadata: {noisy_text}")
 
 

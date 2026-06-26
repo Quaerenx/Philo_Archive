@@ -1485,7 +1485,7 @@ function translationJumpNav(record) {
   </div>`;
 }
 
-function translationResultToolbar(record, cached, reviewState) {
+function translationResultToolbar(record, _cached, reviewState) {
   const targetLabel = selectedSentence
     ? selectedSentencePositionLabel()
     : cleanText(record.sentence_id || "Selected sentence");
@@ -1493,11 +1493,10 @@ function translationResultToolbar(record, cached, reviewState) {
   const normalizedReviewState = normalizedTranslationReviewState(reviewState);
   const stateLabel = TRANSLATION_REVIEW_CHIP_LABELS[normalizedReviewState];
   const stateHint = TRANSLATION_REVIEW_CHIP_HINTS[normalizedReviewState] || stateLabel;
-  const sourceLabel = cached ? "Cached result" : "New result";
-  const reviewLabel = `${stateHint}; ${sourceLabel}`;
+  const reviewLabel = stateHint || stateLabel;
   return `<details class="translation-result-toolbar translation-result-details translation-extra">
     <summary>
-      <span>Source details</span>
+      <span>Source</span>
     </summary>
     <div class="translation-result-detail-body">
       <div class="translation-result-meta">
@@ -1505,7 +1504,6 @@ function translationResultToolbar(record, cached, reviewState) {
         <strong class="translation-result-target">${escapeHtml(targetLabel)}</strong>
         <span class="translation-review-state" data-review-state="${escapeHtml(normalizedReviewState)}" title="${escapeHtml(reviewLabel)}" aria-label="${escapeHtml(reviewLabel)}">
           <span>${escapeHtml(stateLabel)}</span>
-          <small>${escapeHtml(sourceLabel)}</small>
         </span>
       </div>
       ${sourceText ? `<section class="translation-section translation-source-detail">
