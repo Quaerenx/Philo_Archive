@@ -1124,7 +1124,7 @@ def check_work_source_bundle_ui() -> None:
         "Reading controls",
         "Reading flow",
         "Review and export",
-        "Reading tools",
+        "Study tools",
         "study-tabs",
         "previousSentence",
         "nextUnstudiedSentence",
