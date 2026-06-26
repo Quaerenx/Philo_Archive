@@ -486,11 +486,7 @@ function navigateRecordFocus(delta) {
   const nextIndex = currentIndex < 0
     ? (delta < 0 ? cards.length - 1 : 0)
     : Math.min(cards.length - 1, Math.max(0, currentIndex + delta));
-  const moved = focusRecordCard(cards[nextIndex]);
-  if (moved) {
-    statusEl.textContent = `Selected translation ${nextIndex + 1} of ${cards.length}.`;
-  }
-  return moved;
+  return focusRecordCard(cards[nextIndex]);
 }
 
 function triggerFocusedReviewAction(reviewState) {

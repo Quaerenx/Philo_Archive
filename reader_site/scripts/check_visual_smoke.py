@@ -214,7 +214,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translationsReviewQueue",
             "aria-busy=\"false\"",
             "translations.css?v=trans12",
-            "translations.js?v=trans26",
+            "translations.js?v=trans27",
             "filter-panel",
             "export-tools",
             "Export results</summary>",
