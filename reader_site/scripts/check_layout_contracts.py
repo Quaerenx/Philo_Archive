@@ -474,7 +474,7 @@ def check_translations_ui() -> None:
     for needle in [
         "/assets/notes.css?v=notes19",
         "/assets/translations.css?v=trans16",
-        "/assets/translations.js?v=trans36",
+        "/assets/translations.js?v=trans37",
         '<option value="">All corpora</option>',
         'id="translationsListTools"',
         "Search and filters</summary>",
@@ -505,7 +505,8 @@ def check_translations_ui() -> None:
         "pendingReviewQueueMessage",
         "translationsExportTools",
         "translationsListTools",
-        "listTools.open = activeFilters",
+        "function hasSearchFilters",
+        "listTools.open = shouldOpenTools",
         "exportTools.hidden = visible.length === 0",
         "if (!visible.length) exportTools.open = false",
         "setBusy",

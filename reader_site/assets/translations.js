@@ -171,6 +171,14 @@ function hasActiveFilters() {
   );
 }
 
+function hasSearchFilters() {
+  return Boolean(
+    queryInput.value.trim() ||
+    corpusSelect.value ||
+    workInput.value.trim()
+  );
+}
+
 function renderFilterChip(filterName, label, value) {
   return `<button type="button" class="filter-chip" data-filter="${escapeHtml(filterName)}" aria-label="Remove ${escapeHtml(label)} filter">
     <span>${escapeHtml(label)}: ${escapeHtml(value)}</span>
@@ -205,10 +213,11 @@ function updateClearState(isBusy = form.classList.contains("is-loading")) {
 
 function updateTranslationsListChrome(count = lastRecords.length) {
   const activeFilters = hasActiveFilters();
+  const shouldOpenTools = hasSearchFilters();
   const showTools = count > 0 || activeFilters;
   if (listTools) {
     listTools.hidden = !showTools;
-    listTools.open = activeFilters;
+    listTools.open = shouldOpenTools;
   }
   form.hidden = !showTools;
   if (activeFiltersEl) {
