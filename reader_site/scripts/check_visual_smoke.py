@@ -174,7 +174,7 @@ def check_route_markup(route: str, html: str) -> None:
             "Search",
             "Notes",
             "Study",
-            "Review",
+            "Translations",
             "app.js?v=home4",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
@@ -228,7 +228,7 @@ def check_route_markup(route: str, html: str) -> None:
             "aria-busy=\"false\"",
             "search.css?v=phase16",
             "search.js?v=phase18",
-            "Review",
+            "Translations",
             "filter-panel",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
