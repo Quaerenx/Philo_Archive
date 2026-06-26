@@ -9,6 +9,7 @@ const clearButton = document.getElementById("translationsClear");
 const activeFiltersEl = document.getElementById("translationsActiveFilters");
 const statusEl = document.getElementById("translationsStatus");
 const resultsEl = document.getElementById("translationsResults");
+const exportTools = document.getElementById("translationsExportTools");
 const exportMarkdown = document.getElementById("translationsExportMarkdown");
 const exportJson = document.getElementById("translationsExportJson");
 const reviewQueueButton = document.getElementById("translationsReviewQueue");
@@ -402,6 +403,10 @@ function renderRecords(records) {
   const queryMatched = records.filter(recordMatchesQuery);
   const visible = queryMatched.filter(recordMatchesReview);
   updateReviewQueueButton(records);
+  if (exportTools) {
+    exportTools.hidden = visible.length === 0;
+    if (!visible.length) exportTools.open = false;
+  }
   statusEl.textContent = translationStatusMessage(queryMatched, visible);
   resultsEl.innerHTML = queryMatched.length
     ? renderSummary(queryMatched) + (visible.length ? visible.map(renderRecord).join("") : renderEmptyRecords())
