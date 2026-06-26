@@ -6,7 +6,7 @@
   <title>Study Notes / Personal Archive of Literature</title>
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
-  <link rel="stylesheet" href="/assets/study.css?v=study8">
+  <link rel="stylesheet" href="/assets/study.css?v=study9">
 </head>
 <body>
   <div class="page">
@@ -28,20 +28,25 @@
           Query
           <input id="studyQuery" name="q" autocomplete="off">
         </label>
-        <label>
-          Corpus
-          <select id="studyCorpus" name="corpus_id">
-            <option value="">All</option>
-          </select>
-        </label>
-        <label>
-          Work
-          <input id="studyWork" name="work_id" autocomplete="off">
-        </label>
-        <label>
-          Tag
-          <input id="studyTag" name="tag" autocomplete="off">
-        </label>
+        <details class="filter-panel">
+          <summary>Filters</summary>
+          <div class="filter-panel-fields">
+            <label>
+              Corpus
+              <select id="studyCorpus" name="corpus_id">
+                <option value="">All</option>
+              </select>
+            </label>
+            <label>
+              Work
+              <input id="studyWork" name="work_id" autocomplete="off">
+            </label>
+            <label>
+              Tag
+              <input id="studyTag" name="tag" autocomplete="off">
+            </label>
+          </div>
+        </details>
         <div class="form-actions">
           <button id="studySubmit" type="submit">Filter</button>
           <button id="studyClear" type="button" class="secondary-action" disabled>Clear</button>

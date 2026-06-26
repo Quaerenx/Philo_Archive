@@ -1,5 +1,5 @@
 .translations-form {
-  grid-template-columns: minmax(0, 1fr) 128px 112px 112px 126px;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 220px) 126px;
 }
 
 .translation-record-summary {

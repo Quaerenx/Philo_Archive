@@ -6,7 +6,7 @@
   <title>Research Search / Personal Archive of Literature</title>
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
-  <link rel="stylesheet" href="/assets/search.css?v=phase12">
+  <link rel="stylesheet" href="/assets/search.css?v=phase13">
 </head>
 <body>
   <div class="page">
@@ -28,28 +28,33 @@
           Query
           <input id="queryInput" name="q" autocomplete="off" autofocus>
         </label>
-        <label>
-          Corpus
-          <select id="corpusSelect" name="corpus_id">
-            <option value="">All</option>
-            <option value="nietzsche">Nietzsche</option>
-            <option value="bible">Bible</option>
-            <option value="kierkegaard">Kierkegaard</option>
-            <option value="wittgenstein">Wittgenstein</option>
-          </select>
-        </label>
-        <label>
-          Work
-          <select id="workSelect" name="work_id" disabled>
-            <option value="">All works</option>
-          </select>
-        </label>
-        <label>
-          Variant
-          <select id="variantSelect" name="variant_id" disabled>
-            <option value="">All variants</option>
-          </select>
-        </label>
+        <details class="filter-panel">
+          <summary>Filters</summary>
+          <div class="filter-panel-fields">
+            <label>
+              Corpus
+              <select id="corpusSelect" name="corpus_id">
+                <option value="">All</option>
+                <option value="nietzsche">Nietzsche</option>
+                <option value="bible">Bible</option>
+                <option value="kierkegaard">Kierkegaard</option>
+                <option value="wittgenstein">Wittgenstein</option>
+              </select>
+            </label>
+            <label>
+              Work
+              <select id="workSelect" name="work_id" disabled>
+                <option value="">All works</option>
+              </select>
+            </label>
+            <label>
+              Variant
+              <select id="variantSelect" name="variant_id" disabled>
+                <option value="">All variants</option>
+              </select>
+            </label>
+          </div>
+        </details>
         <div class="form-actions">
           <button id="searchSubmit" type="submit">Search</button>
           <button id="searchClear" type="button" class="secondary-action" disabled>Clear</button>

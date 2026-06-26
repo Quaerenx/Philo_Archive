@@ -103,7 +103,7 @@ h1 {
 
 .notes-form {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 120px 100px 100px 100px 126px;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 220px) 126px;
   gap: 10px;
   align-items: end;
   margin-bottom: 12px;
@@ -162,6 +162,46 @@ h1 {
 .form-actions .secondary-action {
   color: #555;
   background: #fafafa;
+}
+
+.filter-panel {
+  min-width: 0;
+}
+
+.filter-panel summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  min-height: 28px;
+  padding: 4px 8px;
+  color: #333;
+  background: #fff;
+  border: 1px solid #bdbdbd;
+  cursor: pointer;
+  list-style: none;
+}
+
+.filter-panel summary::-webkit-details-marker {
+  display: none;
+}
+
+.filter-panel summary::after {
+  color: #777;
+  content: "+";
+}
+
+.filter-panel[open] summary::after {
+  content: "-";
+}
+
+.filter-panel-fields {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 8px;
+  background: #fbfbfb;
+  border: 1px solid #e0e0e0;
 }
 
 .active-filters {

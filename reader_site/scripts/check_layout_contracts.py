@@ -206,10 +206,12 @@ def check_search_ui() -> None:
     script = read_site_file("assets/search.js")
     css = read_site_file("assets/search.css")
     for needle in [
-        "/assets/search.css?v=phase12",
+        "/assets/search.css?v=phase13",
         "/assets/search.js?v=phase13",
         'href="/translations"',
         "Saved translations",
+        'class="filter-panel"',
+        'class="filter-panel-fields"',
         'id="searchSubmit"',
         'id="searchClear"',
         'id="searchActiveFilters"',
@@ -251,6 +253,9 @@ def check_search_ui() -> None:
         ".search-form.is-searching",
         ".form-actions",
         ".secondary-action",
+        ".filter-panel",
+        ".filter-panel summary",
+        ".filter-panel-fields",
         ".active-filters",
         ".active-filters.has-filters",
         ".filter-chip",
@@ -279,11 +284,13 @@ def check_notes_ui() -> None:
     script = read_site_file("assets/notes.js")
     css = read_site_file("assets/notes.css")
     for needle in [
-        "/assets/notes.css?v=notes10",
+        "/assets/notes.css?v=notes11",
         "/assets/notes.js?v=notes11",
         'id="notesSubmit"',
         'id="notesClear"',
         'id="notesActiveFilters"',
+        'class="filter-panel"',
+        'class="filter-panel-fields"',
         'class="form-actions"',
         'role="status"',
         'aria-busy="false"',
@@ -330,6 +337,9 @@ def check_notes_ui() -> None:
         ".notes-form.is-loading",
         ".form-actions",
         ".secondary-action",
+        ".filter-panel",
+        ".filter-panel summary",
+        ".filter-panel-fields",
         ".active-filters",
         ".active-filters.has-filters",
         ".filter-chip",
@@ -357,10 +367,11 @@ def check_notes_ui() -> None:
 def check_translations_ui() -> None:
     html = read_site_file("translations.html")
     script = read_site_file("assets/translations.js")
+    base_css = read_site_file("assets/notes.css")
     css = read_site_file("assets/translations.css")
     for needle in [
-        "/assets/notes.css?v=notes10",
-        "/assets/translations.css?v=trans3",
+        "/assets/notes.css?v=notes11",
+        "/assets/translations.css?v=trans4",
         "/assets/translations.js?v=trans7",
         'id="translationsSubmit"',
         'id="translationsClear"',
@@ -370,6 +381,8 @@ def check_translations_ui() -> None:
         'id="translationsActiveFilters"',
         'id="translationsExportMarkdown"',
         'id="translationsExportJson"',
+        'class="filter-panel"',
+        'class="filter-panel-fields"',
         'role="status"',
         'aria-busy="false"',
     ]:
@@ -446,6 +459,12 @@ def check_translations_ui() -> None:
         "justify-content: center",
     ]:
         require_contains(css, needle, "assets/translations.css")
+    for needle in [
+        ".filter-panel",
+        ".filter-panel summary",
+        ".filter-panel-fields",
+    ]:
+        require_contains(base_css, needle, "assets/notes.css")
 
 
 def check_study_ui() -> None:
@@ -453,11 +472,13 @@ def check_study_ui() -> None:
     script = read_site_file("assets/study.js")
     css = read_site_file("assets/study.css")
     for needle in [
-        "/assets/study.css?v=study8",
+        "/assets/study.css?v=study9",
         "/assets/study.js?v=study8",
         'id="studySubmit"',
         'id="studyClear"',
         'id="studyActiveFilters"',
+        'class="filter-panel"',
+        'class="filter-panel-fields"',
         'class="form-actions"',
         'role="status"',
         'aria-busy="false"',
@@ -487,6 +508,9 @@ def check_study_ui() -> None:
         ".study-form.is-loading",
         ".form-actions",
         ".secondary-action",
+        ".filter-panel",
+        ".filter-panel summary",
+        ".filter-panel-fields",
         ".active-filters",
         ".active-filters.has-filters",
         ".filter-chip",

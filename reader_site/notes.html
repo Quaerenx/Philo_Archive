@@ -6,7 +6,7 @@
   <title>Research Notes / Personal Archive of Literature</title>
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
-  <link rel="stylesheet" href="/assets/notes.css?v=notes10">
+  <link rel="stylesheet" href="/assets/notes.css?v=notes11">
 </head>
 <body>
   <div class="page">
@@ -28,28 +28,33 @@
           Query
           <input id="notesQuery" name="q" autocomplete="off">
         </label>
-        <label>
-          Corpus
-          <select id="notesCorpus" name="corpus_id">
-            <option value="">All</option>
-          </select>
-        </label>
-        <label>
-          Work
-          <input id="notesWork" name="work_id" autocomplete="off">
-        </label>
-        <label>
-          Tag
-          <input id="notesTag" name="tag" autocomplete="off">
-        </label>
-        <label>
-          Review
-          <select id="notesReview" name="review_state">
-            <option value="">All</option>
-            <option value="raw">Raw</option>
-            <option value="reviewed">Reviewed</option>
-          </select>
-        </label>
+        <details class="filter-panel">
+          <summary>Filters</summary>
+          <div class="filter-panel-fields">
+            <label>
+              Corpus
+              <select id="notesCorpus" name="corpus_id">
+                <option value="">All</option>
+              </select>
+            </label>
+            <label>
+              Work
+              <input id="notesWork" name="work_id" autocomplete="off">
+            </label>
+            <label>
+              Tag
+              <input id="notesTag" name="tag" autocomplete="off">
+            </label>
+            <label>
+              Review
+              <select id="notesReview" name="review_state">
+                <option value="">All</option>
+                <option value="raw">Raw</option>
+                <option value="reviewed">Reviewed</option>
+              </select>
+            </label>
+          </div>
+        </details>
         <div class="form-actions">
           <button id="notesSubmit" type="submit">Filter</button>
           <button id="notesClear" type="button" class="secondary-action" disabled>Clear</button>

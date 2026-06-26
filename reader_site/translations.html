@@ -6,8 +6,8 @@
   <title>Saved Translations / Personal Archive of Literature</title>
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
-  <link rel="stylesheet" href="/assets/notes.css?v=notes10">
-  <link rel="stylesheet" href="/assets/translations.css?v=trans3">
+  <link rel="stylesheet" href="/assets/notes.css?v=notes11">
+  <link rel="stylesheet" href="/assets/translations.css?v=trans4">
 </head>
 <body>
   <div class="page">
@@ -29,29 +29,34 @@
           Query
           <input id="translationsQuery" name="q" autocomplete="off">
         </label>
-        <label>
-          Corpus
-          <select id="translationsCorpus" name="corpus_id">
-            <option value="nietzsche">Nietzsche</option>
-            <option value="bible">Bible</option>
-            <option value="kierkegaard">Kierkegaard</option>
-            <option value="wittgenstein">Wittgenstein</option>
-          </select>
-        </label>
-        <label>
-          Work
-          <input id="translationsWork" name="work_id" list="translationsWorkOptions" autocomplete="off">
-          <datalist id="translationsWorkOptions"></datalist>
-        </label>
-        <label>
-          Review
-          <select id="translationsReview" name="review_state">
-            <option value="all">All</option>
-            <option value="generated">Needs review</option>
-            <option value="reviewed">Reviewed</option>
-            <option value="rejected">Rejected</option>
-          </select>
-        </label>
+        <details class="filter-panel">
+          <summary>Filters</summary>
+          <div class="filter-panel-fields">
+            <label>
+              Corpus
+              <select id="translationsCorpus" name="corpus_id">
+                <option value="nietzsche">Nietzsche</option>
+                <option value="bible">Bible</option>
+                <option value="kierkegaard">Kierkegaard</option>
+                <option value="wittgenstein">Wittgenstein</option>
+              </select>
+            </label>
+            <label>
+              Work
+              <input id="translationsWork" name="work_id" list="translationsWorkOptions" autocomplete="off">
+              <datalist id="translationsWorkOptions"></datalist>
+            </label>
+            <label>
+              Review
+              <select id="translationsReview" name="review_state">
+                <option value="all">All</option>
+                <option value="generated">Needs review</option>
+                <option value="reviewed">Reviewed</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </label>
+          </div>
+        </details>
         <div class="form-actions">
           <button id="translationsSubmit" type="submit">Filter</button>
           <button id="translationsClear" type="button" class="secondary-action" disabled>Clear</button>

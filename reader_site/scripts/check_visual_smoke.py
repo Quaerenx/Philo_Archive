@@ -125,8 +125,9 @@ def check_route_markup(route: str, html: str) -> None:
             "studyActiveFilters",
             "studyStatus",
             "aria-busy=\"false\"",
-            "study.css?v=study8",
+            "study.css?v=study9",
             "study.js?v=study8",
+            "filter-panel",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
     if route == "/notes":
@@ -136,8 +137,9 @@ def check_route_markup(route: str, html: str) -> None:
             "notesActiveFilters",
             "notesStatus",
             "aria-busy=\"false\"",
-            "notes.css?v=notes10",
+            "notes.css?v=notes11",
             "notes.js?v=notes11",
+            "filter-panel",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
     if route == "/translations":
@@ -149,8 +151,9 @@ def check_route_markup(route: str, html: str) -> None:
             "translationsResults",
             "translationsReviewQueue",
             "aria-busy=\"false\"",
-            "translations.css?v=trans3",
+            "translations.css?v=trans4",
             "translations.js?v=trans7",
+            "filter-panel",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
     if route == "/search":
@@ -160,9 +163,10 @@ def check_route_markup(route: str, html: str) -> None:
             "searchActiveFilters",
             "searchStatus",
             "aria-busy=\"false\"",
-            "search.css?v=phase12",
+            "search.css?v=phase13",
             "search.js?v=phase13",
             "Saved translations",
+            "filter-panel",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
     if route.startswith("/work/"):
