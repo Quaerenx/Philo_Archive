@@ -192,7 +192,7 @@ def check_route_markup(route: str, html: str) -> None:
             "studyStatus",
             "aria-busy=\"false\"",
             "study.css?v=study20",
-            "study.js?v=study29",
+            "study.js?v=study30",
             "filter-panel",
             "export-tools",
         ]:
@@ -511,7 +511,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (studyPageState.emptyTitle !== 'No saved notes yet.' || studyPageState.emptyBodyCount !== 0) {
         throw new Error(`empty study page should stay quiet: ${JSON.stringify(studyPageState)}`);
       }
-      if (!studyPageState.emptyActions.includes('Working notes') || !studyPageState.emptyActions.includes('Find work')) {
+      if (!studyPageState.emptyActions.includes('Notes') || !studyPageState.emptyActions.includes('Find work')) {
         throw new Error(`empty study page should keep concise actions: ${JSON.stringify(studyPageState)}`);
       }
       if (!studyPageState.overviewHidden && !/Review|Saved translations/.test(studyPageState.overviewText)) {

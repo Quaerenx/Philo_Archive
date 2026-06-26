@@ -168,7 +168,7 @@ function renderEmptyStudy() {
     ${bodyMarkup}
     <div class="empty-actions">
       ${clearAction}
-      <a href="/notes?review_state=raw">Working notes</a>
+      <a href="/notes?review_state=raw">Notes</a>
       <a href="/search">Find work</a>
     </div>
   </section>`;
