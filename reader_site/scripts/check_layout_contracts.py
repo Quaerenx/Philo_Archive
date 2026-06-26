@@ -1237,7 +1237,7 @@ def check_work_source_bundle_ui() -> None:
             f"{function_name} reading-first translation layout",
         )
     require_contains(template, "/assets/reader-work.js?v=common130", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common105", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common106", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
         "reading-desk",
@@ -1385,7 +1385,9 @@ def check_work_source_bundle_ui() -> None:
         "top: auto;",
         ".reader-sentence.loading",
         ".reader-sentence.has-translation-state::after",
+        ".reader-sentence[data-translation-state=\"reviewed\"]",
         ".reader-sentence[data-translation-state=\"reviewed\"]::after",
+        "content: \"✓\"",
         ".reader-sentence[data-translation-state=\"rejected\"]::after",
         ".reader-sentence.review-state-changed",
         ".translation-card[data-review-state=\"generated\"]",

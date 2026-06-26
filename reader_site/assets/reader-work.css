@@ -2269,8 +2269,20 @@ h1 {
 }
 
 .reader-sentence[data-translation-state="reviewed"]::after {
+  width: 0.86em;
+  height: 0.86em;
+  color: #24523a;
+  font-size: 0.72em;
+  font-weight: 700;
+  line-height: 0.86em;
+  text-align: center;
+  content: "✓";
   background: #5a9a68;
   border-color: #9fcaa8;
+}
+
+.reader-sentence[data-translation-state="reviewed"] {
+  border-bottom-color: #8bb792;
 }
 
 .reader-sentence[data-translation-state="rejected"]::after {
