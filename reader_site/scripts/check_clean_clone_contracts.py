@@ -76,6 +76,7 @@ REQUIRED_FILES = [
     "reader_site/services/source_targets.py",
     "reader_site/docs/clean_clone_reproducibility.md",
     "reader_site/docs/encoding_policy.md",
+    "reader_site/docs/local_operator_quickstart.md",
     "reader_site/docs/release_handoff.md",
     "reader_site/docs/source_publication_policy.md",
 ]
@@ -114,6 +115,12 @@ REQUIRED_DOC_SNIPPETS = {
         ".github/workflows/reader-site-source-light.yml",
         "Source-Light Checks",
         "Full Restore",
+    ],
+    "reader_site/docs/local_operator_quickstart.md": [
+        ".\\run_reader_with_gemma.ps1",
+        "reuses the existing reader",
+        "keep that PowerShell window open",
+        "checks/starts Local AI",
     ],
 }
 
@@ -314,6 +321,18 @@ def check_source_light_commands() -> None:
     )
 
 
+def check_runner_script_contracts(repo: Path = REPO) -> None:
+    text = (repo / "reader_site/run_reader_with_gemma.ps1").read_text(encoding="utf-8")
+    for snippet in [
+        "$ReaderAlreadyRunning",
+        "Philo Archive reader already running",
+        "Checking Gemma runtime for the existing reader",
+        "Gemma runtime started for the existing reader",
+        "Reader and Gemma runtime are ready.",
+    ]:
+        require(snippet in text, f"run_reader_with_gemma.ps1 missing startup recovery snippet {snippet!r}")
+
+
 def check_clean_clone_contracts(repo: Path = REPO) -> None:
     require((repo / ".git").exists(), "clean clone contracts require a Git checkout")
     check_required_files(repo)
@@ -323,6 +342,7 @@ def check_clean_clone_contracts(repo: Path = REPO) -> None:
     check_rebuild_sequence_docs(repo)
     check_source_light_command_docs(repo)
     check_source_light_commands()
+    check_runner_script_contracts(repo)
 
 
 def run_source_light_checks(site: Path, empty_corpus_root: Path | None = None) -> None:

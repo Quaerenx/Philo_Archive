@@ -13,8 +13,10 @@ $Site = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RuntimeDir = Join-Path $Site "data\runtime.local"
 $GemmaBaseUrl = "http://${GemmaHost}:${GemmaPort}"
 $ReaderBaseUrl = if ($ReaderHost -eq "0.0.0.0") { "http://127.0.0.1:${ReaderPort}" } else { "http://${ReaderHost}:${ReaderPort}" }
+$ReaderAlreadyRunning = $false
 $StartedGemma = $false
 $GemmaProcess = $null
+$PushedSiteLocation = $false
 
 function Stop-WithHint {
     param(
@@ -95,17 +97,20 @@ if (!(Get-Command python -ErrorAction SilentlyContinue)) {
 
 if (Test-PortListening -Port $ReaderPort) {
     if (Test-ReaderReady -BaseUrl $ReaderBaseUrl) {
-        Stop-WithHint "Philo Archive is already running on reader port ${ReaderPort}." @(
+        $ReaderAlreadyRunning = $true
+        Write-Host "Philo Archive reader already running at ${ReaderBaseUrl}"
+        $readerOwner = Get-PortOwnerHint -Port $ReaderPort
+        if ($readerOwner) {
+            Write-Host $readerOwner
+        }
+        Write-Host "Checking Gemma runtime for the existing reader..."
+    } else {
+        Stop-WithHint "Reader port ${ReaderPort} is already used by another process." @(
             (Get-PortOwnerHint -Port $ReaderPort),
-            "Open the existing reader: ${ReaderBaseUrl}",
-            "To use another port: .\run_reader_with_gemma.ps1 -ReaderPort 8795"
+            "Stop that process and run this script again.",
+            "Or start Philo Archive on another port: .\run_reader_with_gemma.ps1 -ReaderPort 8795"
         )
     }
-    Stop-WithHint "Reader port ${ReaderPort} is already used by another process." @(
-        (Get-PortOwnerHint -Port $ReaderPort),
-        "Stop that process and run this script again.",
-        "Or start Philo Archive on another port: .\run_reader_with_gemma.ps1 -ReaderPort 8795"
-    )
 }
 
 if (!(Test-Path -LiteralPath $ModelPath)) {
@@ -168,13 +173,29 @@ $env:PHILO_GEMMA_MODEL_NAME = "gemma-4-26B-A4B-it-Q4_K_M"
 $env:PHILO_GEMMA_RUNTIME = "llama.cpp b9371-f12cc6d0f"
 
 try {
+    Push-Location $Site
+    $PushedSiteLocation = $true
+    if ($ReaderAlreadyRunning) {
+        Write-Host "Open: ${ReaderBaseUrl}"
+        Write-Host "Health check: python .\scripts\check_local_runtime.py --plain"
+        if ($StartedGemma) {
+            Write-Host "Gemma runtime started for the existing reader. Keep this window open; press Ctrl+C to stop it."
+            while ($true) {
+                Start-Sleep -Seconds 3600
+            }
+        }
+        Write-Host "Reader and Gemma runtime are ready."
+        return
+    }
+
     Write-Host "Starting Philo Archive reader at http://${ReaderHost}:${ReaderPort}"
     Write-Host "Open: ${ReaderBaseUrl}"
     Write-Host "Health check: python .\scripts\check_local_runtime.py --plain"
-    Push-Location $Site
     python .\server.py --host $ReaderHost --port $ReaderPort
 } finally {
-    Pop-Location
+    if ($PushedSiteLocation) {
+        Pop-Location
+    }
     if ($StartedGemma -and $GemmaProcess -and !$GemmaProcess.HasExited) {
         Write-Host "Stopping Gemma runtime process $($GemmaProcess.Id)"
         Stop-Process -Id $GemmaProcess.Id

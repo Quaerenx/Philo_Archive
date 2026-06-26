@@ -51,14 +51,14 @@ Local AI: OK (http://127.0.0.1:8794)
 Local AI models: 1
 ```
 
-If `Reader` is not ready, start `run_reader_with_gemma.ps1` again. If `Local AI` is not ready, sentence clicks can still select text, but translation/commentary will show an offline state until the sidecar is started.
+If `Reader` is not ready, start `run_reader_with_gemma.ps1` again. If `Reader` is already running but `Local AI` is not ready, running `run_reader_with_gemma.ps1` again reuses the existing reader and starts/checks the local AI sidecar. If the script starts the sidecar for an existing reader, keep that PowerShell window open.
 
 ## Startup Failures
 
 `run_reader_with_gemma.ps1` checks common startup problems before it starts the reader:
 
 - Missing Python: install Python or add it to `PATH`.
-- Reader port `8793` already has Philo Archive running: open the existing reader.
+- Reader port `8793` already has Philo Archive running: the script reuses the existing reader and still checks/starts Local AI.
 - Reader port `8793` is used by another app: stop that app or run with `-ReaderPort 8795`.
 - Missing GGUF model: pass the correct model path with `-ModelPath`.
 - Missing `llama-server.exe`: add the llama.cpp folder to `PATH`.
