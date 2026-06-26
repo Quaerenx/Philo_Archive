@@ -936,9 +936,12 @@ def check_work_source_bundle_ui() -> None:
             f"{function_name} reading-first translation layout",
         )
     require_contains(template, "/assets/reader-work.js?v=common93", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common82", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common83", "templates/work.html")
     for needle in [
         "reading-desk",
+        "toolbar-more",
+        "toolbar-more-links",
+        "More</summary>",
         "source-page",
         "study-page",
         "studyCompanionPanel",
@@ -1034,6 +1037,12 @@ def check_work_source_bundle_ui() -> None:
 
     for needle in [
         ".reading-desk",
+        ".toolbar-more",
+        ".toolbar-more summary",
+        ".toolbar-more summary::-webkit-details-marker",
+        ".toolbar-more summary::after",
+        ".toolbar-more[open] summary::after",
+        ".toolbar-more-links",
         ".visually-hidden",
         "grid-template-columns: minmax(0, 1fr) 340px",
         "gap: 20px",

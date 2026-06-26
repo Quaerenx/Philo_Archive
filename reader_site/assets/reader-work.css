@@ -105,6 +105,7 @@ h1 {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+  align-items: center;
 }
 
 .toolbar {
@@ -114,6 +115,37 @@ h1 {
 .toolbar a {
   min-width: 0;
   overflow-wrap: anywhere;
+}
+
+.toolbar-more {
+  min-width: 0;
+}
+
+.toolbar-more summary {
+  color: #b00000;
+  cursor: pointer;
+  list-style: none;
+}
+
+.toolbar-more summary::-webkit-details-marker {
+  display: none;
+}
+
+.toolbar-more summary::after {
+  margin-left: 4px;
+  color: #777;
+  content: "+";
+}
+
+.toolbar-more[open] summary::after {
+  content: "-";
+}
+
+.toolbar-more-links {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-left: 10px;
 }
 
 .variant-tabs {
@@ -2345,6 +2377,17 @@ h1 {
 
   .toolbar a {
     display: block;
+  }
+
+  .toolbar-more {
+    grid-column: 1 / -1;
+  }
+
+  .toolbar-more-links {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 10px;
+    margin: 8px 0 0;
   }
 
   .variant-tabs {

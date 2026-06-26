@@ -6,7 +6,7 @@
   <title>{{TITLE}} / {{CORPUS_TITLE}}</title>
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
-  <link rel="stylesheet" href="/assets/reader-work.css?v=common82">
+  <link rel="stylesheet" href="/assets/reader-work.css?v=common83">
 </head>
 <body class="{{BODY_CLASS}}">
   <div class="page">
@@ -19,10 +19,15 @@
         <nav class="toolbar" aria-label="Reader navigation">
           <a href="/">Archive index</a>
           <a href="{{CATEGORY_HREF}}">{{CORPUS_TITLE}}</a>
-          <a href="/notes">Research notes</a>
-          <a href="/study">Study notes</a>
-          <a href="/translations?corpus_id={{CORPUS_ID}}&work_id={{WORK_ID}}">Saved translations</a>
-          <a href="{{SOURCE_HREF}}">Source mode</a>
+          <details class="toolbar-more">
+            <summary>More</summary>
+            <div class="toolbar-more-links">
+              <a href="/notes">Research notes</a>
+              <a href="/study">Study notes</a>
+              <a href="/translations?corpus_id={{CORPUS_ID}}&work_id={{WORK_ID}}">Saved translations</a>
+              <a href="{{SOURCE_HREF}}">Source mode</a>
+            </div>
+          </details>
         </nav>
       </header>
       {{VARIANT_TABS}}
