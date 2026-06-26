@@ -312,6 +312,18 @@ function renderRecord(record) {
   const commentary = cleanText(record.commentary || record.interpretation || "");
   const targetUrl = cleanText(record.target_url || "");
   const isRecent = record.id === recentlyChangedRecordId;
+  const actions = [
+    reviewState !== "reviewed"
+      ? '<button type="button" class="primary-review-action" data-review-state="reviewed" aria-keyshortcuts="R" title="Mark reviewed">Mark reviewed</button>'
+      : "",
+    targetUrl ? `<a href="${escapeHtml(targetUrl)}" data-open-source aria-keyshortcuts="O" title="Open work">Open work</a>` : "",
+    reviewState !== "generated"
+      ? '<button type="button" data-review-state="generated" aria-keyshortcuts="G" title="Mark as needs review">Needs review</button>'
+      : "",
+    reviewState !== "rejected"
+      ? '<button type="button" data-review-state="rejected" aria-keyshortcuts="X" title="Reject">Reject</button>'
+      : ""
+  ].filter(Boolean).join("");
   return `<article class="translation-record-card${isRecent ? " is-recent" : ""}" tabindex="-1" data-record-id="${escapeHtml(record.id)}" data-corpus-id="${escapeHtml(record.corpus_id)}" data-review-state="${escapeHtml(reviewState)}">
     <div class="note-title">
       ${targetUrl ? `<a href="${escapeHtml(targetUrl)}">${escapeHtml(title)}</a>` : escapeHtml(title)}
@@ -322,10 +334,7 @@ function renderRecord(record) {
     ${translation ? `<p class="translation-text">${escapeHtml(translation)}</p>` : ""}
     ${commentary ? `<details class="translation-commentary"><summary>Commentary</summary><p>${escapeHtml(commentary)}</p></details>` : ""}
     <div class="translation-actions">
-      <button type="button" class="primary-review-action" data-review-state="reviewed" aria-keyshortcuts="R" title="Mark reviewed" ${reviewState === "reviewed" ? "disabled" : ""}>Mark reviewed</button>
-      ${targetUrl ? `<a href="${escapeHtml(targetUrl)}" data-open-source aria-keyshortcuts="O" title="Open work">Open work</a>` : ""}
-      <button type="button" data-review-state="generated" aria-keyshortcuts="G" title="Mark as needs review" ${reviewState === "generated" ? "disabled" : ""}>Needs review</button>
-      <button type="button" data-review-state="rejected" aria-keyshortcuts="X" title="Reject" ${reviewState === "rejected" ? "disabled" : ""}>Reject</button>
+      ${actions}
     </div>
   </article>`;
 }

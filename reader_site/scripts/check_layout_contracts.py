@@ -377,7 +377,7 @@ def check_translations_ui() -> None:
     for needle in [
         "/assets/notes.css?v=notes12",
         "/assets/translations.css?v=trans4",
-        "/assets/translations.js?v=trans7",
+        "/assets/translations.js?v=trans8",
         'id="translationsSubmit"',
         'id="translationsClear"',
         'id="translationsReviewQueue"',
