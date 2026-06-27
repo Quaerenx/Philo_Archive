@@ -1443,6 +1443,7 @@ def check_work_source_bundle_ui() -> None:
         "Study options",
         "translation-utility-group",
         "translation-utility-group-label",
+        'class="translation-utility-group-label visually-hidden"',
         "View controls",
         "View",
         "Translation display mode",

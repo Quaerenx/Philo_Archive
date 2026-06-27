@@ -707,6 +707,27 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (state.activeTab !== 'Translation') throw new Error(`selected work route did not keep Translation tab active: ${JSON.stringify(state)}`);
     if (state.studyToolsOpen) throw new Error(`study tools should stay collapsed in default reading mode: ${JSON.stringify(state)}`);
     if (state.studyToolsSummary !== 'More') throw new Error(`study tools summary should stay concise: ${JSON.stringify(state)}`);
+    const utilityState = await page.evaluate(() => {
+      const utility = document.querySelector('.translation-utility');
+      if (!utility) return { exists: false, labels: [] };
+      utility.open = true;
+      const labels = Array.from(utility.querySelectorAll('.translation-utility-group-label')).map((node) => {
+        const box = node.getBoundingClientRect();
+        return {
+          text: node.textContent.trim(),
+          width: box.width,
+          height: box.height
+        };
+      });
+      utility.open = false;
+      return { exists: true, labels };
+    });
+    if (!utilityState.exists || utilityState.labels.length < 3) {
+      throw new Error(`study tools should keep accessible utility labels: ${JSON.stringify(utilityState)}`);
+    }
+    if (utilityState.labels.some((label) => label.width > 2 || label.height > 2)) {
+      throw new Error(`study tools utility labels should stay visually quiet: ${JSON.stringify(utilityState)}`);
+    }
     const nextFocusState = await page.evaluate(async () => {
       const ok = typeof window.focusNextSentenceAction === 'function'
         ? window.focusNextSentenceAction()
