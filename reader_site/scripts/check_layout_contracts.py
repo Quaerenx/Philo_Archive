@@ -1297,6 +1297,7 @@ def check_work_source_bundle_ui() -> None:
         "reading-position-excerpt",
         "is-selectable-cue",
         "현재 읽는 위치: ${label}. ${excerpt}",
+        "선택됨",
         "function studyReadingCueSentence",
         "data-reading-cue-select",
         "readingPosition.addEventListener",
@@ -1421,6 +1422,10 @@ def check_work_source_bundle_ui() -> None:
     ]:
         require_contains(script, needle, "assets/reader-work.js")
     require(("Show " + "source") not in script, "assets/reader-work.js should keep source-jump UI in reader language")
+    require(
+        '<span class="reading-position-current">Selected</span>' not in script,
+        "assets/reader-work.js should keep reading-position state labels in reader language",
+    )
 
     static_pages = read_site_file("rendering/static_pages.py")
     for needle in [

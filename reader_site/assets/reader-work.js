@@ -973,7 +973,7 @@ function updateReadingPosition(node) {
   readingPosition.classList.toggle("is-selected-cue", isSelected);
   readingPosition.classList.toggle("is-selectable-cue", !isSelected);
   const action = isSelected
-    ? '<span class="reading-position-current">Selected</span>'
+    ? '<span class="reading-position-current">선택됨</span>'
     : '<button type="button" data-reading-cue-select>이 문장 학습</button>';
   readingPosition.innerHTML = `
     <div class="reading-position-main">
