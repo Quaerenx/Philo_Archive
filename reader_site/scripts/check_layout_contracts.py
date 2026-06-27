@@ -231,6 +231,7 @@ def check_search_ui() -> None:
         "/assets/search.js?v=phase28",
         'href="/search" aria-current="page">Search</a>',
         'href="/translations"',
+        "Find text",
         "Translations",
         'class="filter-panel"',
         'class="filter-panel-fields"',
@@ -348,6 +349,8 @@ def check_notes_ui() -> None:
         "/assets/notes.css?v=notes20",
         "/assets/notes.js?v=notes28",
         'href="/notes" aria-current="page">Notes</a>',
+        "Find note",
+        '<button id="notesSubmit" type="submit">Apply</button>',
         'id="notesSubmit"',
         'id="notesClear"',
         'id="notesActiveFilters"',
@@ -489,12 +492,15 @@ def check_translations_ui() -> None:
     css = read_site_file("assets/translations.css")
     for needle in [
         "/assets/notes.css?v=notes20",
-        "/assets/translations.css?v=trans24",
+        "/assets/translations.css?v=trans25",
         "/assets/translations.js?v=trans55",
         'href="/translations" aria-current="page">Translations</a>',
+        "Find translation",
         '<option value="">All corpora</option>',
         'id="translationsListTools"',
         "Filter</summary>",
+        'class="filter-panel-fields translations-filter-fields"',
+        '<button id="translationsSubmit" type="submit">Apply</button>',
         'id="translationsSubmit"',
         'id="translationsClear"',
         'id="translationsReviewQueue"',
@@ -505,8 +511,6 @@ def check_translations_ui() -> None:
         'id="translationsActiveFilters"',
         'id="translationsExportMarkdown"',
         'id="translationsExportJson"',
-        'class="filter-panel"',
-        'class="filter-panel-fields"',
         'class="review-export-row"',
         'class="export-tools"',
         "Export</summary>",
@@ -653,6 +657,7 @@ def check_translations_ui() -> None:
     )
     for needle in [
         ".translations-form",
+        ".translations-filter-fields",
         ".list-tools",
         ".list-tools[hidden]",
         ".list-tools summary",
@@ -726,6 +731,14 @@ def check_translations_ui() -> None:
         ".translation-record-group-title strong" not in css,
         "assets/translations.css should not keep dead group count styling",
     )
+    require(
+        "Filters</summary>" not in html,
+        "translations.html should avoid nested filter disclosures inside the Filter panel",
+    )
+    require(
+        'class="filter-panel"' not in html,
+        "translations.html should show filter fields directly once the Filter panel is open",
+    )
     for needle in [
         ".filter-panel",
         ".filter-panel summary",
@@ -746,6 +759,8 @@ def check_study_ui() -> None:
         "/assets/study.css?v=study22",
         "/assets/study.js?v=study34",
         'href="/study" aria-current="page">Study</a>',
+        "Find saved note",
+        '<button id="studySubmit" type="submit">Apply</button>',
         'id="studySubmit"',
         'id="studyClear"',
         'id="studyActiveFilters"',

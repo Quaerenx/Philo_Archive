@@ -226,16 +226,18 @@ def check_route_markup(route: str, html: str) -> None:
             "translationsReviewQueue",
             "aria-busy=\"false\"",
             "notes.css?v=notes20",
-            "translations.css?v=trans24",
+            "translations.css?v=trans25",
             "translations.js?v=trans55",
             'href="/translations" aria-current="page">Translations</a>',
+            "Find translation",
             "translationsListTools",
             "Filter</summary>",
-            "filter-panel",
+            "translations-filter-fields",
             "export-tools",
             "Export</summary>",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
+        require("Filters</summary>" not in html, f"{route} should avoid nested filter disclosures")
     if route.startswith("/search"):
         for needle in [
             "searchSubmit",

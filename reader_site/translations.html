@@ -7,7 +7,7 @@
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
   <link rel="stylesheet" href="/assets/notes.css?v=notes20">
-  <link rel="stylesheet" href="/assets/translations.css?v=trans24">
+  <link rel="stylesheet" href="/assets/translations.css?v=trans25">
 </head>
 <body>
   <div class="page">
@@ -28,40 +28,37 @@
         <summary>Filter</summary>
         <form id="translationsForm" class="notes-form translations-form">
           <label class="query-label">
-            Search text
+            Find translation
             <input id="translationsQuery" name="q" autocomplete="off">
           </label>
-          <details class="filter-panel">
-            <summary>Filters</summary>
-            <div class="filter-panel-fields">
-              <label>
-                Corpus
-                <select id="translationsCorpus" name="corpus_id">
-                  <option value="">All corpora</option>
-                  <option value="nietzsche">Nietzsche</option>
-                  <option value="bible">Bible</option>
-                  <option value="kierkegaard">Kierkegaard</option>
-                  <option value="wittgenstein">Wittgenstein</option>
-                </select>
-              </label>
-              <label>
-                Work
-                <input id="translationsWork" name="work_id" list="translationsWorkOptions" autocomplete="off">
-                <datalist id="translationsWorkOptions"></datalist>
-              </label>
-              <label>
-                Status
-                <select id="translationsReview" name="review_state">
-                  <option value="all">All</option>
-                  <option value="generated">To check</option>
-                  <option value="reviewed">Saved</option>
-                  <option value="rejected">Rejected</option>
-                </select>
-              </label>
-            </div>
-          </details>
+          <div class="filter-panel-fields translations-filter-fields">
+            <label>
+              Corpus
+              <select id="translationsCorpus" name="corpus_id">
+                <option value="">All corpora</option>
+                <option value="nietzsche">Nietzsche</option>
+                <option value="bible">Bible</option>
+                <option value="kierkegaard">Kierkegaard</option>
+                <option value="wittgenstein">Wittgenstein</option>
+              </select>
+            </label>
+            <label>
+              Work
+              <input id="translationsWork" name="work_id" list="translationsWorkOptions" autocomplete="off">
+              <datalist id="translationsWorkOptions"></datalist>
+            </label>
+            <label>
+              Status
+              <select id="translationsReview" name="review_state">
+                <option value="all">All</option>
+                <option value="generated">To check</option>
+                <option value="reviewed">Saved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </label>
+          </div>
           <div class="form-actions">
-            <button id="translationsSubmit" type="submit">Filter</button>
+            <button id="translationsSubmit" type="submit">Apply</button>
             <button id="translationsClear" type="button" class="secondary-action" disabled>Clear</button>
           </div>
         </form>
