@@ -352,7 +352,7 @@ async function checkGemmaRuntimeStatus(announce = false) {
   const controller = new AbortController();
   gemmaRuntimeCheckController = controller;
   const timeout = window.setTimeout(() => controller.abort(), 2500);
-  setGemmaRuntimeIndicator("checking", "Checking translator", "Translator status");
+  setGemmaRuntimeIndicator("checking", "번역기 확인 중", "번역기 상태");
   setActionButtonBusy(gemmaRuntimeCheckButton, true);
   try {
     const response = await fetch("/api/health", { signal: controller.signal });
@@ -363,24 +363,24 @@ async function checkGemmaRuntimeStatus(announce = false) {
     const gemma = payload.gemma || {};
     if (gemma.reachable) {
       const model = Array.isArray(gemma.models) ? cleanText(gemma.models[0] || "") : "";
-      const title = model ? `Translator ready: ${model}` : "Translator ready";
-      setGemmaRuntimeIndicator("ready", "Translator ready", title);
+      const title = model ? `번역기 준비됨: ${model}` : "번역기 준비됨";
+      setGemmaRuntimeIndicator("ready", "번역기 준비됨", title);
       if (announce) {
-        setTranslationStatus("Translator ready.");
+        setTranslationStatus("번역기 준비됨.");
       }
       return;
     }
-    const error = cleanText(gemma.error || "Start the translator, then check again.");
-    setGemmaRuntimeIndicator("offline", "Translator off", error);
+    const error = cleanText(gemma.error || "번역기를 시작한 뒤 다시 확인하세요.");
+    setGemmaRuntimeIndicator("offline", "번역기 꺼짐", error);
     if (announce) {
-      setTranslationStatus("Translator is off.", true);
+      setTranslationStatus("번역기가 꺼져 있습니다.", true);
     }
   } catch (error) {
     if (error && error.name === "AbortError" && gemmaRuntimeCheckController !== controller) {
       return;
     }
-    const label = error && error.name === "AbortError" ? "Translator check timed out" : "Translator unavailable";
-    setGemmaRuntimeIndicator("unavailable", label, "Check whether the reader server and translation service are running.");
+    const label = error && error.name === "AbortError" ? "번역기 확인 시간이 초과되었습니다" : "번역기를 사용할 수 없습니다";
+    setGemmaRuntimeIndicator("unavailable", label, "리더 서버와 번역 서비스가 실행 중인지 확인하세요.");
     if (announce) {
       setTranslationStatus(label, true);
     }
@@ -715,7 +715,7 @@ function actionConfirmationConfig(action) {
       confirmTitle: "Click again to replace this translation",
       confirmAria: "Confirm regenerate translation",
       status: "Click again to replace this translation.",
-      blockMessage: selectedSentence ? "" : "Select a sentence first.",
+      blockMessage: selectedSentence ? "" : "문장을 먼저 선택하세요.",
       run: () => requestSentenceTranslation(true)
     };
   }
@@ -888,7 +888,7 @@ function updateTranslationTargetViewState() {
 function renderTranslationTarget() {
   if (!translationTarget) return;
   if (!selectedSentence) {
-    translationTarget.textContent = "Select a sentence.";
+    translationTarget.textContent = "문장을 선택하세요.";
     translationTarget.classList.remove("is-source-visible", "is-source-away");
     delete translationTarget.dataset.sourceState;
     return;
@@ -920,7 +920,7 @@ function flashSourceFocus(node) {
 
 function focusSelectedSourceSentence() {
   if (!selectedSentence) {
-    setTranslationStatus("Select a sentence first.", true);
+    setTranslationStatus("문장을 먼저 선택하세요.", true);
     return false;
   }
   const node = selectedSentenceNode();
@@ -1505,7 +1505,7 @@ function renderTranslationEmptyState() {
     <div class="translation-result translation-empty-state" role="note">
       <section class="translation-section translation-section-primary" data-translation-section="translation">
         <h3>Translation</h3>
-        <p class="translation-primary translation-empty-copy">Select a sentence to study.</p>
+        <p class="translation-primary translation-empty-copy">공부할 문장을 선택하세요.</p>
       </section>
     </div>`;
 }
@@ -1672,8 +1672,8 @@ function renderTranslationPending(regenerate = false) {
   translationOutput.classList.toggle("study-mode", translationMode === "study");
   setTranslationBusy(true);
   resetTranslationOutputScroll();
-  const actionLabel = regenerate ? "Refreshing translation" : "Preparing translation";
-  const commentaryLabel = regenerate ? "Updating commentary for this sentence." : "Commentary will appear with the translation.";
+  const actionLabel = regenerate ? "번역을 다시 준비하는 중" : "번역 준비 중";
+  const commentaryLabel = regenerate ? "해설을 다시 준비하고 있습니다." : "번역과 함께 해설을 준비하고 있습니다.";
   const position = selectedSentencePositionLabel();
   translationOutput.innerHTML = `
     <div class="translation-result translation-pending-result" role="status" aria-live="polite" aria-label="${escapeHtml(`${actionLabel}: ${position}`)}">
@@ -1693,7 +1693,7 @@ function renderTranslationPending(regenerate = false) {
         <p class="translation-unavailable-copy">${escapeHtml(commentaryLabel)}</p>
       </section>
       <div class="translation-loading-actions">
-        <button type="button" data-translation-cancel>Cancel request</button>
+        <button type="button" data-translation-cancel>요청 취소</button>
       </div>
     </div>`;
   updateSentenceControls();
@@ -1710,26 +1710,28 @@ function translationErrorIsRuntime(message) {
     text.includes("translation service is not running") ||
     text.includes("failed to fetch") ||
     text.includes("networkerror") ||
-    text.includes("load failed")
+    text.includes("load failed") ||
+    text.includes("번역기") ||
+    text.includes("번역 서비스")
   );
 }
 
 function translationErrorDisplayMessage(message) {
   return translationErrorIsRuntime(message)
-    ? "Translator is off. Start it, then try again."
-    : cleanText(message || "Translation unavailable.");
+    ? "번역기가 꺼져 있습니다. 시작한 뒤 다시 시도하세요."
+    : cleanText(message || "번역을 사용할 수 없습니다.");
 }
 
 function runtimeRecoveryMarkup(message) {
   if (!translationErrorIsRuntime(message)) return "";
   return `
-      <p class="translation-runtime-hint">Start the translator, then try this sentence again.</p>
+      <p class="translation-runtime-hint">번역기를 시작한 뒤 이 문장을 다시 시도하세요.</p>
       <details class="translation-runtime-details">
-        <summary>Copy start command</summary>
-        <p class="translation-runtime-note">Run this once in PowerShell.</p>
+        <summary>시작 명령 복사</summary>
+        <p class="translation-runtime-note">PowerShell에서 한 번 실행하세요.</p>
         <div class="translation-runtime-command-row">
           <code class="translation-runtime-command">${escapeHtml(GEMMA_RUNTIME_COMMAND)}</code>
-          <button type="button" data-translation-copy-runtime>Copy command</button>
+          <button type="button" data-translation-copy-runtime>명령 복사</button>
         </div>
       </details>`;
 }
@@ -1737,8 +1739,8 @@ function runtimeRecoveryMarkup(message) {
 function renderTranslationError(message) {
   selectedTranslationRecord = null;
   const retryMode = pendingTranslationRegenerate ? "regenerate" : "translate";
-  const retryLabel = pendingTranslationRegenerate ? "Regenerate again" : "Try again";
-  const cleanMessage = cleanText(message || "Translator is offline.");
+  const retryLabel = pendingTranslationRegenerate ? "다시 생성" : "다시 시도";
+  const cleanMessage = cleanText(message || "번역기가 꺼져 있습니다.");
   const isRuntimeError = translationErrorIsRuntime(cleanMessage);
   const displayMessage = translationErrorDisplayMessage(cleanMessage);
   pendingTranslationRegenerate = false;
@@ -1752,7 +1754,7 @@ function renderTranslationError(message) {
     <div class="translation-result translation-error" role="note">
       <section class="translation-section translation-section-primary" data-translation-section="translation">
         <h3>Translation</h3>
-        <p class="translation-primary translation-unavailable-copy">Translation unavailable.</p>
+        <p class="translation-primary translation-unavailable-copy">번역을 사용할 수 없습니다.</p>
       </section>
       <section class="translation-section translation-commentary" data-translation-section="commentary">
         <h3>해설</h3>
@@ -1762,7 +1764,7 @@ function renderTranslationError(message) {
         ${runtimeRecoveryMarkup(cleanMessage)}
         <div class="translation-error-actions">
           <button type="button" data-translation-retry="${escapeHtml(retryMode)}">${escapeHtml(retryLabel)}</button>
-          ${isRuntimeError ? '<button type="button" data-translation-check-runtime>Check again</button>' : ""}
+          ${isRuntimeError ? '<button type="button" data-translation-check-runtime>다시 확인</button>' : ""}
         </div>
       </div>
     </div>`;
@@ -1770,15 +1772,15 @@ function renderTranslationError(message) {
   updateSentenceControls();
 }
 
-function renderTranslationCancelled(message = "Translation request cancelled.") {
+function renderTranslationCancelled(message = "번역 요청이 취소되었습니다.") {
   selectedTranslationRecord = null;
   setTranslationBusy(false);
   setTranslationReviewVisualState("");
   translationOutput.hidden = false;
   resetTranslationOutputScroll();
-  const position = selectedSentence ? selectedSentencePositionLabel() : "selected sentence";
+  const position = selectedSentence ? selectedSentencePositionLabel() : "선택한 문장";
   const retryMode = pendingTranslationRegenerate ? "regenerate" : "translate";
-  const retryLabel = pendingTranslationRegenerate ? "Regenerate again" : "Try again";
+  const retryLabel = pendingTranslationRegenerate ? "다시 생성" : "다시 시도";
   pendingTranslationRegenerate = false;
   translationOutput.classList.toggle("reading-mode", translationMode === "reading");
   translationOutput.classList.toggle("study-mode", translationMode === "study");
@@ -1786,11 +1788,11 @@ function renderTranslationCancelled(message = "Translation request cancelled.") 
     <div class="translation-result translation-cancelled" role="note">
       <section class="translation-section translation-section-primary" data-translation-section="translation">
         <h3>Translation</h3>
-        <p class="translation-primary translation-unavailable-copy">Translation cancelled.</p>
+        <p class="translation-primary translation-unavailable-copy">번역이 취소되었습니다.</p>
       </section>
       <section class="translation-section translation-commentary" data-translation-section="commentary">
         <h3>해설</h3>
-        <p class="translation-unavailable-copy">${escapeHtml(cleanText(message))} No translation was saved for ${escapeHtml(position)}.</p>
+        <p class="translation-unavailable-copy">${escapeHtml(cleanText(message))} ${escapeHtml(position)}에는 번역을 저장하지 않았습니다.</p>
       </section>
       <div class="translation-recovery-panel translation-error-actions">
         <button type="button" data-translation-retry="${escapeHtml(retryMode)}">${escapeHtml(retryLabel)}</button>
@@ -2065,7 +2067,7 @@ function flashSentenceReviewState(node, reviewState) {
 
 function cancelTranslationRequest() {
   if (!activeTranslationController) {
-    setTranslationStatus("No translation request is running.");
+    setTranslationStatus("실행 중인 번역 요청이 없습니다.");
     return;
   }
   const controller = activeTranslationController;
@@ -2078,13 +2080,13 @@ function cancelTranslationRequest() {
     sentenceNode.classList.remove("loading");
   }
   renderTranslationCancelled();
-  setTranslationStatus("Translation request cancelled.");
+  setTranslationStatus("번역 요청을 취소했습니다.");
 }
 
 async function requestSentenceTranslation(regenerate = false) {
   clearActionConfirmations();
   if (!selectedSentence) {
-    setTranslationStatus("Select a sentence first.", true);
+    setTranslationStatus("문장을 먼저 선택하세요.", true);
     return;
   }
   const targetKey = selectedTranslationTargetKey();
@@ -2124,30 +2126,30 @@ async function requestSentenceTranslation(regenerate = false) {
     const payload = await response.json().catch(() => ({}));
     if (requestId !== activeTranslationRequest) return;
     if (!response.ok || !payload.ok) {
-      const message = cleanText(payload.error || "Translator is offline.");
+      const message = cleanText(payload.error || "번역기가 꺼져 있습니다.");
       if (translationErrorIsRuntime(message)) {
-        setGemmaRuntimeIndicator("offline", "Translator off", "Start the translator, then try again.");
+        setGemmaRuntimeIndicator("offline", "번역기 꺼짐", "번역기를 시작한 뒤 다시 시도하세요.");
       }
       setTranslationStatus(translationErrorDisplayMessage(message), true);
       renderTranslationError(message);
       return;
     }
     if (!payload.cached) {
-      setGemmaRuntimeIndicator("ready", "Translator ready", "Translation service responded to this request.");
+      setGemmaRuntimeIndicator("ready", "번역기 준비됨", "번역 서비스가 이 요청에 응답했습니다.");
     }
     renderTranslationRecord(payload.record, payload.cached);
     if (!payload.cached) {
       loadTranslationRecordsSummary();
     }
-    setTranslationStatus(payload.cached ? "Loaded translation." : "Translation saved locally.");
+    setTranslationStatus(payload.cached ? "저장된 번역을 불러왔습니다." : "번역을 로컬에 저장했습니다.");
   } catch (error) {
     if (error && error.name === "AbortError") {
       return;
     }
     if (requestId === activeTranslationRequest) {
-      const message = cleanText(error && error.message ? error.message : "Translator is offline.");
+      const message = cleanText(error && error.message ? error.message : "번역기가 꺼져 있습니다.");
       if (translationErrorIsRuntime(message)) {
-        setGemmaRuntimeIndicator("offline", "Translator off", "Start the translator, then try again.");
+        setGemmaRuntimeIndicator("offline", "번역기 꺼짐", "번역기를 시작한 뒤 다시 시도하세요.");
       }
       setTranslationStatus(translationErrorDisplayMessage(message), true);
       renderTranslationError(message);
@@ -2822,8 +2824,8 @@ translationOutput.addEventListener("click", (event) => {
   const copyRuntime = event.target.closest("[data-translation-copy-runtime]");
   if (copyRuntime) {
     copyText(GEMMA_RUNTIME_COMMAND)
-      .then(() => setTranslationStatus("Command copied."))
-      .catch(() => setTranslationStatus("Could not copy command.", true));
+      .then(() => setTranslationStatus("명령을 복사했습니다."))
+      .catch(() => setTranslationStatus("명령을 복사하지 못했습니다.", true));
     return;
   }
   const checkRuntime = event.target.closest("[data-translation-check-runtime]");

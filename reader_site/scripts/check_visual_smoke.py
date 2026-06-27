@@ -293,8 +293,8 @@ def check_route_markup(route: str, html: str) -> None:
             "Saved</summary>",
             "noteSort",
             "gemmaRuntimeStatus",
-            "Translator status",
-            "Select a sentence.",
+            "번역기 상태",
+            "문장을 선택하세요.",
             "translationRecordsSummary",
             "No saved translations</div>",
             "studyProgress",
@@ -314,7 +314,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common116",
-            "reader-work.js?v=common154",
+            "reader-work.js?v=common155",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         require("Contents (" not in html, f"{route} should not expose TOC inventory counts")
