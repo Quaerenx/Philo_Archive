@@ -711,6 +711,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       const utility = document.querySelector('.translation-utility');
       if (!utility) return { exists: false, labels: [] };
       utility.open = true;
+      const manage = utility.querySelector('.translation-review-tools');
+      if (manage) manage.open = true;
       const labels = Array.from(utility.querySelectorAll('.translation-utility-group-label')).map((node) => {
         const box = node.getBoundingClientRect();
         return {
@@ -719,14 +721,34 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
           height: box.height
         };
       });
+      const reviewActions = Array.from(utility.querySelectorAll('.translation-review-actions button')).map((node) => ({
+        id: node.id,
+        text: node.textContent.trim(),
+        display: window.getComputedStyle(node).display
+      }));
+      const manageSummary = manage?.querySelector('summary')?.textContent.trim() || '';
       utility.open = false;
-      return { exists: true, labels };
+      return { exists: true, labels, manageSummary, reviewActions };
     });
     if (!utilityState.exists || utilityState.labels.length < 3) {
       throw new Error(`study tools should keep accessible utility labels: ${JSON.stringify(utilityState)}`);
     }
     if (utilityState.labels.some((label) => label.width > 2 || label.height > 2)) {
       throw new Error(`study tools utility labels should stay visually quiet: ${JSON.stringify(utilityState)}`);
+    }
+    if (utilityState.manageSummary !== 'Manage') {
+      throw new Error(`study management tools should have a concise summary: ${JSON.stringify(utilityState)}`);
+    }
+    const hiddenDuplicates = utilityState.reviewActions
+      .filter((action) => ['markTranslationReviewed', 'draftTranslationNote'].includes(action.id));
+    if (hiddenDuplicates.length !== 2 || hiddenDuplicates.some((action) => action.display !== 'none')) {
+      throw new Error(`study management tools should hide actions already exposed in the reading card: ${JSON.stringify(utilityState)}`);
+    }
+    const visibleManagementActions = utilityState.reviewActions
+      .filter((action) => action.display !== 'none')
+      .map((action) => action.text);
+    if (!visibleManagementActions.includes('Reject') || !visibleManagementActions.includes('Copy study card')) {
+      throw new Error(`study management tools should keep secondary management actions available: ${JSON.stringify(utilityState)}`);
     }
     const nextFocusState = await page.evaluate(async () => {
       const ok = typeof window.focusNextSentenceAction === 'function'

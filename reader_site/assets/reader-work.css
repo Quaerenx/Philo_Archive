@@ -701,6 +701,10 @@ h1 {
   margin: 0;
 }
 
+.translation-review-actions .translation-review-duplicate-action {
+  display: none;
+}
+
 #regenerateSentence {
   grid-column: 1 / -1;
 }
