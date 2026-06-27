@@ -93,8 +93,8 @@ def check_html_entrypoints() -> None:
         require_contains(html, 'class="page"', relative_path)
         if relative_path == "index.html":
             require_contains(html, "번역", relative_path)
-            require_contains(html, "/styles.css?v=home2", relative_path)
-            require_contains(html, "/app.js?v=home9", relative_path)
+            require_contains(html, "/styles.css?v=home3", relative_path)
+            require_contains(html, "/app.js?v=home10", relative_path)
         if relative_path in {"templates/reading.html", "templates/source.html"}:
             require_contains(html, "/assets/static-reader.css?v=static2", relative_path)
             require_contains(html, "자료 위치</summary>", relative_path)
@@ -161,6 +161,10 @@ def check_home_css() -> None:
         "border: 1px solid var(--reader-border",
         ".reading-path-link.primary",
         ".reading-path-links",
+        ".category-browse-tools",
+        ".category-browse-tools summary",
+        ".category-browse-tools[open] summary::after",
+        ".category-browse-body",
         ".recent-work",
         ".recent-work-meta",
         ".root-links",
@@ -206,6 +210,9 @@ def check_home_script() -> None:
         "function recentWorkMarkup",
         "function categoryEmptyState",
         "function hasCategoryFilters",
+        "browseToolsOpen",
+        "category-browse-tools",
+        "목록 좁히기",
         'data-category-action="clear-filters"',
         "필터 지우기",
         "이어 읽기",

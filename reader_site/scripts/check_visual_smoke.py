@@ -204,7 +204,7 @@ def check_route_markup(route: str, html: str) -> None:
             "노트",
             "학습",
             "번역",
-            "app.js?v=home9",
+            "app.js?v=home10",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
     if route == "/study":
@@ -512,20 +512,43 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
   }
   if (parsed.pathname.startsWith('/category/')) {
     await page.waitForSelector('#categoryFilter', { timeout: 5000 }).catch(() => {});
-    const hasCategoryFilter = await page.evaluate(() => Boolean(document.querySelector('#categoryFilter')));
+    const initialCategoryToolsState = await page.evaluate(() => {
+      const browseTools = document.querySelector('.category-browse-tools');
+      const primary = document.querySelector('.reading-path-link.primary');
+      return {
+        hasCategoryFilter: Boolean(document.querySelector('#categoryFilter')),
+        browseToolsOpen: Boolean(browseTools?.open),
+        browseToolsSummary: browseTools?.querySelector('summary')?.textContent.trim() || '',
+        primaryReadLink: primary?.textContent.trim() || '',
+        primaryReadLinkHeight: primary?.getBoundingClientRect().height || 0
+      };
+    });
+    if (initialCategoryToolsState.hasCategoryFilter && (initialCategoryToolsState.browseToolsOpen || initialCategoryToolsState.browseToolsSummary !== '목록 좁히기')) {
+      throw new Error(`category page should keep browse filters collapsed behind a concise label: ${JSON.stringify(initialCategoryToolsState)}`);
+    }
+    if (initialCategoryToolsState.hasCategoryFilter && (!initialCategoryToolsState.primaryReadLink || initialCategoryToolsState.primaryReadLinkHeight < 24)) {
+      throw new Error(`category page should make the first reading action clear before filters: ${JSON.stringify(initialCategoryToolsState)}`);
+    }
+    const hasCategoryFilter = initialCategoryToolsState.hasCategoryFilter;
     if (hasCategoryFilter) {
+      await page.evaluate(() => {
+        const browseTools = document.querySelector('.category-browse-tools');
+        if (browseTools) browseTools.open = true;
+      });
       await page.fill('#categoryFilter', 'unlikelyarchivequery0000');
       await page.waitForSelector('[data-category-action="clear-filters"]', { timeout: 5000 }).catch(() => {});
       const emptyCategoryState = await page.evaluate(() => {
         const clear = document.querySelector('[data-category-action="clear-filters"]');
+        const browseTools = document.querySelector('.category-browse-tools');
         return {
           emptyText: document.querySelector('.category-empty')?.textContent.trim() || '',
           clearText: clear?.textContent.trim() || '',
           filterValue: document.querySelector('#categoryFilter')?.value || '',
-          workLinkCount: document.querySelectorAll('.work-link').length
+          workLinkCount: document.querySelectorAll('.work-link').length,
+          browseToolsOpen: Boolean(browseTools?.open)
         };
       });
-      if (emptyCategoryState.clearText !== '필터 지우기' || emptyCategoryState.workLinkCount !== 0) {
+      if (emptyCategoryState.clearText !== '필터 지우기' || emptyCategoryState.workLinkCount !== 0 || !emptyCategoryState.browseToolsOpen) {
         throw new Error(`category empty search should offer a clear recovery action: ${JSON.stringify(emptyCategoryState)}`);
       }
       await page.click('[data-category-action="clear-filters"]');

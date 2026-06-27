@@ -274,6 +274,7 @@ function categoryEmptyState() {
 }
 
 function categoryControls(corpus, sections) {
+  const browseToolsOpen = hasCategoryFilters() ? " open" : "";
   const pathLinks = readingPathLinks(corpus)
     .map((link, index) => `<a class="reading-path-link${index === 0 ? " primary" : ""}" href="${escapeHtml(link.href)}"${startReadingTitle(link)}>${escapeHtml(startReadingLabel(link))}</a>`)
     .join("");
@@ -285,8 +286,13 @@ function categoryControls(corpus, sections) {
   ].join("");
   return `<section class="category-tools">
     <div class="reading-path"><strong>바로 읽기</strong><div class="reading-path-links">${pathLinks || '<span class="empty">시작 문서가 없습니다.</span>'}</div></div>
-    <label class="category-filter">작품 찾기<input id="categoryFilter" value="${escapeHtml(state.categoryQuery)}" autocomplete="off" placeholder="제목 또는 약호"></label>
-    <div class="section-filters" aria-label="분류">${sectionButtons}</div>
+    <details class="category-browse-tools"${browseToolsOpen}>
+      <summary>목록 좁히기</summary>
+      <div class="category-browse-body">
+        <label class="category-filter">작품 찾기<input id="categoryFilter" value="${escapeHtml(state.categoryQuery)}" autocomplete="off" placeholder="제목 또는 약호"></label>
+        <div class="section-filters" aria-label="분류">${sectionButtons}</div>
+      </div>
+    </details>
   </section>`;
 }
 

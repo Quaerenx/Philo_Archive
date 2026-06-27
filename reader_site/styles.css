@@ -205,6 +205,39 @@ img {
   border-left: 3px solid #b00000;
 }
 
+.category-browse-tools {
+  margin-top: 10px;
+  color: #555;
+}
+
+.category-browse-tools summary {
+  display: inline-flex;
+  min-height: 24px;
+  align-items: center;
+  padding: 2px 0;
+  color: #555;
+  cursor: pointer;
+  line-height: 1.35;
+}
+
+.category-browse-tools summary::-webkit-details-marker {
+  display: none;
+}
+
+.category-browse-tools summary::after {
+  margin-left: 6px;
+  color: #777;
+  content: "+";
+}
+
+.category-browse-tools[open] summary::after {
+  content: "-";
+}
+
+.category-browse-body {
+  margin-top: 8px;
+}
+
 .category-filter {
   display: block;
   margin-bottom: 10px;
