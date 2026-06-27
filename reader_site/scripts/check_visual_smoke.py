@@ -257,27 +257,27 @@ def check_route_markup(route: str, html: str) -> None:
         for needle in [
             "reading-desk",
             "toolbar-more",
-            "Workspace</summary>",
+            "작업</summary>",
             "/notes?corpus_id=",
             "/study?corpus_id=",
             "/translations?corpus_id=",
-            "Source</a>",
+            "원본</a>",
             "study-tabs",
             "study-tab-secondary",
             "citation-copy-options",
-            "Copy</summary>",
+            "복사</summary>",
             "studyPanelToggle",
             "studyPanelScrim",
             "study-panel-toggle-action",
             "study-panel-toggle-summary",
             "readingPosition",
             "sentence-context-tools",
-            "Around this sentence",
-            "Context</summary>",
+            "주변 문장",
+            "문맥</summary>",
             "sentenceContext",
             "sentence-more-controls",
-            "More sentence actions",
-            "More</summary>",
+            "추가 문장 동작",
+            "더보기</summary>",
             "previousSentence",
             "nextSentence",
             "markTranslationReviewed",
@@ -288,33 +288,33 @@ def check_route_markup(route: str, html: str) -> None:
             "lockNoteTarget",
             "noteListSummary",
             "note-options",
-            "Tags</summary>",
+            "태그</summary>",
             "notes-filter-tools",
-            "Saved</summary>",
+            "저장됨</summary>",
             "noteSort",
             "gemmaRuntimeStatus",
             "번역기 상태",
             "문장을 선택하세요.",
             "translationRecordsSummary",
-            "No saved translations</div>",
+            "저장된 번역 없음</div>",
             "studyProgress",
-            "Checking progress",
-            "Continue study",
+            "진행 확인 중",
+            "이어 읽기",
             "translation-export-tools",
-            "Download study material",
-            "Downloads</summary>",
-            "Download links",
+            "학습 자료 내보내기",
+            "내보내기</summary>",
+            "다운로드 링크",
             "exportAllTranslations",
-            "All translations",
+            "전체 번역",
             "exportStudySession",
-            "Study record",
+            "학습 기록",
             "studySessionSummary",
-            "Nothing to download</div>",
+            "내보낼 항목 없음</div>",
             "Contents</summary>",
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common116",
-            "reader-work.js?v=common157",
+            "reader-work.js?v=common158",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         require("Contents (" not in html, f"{route} should not expose TOC inventory counts")
@@ -911,7 +911,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (utilityState.labels.some((label) => label.width > 2 || label.height > 2)) {
       throw new Error(`study tools utility labels should stay visually quiet: ${JSON.stringify(utilityState)}`);
     }
-    if (utilityState.manageSummary !== 'Study tools') {
+    if (utilityState.manageSummary !== '도구') {
       throw new Error(`study action tools should have a concise summary: ${JSON.stringify(utilityState)}`);
     }
     const hiddenDuplicates = utilityState.reviewActions
@@ -922,7 +922,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     const visibleManagementActions = utilityState.reviewActions
       .filter((action) => action.display !== 'none')
       .map((action) => action.text);
-    if (!visibleManagementActions.includes('Discard') || !visibleManagementActions.includes('Copy study note')) {
+    if (!visibleManagementActions.includes('제외') || !visibleManagementActions.includes('노트 복사')) {
       throw new Error(`study action tools should keep secondary actions available: ${JSON.stringify(utilityState)}`);
     }
     const nextFocusState = await page.evaluate(async () => {
@@ -958,7 +958,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (draftState.activeTab !== '노트') {
       throw new Error(`Add note should switch to Notes tab: ${JSON.stringify(draftState)}`);
     }
-    for (const expectedText of ['Translation', 'Commentary']) {
+    for (const expectedText of ['번역', '해설']) {
       if (!draftState.note.includes(expectedText)) {
         throw new Error(`Add note should draft concise ${expectedText} content: ${JSON.stringify(draftState)}`);
       }
@@ -971,7 +971,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (!draftState.tags.includes('ai-translation')) {
       throw new Error(`Add note should keep the translation tag: ${JSON.stringify(draftState)}`);
     }
-    if (!/Ready to save|Added to this note/.test(draftState.noteStatus)) {
+    if (!/저장할 준비가 되었습니다|이 노트에 추가했습니다/.test(draftState.noteStatus)) {
       throw new Error(`Add note should tell the reader what to do next: ${JSON.stringify(draftState)}`);
     }
     if (draftState.activeElementId !== 'noteText') {
@@ -987,19 +987,19 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       savedToolsHidden: Boolean(document.querySelector('.notes-filter-tools')?.hidden),
       notesEmptyText: document.querySelector('#notesList .notes-empty')?.textContent.trim() || ''
     }));
-    if (notesState.notePlaceholder !== 'Write a note...' || !notesState.noteLabelHidden) {
+    if (notesState.notePlaceholder !== '메모 작성...' || !notesState.noteLabelHidden) {
       throw new Error(`notes tab should keep the editor quiet but accessible: ${JSON.stringify(notesState)}`);
     }
-    if (notesState.saveText !== 'Save' || notesState.saveLabel !== 'Save note') {
+    if (notesState.saveText !== '저장' || notesState.saveLabel !== '노트 저장') {
       throw new Error(`notes tab save control should stay concise: ${JSON.stringify(notesState)}`);
     }
-    if (notesState.tagsSummary !== 'Tags') {
+    if (notesState.tagsSummary !== '태그') {
       throw new Error(`notes tab details labels should stay concise: ${JSON.stringify(notesState)}`);
     }
-    if (notesState.notesEmptyText === 'No notes yet.' && !notesState.savedToolsHidden) {
+    if (notesState.notesEmptyText === '아직 노트가 없습니다.' && !notesState.savedToolsHidden) {
       throw new Error(`notes tab should hide saved filters when there are no notes: ${JSON.stringify(notesState)}`);
     }
-    if (notesState.notesEmptyText !== 'No notes yet.' && notesState.savedSummary !== 'Saved') {
+    if (notesState.notesEmptyText !== '아직 노트가 없습니다.' && notesState.savedSummary !== '저장됨') {
       throw new Error(`notes tab saved filter label should stay concise when notes or filters exist: ${JSON.stringify(notesState)}`);
     }
     await page.click('#study-tab-citation');
@@ -1021,16 +1021,16 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         bundleLabel: document.querySelector('#copySourceBundle')?.getAttribute('aria-label') || ''
       };
     });
-    if (citationState.copyText !== 'Copy' || citationState.copyLabel !== 'Copy citation') {
+    if (citationState.copyText !== '복사' || citationState.copyLabel !== '인용 복사') {
       throw new Error(`citation tab primary copy control should stay concise: ${JSON.stringify(citationState)}`);
     }
-    if (citationState.copyOptionsText !== 'Copy') {
+    if (citationState.copyOptionsText !== '복사') {
       throw new Error(`citation tab secondary copy summary should stay task-specific: ${JSON.stringify(citationState)}`);
     }
     if (citationState.previewHasUrl || !citationState.copiedHasUrl) {
       throw new Error(`citation preview should hide URL while copied citation keeps it: ${JSON.stringify(citationState)}`);
     }
-    if (citationState.urlText !== 'URL' || citationState.urlLabel !== 'Copy URL' || citationState.bundleText !== 'Source bundle' || citationState.bundleLabel !== 'Copy source bundle') {
+    if (citationState.urlText !== 'URL' || citationState.urlLabel !== 'URL 복사' || citationState.bundleText !== '원문 묶음' || citationState.bundleLabel !== '원문 묶음 복사') {
       throw new Error(`citation secondary copy controls should stay concise: ${JSON.stringify(citationState)}`);
     }
     await page.click('#study-tab-translation');

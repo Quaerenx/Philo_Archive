@@ -70,20 +70,23 @@ def check_selected_sentence_dom(html: str, viewport_label: str) -> None:
         f"{context} did not mark a source sentence selected",
     )
     require(
-        '<span class="translation-target-label">Source</span>' in html,
+        '<span class="translation-target-label">원문</span>' in html,
         f"{context} did not render human-readable source target label",
     )
     require(
-        re.search(r'<strong class="translation-target-id">Sentence \d+ of \d+</strong>', html) is not None,
+        re.search(r'<strong class="translation-target-id">문장 \d+ / \d+</strong>', html) is not None,
         f"{context} did not render selected sentence position in the study panel",
     )
     require("translation-target-excerpt" in html, f"{context} missing selected sentence excerpt")
-    require("study-panel-toggle-action\">Back to text" in html, f"{context} did not expand study panel after selection")
-    require("study-panel-toggle-summary\">Sentence " in html, f"{context} missing selected sentence summary")
+    require("study-panel-toggle-action\">본문으로" in html, f"{context} did not expand study panel after selection")
+    require(
+        "study-panel-toggle-summary\">문장 " in html or "study-panel-toggle-summary\">번역 완료" in html,
+        f"{context} missing selected sentence summary",
+    )
     require('data-translation-section="translation"' in html, f"{context} missing translation section")
     require('data-translation-section="commentary"' in html, f"{context} missing commentary section")
-    require("<h3>Translation</h3>" in html, f"{context} missing translation heading")
-    require("<h3>Commentary</h3>" in html, f"{context} missing commentary heading")
+    require("<h3>번역</h3>" in html, f"{context} missing translation heading")
+    require("<h3>해설</h3>" in html, f"{context} missing commentary heading")
     require("translation-primary" in html, f"{context} missing readable translation body")
     require("translation-commentary" in html, f"{context} missing readable commentary body")
     require("Select a sentence to study." not in html, f"{context} still shows empty translation state")

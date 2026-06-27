@@ -19,24 +19,24 @@
           <a href="/">Archive</a>
           <a href="{{CATEGORY_HREF}}">{{CORPUS_TITLE}}</a>
           <details class="toolbar-more">
-            <summary>Workspace</summary>
+          <summary>작업</summary>
             <div class="toolbar-more-links">
-              <a href="/notes?corpus_id={{CORPUS_ID}}&work_id={{WORK_ID}}">Notes</a>
-              <a href="/study?corpus_id={{CORPUS_ID}}&work_id={{WORK_ID}}">Study</a>
-              <a href="/translations?corpus_id={{CORPUS_ID}}&work_id={{WORK_ID}}">Translations</a>
-              <a href="{{SOURCE_HREF}}">Source</a>
+              <a href="/notes?corpus_id={{CORPUS_ID}}&work_id={{WORK_ID}}">노트</a>
+              <a href="/study?corpus_id={{CORPUS_ID}}&work_id={{WORK_ID}}">학습</a>
+              <a href="/translations?corpus_id={{CORPUS_ID}}&work_id={{WORK_ID}}">번역</a>
+              <a href="{{SOURCE_HREF}}">원본</a>
             </div>
           </details>
         </nav>
       </header>
       {{VARIANT_TABS}}
       {{TOC}}
-      <section class="reading-desk" aria-label="Reading desk">
-        <section class="source-page" aria-label="Original source">
+      <section class="reading-desk" aria-label="읽기 책상">
+        <section class="source-page" aria-label="원문">
           <article class="reading-body" dir="{{TEXT_DIRECTION}}" data-headings="{{HEADING_COUNT}}" data-segments="{{SEGMENT_COUNT}}">{{CONTENT}}</article>
         </section>
-        <button type="button" id="studyPanelScrim" class="study-panel-scrim" aria-label="Close study panel" hidden></button>
-        <aside id="studyCompanionPanel" class="study-page" aria-label="Study companion">
+        <button type="button" id="studyPanelScrim" class="study-panel-scrim" aria-label="학습 패널 닫기" hidden></button>
+        <aside id="studyCompanionPanel" class="study-page" aria-label="학습 패널">
           <button type="button" id="studyPanelToggle" class="study-panel-toggle" aria-expanded="false" aria-controls="studyCompanionPanel" aria-label="학습. 문장 선택"><span class="study-panel-toggle-action">학습</span><span class="study-panel-toggle-summary">문장 선택</span></button>
           <nav class="study-tabs" role="tablist" aria-label="학습 도구" aria-orientation="horizontal">
             <button type="button" id="study-tab-translation" class="study-tab active" role="tab" aria-selected="true" aria-controls="study-panel-translation" tabindex="0" data-study-tab="translation">번역</button>
@@ -53,64 +53,64 @@
                   <span>옵션</span>
                 </summary>
                 <div class="translation-utility-body">
-                  <section class="translation-utility-group" aria-label="View controls">
-                    <div class="translation-utility-group-label visually-hidden">View</div>
+                  <section class="translation-utility-group" aria-label="보기 설정">
+                    <div class="translation-utility-group-label visually-hidden">보기</div>
                     <div class="mode-toggle" role="group" aria-label="번역 표시 방식">
                       <button type="button" id="readingMode" class="active">읽기</button>
                       <button type="button" id="studyMode">학습</button>
                     </div>
                   </section>
-                  <section class="translation-utility-group" aria-label="Sentence controls">
-                    <div class="translation-utility-group-label visually-hidden">Sentence</div>
+                  <section class="translation-utility-group" aria-label="문장 이동">
+                    <div class="translation-utility-group-label visually-hidden">문장</div>
                     <div id="gemmaRuntimeStatus" class="runtime-status" data-runtime-state="checking" title="번역기 상태">
                       <span class="runtime-status-dot" aria-hidden="true"></span>
                       <span id="gemmaRuntimeStatusText" class="runtime-status-text" role="status" aria-live="polite" aria-atomic="true">번역기 확인 중</span>
                       <button type="button" id="gemmaRuntimeCheck" title="번역기 확인">확인</button>
                     </div>
                     <div id="translationTarget" class="translation-target">문장을 선택하세요.</div>
-                    <div id="readingPosition" class="reading-position" aria-label="Current reading position" hidden></div>
-                    <details class="sentence-context-tools" aria-label="Around this sentence" hidden>
-                      <summary>Context</summary>
-                      <div id="sentenceContext" class="sentence-context" aria-label="Around this sentence" hidden></div>
+                    <div id="readingPosition" class="reading-position" aria-label="현재 읽는 위치" hidden></div>
+                    <details class="sentence-context-tools" aria-label="주변 문장" hidden>
+                      <summary>문맥</summary>
+                      <div id="sentenceContext" class="sentence-context" aria-label="주변 문장" hidden></div>
                     </details>
-                    <div class="sentence-controls" aria-label="Sentence navigation">
-                      <button type="button" id="previousSentence" aria-keyshortcuts="ArrowUp K" title="Previous sentence" disabled>Previous</button>
-                      <button type="button" id="nextSentence" aria-keyshortcuts="ArrowDown J" title="Next sentence" disabled>Next</button>
-                      <details class="sentence-more-controls" aria-label="More sentence actions">
-                        <summary>More</summary>
+                    <div class="sentence-controls" aria-label="문장 이동">
+                      <button type="button" id="previousSentence" aria-keyshortcuts="ArrowUp K" title="이전 문장" disabled>이전</button>
+                      <button type="button" id="nextSentence" aria-keyshortcuts="ArrowDown J" title="다음 문장" disabled>다음</button>
+                      <details class="sentence-more-controls" aria-label="추가 문장 동작">
+                        <summary>더보기</summary>
                         <div class="sentence-more-controls-body">
-                          <button type="button" id="nextUnstudiedSentence" title="Next sentence without a translation" aria-label="Next unstudied sentence" disabled>Next unstudied</button>
-                          <button type="button" id="nextReviewSentence" title="Next translation to check" aria-label="Next translation to check" disabled>Next to check</button>
-                          <button type="button" id="regenerateSentence" title="Regenerate translation" aria-label="Regenerate translation" disabled>Regenerate</button>
+                          <button type="button" id="nextUnstudiedSentence" title="아직 번역하지 않은 다음 문장" aria-label="아직 번역하지 않은 다음 문장" disabled>미번역</button>
+                          <button type="button" id="nextReviewSentence" title="검토할 다음 번역" aria-label="검토할 다음 번역" disabled>검토</button>
+                          <button type="button" id="regenerateSentence" title="번역 다시 생성" aria-label="번역 다시 생성" disabled>다시 생성</button>
                         </div>
                       </details>
                     </div>
                   </section>
-                  <section class="translation-utility-group translation-flow-group" aria-label="Study flow">
-                    <div class="translation-utility-group-label visually-hidden">Study</div>
+                  <section class="translation-utility-group translation-flow-group" aria-label="학습 흐름">
+                    <div class="translation-utility-group-label visually-hidden">학습</div>
                     <div id="translationStatus" class="translation-status" role="status" aria-live="polite" aria-atomic="true"></div>
                     <div id="studyProgress" class="study-progress" data-progress-state="loading" role="status" aria-live="polite" aria-atomic="true">
-                      <span id="studyProgressText">Checking progress</span>
-                      <button type="button" id="continueStudy" title="Continue with the next sentence without a translation" disabled>Continue study</button>
+                      <span id="studyProgressText">진행 확인 중</span>
+                      <button type="button" id="continueStudy" title="다음 미번역 문장으로 이동" disabled>이어 읽기</button>
                     </div>
                     <details class="translation-review-tools">
-                      <summary>Study tools</summary>
+                      <summary>도구</summary>
                       <div class="translation-review-tools-body">
-                        <div class="translation-review-actions" aria-label="Study actions">
+                        <div class="translation-review-actions" aria-label="학습 동작">
                           <button type="button" id="markTranslationReviewed" class="translation-review-duplicate-action" title="번역 저장" aria-label="번역 저장" disabled>저장</button>
-                          <button type="button" id="rejectTranslation" title="Discard translation" aria-label="Discard translation" disabled>Discard</button>
-                          <button type="button" id="copyStudyCard" title="Copy study note" aria-label="Copy study note" disabled>Copy study note</button>
+                          <button type="button" id="rejectTranslation" title="번역 제외" aria-label="번역 제외" disabled>제외</button>
+                          <button type="button" id="copyStudyCard" title="학습 노트 복사" aria-label="학습 노트 복사" disabled>노트 복사</button>
                           <button type="button" id="draftTranslationNote" class="translation-review-duplicate-action" title="번역으로 메모 추가" aria-label="번역으로 메모 추가" disabled>메모 추가</button>
                         </div>
-                        <div id="translationRecordsSummary" class="translation-records-summary" role="status" aria-live="polite" aria-atomic="true">No saved translations</div>
-                        <details class="translation-export-tools" aria-label="Download study material">
-                          <summary>Downloads</summary>
-                          <div class="translation-export-links" aria-label="Download links">
-                            <a id="exportReviewedTranslations" class="translation-export-link reviewed-export-link" href="/api/sentence-translations/export?format=markdown&review_state=reviewed">Saved translations</a>
-                            <a id="exportAllTranslations" class="translation-export-link" href="/api/sentence-translations/export?format=markdown&review_state=all">All translations</a>
-                            <a id="exportStudySession" class="translation-export-link" href="/api/study-session/export?format=markdown">Study record</a>
+                        <div id="translationRecordsSummary" class="translation-records-summary" role="status" aria-live="polite" aria-atomic="true">저장된 번역 없음</div>
+                        <details class="translation-export-tools" aria-label="학습 자료 내보내기">
+                          <summary>내보내기</summary>
+                          <div class="translation-export-links" aria-label="다운로드 링크">
+                            <a id="exportReviewedTranslations" class="translation-export-link reviewed-export-link" href="/api/sentence-translations/export?format=markdown&review_state=reviewed">저장한 번역</a>
+                            <a id="exportAllTranslations" class="translation-export-link" href="/api/sentence-translations/export?format=markdown&review_state=all">전체 번역</a>
+                            <a id="exportStudySession" class="translation-export-link" href="/api/study-session/export?format=markdown">학습 기록</a>
                           </div>
-                          <div id="studySessionSummary" class="study-session-summary" role="status" aria-live="polite" aria-atomic="true">Nothing to download</div>
+                          <div id="studySessionSummary" class="study-session-summary" role="status" aria-live="polite" aria-atomic="true">내보낼 항목 없음</div>
                         </details>
                       </div>
                     </details>
@@ -121,31 +121,31 @@
           </section>
           <section id="study-panel-notes" class="study-panel" role="tabpanel" aria-labelledby="study-tab-notes" tabindex="0" data-study-panel="notes" hidden>
             <section class="research-card notes-card">
-              <h2>Notes</h2>
+              <h2>노트</h2>
               <form id="noteForm">
-                <label><span class="visually-hidden">Note</span><textarea id="noteText" name="note" aria-describedby="noteStatus" placeholder="Write a note..." required></textarea></label>
-                <details class="note-options" aria-label="Note tags">
-                  <summary>Tags</summary>
-                  <label>Tags<input id="noteTags" name="tags" autocomplete="off"></label>
+                <label><span class="visually-hidden">노트</span><textarea id="noteText" name="note" aria-describedby="noteStatus" placeholder="메모 작성..." required></textarea></label>
+                <details class="note-options" aria-label="노트 태그">
+                  <summary>태그</summary>
+                  <label>태그<input id="noteTags" name="tags" autocomplete="off"></label>
                 </details>
-                <button type="submit" aria-label="Save note">Save</button>
+                <button type="submit" aria-label="노트 저장">저장</button>
               </form>
               <details class="note-target-tools">
-                <summary>Target</summary>
+                <summary>대상</summary>
                 <div class="note-target-body">
-                  <div id="noteTargetPreview" class="note-target-preview" aria-label="Note target">Note target</div>
-                  <button type="button" id="lockNoteTarget" class="note-target-lock" aria-pressed="false">Lock target</button>
+                  <div id="noteTargetPreview" class="note-target-preview" aria-label="노트 대상">노트 대상</div>
+                  <button type="button" id="lockNoteTarget" class="note-target-lock" aria-pressed="false">대상 고정</button>
                 </div>
               </details>
               <div id="noteStatus" class="note-status" role="status" aria-live="polite" aria-atomic="true"></div>
-              <details class="notes-filter-tools" aria-label="Saved notes and filters">
-                <summary>Saved</summary>
+              <details class="notes-filter-tools" aria-label="저장된 노트와 필터">
+                <summary>저장됨</summary>
                 <div class="notes-list-tools">
-                  <label>Filter<input id="noteFilter" name="note_filter" autocomplete="off"></label>
-                  <button type="button" id="noteFilterClear" class="note-filter-clear" disabled>Clear filter</button>
-                  <label>Sort<select id="noteSort" name="note_sort">
-                    <option value="recent">Recent</option>
-                    <option value="target">Target</option>
+                  <label>필터<input id="noteFilter" name="note_filter" autocomplete="off"></label>
+                  <button type="button" id="noteFilterClear" class="note-filter-clear" disabled>필터 지우기</button>
+                  <label>정렬<select id="noteSort" name="note_sort">
+                    <option value="recent">최신순</option>
+                    <option value="target">대상순</option>
                   </select></label>
                 </div>
               </details>
@@ -155,14 +155,14 @@
           </section>
           <section id="study-panel-citation" class="study-panel" role="tabpanel" aria-labelledby="study-tab-citation" tabindex="0" data-study-panel="citation" hidden>
             <section class="research-card citation-card">
-              <h2>Citation</h2>
+              <h2>인용</h2>
               <div id="citationPreview" class="citation-preview"></div>
-              <button type="button" id="copyCitation" aria-label="Copy citation">Copy</button>
-              <details class="citation-copy-options" aria-label="Copy options">
-                <summary>Copy</summary>
+              <button type="button" id="copyCitation" aria-label="인용 복사">복사</button>
+              <details class="citation-copy-options" aria-label="복사 옵션">
+                <summary>복사</summary>
                 <div class="citation-copy-actions">
-                  <button type="button" id="copyUrl" aria-label="Copy URL">URL</button>
-                  <button type="button" id="copySourceBundle" aria-label="Copy source bundle">Source bundle</button>
+                  <button type="button" id="copyUrl" aria-label="URL 복사">URL</button>
+                  <button type="button" id="copySourceBundle" aria-label="원문 묶음 복사">원문 묶음</button>
                 </div>
               </details>
             </section>
@@ -175,6 +175,6 @@
     </main>
   </div>
   <script id="researchData" type="application/json">{{RESEARCH_JSON}}</script>
-  <script src="/assets/reader-work.js?v=common157"></script>
+  <script src="/assets/reader-work.js?v=common158"></script>
 </body>
 </html>
