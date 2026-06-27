@@ -340,11 +340,11 @@ function updateReviewQueueButton(records = lastRecords) {
   const generatedCount = generatedRecords(records).length;
   reviewQueueButton.hidden = generatedCount === 0;
   reviewQueueButton.textContent = generatedCount
-    ? `Review translations ${generatedCount.toLocaleString()}`
-    : "Review translations";
+    ? `Check translations ${generatedCount.toLocaleString()}`
+    : "Check translations";
   reviewQueueButton.disabled = form.classList.contains("is-loading") || generatedCount === 0;
   reviewQueueButton.title = generatedCount
-    ? `${generatedCount.toLocaleString()} translations to check`
+    ? `${generatedCount.toLocaleString()} records to check`
     : "Nothing to check";
 }
 
@@ -394,7 +394,7 @@ function renderSummary(records) {
 
 function renderEmptyRecords() {
   const filtered = hasActiveFilters();
-  const title = filtered ? "No translations match these filters." : "No translations yet.";
+  const title = filtered ? "No records match these filters." : "No translation records yet.";
   const body = filtered
     ? "Clear filters, or choose a broader status and work id."
     : "";

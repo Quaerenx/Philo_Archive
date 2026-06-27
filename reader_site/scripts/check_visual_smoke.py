@@ -227,14 +227,14 @@ def check_route_markup(route: str, html: str) -> None:
             "aria-busy=\"false\"",
             "notes.css?v=notes20",
             "translations.css?v=trans25",
-            "translations.js?v=trans56",
+            "translations.js?v=trans57",
             'href="/translations" aria-current="page">Translations</a>',
-            "Find translation",
+            "Find record",
             "translationsListTools",
             "Filter</summary>",
             "translations-filter-fields",
             "export-tools",
-            "Export</summary>",
+            "Downloads</summary>",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         require("Filters</summary>" not in html, f"{route} should avoid nested filter disclosures")
@@ -577,7 +577,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     });
     if (!translationsPageState.hasRecords) {
       if (!translationsPageState.formHidden) throw new Error(`empty translations page should hide filter form: ${JSON.stringify(translationsPageState)}`);
-      if (translationsPageState.emptyTitle !== 'No translations yet.' || translationsPageState.emptyBodyCount !== 0) {
+      if (translationsPageState.emptyTitle !== 'No translation records yet.' || translationsPageState.emptyBodyCount !== 0) {
         throw new Error(`empty translations page should stay quiet: ${JSON.stringify(translationsPageState)}`);
       }
       if (!translationsPageState.emptyActions.includes('Find work') || !translationsPageState.emptyActions.includes('Study')) {
@@ -587,7 +587,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (translationsPageState.reviewBadgeCount !== 0) {
         throw new Error(`default translations list should hide review-state badges: ${JSON.stringify(translationsPageState)}`);
       }
-      if (translationsPageState.reviewQueueText && !translationsPageState.reviewQueueText.startsWith('Review translations')) {
+      if (translationsPageState.reviewQueueText && !translationsPageState.reviewQueueText.startsWith('Check translations')) {
         throw new Error(`translations review entry should stay concise: ${JSON.stringify(translationsPageState)}`);
       }
       if (translationsPageState.reviewQueueText && translationsPageState.reviewQueueBorderColor !== 'rgb(176, 0, 0)') {

@@ -28,7 +28,7 @@
         <summary>Filter</summary>
         <form id="translationsForm" class="notes-form translations-form">
           <label class="query-label">
-            Find translation
+            Find record
             <input id="translationsQuery" name="q" autocomplete="off">
           </label>
           <div class="filter-panel-fields translations-filter-fields">
@@ -63,8 +63,8 @@
           </div>
         </form>
         <details id="translationsExportTools" class="export-tools" hidden>
-          <summary>Export</summary>
-          <div class="export-row" aria-label="Export translations">
+          <summary>Downloads</summary>
+          <div class="export-row" aria-label="Download translations">
             <a id="translationsExportMarkdown" href="/api/sentence-translations/export?format=markdown&review_state=all">Markdown</a>
             <a id="translationsExportJson" href="/api/sentence-translations/export?format=json&review_state=all">JSON</a>
           </div>
@@ -73,13 +73,13 @@
       <div id="translationsActiveFilters" class="active-filters" aria-live="polite" aria-label="Active translation filters"></div>
 
       <div class="review-export-row">
-        <button id="translationsReviewQueue" type="button" class="translation-review-queue" aria-keyshortcuts="Q" title="Translations to check" disabled>Review translations</button>
+        <button id="translationsReviewQueue" type="button" class="translation-review-queue" aria-keyshortcuts="Q" title="Records to check" disabled>Check translations</button>
       </div>
 
       <div id="translationsStatus" class="notes-status translations-status" role="status" aria-live="polite" aria-atomic="true"></div>
       <section id="translationsResults" class="notes-results translations-results" aria-live="polite" aria-busy="false"></section>
     </main>
   </div>
-  <script src="/assets/translations.js?v=trans56"></script>
+  <script src="/assets/translations.js?v=trans57"></script>
 </body>
 </html>
