@@ -249,7 +249,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translationsReviewQueue",
             "aria-busy=\"false\"",
             "notes.css?v=notes21",
-            "translations.css?v=trans28",
+            "translations.css?v=trans29",
             "translations.js?v=trans67",
             'href="/translations" aria-current="page">번역</a>',
             "번역 찾기",
@@ -1356,8 +1356,11 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         const rejectSummary = reject?.querySelector('summary');
         const rejectSummaryStyle = rejectSummary ? window.getComputedStyle(rejectSummary) : null;
         const save = card?.querySelector('.primary-review-action');
+        const saveBox = save?.getBoundingClientRect();
         const footer = card?.querySelector('.translation-record-footer');
+        const footerBox = footer?.getBoundingClientRect();
         const footerStyle = footer ? window.getComputedStyle(footer) : null;
+        const rejectSummaryBox = rejectSummary?.getBoundingClientRect();
         const nonTargetFooter = Array.from(document.querySelectorAll('#translationsResults .translation-record-card[data-review-state="generated"]:not(.is-review-target) .translation-record-footer'))
           .find((node) => node.querySelector('.primary-review-action'));
         const source = card?.querySelector('.translation-source');
@@ -1371,7 +1374,13 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
           rejectSummaryBackground: rejectSummaryStyle?.backgroundColor || '',
           saveText: save?.textContent.trim() || '',
           saveBorderColor: save ? window.getComputedStyle(save).borderColor : '',
+          saveWidth: saveBox?.width || 0,
+          saveHeight: saveBox?.height || 0,
+          rejectSummaryWidth: rejectSummaryBox?.width || 0,
+          rejectSummaryHeight: rejectSummaryBox?.height || 0,
+          footerWidth: footerBox?.width || 0,
           reviewFooterPosition: footerStyle?.position || '',
+          reviewFooterDisplay: footerStyle?.display || '',
           reviewFooterBottom: footerStyle?.bottom || '',
           nonTargetFooterDisplay: nonTargetFooter ? window.getComputedStyle(nonTargetFooter).display : '',
           isDesktopLayout: window.innerWidth > 860,
@@ -1394,6 +1403,17 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       if (reviewTargetState.saveText !== '저장' || reviewTargetState.saveBorderColor !== 'rgb(176, 0, 0)') {
         throw new Error(`review queue save should use the same red primary action style: ${JSON.stringify(reviewTargetState)}`);
+      }
+      if (!reviewTargetState.isDesktopLayout) {
+        if (reviewTargetState.reviewFooterDisplay !== 'block') {
+          throw new Error(`mobile review queue footer should let actions use the full card width: ${JSON.stringify(reviewTargetState)}`);
+        }
+        if (reviewTargetState.saveHeight < 34 || reviewTargetState.rejectSummaryHeight < 34) {
+          throw new Error(`mobile review queue actions should be touch-friendly: ${JSON.stringify(reviewTargetState)}`);
+        }
+        if (reviewTargetState.footerWidth > 0 && (reviewTargetState.saveWidth < reviewTargetState.footerWidth * 0.42 || reviewTargetState.rejectSummaryWidth < reviewTargetState.footerWidth * 0.42)) {
+          throw new Error(`mobile review queue actions should occupy the card action row: ${JSON.stringify(reviewTargetState)}`);
+        }
       }
       if (reviewTargetState.isDesktopLayout && (reviewTargetState.reviewFooterPosition !== 'sticky' || reviewTargetState.reviewFooterBottom !== '8px')) {
         throw new Error(`review queue should keep active review actions reachable on desktop: ${JSON.stringify(reviewTargetState)}`);

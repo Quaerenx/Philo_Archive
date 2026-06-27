@@ -518,13 +518,14 @@
   }
 
   .translation-record-footer {
-    grid-template-columns: minmax(0, 1fr);
+    display: block;
   }
 
   .translation-actions {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 6px;
+    width: 100%;
   }
 
   .translation-more-actions {
@@ -537,6 +538,7 @@
   .translation-more-actions summary,
   .translation-review-queue {
     width: 100%;
+    min-height: 34px;
     min-width: 0;
     justify-content: center;
     text-align: center;

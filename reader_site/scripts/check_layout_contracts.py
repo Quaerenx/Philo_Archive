@@ -538,7 +538,7 @@ def check_translations_ui() -> None:
     css = read_site_file("assets/translations.css")
     for needle in [
         "/assets/notes.css?v=notes21",
-        "/assets/translations.css?v=trans28",
+        "/assets/translations.css?v=trans29",
         "/assets/translations.js?v=trans67",
         "<title>번역 목록 / Personal Archive of Literature</title>",
         '<h1 id="translationsPageTitle">번역 목록</h1>',
@@ -789,6 +789,8 @@ def check_translations_ui() -> None:
         "scrollbar-width: thin",
         "max-height: 6.4em",
         "display: block;",
+        "width: 100%;",
+        "min-height: 34px;",
         "justify-content: center",
     ]:
         require_contains(css, needle, "assets/translations.css")
