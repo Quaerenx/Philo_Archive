@@ -576,11 +576,9 @@ function renderRecords(records) {
     pendingReviewQueueFocus = false;
     pendingReviewQueueMessage = "";
     if (focusFirstReviewQueueRecord()) {
-      statusEl.textContent = reviewMessage
-        ? `${reviewMessage} Next item.`
-        : "";
+      statusEl.textContent = reviewMessage || "";
     } else if (reviewSelect.value === "generated") {
-      statusEl.textContent = reviewMessage ? `${reviewMessage} Nothing to check.` : "Nothing to check.";
+      statusEl.textContent = reviewMessage ? "All translations checked." : "Nothing to check.";
     }
   }
   recentlyChangedRecordId = "";

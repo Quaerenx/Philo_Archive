@@ -228,7 +228,7 @@ def check_route_markup(route: str, html: str) -> None:
             "aria-busy=\"false\"",
             "notes.css?v=notes21",
             "translations.css?v=trans27",
-            "translations.js?v=trans63",
+            "translations.js?v=trans64",
             'href="/translations" aria-current="page">Translations</a>',
             "Find record",
             "translationsListTools",
@@ -1093,6 +1093,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       if (reviewTargetState.statusText.includes('translations /')) {
         throw new Error(`review queue should avoid duplicate count status text: ${JSON.stringify(reviewTargetState)}`);
+      }
+      if (reviewTargetState.statusText.includes('Next item')) {
+        throw new Error(`review queue should avoid redundant next-item status text: ${JSON.stringify(reviewTargetState)}`);
       }
       if (reviewTargetState.commentaryHeadingWidth > 2 || reviewTargetState.commentaryHeadingHeight > 2) {
         throw new Error(`review queue should keep repeated commentary headings visually quiet: ${JSON.stringify(reviewTargetState)}`);

@@ -508,7 +508,7 @@ def check_translations_ui() -> None:
     for needle in [
         "/assets/notes.css?v=notes21",
         "/assets/translations.css?v=trans27",
-        "/assets/translations.js?v=trans63",
+        "/assets/translations.js?v=trans64",
         'href="/translations" aria-current="page">Translations</a>',
         "Find record",
         '<option value="">All corpora</option>',
@@ -638,7 +638,7 @@ def check_translations_ui() -> None:
         "To check",
         "Nothing to check.",
         "Saved.",
-        "Next item.",
+        "All translations checked.",
         "function updateRecordReview",
         "function reviewActionMessage",
         "Discarded.",
@@ -675,6 +675,7 @@ def check_translations_ui() -> None:
         ],
         "renderRecord review-first translation card layout",
     )
+    require("Next item." not in script, "assets/translations.js should avoid redundant review queue status text")
     for needle in [
         ".translations-form",
         ".translations-filter-fields",
