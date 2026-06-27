@@ -311,7 +311,7 @@ def check_route_markup(route: str, html: str) -> None:
             "Nothing to download</div>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common111",
+            "reader-work.css?v=common112",
             "reader-work.js?v=common150",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
@@ -624,6 +624,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     const state = await page.evaluate(() => {
       const output = document.querySelector('#translationOutput');
       const card = document.querySelector('.translation-card');
+      const studyPage = document.querySelector('.study-page');
       const activeTab = document.querySelector('.study-tab.active');
       const readingNext = document.querySelector('[data-translation-quick-action="next-sentence"]');
       const readingSave = document.querySelector('[data-translation-quick-action="mark-reviewed"], .translation-quick-state[data-review-state="reviewed"]');
@@ -643,7 +644,11 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       const sectionOrder = Array.from(document.querySelectorAll('#translationOutput .translation-result > [data-translation-section]'))
         .filter((node) => window.getComputedStyle(node).display !== 'none')
         .map((node) => node.dataset.translationSection || '');
+      const studyPageBox = studyPage?.getBoundingClientRect();
       return {
+        isMobile: window.innerWidth <= 860,
+        viewportHeight: window.innerHeight,
+        studyPageHeight: studyPageBox?.height || 0,
         selectedSentence: Boolean(document.querySelector('.reader-sentence.selected')),
         outputVisible: Boolean(output && !output.hidden),
         readingMode: Boolean(output && output.classList.contains('reading-mode')),
@@ -723,6 +728,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (state.activeTab !== 'Translation') throw new Error(`selected work route did not keep Translation tab active: ${JSON.stringify(state)}`);
     if (state.studyToolsOpen) throw new Error(`study tools should stay collapsed in default reading mode: ${JSON.stringify(state)}`);
     if (state.studyToolsSummary !== 'More') throw new Error(`study tools summary should stay concise: ${JSON.stringify(state)}`);
+    if (state.isMobile && state.studyPageHeight > Math.ceil(state.viewportHeight * 0.70)) {
+      throw new Error(`mobile study panel should leave source text visible above it: ${JSON.stringify(state)}`);
+    }
     const utilityState = await page.evaluate(() => {
       const utility = document.querySelector('.translation-utility');
       if (!utility) return { exists: false, labels: [] };

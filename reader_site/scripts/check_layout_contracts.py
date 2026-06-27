@@ -1360,7 +1360,7 @@ def check_work_source_bundle_ui() -> None:
             f"{function_name} reading-first translation layout",
         )
     require_contains(template, "/assets/reader-work.js?v=common150", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common111", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common112", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
         "reading-desk",
@@ -1731,7 +1731,7 @@ def check_work_source_bundle_ui() -> None:
         "touch-action: none",
         "user-select: none",
         "max(10px, env(safe-area-inset-right, 0px))",
-        "max-height: min(72vh, calc(100dvh - 32px))",
+        "max-height: min(68vh, calc(100dvh - 48px))",
         "scroll-margin-block",
         ".sentence-context",
         ".reading-position",
