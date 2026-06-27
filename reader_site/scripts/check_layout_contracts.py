@@ -1499,7 +1499,7 @@ def check_work_source_bundle_ui() -> None:
         "Study flow",
         "Study tools</summary>",
         "translation-review-duplicate-action",
-        "<span>More</span>",
+        "<span>Options</span>",
         "study-tabs",
         "previousSentence",
         "nextUnstudiedSentence",

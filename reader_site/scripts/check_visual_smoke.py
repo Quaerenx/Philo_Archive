@@ -861,7 +861,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (state.visibleExtraCount !== 0) throw new Error(`reading mode exposed study-only translation extras: ${JSON.stringify(state)}`);
     if (state.activeTab !== 'Translation') throw new Error(`selected work route did not keep Translation tab active: ${JSON.stringify(state)}`);
     if (state.studyToolsOpen) throw new Error(`study tools should stay collapsed in default reading mode: ${JSON.stringify(state)}`);
-    if (state.studyToolsSummary !== 'More') throw new Error(`study tools summary should stay concise: ${JSON.stringify(state)}`);
+    if (state.studyToolsSummary !== 'Options') throw new Error(`study tools summary should stay concise and clear: ${JSON.stringify(state)}`);
     if (state.isMobile && state.studyPageHeight > Math.ceil(state.viewportHeight * 0.70)) {
       throw new Error(`mobile study panel should leave source text visible above it: ${JSON.stringify(state)}`);
     }
