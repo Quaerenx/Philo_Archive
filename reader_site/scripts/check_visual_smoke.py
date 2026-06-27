@@ -176,6 +176,25 @@ def fetch_html(url: str) -> str:
 
 
 def check_route_markup(route: str, html: str) -> None:
+    if route.startswith("/read?"):
+        for needle in [
+            "자료 위치</summary>",
+            'aria-label="읽기 화면 이동"',
+            'href="/">Archive</a>',
+            ">원문</a>",
+        ]:
+            require(needle in html, f"{route} missing visual smoke marker {needle!r}")
+        for noisy_text in ["Path</summary>", ">Source</a>", "Reader navigation"]:
+            require(noisy_text not in html, f"{route} should avoid static-reader header text {noisy_text!r}")
+    if route.startswith("/source?"):
+        for needle in [
+            "자료 위치</summary>",
+            'href="/">Archive</a>',
+            ">읽기</a>",
+        ]:
+            require(needle in html, f"{route} missing visual smoke marker {needle!r}")
+        for noisy_text in ["Path</summary>", "Reading mode", "Personal Archive of Literature</a>"]:
+            require(noisy_text not in html, f"{route} should avoid static source header text {noisy_text!r}")
     if route == "/":
         for needle in [
             "Search",

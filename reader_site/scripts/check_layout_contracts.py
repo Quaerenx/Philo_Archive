@@ -97,7 +97,11 @@ def check_html_entrypoints() -> None:
             require_contains(html, "/app.js?v=home7", relative_path)
         if relative_path in {"templates/reading.html", "templates/source.html"}:
             require_contains(html, "/assets/static-reader.css?v=static2", relative_path)
-            require_contains(html, "Path</summary>", relative_path)
+            require_contains(html, "자료 위치</summary>", relative_path)
+            require("Path</summary>" not in html, f"{relative_path} should avoid tool-oriented path text")
+        if relative_path == "templates/reading.html":
+            require_contains(html, 'aria-label="읽기 화면 이동"', relative_path)
+            require_contains(html, 'href="{{SOURCE_HREF}}">원문</a>', relative_path)
 
 
 def check_page_frame_css(relative_path: str, css: str) -> None:
@@ -1363,6 +1367,19 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
+
+    static_pages = read_site_file("rendering/static_pages.py")
+    for needle in [
+        "def source_mode_links",
+        '<a href="/">Archive</a>',
+        ">읽기</a>",
+    ]:
+        require_contains(static_pages, needle, "rendering/static_pages.py")
+    for noisy_text in [
+        "Reading mode",
+        "Personal Archive of Literature</a>",
+    ]:
+        require(noisy_text not in static_pages, f"rendering/static_pages.py should avoid static-reader header text {noisy_text!r}")
     require_ordered_markers(
         js_function_body(script, "updateCitationPreview"),
         [
