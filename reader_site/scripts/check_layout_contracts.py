@@ -733,8 +733,8 @@ def check_study_ui() -> None:
     script = read_site_file("assets/study.js")
     css = read_site_file("assets/study.css")
     for needle in [
-        "/assets/study.css?v=study21",
-        "/assets/study.js?v=study33",
+        "/assets/study.css?v=study22",
+        "/assets/study.js?v=study34",
         'href="/study" aria-current="page">Study</a>',
         'id="studySubmit"',
         'id="studyClear"',
@@ -774,10 +774,14 @@ def check_study_ui() -> None:
         "studyOverview",
         "function translationSummaryParams",
         "function studyTranslationHref",
+        "function translationActionLabel",
         "/api/sentence-translations/summary",
         "function translationStatusLink",
         "function renderStudyOverview",
         "const notesMarkup = notesLabel",
+        "Translations waiting to review.",
+        "Saved translations.",
+        "const hasOverview = noteCount > 0",
         "Review translations",
         "Translation study status",
         "Saved translations",
@@ -865,6 +869,7 @@ def check_study_ui() -> None:
         ".empty-state",
         ".empty-actions",
         ".empty-actions a",
+        ".empty-actions a.empty-primary-action",
         ".study-skeleton-line",
         "@keyframes archive-spin",
         "@keyframes archive-skeleton",

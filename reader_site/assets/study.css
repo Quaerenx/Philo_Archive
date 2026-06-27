@@ -402,6 +402,20 @@ h1 {
   align-items: center;
 }
 
+.empty-actions a.empty-primary-action {
+  min-height: 24px;
+  padding: 2px 7px;
+  color: #9a0000;
+  background: #fffafa;
+  border: 1px solid #b00000;
+}
+
+.empty-actions a.empty-primary-action:hover,
+.empty-actions a.empty-primary-action:focus-visible {
+  text-decoration: none;
+  background: #fff;
+}
+
 .empty-actions button {
   min-height: 28px;
   padding: 4px 12px;

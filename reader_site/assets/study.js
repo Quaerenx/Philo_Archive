@@ -184,19 +184,27 @@ function studyTranslationHref(reviewState) {
   return `/translations?${params}`;
 }
 
+function translationActionLabel(label, count) {
+  return count > 0 ? `${label} ${Number(count).toLocaleString()}` : label;
+}
+
 function renderEmptyStudy(translationSummary = null) {
   const filtered = hasActiveFilters();
-  const title = filtered ? "No saved notes match these filters." : "No saved notes yet.";
+  const counts = translationSummary?.review_state_counts || {};
+  const generated = Number(counts.generated || 0);
+  const reviewed = Number(counts.reviewed || 0);
+  const title = filtered
+    ? "No saved notes match these filters."
+    : (generated > 0
+      ? "Translations waiting to review."
+      : (reviewed > 0 ? "Saved translations." : "No saved notes yet."));
   const body = filtered ? "Clear filters, or edit the saved notes list." : "";
   const clearAction = filtered
     ? '<button type="button" data-empty-action="clear-filters">Clear filters</button>'
     : "";
-  const counts = translationSummary?.review_state_counts || {};
-  const generated = Number(counts.generated || 0);
-  const reviewed = Number(counts.reviewed || 0);
   const translationAction = generated > 0
-    ? `<a href="${escapeHtml(studyTranslationHref("generated"))}">Review translations</a>`
-    : (reviewed > 0 ? `<a href="${escapeHtml(studyTranslationHref("reviewed"))}">Saved translations</a>` : "");
+    ? `<a class="empty-primary-action" href="${escapeHtml(studyTranslationHref("generated"))}">${escapeHtml(translationActionLabel("Review translations", generated))}</a>`
+    : (reviewed > 0 ? `<a class="empty-primary-action" href="${escapeHtml(studyTranslationHref("reviewed"))}">${escapeHtml(translationActionLabel("Saved translations", reviewed))}</a>` : "");
   const bodyMarkup = body ? `<p>${escapeHtml(body)}</p>` : "";
   return `<section class="empty empty-state">
     <h2>${escapeHtml(title)}</h2>
@@ -318,8 +326,7 @@ function renderStudyOverview(payload, translationSummary) {
   const generated = Number(counts.generated || 0);
   const reviewed = Number(counts.reviewed || 0);
   const rejected = Number(counts.rejected || 0);
-  const translationCount = generated + reviewed + rejected;
-  const hasOverview = noteCount > 0 || translationCount > 0;
+  const hasOverview = noteCount > 0;
   studyOverview.hidden = !hasOverview;
   if (!hasOverview) {
     studyOverview.innerHTML = "";

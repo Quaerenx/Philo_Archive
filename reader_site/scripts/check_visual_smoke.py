@@ -194,8 +194,8 @@ def check_route_markup(route: str, html: str) -> None:
             "Saved translations</a>",
             "studyStatus",
             "aria-busy=\"false\"",
-            "study.css?v=study21",
-            "study.js?v=study33",
+            "study.css?v=study22",
+            "study.js?v=study34",
             'href="/study" aria-current="page">Study</a>',
             "filter-panel",
             "export-tools",
@@ -517,22 +517,28 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         overviewText: document.querySelector('#studyOverview')?.textContent.trim() || '',
         emptyTitle: empty?.querySelector('h2')?.textContent.trim() || '',
         emptyBodyCount: empty ? empty.querySelectorAll('p').length : 0,
-        emptyActions: Array.from(empty?.querySelectorAll('.empty-actions a') || []).map((node) => node.textContent.trim())
+        emptyActions: Array.from(empty?.querySelectorAll('.empty-actions a') || []).map((node) => node.textContent.trim()),
+        primaryAction: empty?.querySelector('.empty-primary-action')?.textContent.trim() || ''
       };
     });
     if (!studyPageState.hasGroups) {
       if (!studyPageState.formHidden) throw new Error(`empty study page should hide filter form: ${JSON.stringify(studyPageState)}`);
-      if (studyPageState.emptyTitle !== 'No saved notes yet.' || studyPageState.emptyBodyCount !== 0) {
+      const hasReviewAction = studyPageState.emptyActions.some((text) => text.startsWith('Review translations'));
+      const hasSavedTranslationAction = studyPageState.emptyActions.some((text) => text.startsWith('Saved translations'));
+      const expectedTitle = hasReviewAction
+        ? 'Translations waiting to review.'
+        : (hasSavedTranslationAction ? 'Saved translations.' : 'No saved notes yet.');
+      if (studyPageState.emptyTitle !== expectedTitle || studyPageState.emptyBodyCount !== 0) {
         throw new Error(`empty study page should stay quiet: ${JSON.stringify(studyPageState)}`);
       }
       if (!studyPageState.emptyActions.includes('Notes') || !studyPageState.emptyActions.includes('Find work')) {
         throw new Error(`empty study page should keep concise actions: ${JSON.stringify(studyPageState)}`);
       }
-      if (studyPageState.overviewText.includes('Review translations') && !studyPageState.emptyActions.includes('Review translations')) {
-        throw new Error(`empty study page should make translation review reachable from the empty card: ${JSON.stringify(studyPageState)}`);
+      if ((hasReviewAction || hasSavedTranslationAction) && !studyPageState.primaryAction) {
+        throw new Error(`empty study page should make translation study the primary empty action: ${JSON.stringify(studyPageState)}`);
       }
-      if (!studyPageState.overviewHidden && !/Review translations|Saved translations/.test(studyPageState.overviewText)) {
-        throw new Error(`empty study page overview should point to translation study status when present: ${JSON.stringify(studyPageState)}`);
+      if ((hasReviewAction || hasSavedTranslationAction) && !studyPageState.overviewHidden) {
+        throw new Error(`empty study page should keep translation status inside the empty card, not a separate overview: ${JSON.stringify(studyPageState)}`);
       }
       if (studyPageState.overviewText.includes('0 saved notes')) {
         throw new Error(`empty study page overview should not repeat zero notes: ${JSON.stringify(studyPageState)}`);
