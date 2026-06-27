@@ -160,6 +160,12 @@ h1 {
   border-top: 1px solid #eeeeee;
 }
 
+.toolbar-more[open] .toolbar-more-links a {
+  display: inline-flex;
+  min-height: 24px;
+  align-items: center;
+}
+
 .variant-tabs {
   margin: 0 0 18px;
   padding-bottom: 12px;
@@ -2672,6 +2678,14 @@ h1 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px 10px;
     margin: 8px 0 0;
+  }
+
+  .toolbar-more[open] .toolbar-more-links {
+    display: grid;
+  }
+
+  .toolbar-more[open] .toolbar-more-links a {
+    min-height: 32px;
   }
 
   .variant-tabs {

@@ -551,18 +551,42 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
   if (parsed.pathname.startsWith('/work/')) {
     const readerToolsState = await page.evaluate(() => {
       const details = document.querySelector('.toolbar-more');
+      if (details) {
+        details.open = true;
+      }
       const links = Array.from(details?.querySelectorAll('.toolbar-more-links a') || []);
-      return {
+      const linksContainer = details?.querySelector('.toolbar-more-links');
+      const linksContainerStyle = linksContainer ? window.getComputedStyle(linksContainer) : null;
+      const firstLinkStyle = links[0] ? window.getComputedStyle(links[0]) : null;
+      const firstLinkBox = links[0]?.getBoundingClientRect();
+      const state = {
         summary: details?.querySelector('summary')?.textContent.trim() || '',
         linkText: links.map((node) => node.textContent.trim()).join(' / '),
-        linkCount: links.length
+        linkCount: links.length,
+        linksDisplay: linksContainerStyle?.display || '',
+        firstLinkDisplay: firstLinkStyle?.display || '',
+        firstLinkHeight: firstLinkBox?.height || 0
       };
+      if (details) {
+        details.open = false;
+      }
+      return state;
     });
     if (readerToolsState.summary !== '도구') {
       throw new Error(`reader tools menu should use reader-facing wording: ${JSON.stringify(readerToolsState)}`);
     }
     if (readerToolsState.linkText !== '목차 / 원본 / 노트 / 학습 / 번역') {
       throw new Error(`reader tools should prioritize document navigation before study actions: ${JSON.stringify(readerToolsState)}`);
+    }
+    if (readerToolsState.linkCount !== 5 || !['flex', 'inline-flex'].includes(readerToolsState.firstLinkDisplay)) {
+      throw new Error(`reader tools menu should expose five readable link targets: ${JSON.stringify(readerToolsState)}`);
+    }
+    if (Number(widthText) <= 420) {
+      if (readerToolsState.linksDisplay !== 'grid' || readerToolsState.firstLinkHeight < 32) {
+        throw new Error(`mobile reader tools menu should use touch-friendly grid targets: ${JSON.stringify(readerToolsState)}`);
+      }
+    } else if (readerToolsState.linksDisplay !== 'flex' || readerToolsState.firstLinkHeight < 24) {
+      throw new Error(`desktop reader tools menu should keep readable open targets: ${JSON.stringify(readerToolsState)}`);
     }
   }
   if (Number(widthText) <= 420 && ['/search', '/notes', '/study', '/translations'].includes(parsed.pathname)) {

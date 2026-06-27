@@ -1648,6 +1648,7 @@ def check_work_source_bundle_ui() -> None:
         ".toolbar-more[open] summary::after",
         ".toolbar-more-links",
         ".toolbar-more[open] .toolbar-more-links",
+        ".toolbar-more[open] .toolbar-more-links a",
         ".visually-hidden",
         "grid-template-columns: minmax(0, 1fr) 340px",
         "gap: 20px",
