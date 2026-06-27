@@ -338,7 +338,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common121",
-            "reader-work.js?v=common164",
+            "reader-work.js?v=common165",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         require("Contents (" not in html, f"{route} should not expose TOC inventory counts")
@@ -1353,6 +1353,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       tagsSummary: document.querySelector('.note-options summary')?.textContent.trim() || '',
       savedSummary: document.querySelector('.notes-filter-tools summary')?.textContent.trim() || '',
       savedToolsHidden: Boolean(document.querySelector('.notes-filter-tools')?.hidden),
+      noteListSummary: document.querySelector('#noteListSummary')?.textContent.trim() || '',
       notesEmptyText: document.querySelector('#notesList .notes-empty')?.textContent.trim() || '',
       noteTargetText: document.querySelector('#noteTargetPreview')?.textContent.trim() || '',
       noteTargetLabel: document.querySelector('#noteTargetPreview')?.getAttribute('aria-label') || '',
@@ -1372,6 +1373,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (notesState.notesEmptyText !== '아직 노트가 없습니다.' && notesState.savedSummary !== '저장됨') {
       throw new Error(`notes tab saved filter label should stay concise when notes or filters exist: ${JSON.stringify(notesState)}`);
+    }
+    if (/최신순|대상순|\d+개 노트/.test(notesState.noteListSummary)) {
+      throw new Error(`notes tab list summary should avoid default count and sort status text: ${JSON.stringify(notesState)}`);
     }
     if (/\b(Work|Paragraph|Section|Verse|Quote|Line)\b|p-\d+\.s\d+/i.test(`${notesState.noteTargetText} ${notesState.noteTargetLabel}`)) {
       throw new Error(`notes target preview should use reader-language labels without internal ids: ${JSON.stringify(notesState)}`);

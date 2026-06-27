@@ -1409,6 +1409,7 @@ def check_work_source_bundle_ui() -> None:
         "function sortedNotes",
         "function renderNotesPending",
         "function noteListSummaryText",
+        "필터 결과",
         "function renderNotesUnavailable",
         "function syncNotesFilterToolsVisibility",
         "notesFilterTools.hidden = !showTools",
@@ -1492,6 +1493,9 @@ def check_work_source_bundle_ui() -> None:
         '<span class="reading-position-current">Selected</span>' not in script,
         "assets/reader-work.js should keep reading-position state labels in reader language",
     )
+    note_summary_body = js_function_body(script, "noteListSummaryText")
+    for noisy_marker in ["recent first", "target order", "개 노트 /", "최신순", "대상순"]:
+        require(noisy_marker not in note_summary_body, f"noteListSummaryText should avoid default status text {noisy_marker!r}")
 
     static_pages = read_site_file("rendering/static_pages.py")
     for needle in [
@@ -1558,7 +1562,7 @@ def check_work_source_bundle_ui() -> None:
         "요청 취소",
     ]:
         require(noisy_marker not in pending_body, f"renderTranslationPending should keep loading state quiet without {noisy_marker!r}")
-    require_contains(template, "/assets/reader-work.js?v=common164", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common165", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common121", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',

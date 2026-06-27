@@ -2548,10 +2548,9 @@ function renderNotesPending() {
     </div>`;
 }
 
-function noteListSummaryText(items) {
+function noteListSummaryText(items, filter = "") {
   if (!items.length) return "";
-  const sortLabel = noteSort && noteSort.value === "target" ? "target order" : "recent first";
-  return `${items.length}개 노트 / ${sortLabel === "target order" ? "대상순" : "최신순"}`;
+  return cleanText(filter) ? `필터 결과 ${items.length.toLocaleString()}개` : "";
 }
 
 function renderNotesUnavailable() {
@@ -2578,7 +2577,7 @@ function renderNotesList(notes) {
   notesList.setAttribute("aria-busy", "false");
   syncNotesFilterToolsVisibility(items.length, filter);
   if (noteListSummary) {
-    noteListSummary.textContent = noteListSummaryText(items);
+    noteListSummary.textContent = noteListSummaryText(items, filter);
   }
   if (!items.length) {
     notesList.innerHTML = filter
