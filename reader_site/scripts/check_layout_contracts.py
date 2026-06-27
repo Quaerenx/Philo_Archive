@@ -227,8 +227,9 @@ def check_search_ui() -> None:
     script = read_site_file("assets/search.js")
     css = read_site_file("assets/search.css")
     for needle in [
-        "/assets/search.css?v=phase19",
+        "/assets/search.css?v=phase20",
         "/assets/search.js?v=phase28",
+        'href="/search" aria-current="page">Search</a>',
         'href="/translations"',
         "Translations",
         'class="filter-panel"',
@@ -299,6 +300,7 @@ def check_search_ui() -> None:
         ".spacer",
         "height: 136px",
         ".reader-header",
+        '.toolbar a[aria-current="page"]',
         "margin-bottom: 16px",
         "padding-bottom: 10px",
         ".form-actions",
@@ -343,8 +345,9 @@ def check_notes_ui() -> None:
     script = read_site_file("assets/notes.js")
     css = read_site_file("assets/notes.css")
     for needle in [
-        "/assets/notes.css?v=notes19",
+        "/assets/notes.css?v=notes20",
         "/assets/notes.js?v=notes28",
+        'href="/notes" aria-current="page">Notes</a>',
         'id="notesSubmit"',
         'id="notesClear"',
         'id="notesActiveFilters"',
@@ -432,6 +435,7 @@ def check_notes_ui() -> None:
         ".spacer",
         "height: 136px",
         ".reader-header",
+        '.toolbar a[aria-current="page"]',
         "margin-bottom: 16px",
         "padding-bottom: 10px",
         ".form-actions",
@@ -484,9 +488,10 @@ def check_translations_ui() -> None:
     base_css = read_site_file("assets/notes.css")
     css = read_site_file("assets/translations.css")
     for needle in [
-        "/assets/notes.css?v=notes19",
+        "/assets/notes.css?v=notes20",
         "/assets/translations.css?v=trans23",
         "/assets/translations.js?v=trans54",
+        'href="/translations" aria-current="page">Translations</a>',
         '<option value="">All corpora</option>',
         'id="translationsListTools"',
         "Filter</summary>",
@@ -718,6 +723,7 @@ def check_translations_ui() -> None:
         ".export-tools",
         ".export-tools summary",
         ".review-export-row",
+        '.toolbar a[aria-current="page"]',
     ]:
         require_contains(base_css, needle, "assets/notes.css")
 
@@ -727,8 +733,9 @@ def check_study_ui() -> None:
     script = read_site_file("assets/study.js")
     css = read_site_file("assets/study.css")
     for needle in [
-        "/assets/study.css?v=study20",
+        "/assets/study.css?v=study21",
         "/assets/study.js?v=study33",
+        'href="/study" aria-current="page">Study</a>',
         'id="studySubmit"',
         'id="studyClear"',
         'id="studyActiveFilters"',
@@ -825,6 +832,7 @@ def check_study_ui() -> None:
         ".reader-header",
         "margin-bottom: 16px",
         "padding-bottom: 10px",
+        '.toolbar a[aria-current="page"]',
         ".form-actions",
         ".secondary-action",
         ".filter-panel",

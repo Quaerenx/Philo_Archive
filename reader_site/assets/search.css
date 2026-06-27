@@ -97,6 +97,12 @@ h1 {
   margin-top: 10px;
 }
 
+.toolbar a[aria-current="page"] {
+  color: #555;
+  cursor: default;
+  text-decoration: none;
+}
+
 .search-form {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(180px, 220px) 126px;
