@@ -255,8 +255,8 @@ def check_search_ui() -> None:
     script = read_site_file("assets/search.js")
     css = read_site_file("assets/search.css")
     for needle in [
-        "/assets/search.css?v=phase23",
-        "/assets/search.js?v=phase35",
+        "/assets/search.css?v=phase24",
+        "/assets/search.js?v=phase36",
         'href="/search" aria-current="page">검색</a>',
         'href="/translations"',
         "본문 찾기",
@@ -303,7 +303,6 @@ def check_search_ui() -> None:
         "function resultFooter",
         "result-actions-inline",
         "result-action-read",
-        "result-action-secondary",
         'aria-label="검색 결과 동작"',
         "search-results-works",
         "search-results-segments",
@@ -364,7 +363,6 @@ def check_search_ui() -> None:
         ".result-footer",
         ".result-actions-inline",
         ".result-action-read",
-        ".result-action-secondary",
         ".snippet-link",
         "grid-template-columns: minmax(0, 1fr) auto",
         "justify-content: flex-end",

@@ -535,17 +535,6 @@ h1 {
   background: #fff8f8;
 }
 
-.result-actions .result-action-secondary {
-  color: #555;
-}
-
-.result-actions .result-action-secondary:hover,
-.result-actions .result-action-secondary:focus-visible {
-  color: #222;
-  background: #f8f8f8;
-  border-color: #d4d4d4;
-}
-
 .snippet {
   margin: 0;
   font-family: Georgia, "Times New Roman", serif;

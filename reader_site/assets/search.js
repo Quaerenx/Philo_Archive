@@ -270,7 +270,7 @@ function renderResults(payload, query) {
         result.category_title || result.label
       ]);
       const variants = (result.variant_ids || []).slice(0, 8).map((variantId) => `<span class="tag">${escapeHtml(variantLabel(variantId))}</span>`).join("");
-      const actions = `<a class="result-action-read" href="${escapeHtml(result.url)}">읽기</a><a class="result-action-secondary" href="/notes?corpus_id=${encodeURIComponent(result.corpus_id || "")}&work_id=${encodeURIComponent(result.work_id || "")}">노트</a>`;
+      const actions = `<a class="result-action-read" href="${escapeHtml(result.url)}">읽기</a>`;
       return `<article class="result work-result">
         <div class="result-title">
           <a href="${escapeHtml(result.url)}">${escapeHtml(result.title || result.work_id)}</a>
@@ -288,7 +288,7 @@ function renderResults(payload, query) {
         result.label,
         result.variant_id ? variantLabel(result.variant_id) : ""
       ]);
-      const actions = `<a class="result-action-read" href="${escapeHtml(result.url)}">읽기</a><a class="result-action-secondary" href="${escapeHtml(notesHref(result))}">노트</a>`;
+      const actions = `<a class="result-action-read" href="${escapeHtml(result.url)}">읽기</a>`;
       return `<article class="result">
         <div class="result-title">
           <a href="${escapeHtml(result.url)}">${escapeHtml(result.title || result.work_id)}</a>
