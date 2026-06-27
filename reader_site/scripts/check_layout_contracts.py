@@ -408,7 +408,7 @@ def check_notes_ui() -> None:
     script = read_site_file("assets/notes.js")
     css = read_site_file("assets/notes.css")
     for needle in [
-        "/assets/notes.css?v=notes21",
+        "/assets/notes.css?v=notes22",
         "/assets/notes.js?v=notes31",
         'href="/notes" aria-current="page">노트</a>',
         "노트 찾기",
@@ -537,7 +537,6 @@ def check_notes_ui() -> None:
         ".note-edit-actions",
         "grid-template-columns: repeat(2, minmax(0, 1fr))",
         "justify-content: flex-end",
-        "@keyframes archive-note-highlight",
         ".notes-form.is-loading #notesSubmit",
         "padding-bottom: 12px",
         ".empty-state",
@@ -550,6 +549,11 @@ def check_notes_ui() -> None:
         "@media (prefers-reduced-motion: reduce)",
     ]:
         require_contains(css, needle, "assets/notes.css")
+    note_recent_block = css_rule_block(css, ".note-card.is-recent", "assets/notes.css recent note marker")
+    require_contains(note_recent_block, "box-shadow: inset 3px 0 0 #b00000", "assets/notes.css recent note marker")
+    for noisy_marker in ["background: #fff9df", "border: 1px solid #d8c36a", "animation:"]:
+        require(noisy_marker not in note_recent_block, f"assets/notes.css recent note marker should stay quiet without {noisy_marker!r}")
+    require("archive-note-highlight" not in css, "assets/notes.css should not animate recent note cards")
 
 
 def check_translations_ui() -> None:
@@ -558,8 +562,8 @@ def check_translations_ui() -> None:
     base_css = read_site_file("assets/notes.css")
     css = read_site_file("assets/translations.css")
     for needle in [
-        "/assets/notes.css?v=notes21",
-        "/assets/translations.css?v=trans29",
+        "/assets/notes.css?v=notes22",
+        "/assets/translations.css?v=trans30",
         "/assets/translations.js?v=trans68",
         "<title>번역 목록 / Personal Archive of Literature</title>",
         '<h1 id="translationsPageTitle">번역 목록</h1>',
@@ -762,6 +766,7 @@ def check_translations_ui() -> None:
         ".translation-review-queue:not(:disabled)",
         ".translation-review-queue:not(:disabled):hover",
         ".translation-record-card",
+        ".translation-record-card.is-recent",
         ".translation-record-group",
         ".translation-record-group-title",
         ".translation-record-group-actions",
@@ -823,6 +828,10 @@ def check_translations_ui() -> None:
         "justify-content: center",
     ]:
         require_contains(css, needle, "assets/translations.css")
+    translation_recent_block = css_rule_block(css, ".translation-record-card.is-recent", "assets/translations.css recent translation marker")
+    require_contains(translation_recent_block, "box-shadow: inset 3px 0 0 #b00000", "assets/translations.css recent translation marker")
+    for noisy_marker in ["background: #fff9df", "border: 1px solid #d8c36a", "animation:"]:
+        require(noisy_marker not in translation_recent_block, f"assets/translations.css recent translation marker should stay quiet without {noisy_marker!r}")
     render_group_body = js_function_body(script, "renderRecordGroups")
     require(
         "group.records.length" not in render_group_body,

@@ -189,11 +189,8 @@
 }
 
 .translation-record-card.is-recent {
-  padding: 10px 10px 10px 12px;
-  background: #fff9df;
-  border: 1px solid #d8c36a;
-  border-left: 3px solid #b00000;
-  animation: archive-note-highlight 1.8s ease-out 1;
+  padding-left: 10px;
+  box-shadow: inset 3px 0 0 #b00000;
 }
 
 .translation-record-card.is-review-target {
@@ -472,7 +469,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .translation-record-card.is-recent,
   .translation-actions button.is-working::after {
     animation: none;
   }

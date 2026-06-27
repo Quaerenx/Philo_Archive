@@ -442,11 +442,8 @@ h1 {
 }
 
 .note-card.is-recent {
-  padding: 10px 10px 10px 12px;
-  background: #fff9df;
-  border: 1px solid #d8c36a;
-  border-left: 3px solid #b00000;
-  animation: archive-note-highlight 1.8s ease-out 1;
+  padding-left: 10px;
+  box-shadow: inset 3px 0 0 #b00000;
 }
 
 .note-card.is-recent:focus {
@@ -459,8 +456,7 @@ h1 {
 }
 
 .note-card.is-recent:first-child {
-  border: 1px solid #d8c36a;
-  border-left: 3px solid #b00000;
+  border-top: 0;
 }
 
 .note-card.is-editing {
@@ -668,21 +664,11 @@ h1 {
   }
 }
 
-@keyframes archive-note-highlight {
-  0% {
-    background-color: #fff0b8;
-  }
-  100% {
-    background-color: #fff9df;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .notes-form.is-loading #notesSubmit::after,
   .note-actions button.is-working::after,
   .note-edit-actions button.is-working::after,
-  .notes-skeleton-line,
-  .note-card.is-recent {
+  .notes-skeleton-line {
     animation: none;
   }
 }
