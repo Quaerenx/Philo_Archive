@@ -1637,7 +1637,7 @@ function renderTranslationPending(regenerate = false) {
   translationOutput.classList.toggle("study-mode", translationMode === "study");
   setTranslationBusy(true);
   resetTranslationOutputScroll();
-  const actionLabel = regenerate ? "Refreshing study card" : "Preparing translation";
+  const actionLabel = regenerate ? "Refreshing translation" : "Preparing translation";
   const commentaryLabel = regenerate ? "Updating commentary for this sentence." : "Commentary will appear with the translation.";
   const position = selectedSentencePositionLabel();
   translationOutput.innerHTML = `
@@ -2356,9 +2356,9 @@ async function copyStudyCard() {
   setActionButtonBusy(copyStudyCardButton, true);
   try {
     await copyText(translationStudyCardText(selectedTranslationRecord));
-    setTranslationStatus("Study card copied.");
+    setTranslationStatus("Study note copied.");
   } catch (error) {
-    setTranslationStatus("Could not copy study card.", true);
+    setTranslationStatus("Could not copy study note.", true);
   } finally {
     setActionButtonBusy(copyStudyCardButton, false);
     updateSentenceControls();

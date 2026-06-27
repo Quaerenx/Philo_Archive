@@ -1082,7 +1082,7 @@ def check_work_source_bundle_ui() -> None:
         "translation-pending-result",
         "translation-pending-copy",
         "Preparing translation",
-        "Refreshing study card",
+        "Refreshing translation",
         "Could not save note.",
         "renderCommentary",
         "renderTranslationEmptyState",
@@ -1348,7 +1348,7 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common138", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common139", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common109", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
@@ -1462,7 +1462,7 @@ def check_work_source_bundle_ui() -> None:
         "markTranslationReviewed",
         'title="Regenerate translation"',
         'aria-label="Discard translation"',
-        'aria-label="Copy study card"',
+        'aria-label="Copy study note"',
         'aria-label="Add note from translation"',
     ]:
         require_contains(template, needle, "templates/work.html")
