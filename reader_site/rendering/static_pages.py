@@ -18,7 +18,7 @@ def render_reading_page_html(template: str, title: str, source_path: str, source
 
 
 def source_mode_links(reading_href: str = "") -> str:
-    links = '<a href="/">Archive</a>'
+    links = '<a href="/">아카이브</a>'
     if reading_href:
         links += f' / <a href="{html.escape(reading_href, quote=True)}">읽기</a>'
     return links

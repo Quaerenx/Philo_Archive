@@ -1407,7 +1407,7 @@ def check_work_source_bundle_ui() -> None:
     static_pages = read_site_file("rendering/static_pages.py")
     for needle in [
         "def source_mode_links",
-        '<a href="/">Archive</a>',
+        '<a href="/">아카이브</a>',
         ">읽기</a>",
     ]:
         require_contains(static_pages, needle, "rendering/static_pages.py")
@@ -1462,6 +1462,7 @@ def check_work_source_bundle_ui() -> None:
     require_contains(template, "/assets/reader-work.css?v=common116", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
+        'aria-label="읽기 화면 이동"',
         "reading-desk",
         "toolbar-more",
         "toolbar-more-links",
@@ -1586,7 +1587,7 @@ def check_work_source_bundle_ui() -> None:
 
     css = read_site_file("assets/reader-work.css")
     work_markup = read_site_file("rendering/work_markup.py")
-    require_contains(work_markup, "<summary>Contents</summary>", "rendering/work_markup.py")
+    require_contains(work_markup, "<summary>목차</summary>", "rendering/work_markup.py")
     require("Contents (" not in work_markup, "rendering/work_markup.py should keep TOC summary quiet")
     mobile_css = css.split("@media (max-width: 860px)", maxsplit=1)[1]
     mobile_page_before = css_rule_block(mobile_css, ".page::before", "assets/reader-work.css mobile block")

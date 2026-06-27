@@ -180,7 +180,7 @@ def check_route_markup(route: str, html: str) -> None:
         for needle in [
             "자료 위치</summary>",
             'aria-label="읽기 화면 이동"',
-            'href="/">Archive</a>',
+            'href="/">아카이브</a>',
             ">원문</a>",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
@@ -191,7 +191,7 @@ def check_route_markup(route: str, html: str) -> None:
     if route.startswith("/source?"):
         for needle in [
             "자료 위치</summary>",
-            'href="/">Archive</a>',
+            'href="/">아카이브</a>',
             ">읽기</a>",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
@@ -332,7 +332,7 @@ def check_route_markup(route: str, html: str) -> None:
             "학습 기록",
             "studySessionSummary",
             "내보낼 항목 없음</div>",
-            "Contents</summary>",
+            "목차</summary>",
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common116",
@@ -340,6 +340,7 @@ def check_route_markup(route: str, html: str) -> None:
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         require("Contents (" not in html, f"{route} should not expose TOC inventory counts")
+        require("Reader navigation" not in html, f"{route} should use reader-language navigation labels")
 
 
 def paeth_predictor(left: int, up: int, up_left: int) -> int:
@@ -1323,7 +1324,10 @@ def main() -> None:
             url = f"{base_url}{route}"
             html = fetch_html(url)
             require("<html" in html.lower(), f"{route} response does not look like a page")
-            require("Personal Archive of Literature" in html or "Archive" in html, f"{route} is missing archive identity text")
+            require(
+                "Personal Archive of Literature" in html or "아카이브" in html,
+                f"{route} is missing archive identity text",
+            )
             check_route_markup(route, html)
             html_count += 1
             if args.html_only or not should_capture:
