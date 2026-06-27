@@ -295,17 +295,17 @@ def check_route_markup(route: str, html: str) -> None:
             "studyProgress",
             "Continue study",
             "translation-export-tools",
-            "Export</summary>",
+            "Markdown</summary>",
             "exportAllTranslations",
-            "All Markdown",
+            "All translations",
             "exportStudySession",
-            "Study pack",
+            "Study session",
             "studySessionSummary",
-            "Study pack</div>",
+            "Study session</div>",
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common108",
-            "reader-work.js?v=common134",
+            "reader-work.js?v=common135",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
 
