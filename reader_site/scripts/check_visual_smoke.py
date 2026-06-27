@@ -7,6 +7,7 @@ import socket
 import struct
 import subprocess
 import sys
+import tempfile
 import time
 import zlib
 from pathlib import Path
@@ -225,8 +226,8 @@ def check_route_markup(route: str, html: str) -> None:
             "translationsReviewQueue",
             "aria-busy=\"false\"",
             "notes.css?v=notes20",
-            "translations.css?v=trans23",
-            "translations.js?v=trans54",
+            "translations.css?v=trans24",
+            "translations.js?v=trans55",
             'href="/translations" aria-current="page">Translations</a>',
             "translationsListTools",
             "Filter</summary>",
@@ -420,7 +421,7 @@ def capture_with_playwright(node: str, node_path: str, browser: str, url: str, o
     script = r"""
 require('module').Module._initPaths();
 const { chromium } = require('playwright-core');
-const [url, outputPath, widthText, heightText, executablePath] = process.argv.slice(1);
+const [url, outputPath, widthText, heightText, executablePath] = process.argv.slice(2);
 (async () => {
   const browser = await chromium.launch({
     headless: true,
@@ -559,6 +560,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
           summaryButtons: Array.from(document.querySelectorAll('#translationsResults .translation-record-summary [data-translation-summary-filter]')).map((node) => node.textContent.trim()),
           groupTitleCount: document.querySelectorAll('#translationsResults .translation-record-group-title').length,
           firstGroupTitle: document.querySelector('#translationsResults .translation-record-group-title')?.textContent.trim() || '',
+          reviewQueueBorderColor: window.getComputedStyle(document.querySelector('#translationsReviewQueue')).borderColor,
           firstRecordTitle: document.querySelector('#translationsResults .translation-record-card .translation-record-title')?.textContent.trim() || '',
           firstGroupActions: Array.from(document.querySelectorAll('#translationsResults .translation-record-group:first-of-type .translation-record-group-actions a')).map((node) => node.textContent.trim()),
           reviewQueueText: document.querySelector('#translationsReviewQueue')?.textContent.trim() || ''
@@ -579,6 +581,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (translationsPageState.reviewQueueText && !translationsPageState.reviewQueueText.startsWith('Review translations')) {
         throw new Error(`translations review entry should stay concise: ${JSON.stringify(translationsPageState)}`);
       }
+      if (translationsPageState.reviewQueueText && translationsPageState.reviewQueueBorderColor !== 'rgb(176, 0, 0)') {
+        throw new Error(`translations review entry should use the same red primary action style: ${JSON.stringify(translationsPageState)}`);
+      }
       if (translationsPageState.summaryButtons.length && !translationsPageState.summaryButtons.some((text) => text.startsWith('All'))) {
         throw new Error(`default translations list should expose a compact status overview: ${JSON.stringify(translationsPageState)}`);
       }
@@ -593,7 +598,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (translationsPageState.groupTitleCount === 0 || !translationsPageState.firstGroupTitle) {
         throw new Error(`default translations list should group records by work context: ${JSON.stringify(translationsPageState)}`);
       }
-      if (/\d[\d,]*\s+(verses|segments|files|works)\b/i.test(translationsPageState.firstGroupTitle)) {
+      if (/\d[\d,]*\s+(verses|segments|files|works|translations?)\b/i.test(translationsPageState.firstGroupTitle)) {
         throw new Error(`default translations group title should hide inventory-style counts: ${JSON.stringify(translationsPageState)}`);
       }
       if (/\.[0-9]+\.s[0-9]+/i.test(translationsPageState.firstRecordTitle)) {
@@ -833,6 +838,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         const card = document.querySelector('#translationsResults .translation-record-card.is-review-target');
         const cardStyle = card ? window.getComputedStyle(card) : null;
         const reject = card?.querySelector('.translation-more-actions');
+        const save = card?.querySelector('.primary-review-action');
         const source = card?.querySelector('.translation-source');
         const commentaryHeading = card?.querySelector('.translation-commentary h3');
         const commentaryHeadingBox = commentaryHeading?.getBoundingClientRect();
@@ -840,6 +846,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
           hasReviewTarget: Boolean(card),
           rejectText: reject?.textContent.trim() || '',
           rejectDisplay: reject ? window.getComputedStyle(reject).display : '',
+          saveText: save?.textContent.trim() || '',
+          saveBorderColor: save ? window.getComputedStyle(save).borderColor : '',
           sourceOpen: Boolean(source?.open),
           sourceText: source?.textContent.trim() || '',
           reviewTargetBackground: cardStyle?.backgroundColor || '',
@@ -853,6 +861,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       });
       if (!reviewTargetState.hasReviewTarget || !reviewTargetState.rejectText.includes('Reject') || reviewTargetState.rejectDisplay === 'none') {
         throw new Error(`review queue should expose Reject on the active review card: ${JSON.stringify(reviewTargetState)}`);
+      }
+      if (reviewTargetState.saveText !== 'Save' || reviewTargetState.saveBorderColor !== 'rgb(176, 0, 0)') {
+        throw new Error(`review queue Save should use the same red primary action style: ${JSON.stringify(reviewTargetState)}`);
       }
       if (!reviewTargetState.sourceOpen || !reviewTargetState.sourceText.includes('Original')) {
         throw new Error(`review queue should open the active source text: ${JSON.stringify(reviewTargetState)}`);
@@ -882,16 +893,31 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
   process.exit(1);
 });
 """
-    result = subprocess.run(
-        [node, "-e", script, url, str(output_path), str(width), str(height), browser],
-        cwd=SITE,
-        env=env,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        timeout=45,
-    )
+    script_path = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            "w",
+            suffix=".cjs",
+            prefix="visual-smoke-",
+            dir=output_path.parent,
+            delete=False,
+            encoding="utf-8",
+        ) as script_file:
+            script_file.write(script)
+            script_path = Path(script_file.name)
+        result = subprocess.run(
+            [node, str(script_path), url, str(output_path), str(width), str(height), browser],
+            cwd=SITE,
+            env=env,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=45,
+        )
+    finally:
+        if script_path:
+            script_path.unlink(missing_ok=True)
     stderr = (result.stderr or "").strip()
     require(result.returncode == 0, f"playwright screenshot failed for {url}: {stderr}")
     verify_screenshot(output_path)

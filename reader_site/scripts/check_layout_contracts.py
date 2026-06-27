@@ -489,8 +489,8 @@ def check_translations_ui() -> None:
     css = read_site_file("assets/translations.css")
     for needle in [
         "/assets/notes.css?v=notes20",
-        "/assets/translations.css?v=trans23",
-        "/assets/translations.js?v=trans54",
+        "/assets/translations.css?v=trans24",
+        "/assets/translations.js?v=trans55",
         'href="/translations" aria-current="page">Translations</a>',
         '<option value="">All corpora</option>',
         'id="translationsListTools"',
@@ -665,10 +665,10 @@ def check_translations_ui() -> None:
         "background: transparent",
         ".translation-review-queue",
         ".translation-review-queue:not(:disabled)",
+        ".translation-review-queue:not(:disabled):hover",
         ".translation-record-card",
         ".translation-record-group",
         ".translation-record-group-title",
-        ".translation-record-group-title strong",
         ".translation-record-group-actions",
         ".translation-record-group-actions a",
         ".translation-record-group .translation-record-card:first-of-type",
@@ -706,6 +706,7 @@ def check_translations_ui() -> None:
         ".translation-record-card:focus-within .translation-more-actions",
         ".translation-record-card.is-review-target .translation-more-actions",
         ".translation-actions .primary-review-action:not(:disabled)",
+        ".translation-actions .primary-review-action:not(:disabled):hover",
         ".translation-actions button.is-working",
         "@media (prefers-reduced-motion: reduce)",
         "@media (max-width: 860px)",
@@ -716,6 +717,15 @@ def check_translations_ui() -> None:
         "justify-content: center",
     ]:
         require_contains(css, needle, "assets/translations.css")
+    render_group_body = js_function_body(script, "renderRecordGroups")
+    require(
+        "group.records.length" not in render_group_body,
+        "assets/translations.js should not show per-group translation counts in headings",
+    )
+    require(
+        ".translation-record-group-title strong" not in css,
+        "assets/translations.css should not keep dead group count styling",
+    )
     for needle in [
         ".filter-panel",
         ".filter-panel summary",

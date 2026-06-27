@@ -544,7 +544,6 @@ function renderRecordGroups(records, options) {
     <section class="translation-record-group" data-translation-record-group="${groupIndex + 1}">
       <div class="translation-record-group-title">
         <span>${escapeHtml(group.label)}</span>
-        <strong>${group.records.length.toLocaleString()} ${group.records.length === 1 ? "translation" : "translations"}</strong>
         ${renderGroupActions(group)}
       </div>
       ${group.records.map((record) => renderRecord(record, { ...options, showContext: false })).join("")}
