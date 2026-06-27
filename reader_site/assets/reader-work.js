@@ -888,7 +888,7 @@ function updateTranslationTargetViewState() {
 function renderTranslationTarget() {
   if (!translationTarget) return;
   if (!selectedSentence) {
-    translationTarget.textContent = "Select a sentence in the source page.";
+    translationTarget.textContent = "Click a sentence to begin.";
     translationTarget.classList.remove("is-source-visible", "is-source-away");
     delete translationTarget.dataset.sourceState;
     return;

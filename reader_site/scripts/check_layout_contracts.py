@@ -1202,6 +1202,7 @@ def check_work_source_bundle_ui() -> None:
         "data-reading-cue-select",
         "readingPosition.addEventListener",
         "function renderTranslationTarget",
+        "Click a sentence to begin.",
         "function selectedSentenceIsVisible",
         "function updateTranslationTargetViewState",
         "translationTarget.dataset.sourceState",
@@ -1356,7 +1357,7 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common143", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common144", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common110", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
@@ -1381,6 +1382,7 @@ def check_work_source_bundle_ui() -> None:
         "gemmaRuntimeCheck",
         "Translator status",
         ">Checking translator</span>",
+        "Click a sentence to begin.",
         "translationRecordsSummary",
         "studyProgress",
         "studyProgressText",
