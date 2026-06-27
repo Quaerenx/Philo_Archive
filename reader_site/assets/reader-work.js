@@ -945,6 +945,7 @@ function readingCueTargetLine() {
 
 function updateReadingPosition(node) {
   if (!node || !readingPosition) return;
+  readingPosition.hidden = false;
   if (activeReadingCueNode && activeReadingCueNode !== node) {
     activeReadingCueNode.classList.remove("reading-cue");
   }

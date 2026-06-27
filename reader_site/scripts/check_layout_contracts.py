@@ -1193,6 +1193,7 @@ def check_work_source_bundle_ui() -> None:
         "requestAnimationFrame(refreshReadingPosition)",
         "readingCueTargetLine",
         "updateReadingPosition(node)",
+        "readingPosition.hidden = false",
         "reading-position-main",
         "reading-position-excerpt",
         "is-selectable-cue",
@@ -1355,8 +1356,8 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common142", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common109", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common143", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common110", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
         "reading-desk",
@@ -1407,7 +1408,7 @@ def check_work_source_bundle_ui() -> None:
         'class="visually-hidden"',
         "readingPosition",
         "Current reading position",
-        "Reading position",
+        'class="reading-position" aria-label="Current reading position" hidden',
         "noteTargetPreview",
         "lockNoteTarget",
         "Lock target",
@@ -1729,6 +1730,7 @@ def check_work_source_bundle_ui() -> None:
         "scroll-margin-block",
         ".sentence-context",
         ".reading-position",
+        ".reading-position[hidden]",
         ".reading-position.is-selectable-cue",
         ".reading-position-main",
         ".reading-position-excerpt",

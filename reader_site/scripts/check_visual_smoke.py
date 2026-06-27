@@ -310,8 +310,8 @@ def check_route_markup(route: str, html: str) -> None:
             "Nothing saved yet</div>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common109",
-            "reader-work.js?v=common142",
+            "reader-work.css?v=common110",
+            "reader-work.js?v=common143",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
 

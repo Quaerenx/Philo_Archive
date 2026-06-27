@@ -991,6 +991,10 @@ h1 {
   line-height: 1.4;
 }
 
+.reading-position[hidden] {
+  display: none;
+}
+
 .reading-position.is-selectable-cue {
   background: #fffdf2;
   border-left-color: #b00000;

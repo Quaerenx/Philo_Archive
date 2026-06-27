@@ -6,7 +6,7 @@
   <title>{{TITLE}} / {{CORPUS_TITLE}}</title>
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
-  <link rel="stylesheet" href="/assets/reader-work.css?v=common109">
+  <link rel="stylesheet" href="/assets/reader-work.css?v=common110">
 </head>
 <body class="{{BODY_CLASS}}">
   <div class="page">
@@ -68,7 +68,7 @@
                       <button type="button" id="gemmaRuntimeCheck" title="Check translator">Check</button>
                     </div>
                     <div id="translationTarget" class="translation-target">Select a sentence in the source page.</div>
-                    <div id="readingPosition" class="reading-position" aria-label="Current reading position">Reading position</div>
+                    <div id="readingPosition" class="reading-position" aria-label="Current reading position" hidden></div>
                     <details class="sentence-context-tools" aria-label="Around this sentence" hidden>
                       <summary>Context</summary>
                       <div id="sentenceContext" class="sentence-context" aria-label="Around this sentence" hidden></div>
@@ -175,6 +175,6 @@
     </main>
   </div>
   <script id="researchData" type="application/json">{{RESEARCH_JSON}}</script>
-  <script src="/assets/reader-work.js?v=common142"></script>
+  <script src="/assets/reader-work.js?v=common143"></script>
 </body>
 </html>
