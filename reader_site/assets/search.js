@@ -98,7 +98,7 @@ function selectedOptionText(select) {
 }
 
 function renderFilterChip(filterName, label, value) {
-  return `<button type="button" class="filter-chip" data-filter="${escapeHtml(filterName)}" aria-label="${escapeHtml(label)} 필터 제거">
+  return `<button type="button" class="filter-chip" data-filter="${escapeHtml(filterName)}" aria-label="${escapeHtml(label)} 조건 제거">
     <span>${escapeHtml(label)}: ${escapeHtml(value)}</span>
     <span aria-hidden="true">x</span>
   </button>`;
@@ -210,10 +210,12 @@ function resultSnippet(href, text, query) {
 function resultSummaryNav(groups) {
   if (!Array.isArray(groups) || groups.length < 2) return "";
   const links = groups
-    .map((group) => `<a class="result-summary-link" href="#${escapeHtml(group.id)}">
+    .map((group) => {
+      const detail = `${group.label} ${Number(group.count || 0).toLocaleString()}건`;
+      return `<a class="result-summary-link" href="#${escapeHtml(group.id)}" aria-label="${escapeHtml(detail)}" title="${escapeHtml(detail)}">
       <span>${escapeHtml(group.label)}</span>
-      <strong>${Number(group.count || 0).toLocaleString()}</strong>
-    </a>`)
+    </a>`;
+    })
     .join("");
   return `<nav class="result-summary-nav" aria-label="검색 결과 묶음">${links}</nav>`;
 }

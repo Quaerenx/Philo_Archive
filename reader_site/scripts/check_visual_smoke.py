@@ -270,8 +270,8 @@ def check_route_markup(route: str, html: str) -> None:
             "searchActiveFilters",
             "searchStatus",
             "aria-busy=\"false\"",
-            "search.css?v=phase24",
-            "search.js?v=phase37",
+            "search.css?v=phase25",
+            "search.js?v=phase38",
             'href="/search" aria-current="page">검색</a>',
             "번역",
             "filter-panel",
@@ -765,6 +765,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         emptyButtonActions: Array.from(empty?.querySelectorAll('.empty-actions button') || []).map((node) => node.textContent.trim()),
         actionText: Array.from(document.querySelectorAll('#results .result-actions')).map((node) => node.textContent.trim()).join(' '),
         activeFilterText: document.querySelector('#searchActiveFilters')?.textContent.trim() || '',
+        activeFilterLabel: document.querySelector('#searchActiveFilters')?.getAttribute('aria-label') || '',
+        summaryLinkTexts: Array.from(document.querySelectorAll('#results .result-summary-link')).map((node) => node.textContent.trim()),
+        summaryLinkLabels: Array.from(document.querySelectorAll('#results .result-summary-link')).map((node) => node.getAttribute('aria-label') || ''),
         resultMetaText: Array.from(document.querySelectorAll('#results .result-meta')).map((node) => node.textContent.trim()).join(' '),
         moreActionCount: document.querySelectorAll('#results .result-more-actions').length,
         inlineActionCount: document.querySelectorAll('#results .result-actions-inline').length,
@@ -779,6 +782,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (searchPageState.activeFilterText && !searchPageState.activeFilterText.startsWith('조건')) {
       throw new Error(`search active filters should read as applied conditions: ${JSON.stringify(searchPageState)}`);
+    }
+    if (searchPageState.activeFilterText && searchPageState.activeFilterLabel !== '활성 검색 조건') {
+      throw new Error(`search active filters should expose condition wording accessibly: ${JSON.stringify(searchPageState)}`);
     }
     if (!searchPageState.hasResults && searchPageState.emptyTitle !== '검색 결과가 없습니다.') {
       throw new Error(`empty search should use a concise title: ${JSON.stringify(searchPageState)}`);
@@ -815,6 +821,12 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (searchPageState.hasResults && searchPageState.groupCountText) {
       throw new Error(`search result group headers should not repeat count summaries: ${JSON.stringify(searchPageState)}`);
+    }
+    if (searchPageState.hasResults && searchPageState.summaryLinkTexts.some((text) => /\d/.test(text))) {
+      throw new Error(`search result summary should hide visible counts from the reading flow: ${JSON.stringify(searchPageState)}`);
+    }
+    if (searchPageState.hasResults && searchPageState.summaryLinkLabels.some((label) => label && !/\d/.test(label))) {
+      throw new Error(`search result summary should keep counts in accessible labels: ${JSON.stringify(searchPageState)}`);
     }
     if (searchPageState.hasResults && searchPageState.resultKindCount > 0) {
       throw new Error(`search result cards should avoid repeated group labels inside each card: ${JSON.stringify(searchPageState)}`);

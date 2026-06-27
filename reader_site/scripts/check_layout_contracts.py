@@ -279,8 +279,8 @@ def check_search_ui() -> None:
     script = read_site_file("assets/search.js")
     css = read_site_file("assets/search.css")
     for needle in [
-        "/assets/search.css?v=phase24",
-        "/assets/search.js?v=phase37",
+        "/assets/search.css?v=phase25",
+        "/assets/search.js?v=phase38",
         'href="/search" aria-current="page">검색</a>',
         'href="/translations"',
         "본문 찾기",
@@ -291,6 +291,7 @@ def check_search_ui() -> None:
         'id="searchSubmit"',
         'id="searchClear"',
         'id="searchActiveFilters"',
+        'aria-label="활성 검색 조건"',
         'class="form-actions"',
         'role="status"',
         'aria-busy="false"',
@@ -314,10 +315,13 @@ def check_search_ui() -> None:
         "function updateSearchClearState",
         "function updateSearchFilterSummary",
         "active-filters-label\">조건</span>",
+        "조건 제거",
         "function removeSearchFilter",
         "function resultGroupHeader",
         "function resultSnippet",
         "function resultSummaryNav",
+        "const detail = `${group.label} ${Number(group.count || 0).toLocaleString()}건`",
+        'aria-label="${escapeHtml(detail)}"',
         "function cleanText",
         "function corpusLabel",
         "function reviewStateLabel",
@@ -407,6 +411,14 @@ def check_search_ui() -> None:
     ]:
         require_contains(css, needle, "assets/search.css")
     require("result-group-count" not in css, "assets/search.css should avoid duplicate search group counts")
+    require(
+        "<strong>${Number(group.count || 0).toLocaleString()}</strong>" not in script,
+        "assets/search.js should keep group counts out of visible search summary links",
+    )
+    require(
+        ".result-summary-link strong" not in css,
+        "assets/search.css should not keep dead visible-count styling for search summary links",
+    )
 
 
 def check_notes_ui() -> None:

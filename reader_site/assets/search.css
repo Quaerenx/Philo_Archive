@@ -305,11 +305,6 @@ h1 {
   border-color: #999;
 }
 
-.result-summary-link strong {
-  color: #555;
-  font-weight: normal;
-}
-
 .empty-state {
   padding: 14px;
   background: #fbfbfb;
