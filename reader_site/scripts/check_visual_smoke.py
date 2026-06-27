@@ -228,14 +228,14 @@ def check_route_markup(route: str, html: str) -> None:
             "aria-busy=\"false\"",
             "notes.css?v=notes21",
             "translations.css?v=trans27",
-            "translations.js?v=trans64",
-            'href="/translations" aria-current="page">Translations</a>',
-            "Find record",
+            "translations.js?v=trans65",
+            'href="/translations" aria-current="page">번역</a>',
+            "번역 찾기",
             "translationsListTools",
-            "Filter</summary>",
+            "필터</summary>",
             "translations-filter-fields",
             "export-tools",
-            "Downloads</summary>",
+            "내보내기</summary>",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         require("Filters</summary>" not in html, f"{route} should avoid nested filter disclosures")
@@ -695,17 +695,17 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     });
     if (!translationsPageState.hasRecords) {
       if (!translationsPageState.formHidden) throw new Error(`empty translations page should hide filter form: ${JSON.stringify(translationsPageState)}`);
-      if (translationsPageState.emptyTitle !== 'No translation records yet.' || translationsPageState.emptyBodyCount !== 0) {
+      if (translationsPageState.emptyTitle !== '아직 번역이 없습니다.' || translationsPageState.emptyBodyCount !== 0) {
         throw new Error(`empty translations page should stay quiet: ${JSON.stringify(translationsPageState)}`);
       }
-      if (translationsPageState.emptyActions.length !== 1 || translationsPageState.emptyActions[0] !== 'Find work') {
+      if (translationsPageState.emptyActions.length !== 1 || translationsPageState.emptyActions[0] !== '문서 찾기') {
         throw new Error(`empty translations page should keep only the find action: ${JSON.stringify(translationsPageState)}`);
       }
     } else {
       if (translationsPageState.reviewBadgeCount !== 0) {
         throw new Error(`default translations list should hide review-state badges: ${JSON.stringify(translationsPageState)}`);
       }
-      if (translationsPageState.reviewQueueText && !translationsPageState.reviewQueueText.startsWith('Check translations')) {
+      if (translationsPageState.reviewQueueText && !translationsPageState.reviewQueueText.startsWith('번역 검토')) {
         throw new Error(`translations review entry should stay concise: ${JSON.stringify(translationsPageState)}`);
       }
       if (/\d/.test(translationsPageState.reviewQueueText)) {
@@ -714,13 +714,13 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (translationsPageState.reviewQueueText && translationsPageState.reviewQueueBorderColor !== 'rgb(176, 0, 0)') {
         throw new Error(`translations review entry should use the same red primary action style: ${JSON.stringify(translationsPageState)}`);
       }
-      if (translationsPageState.summaryButtons.length && !translationsPageState.summaryButtons.some((text) => text.startsWith('All'))) {
+      if (translationsPageState.summaryButtons.length && !translationsPageState.summaryButtons.some((text) => text.startsWith('전체'))) {
         throw new Error(`default translations list should expose a compact status overview: ${JSON.stringify(translationsPageState)}`);
       }
       if (translationsPageState.summaryButtons.length === 2) {
         const reviewCount = Number(((translationsPageState.reviewQueueText.match(/(\d[\d,]*)/) || [])[1] || '0').replace(/,/g, ''));
-        const allCount = Number((translationsPageState.summaryButtons.find((text) => text.startsWith('All')) || '').match(/\d+/)?.[0] || 0);
-        const toCheckCount = Number((translationsPageState.summaryButtons.find((text) => text.startsWith('To check')) || '').match(/\d+/)?.[0] || 0);
+        const allCount = Number((translationsPageState.summaryButtons.find((text) => text.startsWith('전체')) || '').match(/\d+/)?.[0] || 0);
+        const toCheckCount = Number((translationsPageState.summaryButtons.find((text) => text.startsWith('검토 필요')) || '').match(/\d+/)?.[0] || 0);
         if (reviewCount && allCount === reviewCount && toCheckCount === reviewCount) {
           throw new Error(`translations page should not repeat all-generated counts in both review queue and summary: ${JSON.stringify(translationsPageState)}`);
         }
@@ -734,7 +734,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (/\.[0-9]+\.s[0-9]+/i.test(translationsPageState.firstRecordTitle)) {
         throw new Error(`default translations record title should use readable references, not internal sentence IDs: ${JSON.stringify(translationsPageState)}`);
       }
-      if (!translationsPageState.firstGroupActions.includes('Read')) {
+      if (!translationsPageState.firstGroupActions.includes('읽기')) {
         throw new Error(`translation work groups should expose a concise read action: ${JSON.stringify(translationsPageState)}`);
       }
     }
@@ -1069,7 +1069,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       throw new Error(`review queue should not repeat the status filter chip: ${JSON.stringify(state)}`);
     }
     if (state.cards > 0 && !state.reviewQueueHidden) {
-      throw new Error(`review queue should not repeat the Check translations entry action while already reviewing: ${JSON.stringify(state)}`);
+      throw new Error(`review queue should not repeat the translation review entry action while already reviewing: ${JSON.stringify(state)}`);
     }
     if (state.cards > 0 && state.groupActionText) {
       throw new Error(`review queue should keep repeated group actions out of the review flow: ${JSON.stringify(state)}`);
@@ -1110,11 +1110,11 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
           statusText: document.querySelector('#translationsStatus')?.textContent.trim() || ''
         };
       });
-      if (!reviewTargetState.hasReviewTarget || !reviewTargetState.rejectText.includes('Discard') || reviewTargetState.rejectDisplay === 'none') {
-        throw new Error(`review queue should expose Discard on the active review card: ${JSON.stringify(reviewTargetState)}`);
+      if (!reviewTargetState.hasReviewTarget || !reviewTargetState.rejectText.includes('제외') || reviewTargetState.rejectDisplay === 'none') {
+        throw new Error(`review queue should expose the discard action on the active review card: ${JSON.stringify(reviewTargetState)}`);
       }
-      if (reviewTargetState.saveText !== 'Save' || reviewTargetState.saveBorderColor !== 'rgb(176, 0, 0)') {
-        throw new Error(`review queue Save should use the same red primary action style: ${JSON.stringify(reviewTargetState)}`);
+      if (reviewTargetState.saveText !== '저장' || reviewTargetState.saveBorderColor !== 'rgb(176, 0, 0)') {
+        throw new Error(`review queue save should use the same red primary action style: ${JSON.stringify(reviewTargetState)}`);
       }
       if (reviewTargetState.isDesktopLayout && (reviewTargetState.reviewFooterPosition !== 'sticky' || reviewTargetState.reviewFooterBottom !== '8px')) {
         throw new Error(`review queue should keep active review actions reachable on desktop: ${JSON.stringify(reviewTargetState)}`);
@@ -1122,7 +1122,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (reviewTargetState.nonTargetFooterDisplay && reviewTargetState.nonTargetFooterDisplay !== 'none') {
         throw new Error(`review queue should keep inactive review actions visually quiet on desktop: ${JSON.stringify(reviewTargetState)}`);
       }
-      if (reviewTargetState.sourceOpen || !reviewTargetState.sourceText.includes('Original')) {
+      if (reviewTargetState.sourceOpen || !reviewTargetState.sourceText.includes('원문')) {
         throw new Error(`review queue should keep original source available but collapsed by default: ${JSON.stringify(reviewTargetState)}`);
       }
       if (reviewTargetState.reviewTargetBackground !== 'rgb(255, 255, 255)') {

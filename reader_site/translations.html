@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Translations / Personal Archive of Literature</title>
+  <title>번역 검토 / Personal Archive of Literature</title>
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
   <link rel="stylesheet" href="/assets/notes.css?v=notes21">
@@ -14,28 +14,28 @@
     <div class="spacer"></div>
     <main class="reader">
       <header class="reader-header">
-        <h1>Translations</h1>
-        <nav class="toolbar" aria-label="Translations navigation">
+        <h1>번역 검토</h1>
+        <nav class="toolbar" aria-label="번역 검토 이동">
           <a href="/">Archive</a>
-          <a href="/search">Search</a>
-          <a href="/notes">Notes</a>
-          <a href="/study">Study</a>
-          <a href="/translations" aria-current="page">Translations</a>
+          <a href="/search">검색</a>
+          <a href="/notes">노트</a>
+          <a href="/study">학습</a>
+          <a href="/translations" aria-current="page">번역</a>
         </nav>
       </header>
 
       <details id="translationsListTools" class="list-tools">
-        <summary>Filter</summary>
+        <summary>필터</summary>
         <form id="translationsForm" class="notes-form translations-form">
           <label class="query-label">
-            Find record
+            번역 찾기
             <input id="translationsQuery" name="q" autocomplete="off">
           </label>
           <div class="filter-panel-fields translations-filter-fields">
             <label>
-              Corpus
+              자료
               <select id="translationsCorpus" name="corpus_id">
-                <option value="">All corpora</option>
+                <option value="">전체 자료</option>
                 <option value="nietzsche">Nietzsche</option>
                 <option value="bible">Bible</option>
                 <option value="kierkegaard">Kierkegaard</option>
@@ -43,43 +43,43 @@
               </select>
             </label>
             <label>
-              Work
+              문서
               <input id="translationsWork" name="work_id" list="translationsWorkOptions" autocomplete="off">
               <datalist id="translationsWorkOptions"></datalist>
             </label>
             <label>
-              Status
+              상태
               <select id="translationsReview" name="review_state">
-                <option value="all">All</option>
-                <option value="generated">To check</option>
-                <option value="reviewed">Saved</option>
-                <option value="rejected">Discarded</option>
+                <option value="all">전체</option>
+                <option value="generated">검토 필요</option>
+                <option value="reviewed">저장됨</option>
+                <option value="rejected">제외됨</option>
               </select>
             </label>
           </div>
           <div class="form-actions">
-            <button id="translationsSubmit" type="submit">Apply</button>
-            <button id="translationsClear" type="button" class="secondary-action" disabled>Clear</button>
+            <button id="translationsSubmit" type="submit">적용</button>
+            <button id="translationsClear" type="button" class="secondary-action" disabled>지우기</button>
           </div>
         </form>
         <details id="translationsExportTools" class="export-tools" hidden>
-          <summary>Downloads</summary>
-          <div class="export-row" aria-label="Download translations">
+          <summary>내보내기</summary>
+          <div class="export-row" aria-label="번역 다운로드">
             <a id="translationsExportMarkdown" href="/api/sentence-translations/export?format=markdown&review_state=all">Markdown</a>
             <a id="translationsExportJson" href="/api/sentence-translations/export?format=json&review_state=all">JSON</a>
           </div>
         </details>
       </details>
-      <div id="translationsActiveFilters" class="active-filters" aria-live="polite" aria-label="Active translation filters"></div>
+      <div id="translationsActiveFilters" class="active-filters" aria-live="polite" aria-label="활성 번역 필터"></div>
 
       <div class="review-export-row">
-        <button id="translationsReviewQueue" type="button" class="translation-review-queue" aria-keyshortcuts="Q" title="Translations to check" disabled>Check translations</button>
+        <button id="translationsReviewQueue" type="button" class="translation-review-queue" aria-keyshortcuts="Q" title="검토할 번역" disabled>번역 검토</button>
       </div>
 
       <div id="translationsStatus" class="notes-status translations-status" role="status" aria-live="polite" aria-atomic="true"></div>
       <section id="translationsResults" class="notes-results translations-results" aria-live="polite" aria-busy="false"></section>
     </main>
   </div>
-  <script src="/assets/translations.js?v=trans64"></script>
+  <script src="/assets/translations.js?v=trans65"></script>
 </body>
 </html>

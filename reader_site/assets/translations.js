@@ -25,10 +25,10 @@ let pendingReviewQueueMessage = "";
 const DEFAULT_CORPUS = "";
 const LAST_CORPUS_STORAGE_KEY = "philoArchive.lastCorpusId";
 const REVIEW_LABELS = {
-  all: "All",
-  generated: "To check",
-  reviewed: "Saved",
-  rejected: "Discarded"
+  all: "전체",
+  generated: "검토 필요",
+  reviewed: "저장됨",
+  rejected: "제외됨"
 };
 
 function escapeHtml(value) {
@@ -112,12 +112,12 @@ function sentenceDisplayName(record) {
   const bibleMatch = /^([A-Za-z0-9]+)\.(\d+)\.(\d+)\.s(\d+)$/i.exec(id);
   if (bibleMatch) {
     const sentenceNumber = Number(bibleMatch[4]);
-    const suffix = sentenceNumber > 1 ? `, sentence ${sentenceNumber}` : "";
+    const suffix = sentenceNumber > 1 ? `, 문장 ${sentenceNumber}` : "";
     return `${bibleMatch[1]} ${Number(bibleMatch[2])}:${Number(bibleMatch[3])}${suffix}`;
   }
   const match = /^p-(\d+)\.s(\d+)$/i.exec(id);
   if (match) {
-    return `Paragraph ${Number(match[1])}, sentence ${Number(match[2])}`;
+    return `문단 ${Number(match[1])}, 문장 ${Number(match[2])}`;
   }
   return id;
 }
@@ -148,8 +148,8 @@ function updateWorkOptions() {
     .map((option) => `<option value="${escapeHtml(option.workId)}" label="${escapeHtml(option.label)}"></option>`)
     .join("");
   workInput.placeholder = corpusSelect.value
-    ? (options.length ? `${options.length.toLocaleString()} works` : "work id")
-    : "optional work id";
+    ? (options.length ? `${options.length.toLocaleString()}개 문서` : "문서 ID")
+    : "문서 ID 선택";
 }
 
 function fetchParams(format = "json") {
@@ -218,7 +218,7 @@ function isReviewQueueOnlyView() {
 }
 
 function renderFilterChip(filterName, label, value) {
-  return `<button type="button" class="filter-chip" data-filter="${escapeHtml(filterName)}" aria-label="Remove ${escapeHtml(label)} filter">
+  return `<button type="button" class="filter-chip" data-filter="${escapeHtml(filterName)}" aria-label="${escapeHtml(label)} 필터 제거">
     <span>${escapeHtml(label)}: ${escapeHtml(value)}</span>
     <span aria-hidden="true">x</span>
   </button>`;
@@ -229,18 +229,18 @@ function updateFilterSummary() {
   const chips = [];
   const query = queryInput.value.trim();
   const workId = workInput.value.trim();
-  if (query) chips.push(renderFilterChip("query", "Text", query));
+  if (query) chips.push(renderFilterChip("query", "본문", query));
   if (corpusSelect.value) {
-    chips.push(renderFilterChip("corpus", "Corpus", selectedOptionText(corpusSelect)));
+    chips.push(renderFilterChip("corpus", "자료", selectedOptionText(corpusSelect)));
   }
-  if (workId) chips.push(renderFilterChip("work", "Work", workId));
+  if (workId) chips.push(renderFilterChip("work", "문서", workId));
   if (reviewSelect.value !== "all" && !isReviewQueueOnlyView()) {
-    chips.push(renderFilterChip("review", "Status", selectedOptionText(reviewSelect)));
+    chips.push(renderFilterChip("review", "상태", selectedOptionText(reviewSelect)));
   }
   activeFiltersEl.hidden = chips.length === 0;
   activeFiltersEl.classList.toggle("has-filters", chips.length > 0);
   activeFiltersEl.innerHTML = chips.length
-    ? `<span class="active-filters-label">Filters</span>${chips.join("")}`
+    ? `<span class="active-filters-label">필터</span>${chips.join("")}`
     : "";
 }
 
@@ -340,14 +340,14 @@ function updateReviewQueueButton(records = lastRecords) {
   if (!reviewQueueButton) return;
   const generatedCount = generatedRecords(records).length;
   reviewQueueButton.hidden = generatedCount === 0 || isReviewQueueOnlyView();
-  reviewQueueButton.textContent = "Check translations";
+  reviewQueueButton.textContent = "번역 검토";
   reviewQueueButton.disabled = form.classList.contains("is-loading") || generatedCount === 0;
   reviewQueueButton.title = generatedCount
-    ? `${generatedCount.toLocaleString()} translations to check`
-    : "Nothing to check";
+    ? `${generatedCount.toLocaleString()}개 번역 검토`
+    : "검토할 번역 없음";
   reviewQueueButton.setAttribute(
     "aria-label",
-    generatedCount ? `Check translations, ${generatedCount.toLocaleString()} to check` : "Check translations"
+    generatedCount ? `번역 검토, ${generatedCount.toLocaleString()}개 남음` : "번역 검토"
   );
 }
 
@@ -385,24 +385,24 @@ function renderSummary(records) {
   if (counts.total <= 0) return "";
   if (visibleSummaryStates(counts).length <= 1) return "";
   const buttons = [
-    summaryButton("all", "All", counts.total),
-    counts.generated ? summaryButton("generated", "To check", counts.generated) : "",
-    counts.reviewed ? summaryButton("reviewed", "Saved", counts.reviewed) : "",
-    counts.rejected ? summaryButton("rejected", "Discarded", counts.rejected) : ""
+    summaryButton("all", "전체", counts.total),
+    counts.generated ? summaryButton("generated", "검토 필요", counts.generated) : "",
+    counts.reviewed ? summaryButton("reviewed", "저장됨", counts.reviewed) : "",
+    counts.rejected ? summaryButton("rejected", "제외됨", counts.rejected) : ""
   ].filter(Boolean).join("");
-  return `<nav class="translation-record-summary-tools translation-record-summary" aria-label="Translation status overview">
+  return `<nav class="translation-record-summary-tools translation-record-summary" aria-label="번역 상태 요약">
     ${buttons}
   </nav>`;
 }
 
 function renderEmptyRecords() {
   const filtered = hasActiveFilters();
-  const title = filtered ? "No records match these filters." : "No translation records yet.";
+  const title = filtered ? "조건에 맞는 번역이 없습니다." : "아직 번역이 없습니다.";
   const body = filtered
-    ? "Clear filters, or choose a broader status and work id."
+    ? "필터를 지우거나 문서와 상태 조건을 넓혀보세요."
     : "";
   const clearAction = filtered
-    ? '<button type="button" data-empty-action="clear-filters">Clear filters</button>'
+    ? '<button type="button" data-empty-action="clear-filters">필터 지우기</button>'
     : "";
   const bodyMarkup = body ? `<p>${escapeHtml(body)}</p>` : "";
   return `<section class="empty empty-state">
@@ -410,13 +410,13 @@ function renderEmptyRecords() {
     ${bodyMarkup}
     <div class="empty-actions">
       ${clearAction}
-      <a href="/search">Find work</a>
+      <a href="/search">문서 찾기</a>
     </div>
   </section>`;
 }
 
 function recordTitle(record) {
-  return cleanText(record.target_label || sentenceDisplayName(record) || record.work_id || "Translation record");
+  return cleanText(record.target_label || sentenceDisplayName(record) || record.work_id || "번역");
 }
 
 function recordContext(record) {
@@ -445,7 +445,7 @@ function groupedTranslationRecords(records) {
         key,
         corpusId: cleanText(record.corpus_id || ""),
         workId: cleanText(record.work_id || ""),
-        label: recordContext(record) || corpusDisplayName(record.corpus_id) || "Translations",
+        label: recordContext(record) || corpusDisplayName(record.corpus_id) || "번역",
         records: [],
         reviewedCount: 0
       };
@@ -480,8 +480,8 @@ function renderGroupActions(group) {
   const workUrl = groupWorkUrl(group);
   const savedExportUrl = groupSavedExportUrl(group);
   const actions = [
-    workUrl ? `<a href="${escapeHtml(workUrl)}">Read</a>` : "",
-    savedExportUrl ? `<a href="${escapeHtml(savedExportUrl)}">Saved</a>` : ""
+    workUrl ? `<a href="${escapeHtml(workUrl)}">읽기</a>` : "",
+    savedExportUrl ? `<a href="${escapeHtml(savedExportUrl)}">저장본</a>` : ""
   ].filter(Boolean).join("");
   return actions ? `<span class="translation-record-group-actions">${actions}</span>` : "";
 }
@@ -493,7 +493,7 @@ function visibleReviewStates(records) {
 function renderRecord(record, options) {
   options = options || {};
   const reviewState = normalizedReviewState(record);
-  const title = recordTitle(record) || "Translation record";
+  const title = recordTitle(record) || "번역";
   const context = recordContext(record);
   const source = cleanText(record.source_text_excerpt || "");
   const translation = cleanText(record.translation || "");
@@ -506,33 +506,33 @@ function renderRecord(record, options) {
   const showContext = options.showContext !== false;
   const reviewKicker = showReviewBadge
     ? `<div class="translation-record-kicker">
-        <span class="review-badge" aria-label="Review status: ${escapeHtml(reviewLabel)}">${escapeHtml(reviewLabel)}</span>
+        <span class="review-badge" aria-label="검토 상태: ${escapeHtml(reviewLabel)}">${escapeHtml(reviewLabel)}</span>
       </div>`
     : "";
   const rejectAction = reviewState !== "rejected"
     ? `<details class="translation-more-actions">
-        <summary>Discard</summary>
-        <button type="button" data-review-state="rejected" aria-keyshortcuts="X" title="Confirm discard">Confirm</button>
+        <summary>제외</summary>
+        <button type="button" data-review-state="rejected" aria-keyshortcuts="X" title="제외 확인">확인</button>
       </details>`
     : "";
   const actions = showReviewActions ? [
     reviewState !== "reviewed"
-      ? '<button type="button" class="primary-review-action" data-review-state="reviewed" aria-keyshortcuts="R" title="Save translation">Save</button>'
+      ? '<button type="button" class="primary-review-action" data-review-state="reviewed" aria-keyshortcuts="R" title="번역 저장">저장</button>'
       : "",
     reviewState !== "generated"
-      ? '<button type="button" data-review-state="generated" aria-keyshortcuts="G" title="Move back to check">To check</button>'
+      ? '<button type="button" data-review-state="generated" aria-keyshortcuts="G" title="검토 대상으로 되돌리기">검토 필요</button>'
       : "",
     rejectAction
   ].filter(Boolean).join("") : "";
   return `<article class="translation-record-card${isRecent ? " is-recent" : ""}" tabindex="-1" data-record-id="${escapeHtml(record.id)}" data-corpus-id="${escapeHtml(record.corpus_id)}" data-review-state="${escapeHtml(reviewState)}">
     <header class="translation-record-heading">
-      <h2 class="translation-record-title">${targetUrl ? `<a href="${escapeHtml(targetUrl)}" data-open-source aria-keyshortcuts="O" title="Source">${escapeHtml(title)}</a>` : escapeHtml(title)}</h2>
+      <h2 class="translation-record-title">${targetUrl ? `<a href="${escapeHtml(targetUrl)}" data-open-source aria-keyshortcuts="O" title="원문으로 이동">${escapeHtml(title)}</a>` : escapeHtml(title)}</h2>
       ${reviewKicker}
       ${showContext && context ? `<div class="translation-record-context">${escapeHtml(context)}</div>` : ""}
     </header>
     ${translation ? `<p class="translation-text">${escapeHtml(translation)}</p>` : ""}
-    ${commentary ? `<section class="translation-commentary" aria-label="Commentary"><h3>Commentary</h3><p>${escapeHtml(commentary)}</p></section>` : ""}
-    ${source ? `<details class="translation-source"><summary>Original</summary><blockquote>${escapeHtml(source)}</blockquote></details>` : ""}
+    ${commentary ? `<section class="translation-commentary" aria-label="해설"><h3>해설</h3><p>${escapeHtml(commentary)}</p></section>` : ""}
+    ${source ? `<details class="translation-source"><summary>원문</summary><blockquote>${escapeHtml(source)}</blockquote></details>` : ""}
     ${actions ? `<footer class="translation-record-footer">
       <div class="translation-actions">
         ${actions}
@@ -578,7 +578,7 @@ function renderRecords(records) {
     if (focusFirstReviewQueueRecord()) {
       statusEl.textContent = reviewMessage || "";
     } else if (reviewSelect.value === "generated") {
-      statusEl.textContent = reviewMessage ? "All translations checked." : "Nothing to check.";
+      statusEl.textContent = reviewMessage ? "모든 번역을 검토했습니다." : "검토할 번역이 없습니다.";
     }
   }
   recentlyChangedRecordId = "";
@@ -592,7 +592,7 @@ function focusFirstReviewQueueRecord() {
 
 function openReviewQueue() {
   if (!generatedRecords(lastRecords).length) {
-    statusEl.textContent = "Nothing to check.";
+    statusEl.textContent = "검토할 번역이 없습니다.";
     return;
   }
   queryInput.value = "";
@@ -712,10 +712,10 @@ async function updateRecordReview(recordId, corpusId, reviewState) {
 }
 
 function reviewActionMessage(reviewState) {
-  if (reviewState === "reviewed") return "Saved.";
-  if (reviewState === "rejected") return "Discarded.";
-  if (reviewState === "generated") return "Moved to check.";
-  return "Updated.";
+  if (reviewState === "reviewed") return "저장했습니다.";
+  if (reviewState === "rejected") return "제외했습니다.";
+  if (reviewState === "generated") return "검토 대상으로 되돌렸습니다.";
+  return "반영했습니다.";
 }
 
 async function loadCorpora() {
@@ -725,14 +725,14 @@ async function loadCorpora() {
     const payload = await response.json();
     archiveCorpora = payload.corpora || [];
     const current = corpusSelect.value || DEFAULT_CORPUS;
-    corpusSelect.innerHTML = '<option value="">All corpora</option>' + archiveCorpora
+    corpusSelect.innerHTML = '<option value="">전체 자료</option>' + archiveCorpora
       .map((corpus) => `<option value="${escapeHtml(corpus.id)}">${escapeHtml(corpus.title || corpus.id)}</option>`)
       .join("");
     const hasCurrent = Array.from(corpusSelect.options).some((option) => option.value === current);
     if (!hasCurrent) {
       const fallback = document.createElement("option");
       fallback.value = current;
-      fallback.textContent = current || "All corpora";
+      fallback.textContent = current || "전체 자료";
       corpusSelect.appendChild(fallback);
     }
     corpusSelect.value = current;
@@ -759,7 +759,7 @@ async function loadRecords() {
     const response = await fetch(`/api/sentence-translations/export?${fetchParams("json")}`, { signal: controller.signal });
     if (requestId !== activeRequest) return;
     if (!response.ok) {
-      statusEl.textContent = "Could not load translations.";
+      statusEl.textContent = "번역을 불러오지 못했습니다.";
       resultsEl.innerHTML = "";
       return;
     }
@@ -768,7 +768,7 @@ async function loadRecords() {
   } catch (error) {
     if (error && error.name === "AbortError") return;
     if (requestId === activeRequest) {
-      statusEl.textContent = "Could not load translations.";
+      statusEl.textContent = "번역을 불러오지 못했습니다.";
       resultsEl.innerHTML = "";
     }
   } finally {
@@ -861,7 +861,7 @@ resultsEl.addEventListener("click", async (event) => {
       pendingReviewQueueFocus = reviewSelect.value === "generated" && nextState !== "generated";
       pendingReviewQueueMessage = pendingReviewQueueFocus ? actionMessage : "";
     }
-    statusEl.textContent = ok ? actionMessage : "Could not save.";
+    statusEl.textContent = ok ? actionMessage : "저장하지 못했습니다.";
     await loadRecords();
   } finally {
     setActionButtonBusy(reviewButton, false);
