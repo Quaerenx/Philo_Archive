@@ -898,7 +898,7 @@ function renderTranslationTarget() {
   const sourceText = cleanText(selectedSentence.text || "");
   translationTarget.innerHTML = `
     <div class="translation-target-main">
-      <span class="translation-target-label">Selected source</span>
+      <span class="translation-target-label">Source</span>
       <strong class="translation-target-id">${escapeHtml(position)}</strong>
       <span class="translation-target-status" data-selected-source-status></span>
       <p class="translation-target-excerpt" title="${escapeHtml(sourceText)}">${escapeHtml(sourceText)}</p>
