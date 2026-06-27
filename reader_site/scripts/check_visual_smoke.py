@@ -338,7 +338,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common118",
-            "reader-work.js?v=common161",
+            "reader-work.js?v=common162",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         require("Contents (" not in html, f"{route} should not expose TOC inventory counts")
@@ -1079,12 +1079,12 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (!['번역 저장', '저장된 번역'].includes(state.readingSaveLabel) || state.readingNoteLabel !== '번역으로 메모 추가') {
       throw new Error(`reading mode quick actions should keep clear accessible labels: ${JSON.stringify(state)}`);
     }
-    if (state.secondaryActionsOpen || state.secondaryActionsSummary !== '저장/메모') {
+    if (state.secondaryActionsOpen || state.secondaryActionsSummary !== '기록') {
       throw new Error(`reading mode should collapse secondary note/save actions behind a clear label: ${JSON.stringify(state)}`);
     }
     const firstAction = state.readingActions[0] || '';
     const secondAction = state.readingActions[1] || '';
-    if (firstAction !== '다음 문장' || secondAction !== '저장/메모' || state.readingActions.length !== 2) {
+    if (firstAction !== '다음 문장' || secondAction !== '기록' || state.readingActions.length !== 2) {
       throw new Error(`reading mode should show only Next sentence and the collapsed secondary action label: ${JSON.stringify(state)}`);
     }
     if (state.visibleExtraCount !== 0) throw new Error(`reading mode exposed study-only translation extras: ${JSON.stringify(state)}`);
