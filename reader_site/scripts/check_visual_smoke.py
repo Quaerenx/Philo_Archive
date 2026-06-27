@@ -196,7 +196,7 @@ def check_route_markup(route: str, html: str) -> None:
             "studyStatus",
             "aria-busy=\"false\"",
             "study.css?v=study23",
-            "study.js?v=study37",
+            "study.js?v=study38",
             'href="/study" aria-current="page">Study</a>',
             "filter-panel",
             "export-tools",
@@ -668,6 +668,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (studyPageState.overviewText.includes('0 saved notes')) {
         throw new Error(`empty study page overview should not repeat zero notes: ${JSON.stringify(studyPageState)}`);
       }
+    }
+    if (studyPageState.overviewText.includes('Discarded')) {
+      throw new Error(`study overview should keep discarded translations out of the learning entry point: ${JSON.stringify(studyPageState)}`);
     }
   }
   if (parsed.pathname === '/translations' && !parsed.search) {

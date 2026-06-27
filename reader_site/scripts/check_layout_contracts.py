@@ -771,7 +771,7 @@ def check_study_ui() -> None:
     css = read_site_file("assets/study.css")
     for needle in [
         "/assets/study.css?v=study23",
-        "/assets/study.js?v=study37",
+        "/assets/study.js?v=study38",
         'href="/study" aria-current="page">Study</a>',
         "Find saved note",
         '<button id="studySubmit" type="submit">Apply</button>',
@@ -824,7 +824,6 @@ def check_study_ui() -> None:
         "Check translations",
         "Translation study status",
         "Saved translations",
-        "Discarded",
         "renderStudy(payload, translationSummary)",
         "renderStudyPending",
         "function renderEmptyStudy",

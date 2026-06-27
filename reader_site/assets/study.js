@@ -324,7 +324,6 @@ function renderStudyOverview(payload, translationSummary) {
   const counts = translationSummary?.review_state_counts || {};
   const generated = Number(counts.generated || 0);
   const reviewed = Number(counts.reviewed || 0);
-  const rejected = Number(counts.rejected || 0);
   const hasOverview = noteCount > 0;
   studyOverview.hidden = !hasOverview;
   if (!hasOverview) {
@@ -341,8 +340,7 @@ function renderStudyOverview(payload, translationSummary) {
     : "";
   const translationLinks = [
     translationStatusLink("generated", "Check translations", generated),
-    translationStatusLink("reviewed", "Saved translations", reviewed),
-    translationStatusLink("rejected", "Discarded", rejected)
+    translationStatusLink("reviewed", "Saved translations", reviewed)
   ].filter(Boolean).join("");
   studyOverview.innerHTML = `${notesMarkup}
     ${translationLinks ? `<nav class="study-overview-translations" aria-label="Translation study status">${translationLinks}</nav>` : ""}`;
