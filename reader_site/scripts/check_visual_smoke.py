@@ -232,7 +232,7 @@ def check_route_markup(route: str, html: str) -> None:
             "notesActiveFilters",
             "notesStatus",
             "aria-busy=\"false\"",
-            "notes.css?v=notes24",
+            "notes.css?v=notes25",
             "notes.js?v=notes34",
             'href="/notes" aria-current="page">노트</a>',
             "filter-panel",
@@ -250,7 +250,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translationsResults",
             "translationsReviewQueue",
             "aria-busy=\"false\"",
-            "notes.css?v=notes24",
+            "notes.css?v=notes25",
             "translations.css?v=trans31",
             "translations.js?v=trans74",
             'href="/translations" aria-current="page">번역</a>',
@@ -915,6 +915,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     await page.waitForSelector('#notesResults .note-card:not(.notes-skeleton), #notesResults .empty-state', { timeout: 7000 }).catch(() => {});
     const notesPageState = await page.evaluate(() => {
       const empty = document.querySelector('#notesResults .empty-state');
+      const emptyStyle = empty ? window.getComputedStyle(empty) : null;
       const results = document.querySelector('#notesResults');
       const exportTools = document.querySelector('#notesExportTools');
       return {
@@ -923,6 +924,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         exportAfterResults: Boolean(results && exportTools && (results.compareDocumentPosition(exportTools) & Node.DOCUMENT_POSITION_FOLLOWING)),
         emptyTitle: empty?.querySelector('h2')?.textContent.trim() || '',
         emptyBodyCount: empty ? empty.querySelectorAll('p').length : 0,
+        emptyBorderLeftColor: emptyStyle?.borderLeftColor || '',
         emptyActions: Array.from(empty?.querySelectorAll('.empty-actions a') || []).map((node) => node.textContent.trim()),
         exportLabels: Array.from(document.querySelectorAll('#notesExportTools .export-row a:not([hidden])')).map((node) => node.textContent.trim()),
         jsonlHidden: Boolean(document.querySelector('#exportJsonl')?.hidden),
@@ -947,6 +949,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (!notesPageState.formHidden) throw new Error(`empty notes page should hide filter form: ${JSON.stringify(notesPageState)}`);
       if (notesPageState.emptyTitle !== '아직 노트가 없습니다.' || notesPageState.emptyBodyCount !== 0) {
         throw new Error(`empty notes page should stay quiet: ${JSON.stringify(notesPageState)}`);
+      }
+      if (notesPageState.emptyBorderLeftColor === 'rgb(176, 0, 0)') {
+        throw new Error(`empty notes page should not look like a warning state: ${JSON.stringify(notesPageState)}`);
       }
       if (notesPageState.emptyActions.length !== 1 || notesPageState.emptyActions[0] !== '읽을 문서 찾기') {
         throw new Error(`empty notes page should keep only the find action: ${JSON.stringify(notesPageState)}`);

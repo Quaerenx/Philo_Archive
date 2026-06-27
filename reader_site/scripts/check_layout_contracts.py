@@ -438,7 +438,7 @@ def check_notes_ui() -> None:
     script = read_site_file("assets/notes.js")
     css = read_site_file("assets/notes.css")
     for needle in [
-        "/assets/notes.css?v=notes24",
+        "/assets/notes.css?v=notes25",
         "/assets/notes.js?v=notes34",
         'href="/notes" aria-current="page">노트</a>',
         "노트 찾기",
@@ -598,6 +598,7 @@ def check_notes_ui() -> None:
         ".notes-form.is-loading #notesSubmit",
         "padding-bottom: 12px",
         ".empty-state",
+        "border-left: 3px solid #c8c8c8",
         ".empty-actions",
         ".empty-actions a",
         ".notes-skeleton-line",
@@ -628,7 +629,7 @@ def check_translations_ui() -> None:
     base_css = read_site_file("assets/notes.css")
     css = read_site_file("assets/translations.css")
     for needle in [
-        "/assets/notes.css?v=notes24",
+        "/assets/notes.css?v=notes25",
         "/assets/translations.css?v=trans31",
         "/assets/translations.js?v=trans74",
         "<title>번역 목록 / Personal Archive of Literature</title>",
