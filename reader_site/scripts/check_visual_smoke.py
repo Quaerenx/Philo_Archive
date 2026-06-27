@@ -279,7 +279,7 @@ def check_route_markup(route: str, html: str) -> None:
         for needle in [
             "reading-desk",
             "toolbar-more",
-            "작업</summary>",
+            "도구</summary>",
             'href="#toc">목차</a>',
             "/notes?corpus_id=",
             "/study?corpus_id=",
