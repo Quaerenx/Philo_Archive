@@ -17,6 +17,8 @@ let activeStudyController = null;
 let activeStudyRequest = 0;
 let archiveCorpora = [];
 
+const LAST_CORPUS_STORAGE_KEY = "philoArchive.lastCorpusId";
+
 function escapeHtml(value) {
   return String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -27,6 +29,27 @@ function escapeHtml(value) {
 
 function cleanText(value) {
   return String(value || "").replace(/\s+/g, " ").trim();
+}
+
+function rememberedCorpusId() {
+  try {
+    return cleanText(window.localStorage.getItem(LAST_CORPUS_STORAGE_KEY) || "");
+  } catch {
+    return "";
+  }
+}
+
+function rememberCorpusId(corpusId) {
+  try {
+    const id = cleanText(corpusId || "");
+    if (id) {
+      window.localStorage.setItem(LAST_CORPUS_STORAGE_KEY, id);
+    } else {
+      window.localStorage.removeItem(LAST_CORPUS_STORAGE_KEY);
+    }
+  } catch {
+    // Local storage can be unavailable in restricted browser contexts.
+  }
 }
 
 function archiveCorpusById(corpusId) {
@@ -391,6 +414,7 @@ async function loadStudy() {
     activeStudyController.abort();
     activeStudyController = null;
   }
+  rememberCorpusId(corpusSelect.value || requestedCorpusId);
   updateUrl();
   updateLinks();
   const controller = new AbortController();
@@ -464,6 +488,9 @@ queryInput.value = initialParams.get("q") || "";
 workInput.value = initialParams.get("work_id") || "";
 tagInput.value = initialParams.get("tag") || "";
 requestedCorpusId = initialParams.get("corpus_id") || "";
+if (!requestedCorpusId && !location.search) {
+  requestedCorpusId = rememberedCorpusId();
+}
 corpusSelect.value = requestedCorpusId;
 
 updateStudyClearState();

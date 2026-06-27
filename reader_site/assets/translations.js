@@ -23,6 +23,7 @@ let pendingReviewQueueFocus = false;
 let pendingReviewQueueMessage = "";
 
 const DEFAULT_CORPUS = "";
+const LAST_CORPUS_STORAGE_KEY = "philoArchive.lastCorpusId";
 const REVIEW_LABELS = {
   all: "All",
   generated: "To check",
@@ -40,6 +41,27 @@ function escapeHtml(value) {
 
 function cleanText(value) {
   return String(value || "").replace(/\s+/g, " ").trim();
+}
+
+function rememberedCorpusId() {
+  try {
+    return cleanText(window.localStorage.getItem(LAST_CORPUS_STORAGE_KEY) || "");
+  } catch {
+    return "";
+  }
+}
+
+function rememberCorpusId(corpusId) {
+  try {
+    const id = cleanText(corpusId || "");
+    if (id) {
+      window.localStorage.setItem(LAST_CORPUS_STORAGE_KEY, id);
+    } else {
+      window.localStorage.removeItem(LAST_CORPUS_STORAGE_KEY);
+    }
+  } catch {
+    // Local storage can be unavailable in restricted browser contexts.
+  }
 }
 
 function prefersReducedMotion() {
@@ -731,6 +753,7 @@ async function loadRecords() {
     activeController.abort();
     activeController = null;
   }
+  rememberCorpusId(corpusSelect.value);
   updateUrl();
   updateExportLinks();
   const controller = new AbortController();
@@ -873,7 +896,7 @@ for (const field of [corpusSelect, reviewSelect]) {
 
 const initialParams = new URLSearchParams(location.search);
 queryInput.value = initialParams.get("q") || "";
-corpusSelect.value = initialParams.get("corpus_id") || DEFAULT_CORPUS;
+corpusSelect.value = initialParams.get("corpus_id") || (location.search ? DEFAULT_CORPUS : rememberedCorpusId());
 workInput.value = initialParams.get("work_id") || "";
 reviewSelect.value = initialParams.get("review_state") || "all";
 

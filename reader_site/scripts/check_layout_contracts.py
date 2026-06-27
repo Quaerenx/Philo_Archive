@@ -486,7 +486,7 @@ def check_translations_ui() -> None:
     for needle in [
         "/assets/notes.css?v=notes19",
         "/assets/translations.css?v=trans23",
-        "/assets/translations.js?v=trans53",
+        "/assets/translations.js?v=trans54",
         '<option value="">All corpora</option>',
         'id="translationsListTools"',
         "Filter</summary>",
@@ -513,6 +513,9 @@ def check_translations_ui() -> None:
         "activeController",
         "activeRequest",
         "archiveCorpora",
+        "LAST_CORPUS_STORAGE_KEY",
+        "function rememberedCorpusId",
+        "function rememberCorpusId",
         "pendingReviewQueueFocus",
         "pendingReviewQueueMessage",
         "translationsExportTools",
@@ -725,7 +728,7 @@ def check_study_ui() -> None:
     css = read_site_file("assets/study.css")
     for needle in [
         "/assets/study.css?v=study20",
-        "/assets/study.js?v=study31",
+        "/assets/study.js?v=study32",
         'id="studySubmit"',
         'id="studyClear"',
         'id="studyActiveFilters"',
@@ -750,6 +753,9 @@ def check_study_ui() -> None:
     for needle in [
         "activeStudyController",
         "activeStudyRequest",
+        "LAST_CORPUS_STORAGE_KEY",
+        "function rememberedCorpusId",
+        "function rememberCorpusId",
         "setStudyBusy",
         "studyExportTools",
         "studyExportTranslations",

@@ -195,7 +195,7 @@ def check_route_markup(route: str, html: str) -> None:
             "studyStatus",
             "aria-busy=\"false\"",
             "study.css?v=study20",
-            "study.js?v=study31",
+            "study.js?v=study32",
             "filter-panel",
             "export-tools",
         ]:
@@ -223,7 +223,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translationsReviewQueue",
             "aria-busy=\"false\"",
             "translations.css?v=trans23",
-            "translations.js?v=trans53",
+            "translations.js?v=trans54",
             "translationsListTools",
             "Filter</summary>",
             "filter-panel",
