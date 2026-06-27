@@ -938,6 +938,37 @@ def check_study_ui() -> None:
 
 
 def check_work_source_bundle_ui() -> None:
+    documents = read_site_file("rendering/documents.py")
+    for needle in [
+        "def strip_markdown_links",
+        "def strip_inert_markdown_links",
+        "def clean_source_markdown_display",
+        r"\[\[([^\n()]+?)\]\]\([^)]*\)",
+        r"\[([^\n()]+)\]\([^)]*\)",
+        r"\[\[([^\n()]+?)\]\]\(javascript:;\)",
+        r"\[([^\n()]+)\]\(javascript:;\)",
+        "def clean_reading_inline",
+        "value = strip_markdown_links(value)",
+        r"\d+\[\d+\]",
+        "label = f\"문단 {paragraph_count}\"",
+        'data-label="{html.escape(label, quote=True)}"',
+        'aria-label="{html.escape(label, quote=True)}"',
+        'aria-label="구역 링크"',
+    ]:
+        require_contains(documents, needle, "rendering/documents.py")
+
+    sentence_units = read_site_file("sentence_units.py")
+    require_contains(sentence_units, 'label": f"문장 {index}"', "sentence_units.py")
+    require('label": f"Sentence {index}"' not in sentence_units, "sentence_units.py should use reader-language sentence labels")
+
+    source_service = read_site_file("services/sources.py")
+    for needle in [
+        "clean_source_markdown_display",
+        "display_text = clean_source_markdown_display(text) if is_markdown else text",
+        "render_source_page_html(template, target.name, rel_path, display_text, reading_href)",
+    ]:
+        require_contains(source_service, needle, "services/sources.py")
+
     template = read_site_file("templates/work.html")
     for needle in [
         'id="copySourceBundle"',

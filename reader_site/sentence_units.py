@@ -27,7 +27,7 @@ def sentence_units(segment_id: str, text: str) -> list[dict[str, str | int]]:
                 "sentence_id": f"{segment_id}.s{index:03d}",
                 "sentence_index": index,
                 "text_raw": sentence_text,
-                "label": f"Sentence {index}",
+                "label": f"문장 {index}",
             }
         )
     return units

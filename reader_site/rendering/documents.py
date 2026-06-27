@@ -8,9 +8,25 @@ from pathlib import Path
 from sentence_units import render_sentence_spans
 
 
+def strip_markdown_links(value: str) -> str:
+    value = re.sub(r"\[\[([^\n()]+?)\]\]\([^)]*\)", r"\1", value)
+    value = re.sub(r"\[([^\n()]+)\]\([^)]*\)", r"\1", value)
+    return value
+
+
+def strip_inert_markdown_links(value: str) -> str:
+    value = re.sub(r"\[\[([^\n()]+?)\]\]\(javascript:;\)", r"\1", value)
+    value = re.sub(r"\[([^\n()]+)\]\(javascript:;\)", r"\1", value)
+    return value
+
+
+def clean_source_markdown_display(text: str) -> str:
+    return "\n".join(strip_inert_markdown_links(line) for line in text.splitlines())
+
+
 def clean_markdown_title(value: str) -> str:
     value = re.sub(r"^#+\s*", "", value.strip())
-    value = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", value)
+    value = strip_markdown_links(value)
     value = value.replace("_", "").strip()
     return value
 
@@ -35,12 +51,13 @@ def title_from_markdown(path: Path) -> str:
 
 
 def clean_reading_inline(value: str) -> str:
-    value = re.sub(r"\[\[([^\]]+)\]\]\([^)]*\)", r"\1", value)
-    value = re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", value)
+    value = strip_markdown_links(value)
     value = value.replace("*Erratum:*", "Erratum:")
     value = value.replace("*lies:*", "lies:")
     value = re.sub(r"\s{2,}", " ", value)
     value = value.strip()
+    if re.fullmatch(r"\d+\[\d+\]", value):
+        value = value.replace("[", ".").rstrip("]")
     if re.fullmatch(r"\[[0-9]+\.?\]", value):
         value = value.strip("[]")
     return value
@@ -80,11 +97,12 @@ def render_reading_document(text: str) -> dict:
             return
         paragraph_count += 1
         paragraph_id = f"p-{paragraph_count:04d}"
+        label = f"문단 {paragraph_count}"
         value = render_sentence_spans(paragraph_id, " ".join(paragraph))
         output.append(
-            f'<p id="{paragraph_id}" data-label="Paragraph {paragraph_count}" data-target-type="paragraph">'
+            f'<p id="{paragraph_id}" data-label="{html.escape(label, quote=True)}" data-target-type="paragraph">'
             f'<a class="segment-anchor" href="#{paragraph_id}" '
-            f'aria-label="Paragraph {paragraph_count}">&#182;</a>{value}</p>'
+            f'aria-label="{html.escape(label, quote=True)}">&#182;</a>{value}</p>'
         )
         paragraph.clear()
 
@@ -123,7 +141,7 @@ def render_reading_document(text: str) -> dict:
                 output.append(
                     f'<h{level} id="{anchor}" data-label="{html.escape(value, quote=True)}" data-target-type="section">'
                     f'<a class="segment-anchor" href="#{anchor}" '
-                    f'aria-label="Section link">#</a>{html.escape(value)}</h{level}>'
+                    f'aria-label="구역 링크">#</a>{html.escape(value)}</h{level}>'
                 )
             continue
 
@@ -179,7 +197,7 @@ def render_segments_from_texts(texts: list[str], prefix: str = "p") -> dict:
             segment_id = f"{prefix}-{paragraph_count:04d}"
             escaped_id = html.escape(segment_id, quote=True)
             escaped = render_sentence_spans(segment_id, chunk)
-            label = f"Paragraph {paragraph_count}"
+            label = f"문단 {paragraph_count}"
             output.append(
                 f'<p id="{escaped_id}" data-label="{html.escape(label, quote=True)}" data-target-type="paragraph">'
                 f'<a class="segment-anchor" href="#{escaped_id}" aria-label="{html.escape(label, quote=True)}">&#182;</a>{escaped}</p>'

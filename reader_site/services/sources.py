@@ -4,7 +4,7 @@ from pathlib import Path
 from urllib.parse import quote, unquote
 
 from path_config import CORPUS_ROOTS, ROOT, SITE
-from rendering.documents import markdown_to_reading_html, title_from_markdown
+from rendering.documents import clean_source_markdown_display, markdown_to_reading_html, title_from_markdown
 from rendering.static_pages import render_reading_page_html, render_source_page_html
 
 
@@ -64,9 +64,11 @@ def render_reading_viewer_html(target: Path) -> str:
 def render_source_viewer_html(target: Path) -> str:
     text = target.read_text(encoding="utf-8", errors="replace")
     rel_path = relative_source_path(target)
-    reading_href = read_href(target) if target.suffix.lower() == ".md" else ""
+    is_markdown = target.suffix.lower() == ".md"
+    display_text = clean_source_markdown_display(text) if is_markdown else text
+    reading_href = read_href(target) if is_markdown else ""
     template = (TEMPLATES / "source.html").read_text(encoding="utf-8")
-    return render_source_page_html(template, target.name, rel_path, text, reading_href)
+    return render_source_page_html(template, target.name, rel_path, display_text, reading_href)
 
 
 def build_read_response(path_value: str) -> dict:

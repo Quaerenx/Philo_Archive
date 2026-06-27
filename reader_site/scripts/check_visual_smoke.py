@@ -186,6 +186,8 @@ def check_route_markup(route: str, html: str) -> None:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         for noisy_text in ["Path</summary>", ">Source</a>", "Reader navigation"]:
             require(noisy_text not in html, f"{route} should avoid static-reader header text {noisy_text!r}")
+        for noisy_text in ["javascript:;", 'data-label="Paragraph ', 'aria-label="Paragraph ', 'data-label="Sentence ', 'aria-label="Section link"']:
+            require(noisy_text not in html, f"{route} should avoid raw markdown or English paragraph labels {noisy_text!r}")
     if route.startswith("/source?"):
         for needle in [
             "자료 위치</summary>",
@@ -195,6 +197,7 @@ def check_route_markup(route: str, html: str) -> None:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         for noisy_text in ["Path</summary>", "Reading mode", "Personal Archive of Literature</a>"]:
             require(noisy_text not in html, f"{route} should avoid static source header text {noisy_text!r}")
+        require("javascript:;" not in html, f"{route} should avoid inert markdown javascript links")
     if route == "/":
         for needle in [
             "Search",
