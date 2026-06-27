@@ -231,7 +231,7 @@ function studyPanelToggleSummary() {
 function updateStudyPanelToggleLabel() {
   if (!studyPage || !studyPanelToggle) return;
   const expanded = studyPage.classList.contains("is-expanded");
-  const action = expanded ? "본문으로" : "학습";
+  const action = expanded ? "본문 보기" : "학습 열기";
   const summary = studyPanelToggleSummary();
   studyPanelToggle.innerHTML = `
     <span class="study-panel-toggle-action">${escapeHtml(action)}</span>

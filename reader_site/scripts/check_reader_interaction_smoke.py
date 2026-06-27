@@ -78,9 +78,9 @@ def check_selected_sentence_dom(html: str, viewport_label: str) -> None:
         f"{context} did not render selected sentence position in the study panel",
     )
     require("translation-target-excerpt" in html, f"{context} missing selected sentence excerpt")
-    require("study-panel-toggle-action\">본문으로" in html, f"{context} did not expand study panel after selection")
+    require("study-panel-toggle-action\">본문 보기" in html, f"{context} did not expand study panel after selection")
     require(
-        "study-panel-toggle-summary\">문장 " in html or "study-panel-toggle-summary\">번역 완료" in html,
+        "study-panel-toggle-summary\">선택한 문장" in html or "study-panel-toggle-summary\">번역 완료" in html,
         f"{context} missing selected sentence summary",
     )
     require('data-translation-section="translation"' in html, f"{context} missing translation section")

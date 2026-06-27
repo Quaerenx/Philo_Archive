@@ -341,7 +341,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common122",
-            "reader-work.js?v=common167",
+            "reader-work.js?v=common168",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         require("Contents (" not in html, f"{route} should not expose TOC inventory counts")
@@ -1227,6 +1227,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         activeTab: activeTab ? activeTab.textContent.trim() : '',
         studyToolsOpen: Boolean(document.querySelector('.translation-utility')?.open),
         studyToolsSummary: document.querySelector('.translation-utility summary')?.textContent.trim() || '',
+        studyPanelToggleAction: studyPanelToggle?.querySelector('.study-panel-toggle-action')?.textContent.trim() || '',
         studyPanelToggleSummary: studyPanelToggle?.querySelector('.study-panel-toggle-summary')?.textContent.trim() || '',
         studyPanelToggleLabel: studyPanelToggle?.getAttribute('aria-label') || '',
         studyPanelToggleHeight: studyPanelToggleBox?.height || 0,
@@ -1307,6 +1308,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (state.activeTab !== '번역') throw new Error(`selected work route did not keep Translation tab active: ${JSON.stringify(state)}`);
     if (state.studyToolsOpen) throw new Error(`study tools should stay collapsed in default reading mode: ${JSON.stringify(state)}`);
     if (state.studyToolsSummary !== '학습 설정') throw new Error(`study tools summary should stay concise and clear: ${JSON.stringify(state)}`);
+    if (state.isMobile && state.studyPanelToggleAction !== '본문 보기') {
+      throw new Error(`expanded mobile study handle should describe returning to source text: ${JSON.stringify(state)}`);
+    }
     if (!['선택한 문장', '번역 완료'].includes(state.studyPanelToggleSummary)) {
       throw new Error(`mobile study toggle should describe reading state without numeric metadata: ${JSON.stringify(state)}`);
     }
@@ -1404,7 +1408,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (collapsedStudyState.expanded || !collapsedStudyState.scrimHidden || !collapsedStudyState.selectedVisible) {
         throw new Error(`mobile body toggle should collapse the study panel and return to the selected source: ${JSON.stringify(collapsedStudyState)}`);
       }
-      if (collapsedStudyState.toggleAction !== '학습') {
+      if (collapsedStudyState.toggleAction !== '학습 열기') {
         throw new Error(`collapsed mobile study handle should return to the compact study action: ${JSON.stringify(collapsedStudyState)}`);
       }
       await page.click('#studyPanelToggle');
