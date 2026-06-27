@@ -218,9 +218,10 @@ def check_route_markup(route: str, html: str) -> None:
             "studyStatus",
             "aria-busy=\"false\"",
             "study.css?v=study24",
-            "study.js?v=study43",
+            "study.js?v=study44",
             'href="/study" aria-current="page">학습</a>',
             "filter-panel",
+            "조건</summary>",
             "export-tools",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")

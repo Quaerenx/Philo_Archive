@@ -141,7 +141,7 @@ function hasActiveFilters() {
 }
 
 function renderFilterChip(filterName, label, value) {
-  return `<button type="button" class="filter-chip" data-filter="${escapeHtml(filterName)}" aria-label="${escapeHtml(label)} 필터 제거">
+  return `<button type="button" class="filter-chip" data-filter="${escapeHtml(filterName)}" aria-label="${escapeHtml(label)} 조건 제거">
     <span>${escapeHtml(label)}: ${escapeHtml(value)}</span>
     <span aria-hidden="true">x</span>
   </button>`;
@@ -160,7 +160,7 @@ function updateStudyFilterSummary() {
   activeFiltersEl.hidden = chips.length === 0;
   activeFiltersEl.classList.toggle("has-filters", chips.length > 0);
   activeFiltersEl.innerHTML = chips.length
-    ? `<span class="active-filters-label">필터</span>${chips.join("")}`
+    ? `<span class="active-filters-label">조건</span>${chips.join("")}`
     : "";
 }
 
@@ -198,9 +198,9 @@ function renderEmptyStudy(translationSummary = null) {
     : (generated > 0
       ? "검토할 번역이 있습니다."
       : (reviewed > 0 ? "저장한 번역이 있습니다." : "아직 저장한 노트가 없습니다."));
-  const body = filtered ? "필터를 지우거나 문서와 태그 조건을 넓혀보세요." : "";
+  const body = filtered ? "조건을 지우거나 문서와 태그 범위를 넓혀보세요." : "";
   const clearAction = filtered
-    ? '<button type="button" data-empty-action="clear-filters">필터 지우기</button>'
+    ? '<button type="button" data-empty-action="clear-filters">조건 지우기</button>'
     : "";
   const translationAction = generated > 0
     ? emptyTranslationAction(studyTranslationHref("generated"), "검토할 번역", `검토할 번역 ${generated.toLocaleString()}개로 이동`)
