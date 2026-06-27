@@ -282,7 +282,7 @@ def check_route_markup(route: str, html: str) -> None:
         for needle in [
             "reading-desk",
             "toolbar-more",
-            "도구</summary>",
+            "읽기 메뉴</summary>",
             'href="#toc">목차</a>',
             "/notes?corpus_id=",
             "/study?corpus_id=",
@@ -291,7 +291,7 @@ def check_route_markup(route: str, html: str) -> None:
             "study-tabs",
             "study-tab-secondary",
             "citation-copy-options",
-            "옵션</summary>",
+            "복사 방식</summary>",
             "studyPanelToggle",
             "studyPanelScrim",
             "study-panel-toggle-action",
@@ -316,7 +316,7 @@ def check_route_markup(route: str, html: str) -> None:
             "note-options",
             "태그</summary>",
             "notes-filter-tools",
-            "저장됨</summary>",
+            "저장한 노트</summary>",
             "noteSort",
             "gemmaRuntimeStatus",
             "번역기 상태",
@@ -341,7 +341,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common122",
-            "reader-work.js?v=common166",
+            "reader-work.js?v=common167",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         require("Contents (" not in html, f"{route} should not expose TOC inventory counts")
@@ -653,7 +653,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       return state;
     });
-    if (readerToolsState.summary !== '도구') {
+    if (readerToolsState.summary !== '읽기 메뉴') {
       throw new Error(`reader tools menu should use reader-facing wording: ${JSON.stringify(readerToolsState)}`);
     }
     if (readerToolsState.linkText !== '목차 / 원본 / 노트 / 학습 / 번역') {
@@ -1289,7 +1289,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (!['번역 저장', '저장된 번역'].includes(state.readingSaveLabel) || state.readingNoteLabel !== '번역으로 메모 추가') {
       throw new Error(`reading mode quick actions should keep clear accessible labels: ${JSON.stringify(state)}`);
     }
-    if (state.secondaryActionsOpen || state.secondaryActionsSummary !== '기록') {
+    if (state.secondaryActionsOpen || state.secondaryActionsSummary !== '저장/메모') {
       throw new Error(`reading mode should collapse secondary note/save actions behind a clear label: ${JSON.stringify(state)}`);
     }
     if (state.secondaryActionsJustifySelf !== 'center' || !['rgba(0, 0, 0, 0)', 'transparent'].includes(state.secondarySummaryBackground) || !['rgba(0, 0, 0, 0)', 'transparent'].includes(state.secondarySummaryBorderColor)) {
@@ -1300,13 +1300,13 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     const firstAction = state.readingActions[0] || '';
     const secondAction = state.readingActions[1] || '';
-    if (firstAction !== '다음 문장' || secondAction !== '기록' || state.readingActions.length !== 2) {
+    if (firstAction !== '다음 문장' || secondAction !== '저장/메모' || state.readingActions.length !== 2) {
       throw new Error(`reading mode should show only Next sentence and the collapsed secondary action label: ${JSON.stringify(state)}`);
     }
     if (state.visibleExtraCount !== 0) throw new Error(`reading mode exposed study-only translation extras: ${JSON.stringify(state)}`);
     if (state.activeTab !== '번역') throw new Error(`selected work route did not keep Translation tab active: ${JSON.stringify(state)}`);
     if (state.studyToolsOpen) throw new Error(`study tools should stay collapsed in default reading mode: ${JSON.stringify(state)}`);
-    if (state.studyToolsSummary !== '옵션') throw new Error(`study tools summary should stay concise and clear: ${JSON.stringify(state)}`);
+    if (state.studyToolsSummary !== '학습 설정') throw new Error(`study tools summary should stay concise and clear: ${JSON.stringify(state)}`);
     if (!['선택한 문장', '번역 완료'].includes(state.studyPanelToggleSummary)) {
       throw new Error(`mobile study toggle should describe reading state without numeric metadata: ${JSON.stringify(state)}`);
     }
@@ -1360,7 +1360,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (utilityState.labels.some((label) => label.width > 2 || label.height > 2)) {
       throw new Error(`study tools utility labels should stay visually quiet: ${JSON.stringify(utilityState)}`);
     }
-    if (utilityState.manageSummary !== '도구') {
+    if (utilityState.manageSummary !== '저장/내보내기') {
       throw new Error(`study action tools should have a concise summary: ${JSON.stringify(utilityState)}`);
     }
     if (!utilityState.sourceStatusClass.includes('visually-hidden') || utilityState.sourceStatusWidth > 2 || utilityState.sourceStatusHeight > 2) {
@@ -1488,7 +1488,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (notesState.notesEmptyText === '아직 노트가 없습니다.' && !notesState.savedToolsHidden) {
       throw new Error(`notes tab should hide saved filters when there are no notes: ${JSON.stringify(notesState)}`);
     }
-    if (notesState.notesEmptyText !== '아직 노트가 없습니다.' && notesState.savedSummary !== '저장됨') {
+    if (notesState.notesEmptyText !== '아직 노트가 없습니다.' && notesState.savedSummary !== '저장한 노트') {
       throw new Error(`notes tab saved filter label should stay concise when notes or filters exist: ${JSON.stringify(notesState)}`);
     }
     if (/최신순|대상순|\d+개 노트/.test(notesState.noteListSummary)) {
@@ -1526,7 +1526,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (citationState.copyText !== '복사' || citationState.copyLabel !== '인용 복사') {
       throw new Error(`citation tab primary copy control should stay concise: ${JSON.stringify(citationState)}`);
     }
-    if (citationState.copyOptionsText !== '옵션') {
+    if (citationState.copyOptionsText !== '복사 방식') {
       throw new Error(`citation tab secondary copy summary should stay distinct from the primary copy action: ${JSON.stringify(citationState)}`);
     }
     if (citationState.previewHasUrl || !citationState.copiedHasUrl) {

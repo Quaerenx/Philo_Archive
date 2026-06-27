@@ -1604,7 +1604,7 @@ function translationQuickActions(reviewState) {
   return `<div class="translation-reading-actions" aria-label="학습 동작">
       <button type="button" data-translation-quick-action="next-sentence" title="다음 문장을 선택하고 번역" aria-label="다음 문장을 선택하고 번역"${nextSentenceDisabled}>다음 문장</button>
       <details class="translation-secondary-actions" aria-label="번역 저장 또는 메모">
-        <summary>기록</summary>
+        <summary>저장/메모</summary>
         <div class="translation-secondary-actions-body">
           <button type="button" data-translation-quick-action="draft-note" title="번역으로 메모 추가" aria-label="번역으로 메모 추가">메모 추가</button>
           ${reviewAction}

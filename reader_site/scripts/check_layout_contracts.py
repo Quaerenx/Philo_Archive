@@ -1182,7 +1182,7 @@ def check_work_source_bundle_ui() -> None:
         "citation-copy-actions",
         'id="copyCitation" aria-label="인용 복사"',
         'class="citation-copy-options" aria-label="복사 옵션"',
-        "옵션</summary>",
+        "복사 방식</summary>",
         'id="copyUrl" aria-label="URL 복사"',
         'id="copySourceBundle" aria-label="원문 묶음 복사"',
         ">원문 묶음</button>",
@@ -1579,7 +1579,7 @@ def check_work_source_bundle_ui() -> None:
         "translation-reading-actions",
         "translation-secondary-actions",
         "translation-secondary-actions-body",
-        "<summary>기록</summary>",
+        "<summary>저장/메모</summary>",
         "data-translation-quick-action=\"next-sentence\"",
         "다음 문장을 선택하고 번역",
         "번역 저장",
@@ -1684,7 +1684,7 @@ def check_work_source_bundle_ui() -> None:
         "요청 취소",
     ]:
         require(noisy_marker not in pending_body, f"renderTranslationPending should keep loading state quiet without {noisy_marker!r}")
-    require_contains(template, "/assets/reader-work.js?v=common166", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common167", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common122", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
@@ -1692,7 +1692,7 @@ def check_work_source_bundle_ui() -> None:
         "reading-desk",
         "toolbar-more",
         "toolbar-more-links",
-        "도구</summary>",
+        "읽기 메뉴</summary>",
         "{{TOC_LINK}}",
         'href="/notes?corpus_id={{CORPUS_ID}}&work_id={{WORK_ID}}">노트</a>',
         'href="/study?corpus_id={{CORPUS_ID}}&work_id={{WORK_ID}}">학습</a>',
@@ -1755,7 +1755,7 @@ def check_work_source_bundle_ui() -> None:
         "noteTags",
         "notes-filter-tools",
         "저장된 노트와 필터",
-        "저장됨</summary>",
+        "저장한 노트</summary>",
         "notes-list-tools",
         "noteListSummary",
         "noteSort",
@@ -1795,9 +1795,9 @@ def check_work_source_bundle_ui() -> None:
         "번역 표시 방식",
         "문장 이동",
         "학습 흐름",
-        "도구</summary>",
+        "저장/내보내기</summary>",
         "translation-review-duplicate-action",
-        "<span>옵션</span>",
+        "<span>학습 설정</span>",
         "study-tabs",
         "previousSentence",
         "nextUnstudiedSentence",

@@ -19,7 +19,7 @@
           <a href="/">아카이브</a>
           <a href="{{CATEGORY_HREF}}">{{CORPUS_TITLE}}</a>
           <details class="toolbar-more">
-          <summary>도구</summary>
+          <summary>읽기 메뉴</summary>
             <div class="toolbar-more-links">
               {{TOC_LINK}}
               <a href="{{SOURCE_HREF}}">원본</a>
@@ -51,7 +51,7 @@
               <div id="translationOutput" class="translation-output reading-mode" aria-label="번역 결과" aria-busy="false" tabindex="0" hidden></div>
               <details class="translation-utility" aria-label="학습 옵션">
                 <summary>
-                  <span>옵션</span>
+                  <span>학습 설정</span>
                 </summary>
                 <div class="translation-utility-body">
                   <section class="translation-utility-group" aria-label="보기 설정">
@@ -95,7 +95,7 @@
                       <button type="button" id="continueStudy" title="다음 미번역 문장으로 이동" disabled>이어 읽기</button>
                     </div>
                     <details class="translation-review-tools">
-                      <summary>도구</summary>
+                      <summary>저장/내보내기</summary>
                       <div class="translation-review-tools-body">
                         <div class="translation-review-actions" aria-label="학습 동작">
                           <button type="button" id="markTranslationReviewed" class="translation-review-duplicate-action" title="번역 저장" aria-label="번역 저장" disabled>저장</button>
@@ -140,7 +140,7 @@
               </details>
               <div id="noteStatus" class="note-status" role="status" aria-live="polite" aria-atomic="true"></div>
               <details class="notes-filter-tools" aria-label="저장된 노트와 필터">
-                <summary>저장됨</summary>
+                <summary>저장한 노트</summary>
                 <div class="notes-list-tools">
                   <label>필터<input id="noteFilter" name="note_filter" autocomplete="off"></label>
                   <button type="button" id="noteFilterClear" class="note-filter-clear" disabled>필터 지우기</button>
@@ -160,7 +160,7 @@
               <div id="citationPreview" class="citation-preview"></div>
               <button type="button" id="copyCitation" aria-label="인용 복사">복사</button>
               <details class="citation-copy-options" aria-label="복사 옵션">
-                <summary>옵션</summary>
+                <summary>복사 방식</summary>
                 <div class="citation-copy-actions">
                   <button type="button" id="copyUrl" aria-label="URL 복사">URL</button>
                   <button type="button" id="copySourceBundle" aria-label="원문 묶음 복사">원문 묶음</button>
@@ -176,6 +176,6 @@
     </main>
   </div>
   <script id="researchData" type="application/json">{{RESEARCH_JSON}}</script>
-  <script src="/assets/reader-work.js?v=common166"></script>
+  <script src="/assets/reader-work.js?v=common167"></script>
 </body>
 </html>
