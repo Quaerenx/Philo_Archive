@@ -84,9 +84,9 @@ const STUDY_PANEL_DRAG_THRESHOLD = 36;
 const ACTION_CONFIRM_MS = 4500;
 const GEMMA_RUNTIME_COMMAND = ".\\run_reader_with_gemma.ps1";
 const TRANSLATION_STATE_LABELS = {
-  generated: "검토 필요",
-  reviewed: "저장된 번역",
-  rejected: "제외된 번역"
+  generated: "검토할 번역",
+  reviewed: "저장한 번역",
+  rejected: "제외한 번역"
 };
 const TRANSLATION_REVIEW_CHIP_LABELS = {
   generated: "검토",
@@ -427,14 +427,14 @@ function setTranslationRecordsSummary(text, state = "empty", counts = null) {
   const rejected = Number(counts.rejected || 0);
   const reviewHint = total
     ? (generated
-      ? `${generated.toLocaleString()}개 검토 필요`
+      ? `${generated.toLocaleString()}개 검토할 번역`
       : `${(reviewed || total).toLocaleString()}개 준비됨`)
     : "";
   const detailLabel = [
     text,
     total ? `${total.toLocaleString()}개 번역` : "저장된 번역 없음",
     sentenceCount ? `${sentenceCount.toLocaleString()}개 문장 학습됨` : "",
-    generated ? `${generated.toLocaleString()}개 검토 필요` : "",
+    generated ? `${generated.toLocaleString()}개 검토할 번역` : "",
     reviewed ? `${reviewed.toLocaleString()}개 저장됨` : "",
     rejected ? `${rejected.toLocaleString()}개 제외됨` : ""
   ].filter(Boolean).join(". ") + ".";
@@ -512,11 +512,11 @@ function updateStudyProgress() {
     : (pendingReview ? "review" : "complete");
   const progressText = remaining > 0
     ? (studied ? "읽던 곳부터 계속" : "첫 문장부터 시작")
-    : (pendingReview ? "번역 검토 필요" : (stateCounts.reviewed ? "학습 기록 준비됨" : "모든 문장 학습 완료"));
+    : (pendingReview ? "검토할 번역" : (stateCounts.reviewed ? "학습 기록 준비됨" : "모든 문장 학습 완료"));
   const detail = [
     `${total.toLocaleString()}개 문장 중 ${studied.toLocaleString()}개 번역됨`,
     remaining ? `${remaining.toLocaleString()}개 남음` : "남은 미번역 문장 없음",
-    pendingReview ? `${pendingReview.toLocaleString()}개 검토 필요` : ""
+    pendingReview ? `${pendingReview.toLocaleString()}개 검토할 번역` : ""
   ].filter(Boolean).join(". ") + ".";
   setStudyProgress(progressText, state, detail);
   if (continueStudyButton) {
@@ -689,7 +689,7 @@ async function loadTranslationRecordsSummary() {
     const rejected = Number(counts.rejected || 0);
     const sentenceCount = Number(payload.sentence_state_count || 0);
     const summaryText = generated
-      ? "검토 필요"
+      ? "검토할 번역"
       : (total ? "저장한 번역" : "아직 번역 없음");
     applySentenceTranslationStates(payload.sentence_states || []);
     setTranslationRecordsSummary(
