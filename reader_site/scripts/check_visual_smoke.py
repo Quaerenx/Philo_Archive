@@ -228,7 +228,7 @@ def check_route_markup(route: str, html: str) -> None:
             "aria-busy=\"false\"",
             "notes.css?v=notes21",
             "translations.css?v=trans26",
-            "translations.js?v=trans60",
+            "translations.js?v=trans61",
             'href="/translations" aria-current="page">Translations</a>',
             "Find record",
             "translationsListTools",
@@ -1014,15 +1014,19 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         cards,
         toolsOpen: Boolean(document.querySelector('#translationsListTools')?.open),
         activeFiltersHidden: Boolean(activeFilters?.hidden),
-        activeFiltersText: activeFilters ? activeFilters.textContent.trim() : ''
+        activeFiltersText: activeFilters ? activeFilters.textContent.trim() : '',
+        reviewQueueHidden: Boolean(document.querySelector('#translationsReviewQueue')?.hidden)
       };
     });
     if (state.cards > 0 && state.toolsOpen) throw new Error(`review queue should keep list tools collapsed: ${JSON.stringify(state)}`);
     if (state.cards > 0 && (!state.activeFiltersHidden || state.activeFiltersText)) {
       throw new Error(`review queue should not repeat the status filter chip: ${JSON.stringify(state)}`);
     }
+    if (state.cards > 0 && !state.reviewQueueHidden) {
+      throw new Error(`review queue should not repeat the Check translations entry action while already reviewing: ${JSON.stringify(state)}`);
+    }
     if (state.cards > 0) {
-      await page.click('#translationsReviewQueue');
+      await page.keyboard.press('q');
       await page.waitForSelector('#translationsResults .translation-record-card.is-review-target', { timeout: 3000 }).catch(() => {});
       const reviewTargetState = await page.evaluate(() => {
         const card = document.querySelector('#translationsResults .translation-record-card.is-review-target');

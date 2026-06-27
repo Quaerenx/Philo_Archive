@@ -338,7 +338,7 @@ function generatedRecords(records) {
 function updateReviewQueueButton(records = lastRecords) {
   if (!reviewQueueButton) return;
   const generatedCount = generatedRecords(records).length;
-  reviewQueueButton.hidden = generatedCount === 0;
+  reviewQueueButton.hidden = generatedCount === 0 || isReviewQueueOnlyView();
   reviewQueueButton.textContent = "Check translations";
   reviewQueueButton.disabled = form.classList.contains("is-loading") || generatedCount === 0;
   reviewQueueButton.title = generatedCount
