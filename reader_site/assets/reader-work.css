@@ -493,6 +493,44 @@ h1 {
   white-space: nowrap;
 }
 
+.translation-card.reading-mode .translation-utility {
+  margin-top: 8px;
+  padding-top: 4px;
+  border-top-color: transparent;
+}
+
+.translation-card.reading-mode .translation-utility summary {
+  width: max-content;
+  min-height: 22px;
+  margin-right: auto;
+  margin-left: auto;
+  padding: 1px 6px;
+  color: #777;
+}
+
+.translation-card.reading-mode .translation-utility summary span {
+  color: #777;
+  font-size: 9px;
+}
+
+.translation-card.reading-mode .translation-utility[open] {
+  padding-top: 8px;
+  border-top-color: #eeeeee;
+}
+
+.translation-card.reading-mode .translation-utility[open] summary {
+  width: auto;
+  min-height: 30px;
+  margin-right: 0;
+  margin-left: 0;
+  padding: 0;
+}
+
+.translation-card.reading-mode .translation-utility[open] summary span {
+  color: #333;
+  font-size: 10px;
+}
+
 .translation-utility-body {
   display: grid;
   gap: 8px;

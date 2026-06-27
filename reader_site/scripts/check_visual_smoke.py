@@ -340,7 +340,7 @@ def check_route_markup(route: str, html: str) -> None:
             "목차</summary>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common122",
+            "reader-work.css?v=common123",
             "reader-work.js?v=common168",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
@@ -1148,6 +1148,11 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       const studyPanelToggle = document.querySelector('#studyPanelToggle');
       const studyPanelToggleBox = studyPanelToggle?.getBoundingClientRect();
       const studyPanelToggleStyle = studyPanelToggle ? window.getComputedStyle(studyPanelToggle) : null;
+      const studyTools = document.querySelector('.translation-utility');
+      const studyToolsStyle = studyTools ? window.getComputedStyle(studyTools) : null;
+      const studyToolsSummaryNode = studyTools?.querySelector('summary');
+      const studyToolsSummaryStyle = studyToolsSummaryNode ? window.getComputedStyle(studyToolsSummaryNode) : null;
+      const studyToolsSummaryBox = studyToolsSummaryNode?.getBoundingClientRect();
       const activeTab = document.querySelector('.study-tab.active');
       const readingNext = document.querySelector('[data-translation-quick-action="next-sentence"]');
       const readingSave = document.querySelector('[data-translation-quick-action="mark-reviewed"], .translation-quick-state[data-review-state="reviewed"]');
@@ -1225,8 +1230,12 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         visibleOutputText: outputVisibleText,
         visibleExtraCount: visibleExtras.length,
         activeTab: activeTab ? activeTab.textContent.trim() : '',
-        studyToolsOpen: Boolean(document.querySelector('.translation-utility')?.open),
-        studyToolsSummary: document.querySelector('.translation-utility summary')?.textContent.trim() || '',
+        studyToolsOpen: Boolean(studyTools?.open),
+        studyToolsBorderTopColor: studyToolsStyle?.borderTopColor || '',
+        studyToolsSummary: studyToolsSummaryNode?.textContent.trim() || '',
+        studyToolsSummaryHeight: studyToolsSummaryBox?.height || 0,
+        studyToolsSummaryWidth: studyToolsSummaryBox?.width || 0,
+        studyToolsSummaryFontSize: studyToolsSummaryStyle?.fontSize || '',
         studyPanelToggleAction: studyPanelToggle?.querySelector('.study-panel-toggle-action')?.textContent.trim() || '',
         studyPanelToggleSummary: studyPanelToggle?.querySelector('.study-panel-toggle-summary')?.textContent.trim() || '',
         studyPanelToggleLabel: studyPanelToggle?.getAttribute('aria-label') || '',
@@ -1308,6 +1317,12 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (state.activeTab !== '번역') throw new Error(`selected work route did not keep Translation tab active: ${JSON.stringify(state)}`);
     if (state.studyToolsOpen) throw new Error(`study tools should stay collapsed in default reading mode: ${JSON.stringify(state)}`);
     if (state.studyToolsSummary !== '학습 설정') throw new Error(`study tools summary should stay concise and clear: ${JSON.stringify(state)}`);
+    if (state.studyToolsSummaryHeight > 24 || state.studyToolsSummaryWidth > 84 || parseFloat(state.studyToolsSummaryFontSize || '99') > 10) {
+      throw new Error(`reading mode study tools summary should stay visually secondary: ${JSON.stringify(state)}`);
+    }
+    if (!['rgba(0, 0, 0, 0)', 'transparent'].includes(state.studyToolsBorderTopColor)) {
+      throw new Error(`reading mode study tools should not add another visible divider below the reading actions: ${JSON.stringify(state)}`);
+    }
     if (state.isMobile && state.studyPanelToggleAction !== '본문 보기') {
       throw new Error(`expanded mobile study handle should describe returning to source text: ${JSON.stringify(state)}`);
     }
