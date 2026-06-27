@@ -508,6 +508,44 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       throw new Error(`desktop home root links should scan as a compact grid: ${JSON.stringify(homeState)}`);
     }
   }
+  if (parsed.pathname.startsWith('/category/')) {
+    await page.waitForSelector('#categoryFilter', { timeout: 5000 }).catch(() => {});
+    const hasCategoryFilter = await page.evaluate(() => Boolean(document.querySelector('#categoryFilter')));
+    if (hasCategoryFilter) {
+      await page.fill('#categoryFilter', 'unlikelyarchivequery0000');
+      await page.waitForSelector('[data-category-action="clear-filters"]', { timeout: 5000 }).catch(() => {});
+      const emptyCategoryState = await page.evaluate(() => {
+        const clear = document.querySelector('[data-category-action="clear-filters"]');
+        return {
+          emptyText: document.querySelector('.category-empty')?.textContent.trim() || '',
+          clearText: clear?.textContent.trim() || '',
+          filterValue: document.querySelector('#categoryFilter')?.value || '',
+          workLinkCount: document.querySelectorAll('.work-link').length
+        };
+      });
+      if (emptyCategoryState.clearText !== '필터 지우기' || emptyCategoryState.workLinkCount !== 0) {
+        throw new Error(`category empty search should offer a clear recovery action: ${JSON.stringify(emptyCategoryState)}`);
+      }
+      await page.click('[data-category-action="clear-filters"]');
+      await page.waitForSelector('.work-link', { timeout: 5000 }).catch(() => {});
+      const restoredCategoryState = await page.evaluate(() => {
+        return {
+          filterValue: document.querySelector('#categoryFilter')?.value || '',
+          activeFilterText: document.querySelector('.section-filter.active')?.textContent.trim() || '',
+          workLinkCount: document.querySelectorAll('.work-link').length,
+          emptyVisible: Boolean(document.querySelector('.category-empty'))
+        };
+      });
+      if (restoredCategoryState.filterValue || restoredCategoryState.activeFilterText !== '전체' || restoredCategoryState.workLinkCount <= 0 || restoredCategoryState.emptyVisible) {
+        throw new Error(`category clear recovery should restore the readable work list: ${JSON.stringify(restoredCategoryState)}`);
+      }
+      await page.evaluate(() => {
+        if (document.activeElement && typeof document.activeElement.blur === 'function') {
+          document.activeElement.blur();
+        }
+      });
+    }
+  }
   if (Number(widthText) <= 420 && ['/search', '/notes', '/study', '/translations'].includes(parsed.pathname)) {
     const toolbarState = await page.evaluate(() => {
       const toolbar = document.querySelector('.toolbar');

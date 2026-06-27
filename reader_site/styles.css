@@ -337,6 +337,26 @@ img {
   line-height: 1.45;
 }
 
+.category-empty-actions {
+  margin-top: 8px;
+}
+
+.category-empty-actions button {
+  min-height: 24px;
+  padding: 2px 8px;
+  color: #000;
+  font-family: var(--archive-font, Verdana, Arial, Helvetica, sans-serif);
+  font-size: 10px;
+  background: #fff;
+  border: 1px solid #bdbdbd;
+  cursor: pointer;
+}
+
+.category-empty-actions button:hover,
+.category-empty-actions button:focus-visible {
+  border-color: #999;
+}
+
 .clear-dot {
   opacity: 0;
 }

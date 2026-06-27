@@ -237,8 +237,9 @@ function renderCategory(categoryId) {
     el.archiveLinks.innerHTML = [
       `<a class="back-link" href="/">아카이브</a>`,
       categoryControls(corpus, baseSections),
-      `<div class="empty">조건에 맞는 작품이 없습니다.</div>`,
+      categoryEmptyState(),
     ].join("");
+    bindCategoryControls();
     return;
   }
 
@@ -259,6 +260,17 @@ function renderCategory(categoryId) {
       .join(""),
   ].join("");
   bindCategoryControls();
+}
+
+function hasCategoryFilters() {
+  return Boolean(state.categoryQuery || state.activeSection !== "all");
+}
+
+function categoryEmptyState() {
+  const clearAction = hasCategoryFilters()
+    ? `<div class="category-empty-actions"><button type="button" data-category-action="clear-filters">필터 지우기</button></div>`
+    : "";
+  return `<div class="empty category-empty">조건에 맞는 작품이 없습니다.${clearAction}</div>`;
 }
 
 function categoryControls(corpus, sections) {
@@ -295,6 +307,18 @@ function bindCategoryControls() {
     button.addEventListener("click", () => {
       state.activeSection = button.dataset.sectionFilter || "all";
       renderArchive();
+    });
+  });
+  document.querySelectorAll("[data-category-action]").forEach((button) => {
+    button.addEventListener("click", () => {
+      if (button.dataset.categoryAction !== "clear-filters") return;
+      state.categoryQuery = "";
+      state.activeSection = "all";
+      renderArchive();
+      const nextFilter = document.querySelector("#categoryFilter");
+      if (nextFilter) {
+        nextFilter.focus();
+      }
     });
   });
 }

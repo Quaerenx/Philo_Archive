@@ -156,6 +156,7 @@ def check_home_css() -> None:
         ".recent-work-meta",
         ".root-links",
         ".root-link-list",
+        ".category-empty-actions",
         "@media (max-width: 860px)",
     ]:
         require_contains(css, needle, relative_path)
@@ -194,6 +195,10 @@ def check_home_script() -> None:
         "function categorySubtitle",
         "function storedRecentWork",
         "function recentWorkMarkup",
+        "function categoryEmptyState",
+        "function hasCategoryFilters",
+        'data-category-action="clear-filters"',
+        "필터 지우기",
         "이어 읽기",
         'aria-label="자료 선택"',
         "읽기 시작",
