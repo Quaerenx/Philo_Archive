@@ -2586,17 +2586,24 @@ h1 {
   }
 
   .toolbar {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px 10px;
+    gap: 4px 10px;
+    margin-top: 6px;
   }
 
   .toolbar a {
-    display: block;
+    display: inline-flex;
+    min-height: 24px;
+    align-items: center;
   }
 
   .toolbar-more {
-    grid-column: 1 / -1;
+    flex: 0 0 auto;
+  }
+
+  .toolbar-more summary {
+    display: inline-flex;
+    min-height: 24px;
+    align-items: center;
   }
 
   .toolbar-more-links {

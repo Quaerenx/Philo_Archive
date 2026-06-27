@@ -1377,7 +1377,7 @@ def check_work_source_bundle_ui() -> None:
             f"{function_name} reading-first translation layout",
         )
     require_contains(template, "/assets/reader-work.js?v=common151", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common112", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common113", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
         "reading-desk",
@@ -1513,8 +1513,11 @@ def check_work_source_bundle_ui() -> None:
     for needle in [
         ".reading-desk",
         ".toolbar-more",
+        "flex: 0 0 auto",
         ".toolbar-more[open]",
         ".toolbar-more summary",
+        "gap: 4px 10px",
+        "min-height: 24px",
         ".toolbar-more summary::-webkit-details-marker",
         ".toolbar-more summary::after",
         ".toolbar-more[open] summary::after",

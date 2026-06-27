@@ -312,7 +312,7 @@ def check_route_markup(route: str, html: str) -> None:
             "Nothing to download</div>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common112",
+            "reader-work.css?v=common113",
             "reader-work.js?v=common151",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
@@ -474,6 +474,32 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (toolbarState.toolbarHeight > 56) {
       throw new Error(`mobile toolbar should stay compact above the main workflow: ${JSON.stringify(toolbarState)}`);
+    }
+  }
+  if (Number(widthText) <= 420 && parsed.pathname.startsWith('/work/')) {
+    const readerToolbarState = await page.evaluate(() => {
+      const toolbar = document.querySelector('.toolbar');
+      const firstLink = toolbar?.querySelector('a');
+      const workspace = toolbar?.querySelector('.toolbar-more summary');
+      const toolbarBox = toolbar?.getBoundingClientRect();
+      const firstLinkBox = firstLink?.getBoundingClientRect();
+      const workspaceBox = workspace?.getBoundingClientRect();
+      return {
+        text: toolbar?.textContent.trim().replace(/\s+/g, ' ') || '',
+        toolbarHeight: toolbarBox?.height || 0,
+        firstLinkHeight: firstLinkBox?.height || 0,
+        workspaceHeight: workspaceBox?.height || 0,
+        workspaceRowOffset: Math.abs((workspaceBox?.top || 0) - (firstLinkBox?.top || 0))
+      };
+    });
+    if (readerToolbarState.workspaceHeight < 22 || readerToolbarState.firstLinkHeight < 22) {
+      throw new Error(`mobile reader toolbar links should keep stable tap height: ${JSON.stringify(readerToolbarState)}`);
+    }
+    if (readerToolbarState.workspaceRowOffset > 4) {
+      throw new Error(`closed Workspace should stay on the primary mobile toolbar row: ${JSON.stringify(readerToolbarState)}`);
+    }
+    if (readerToolbarState.toolbarHeight > 32) {
+      throw new Error(`mobile reader toolbar should stay compact above the text: ${JSON.stringify(readerToolbarState)}`);
     }
   }
   if (parsed.pathname === '/search' && parsed.searchParams.get('q')) {
