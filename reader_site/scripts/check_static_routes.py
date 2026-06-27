@@ -74,7 +74,7 @@ def check_routes(base_url: str) -> None:
         "/search": "검색",
         "/notes": "노트",
         "/study": "학습 기록",
-        "/translations": "번역 검토",
+        "/translations": "번역 목록",
     }
     for path, expected in static_cases.items():
         body = fetch_text(base_url, path)

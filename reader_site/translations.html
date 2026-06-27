@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>번역 검토 / Personal Archive of Literature</title>
+  <title>번역 목록 / Personal Archive of Literature</title>
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
   <link rel="stylesheet" href="/assets/notes.css?v=notes21">
@@ -14,8 +14,8 @@
     <div class="spacer"></div>
     <main class="reader">
       <header class="reader-header">
-        <h1>번역 검토</h1>
-        <nav class="toolbar" aria-label="번역 검토 이동">
+        <h1 id="translationsPageTitle">번역 목록</h1>
+        <nav class="toolbar" aria-label="번역 이동">
           <a href="/">아카이브</a>
           <a href="/search">검색</a>
           <a href="/notes">노트</a>
@@ -73,13 +73,13 @@
       <div id="translationsActiveFilters" class="active-filters" aria-live="polite" aria-label="활성 번역 필터"></div>
 
       <div class="review-export-row">
-        <button id="translationsReviewQueue" type="button" class="translation-review-queue" aria-keyshortcuts="Q" title="검토할 번역" disabled>번역 검토</button>
+        <button id="translationsReviewQueue" type="button" class="translation-review-queue" aria-keyshortcuts="Q" title="검토할 번역 없음" disabled>검토하기</button>
       </div>
 
       <div id="translationsStatus" class="notes-status translations-status" role="status" aria-live="polite" aria-atomic="true"></div>
       <section id="translationsResults" class="notes-results translations-results" aria-live="polite" aria-busy="false"></section>
     </main>
   </div>
-  <script src="/assets/translations.js?v=trans66"></script>
+  <script src="/assets/translations.js?v=trans67"></script>
 </body>
 </html>

@@ -250,7 +250,7 @@ def check_route_markup(route: str, html: str) -> None:
             "aria-busy=\"false\"",
             "notes.css?v=notes21",
             "translations.css?v=trans28",
-            "translations.js?v=trans66",
+            "translations.js?v=trans67",
             'href="/translations" aria-current="page">번역</a>',
             "번역 찾기",
             "translationsListTools",
@@ -877,7 +877,10 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
           reviewQueueBorderColor: window.getComputedStyle(document.querySelector('#translationsReviewQueue')).borderColor,
           firstRecordTitle: document.querySelector('#translationsResults .translation-record-card .translation-record-title')?.textContent.trim() || '',
           firstGroupActions: Array.from(document.querySelectorAll('#translationsResults .translation-record-group:first-of-type .translation-record-group-actions a')).map((node) => node.textContent.trim()),
-          reviewQueueText: document.querySelector('#translationsReviewQueue')?.textContent.trim() || ''
+          headingText: document.querySelector('#translationsPageTitle')?.textContent.trim() || '',
+          documentTitle: document.title,
+          reviewQueueText: document.querySelector('#translationsReviewQueue')?.textContent.trim() || '',
+          reviewQueueLabel: document.querySelector('#translationsReviewQueue')?.getAttribute('aria-label') || ''
         };
     });
     if (!translationsPageState.hasRecords) {
@@ -892,11 +895,17 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (translationsPageState.reviewBadgeCount !== 0) {
         throw new Error(`default translations list should hide review-state badges: ${JSON.stringify(translationsPageState)}`);
       }
-      if (translationsPageState.reviewQueueText && !translationsPageState.reviewQueueText.startsWith('번역 검토')) {
-        throw new Error(`translations review entry should stay concise: ${JSON.stringify(translationsPageState)}`);
+      if (translationsPageState.headingText !== '번역 목록' || !translationsPageState.documentTitle.startsWith('번역 목록 /')) {
+        throw new Error(`default translations page should read as a list, not a review task: ${JSON.stringify(translationsPageState)}`);
+      }
+      if (translationsPageState.reviewQueueText && translationsPageState.reviewQueueText !== '검토하기') {
+        throw new Error(`translations review entry should read like an action: ${JSON.stringify(translationsPageState)}`);
       }
       if (/\d/.test(translationsPageState.reviewQueueText)) {
         throw new Error(`translations review entry should keep counts out of the primary action text: ${JSON.stringify(translationsPageState)}`);
+      }
+      if (translationsPageState.reviewQueueText && !/^검토할 번역 .*개로 이동$/.test(translationsPageState.reviewQueueLabel)) {
+        throw new Error(`translations review entry should keep count details in the accessible label: ${JSON.stringify(translationsPageState)}`);
       }
       if (translationsPageState.reviewQueueText && translationsPageState.reviewQueueBorderColor !== 'rgb(176, 0, 0)') {
         throw new Error(`translations review entry should use the same red primary action style: ${JSON.stringify(translationsPageState)}`);
@@ -1318,7 +1327,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         activeFiltersHidden: Boolean(activeFilters?.hidden),
         activeFiltersText: activeFilters ? activeFilters.textContent.trim() : '',
         reviewQueueHidden: Boolean(document.querySelector('#translationsReviewQueue')?.hidden),
-        groupActionText: Array.from(document.querySelectorAll('#translationsResults .translation-record-group-actions')).map((node) => node.textContent.trim()).join(' ')
+        groupActionText: Array.from(document.querySelectorAll('#translationsResults .translation-record-group-actions')).map((node) => node.textContent.trim()).join(' '),
+        headingText: document.querySelector('#translationsPageTitle')?.textContent.trim() || '',
+        documentTitle: document.title
       };
     });
     if (state.cards > 0 && !state.toolsHidden) throw new Error(`review queue should hide filter tools while reviewing: ${JSON.stringify(state)}`);
@@ -1331,6 +1342,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (state.cards > 0 && state.groupActionText) {
       throw new Error(`review queue should keep repeated group actions out of the review flow: ${JSON.stringify(state)}`);
+    }
+    if (state.cards > 0 && (state.headingText !== '검토할 번역' || !state.documentTitle.startsWith('검토할 번역 /'))) {
+      throw new Error(`review queue should clearly identify the review task: ${JSON.stringify(state)}`);
     }
     if (state.cards > 0) {
       await page.keyboard.press('q');

@@ -14,6 +14,7 @@ const exportMarkdown = document.getElementById("translationsExportMarkdown");
 const exportJson = document.getElementById("translationsExportJson");
 const reviewQueueButton = document.getElementById("translationsReviewQueue");
 const listTools = document.getElementById("translationsListTools");
+const pageTitleEl = document.getElementById("translationsPageTitle");
 let lastRecords = [];
 let activeController = null;
 let activeRequest = 0;
@@ -24,6 +25,7 @@ let pendingReviewQueueMessage = "";
 
 const DEFAULT_CORPUS = "";
 const LAST_CORPUS_STORAGE_KEY = "philoArchive.lastCorpusId";
+const PAGE_TITLE_SUFFIX = "Personal Archive of Literature";
 const REVIEW_LABELS = {
   all: "전체",
   generated: "검토 필요",
@@ -211,6 +213,23 @@ function hasSearchFilters() {
   );
 }
 
+function currentPageHeading() {
+  const reviewState = reviewSelect.value || "all";
+  if (reviewState === "generated" && !hasSearchFilters()) return "검토할 번역";
+  if (reviewState === "reviewed" && !hasSearchFilters()) return "저장한 번역";
+  if (reviewState === "rejected" && !hasSearchFilters()) return "제외한 번역";
+  if (hasActiveFilters()) return "번역 찾기";
+  return "번역 목록";
+}
+
+function updatePageHeading() {
+  const heading = currentPageHeading();
+  if (pageTitleEl) {
+    pageTitleEl.textContent = heading;
+  }
+  document.title = `${heading} / ${PAGE_TITLE_SUFFIX}`;
+}
+
 function isReviewQueueOnlyView() {
   return (reviewSelect.value || "all") === "generated" &&
     !hasSearchFilters() &&
@@ -265,6 +284,7 @@ function updateTranslationsListChrome(count = lastRecords.length) {
 function updateUrl() {
   const params = urlParams();
   history.replaceState(null, "", params.toString() ? `/translations?${params}` : "/translations");
+  updatePageHeading();
   updateClearState();
 }
 
@@ -340,14 +360,14 @@ function updateReviewQueueButton(records = lastRecords) {
   if (!reviewQueueButton) return;
   const generatedCount = generatedRecords(records).length;
   reviewQueueButton.hidden = generatedCount === 0 || isReviewQueueOnlyView();
-  reviewQueueButton.textContent = "번역 검토";
+  reviewQueueButton.textContent = "검토하기";
   reviewQueueButton.disabled = form.classList.contains("is-loading") || generatedCount === 0;
   reviewQueueButton.title = generatedCount
-    ? `${generatedCount.toLocaleString()}개 번역 검토`
+    ? `${generatedCount.toLocaleString()}개 검토 대기`
     : "검토할 번역 없음";
   reviewQueueButton.setAttribute(
     "aria-label",
-    generatedCount ? `번역 검토, ${generatedCount.toLocaleString()}개 남음` : "번역 검토"
+    generatedCount ? `검토할 번역 ${generatedCount.toLocaleString()}개로 이동` : "검토할 번역 없음"
   );
 }
 
