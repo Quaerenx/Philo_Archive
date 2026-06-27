@@ -338,7 +338,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common120",
-            "reader-work.js?v=common163",
+            "reader-work.js?v=common164",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         require("Contents (" not in html, f"{route} should not expose TOC inventory counts")
@@ -1149,8 +1149,20 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         display: window.getComputedStyle(node).display
       }));
       const manageSummary = manage?.querySelector('summary')?.textContent.trim() || '';
+      const sourceStatus = utility.querySelector('[data-selected-source-status]');
+      const sourceStatusBox = sourceStatus?.getBoundingClientRect();
       utility.open = false;
-      return { exists: true, labels, manageSummary, reviewActions };
+      return {
+        exists: true,
+        labels,
+        manageSummary,
+        reviewActions,
+        sourceStatusText: sourceStatus?.textContent.trim() || '',
+        sourceStatusLabel: sourceStatus?.getAttribute('aria-label') || '',
+        sourceStatusClass: sourceStatus?.className || '',
+        sourceStatusWidth: sourceStatusBox?.width || 0,
+        sourceStatusHeight: sourceStatusBox?.height || 0
+      };
     });
     if (!utilityState.exists || utilityState.labels.length < 3) {
       throw new Error(`study tools should keep accessible utility labels: ${JSON.stringify(utilityState)}`);
@@ -1160,6 +1172,12 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (utilityState.manageSummary !== '도구') {
       throw new Error(`study action tools should have a concise summary: ${JSON.stringify(utilityState)}`);
+    }
+    if (!utilityState.sourceStatusClass.includes('visually-hidden') || utilityState.sourceStatusWidth > 2 || utilityState.sourceStatusHeight > 2) {
+      throw new Error(`selected source visibility status should stay accessible but visually quiet: ${JSON.stringify(utilityState)}`);
+    }
+    if (!['원문이 화면에 있음', '원문이 화면 밖에 있음'].includes(utilityState.sourceStatusText) || utilityState.sourceStatusText !== utilityState.sourceStatusLabel) {
+      throw new Error(`selected source visibility status should avoid visible shorthand labels: ${JSON.stringify(utilityState)}`);
     }
     const hiddenDuplicates = utilityState.reviewActions
       .filter((action) => ['markTranslationReviewed', 'draftTranslationNote'].includes(action.id));

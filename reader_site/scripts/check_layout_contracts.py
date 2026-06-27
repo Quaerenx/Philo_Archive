@@ -1347,11 +1347,11 @@ def check_work_source_bundle_ui() -> None:
         "function flashSourceFocus",
         'event.key.toLowerCase() === "s"',
         "translation-target-excerpt",
+        "translation-target-status visually-hidden",
         "data-selected-source-jump",
         'aria-keyshortcuts="S"',
         "원문 보기",
-        "화면 안",
-        "화면 밖",
+        "원문이 화면에 있음",
         "원문이 화면 밖에 있음",
         "NOTE_DRAFT_STORAGE_KEY",
         "noteDraftPayload",
@@ -1527,7 +1527,7 @@ def check_work_source_bundle_ui() -> None:
         "요청 취소",
     ]:
         require(noisy_marker not in pending_body, f"renderTranslationPending should keep loading state quiet without {noisy_marker!r}")
-    require_contains(template, "/assets/reader-work.js?v=common163", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common164", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common120", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',

@@ -898,9 +898,10 @@ function updateTranslationTargetViewState() {
   translationTarget.dataset.sourceState = sourceState;
   const status = translationTarget.querySelector("[data-selected-source-status]");
   if (status) {
+    const statusLabel = sourceVisible ? "원문이 화면에 있음" : "원문이 화면 밖에 있음";
     status.dataset.sourceState = sourceState;
-    status.textContent = sourceVisible ? "화면 안" : "화면 밖";
-    status.setAttribute("aria-label", sourceVisible ? "원문이 화면에 있음" : "원문이 화면 밖에 있음");
+    status.textContent = statusLabel;
+    status.setAttribute("aria-label", statusLabel);
   }
   const jumpButton = translationTarget.querySelector("[data-selected-source-jump]");
   if (jumpButton) {
@@ -932,7 +933,7 @@ function renderTranslationTarget() {
     <div class="translation-target-main">
       <span class="translation-target-label">원문</span>
       <strong class="translation-target-id">${escapeHtml(position)}</strong>
-      <span class="translation-target-status" data-selected-source-status></span>
+      <span class="translation-target-status visually-hidden" data-selected-source-status></span>
       <p class="translation-target-excerpt" title="${escapeHtml(sourceText)}">${escapeHtml(sourceText)}</p>
     </div>
     <button type="button" data-selected-source-jump aria-keyshortcuts="S">원문 보기</button>`;
