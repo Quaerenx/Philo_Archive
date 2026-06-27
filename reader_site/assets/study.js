@@ -343,7 +343,7 @@ function renderStudyOverview(payload, translationSummary) {
   const translationLinks = [
     translationStatusLink("generated", "Check translations", generated),
     translationStatusLink("reviewed", "Saved translations", reviewed),
-    translationStatusLink("rejected", "Rejected", rejected)
+    translationStatusLink("rejected", "Discarded", rejected)
   ].filter(Boolean).join("");
   studyOverview.innerHTML = `${notesMarkup}
     ${translationLinks ? `<nav class="study-overview-translations" aria-label="Translation study status">${translationLinks}</nav>` : ""}`;
