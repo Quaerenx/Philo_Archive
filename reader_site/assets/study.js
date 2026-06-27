@@ -141,7 +141,7 @@ function hasActiveFilters() {
 }
 
 function renderFilterChip(filterName, label, value) {
-  return `<button type="button" class="filter-chip" data-filter="${escapeHtml(filterName)}" aria-label="Remove ${escapeHtml(label)} filter">
+  return `<button type="button" class="filter-chip" data-filter="${escapeHtml(filterName)}" aria-label="${escapeHtml(label)} 필터 제거">
     <span>${escapeHtml(label)}: ${escapeHtml(value)}</span>
     <span aria-hidden="true">x</span>
   </button>`;
@@ -153,14 +153,14 @@ function updateStudyFilterSummary() {
   const query = queryInput.value.trim();
   const workId = workInput.value.trim();
   const tag = tagInput.value.trim().replace(/^#/, "");
-  if (query) chips.push(renderFilterChip("query", "Text", query));
-  if (corpusSelect.value) chips.push(renderFilterChip("corpus", "Corpus", selectedOptionText(corpusSelect)));
-  if (workId) chips.push(renderFilterChip("work", "Work", workId));
-  if (tag) chips.push(renderFilterChip("tag", "Tag", tag));
+  if (query) chips.push(renderFilterChip("query", "본문", query));
+  if (corpusSelect.value) chips.push(renderFilterChip("corpus", "자료", selectedOptionText(corpusSelect)));
+  if (workId) chips.push(renderFilterChip("work", "문서", workId));
+  if (tag) chips.push(renderFilterChip("tag", "태그", tag));
   activeFiltersEl.hidden = chips.length === 0;
   activeFiltersEl.classList.toggle("has-filters", chips.length > 0);
   activeFiltersEl.innerHTML = chips.length
-    ? `<span class="active-filters-label">Filters</span>${chips.join("")}`
+    ? `<span class="active-filters-label">필터</span>${chips.join("")}`
     : "";
 }
 
@@ -185,7 +185,7 @@ function studyTranslationHref(reviewState) {
 }
 
 function translationActionLabel(label, count) {
-  return count > 0 ? `${label} ${Number(count).toLocaleString()}` : label;
+  return count > 0 ? `${label} ${Number(count).toLocaleString()}개` : label;
 }
 
 function renderEmptyStudy(translationSummary = null) {
@@ -194,17 +194,17 @@ function renderEmptyStudy(translationSummary = null) {
   const generated = Number(counts.generated || 0);
   const reviewed = Number(counts.reviewed || 0);
   const title = filtered
-    ? "No saved notes match these filters."
+    ? "조건에 맞는 저장 노트가 없습니다."
     : (generated > 0
-      ? "Translations to check."
-      : (reviewed > 0 ? "Saved translations." : "No saved notes yet."));
-  const body = filtered ? "Clear filters, or edit the saved notes list." : "";
+      ? "검토할 번역이 있습니다."
+      : (reviewed > 0 ? "저장한 번역이 있습니다." : "아직 저장한 노트가 없습니다."));
+  const body = filtered ? "필터를 지우거나 문서와 태그 조건을 넓혀보세요." : "";
   const clearAction = filtered
-    ? '<button type="button" data-empty-action="clear-filters">Clear filters</button>'
+    ? '<button type="button" data-empty-action="clear-filters">필터 지우기</button>'
     : "";
   const translationAction = generated > 0
-    ? `<a class="empty-primary-action" href="${escapeHtml(studyTranslationHref("generated"))}">${escapeHtml(translationActionLabel("Check translations", generated))}</a>`
-    : (reviewed > 0 ? `<a class="empty-primary-action" href="${escapeHtml(studyTranslationHref("reviewed"))}">${escapeHtml(translationActionLabel("Saved translations", reviewed))}</a>` : "");
+    ? `<a class="empty-primary-action" href="${escapeHtml(studyTranslationHref("generated"))}">${escapeHtml(translationActionLabel("번역 검토", generated))}</a>`
+    : (reviewed > 0 ? `<a class="empty-primary-action" href="${escapeHtml(studyTranslationHref("reviewed"))}">${escapeHtml(translationActionLabel("저장한 번역", reviewed))}</a>` : "");
   const bodyMarkup = body ? `<p>${escapeHtml(body)}</p>` : "";
   return `<section class="empty empty-state">
     <h2>${escapeHtml(title)}</h2>
@@ -212,7 +212,7 @@ function renderEmptyStudy(translationSummary = null) {
     <div class="empty-actions">
       ${clearAction}
       ${translationAction}
-      <a href="/search">Find work</a>
+      <a href="/search">문서 찾기</a>
     </div>
   </section>`;
 }
@@ -285,19 +285,19 @@ function renderNoteFooter(meta, actions) {
 }
 
 function renderNote(note) {
-  const target = note.target_label || note.target_id || "Target";
+  const target = note.target_label || note.target_id || "대상";
   const tags = (note.tags || []).join(", ");
   const quote = note.quote ? `<blockquote class="note-quote">${escapeHtml(cleanText(note.quote))}</blockquote>` : "";
   const targetLink = note.url
     ? `<a href="${escapeHtml(note.url)}">${escapeHtml(target)}</a>`
     : escapeHtml(target);
-  const missingTarget = note.url ? "" : "Target URL missing";
+  const missingTarget = note.url ? "" : "원문 위치 없음";
   const manageHref = noteManageHref(note);
   const meta = [
     tags ? `# ${tags}` : "",
     missingTarget
   ].filter(Boolean).join(" / ");
-  const actions = `<a href="${escapeHtml(manageHref)}">Edit</a>`;
+  const actions = `<a href="${escapeHtml(manageHref)}">수정</a>`;
   return `<article class="study-note">
     <div class="note-title">
       ${targetLink}
@@ -308,8 +308,8 @@ function renderNote(note) {
   </article>`;
 }
 
-function studyCountLabel(count, singular, plural = `${singular}s`) {
-  return `${count.toLocaleString()} ${count === 1 ? singular : plural}`;
+function studyCountLabel(count, label) {
+  return `${count.toLocaleString()}개 ${label}`;
 }
 
 function translationStatusLink(reviewState, label, count) {
@@ -332,26 +332,26 @@ function renderStudyOverview(payload, translationSummary) {
   }
   const notesLabel = noteCount > 0
     ? (groupCount > 1
-      ? `${studyCountLabel(noteCount, "saved note")} / ${studyCountLabel(groupCount, "work")}`
-      : studyCountLabel(noteCount, "saved note"))
+      ? `${studyCountLabel(noteCount, "저장 노트")} / ${studyCountLabel(groupCount, "문서")}`
+      : studyCountLabel(noteCount, "저장 노트"))
     : "";
   const notesMarkup = notesLabel
     ? `<div class="study-overview-notes">${escapeHtml(notesLabel)}</div>`
     : "";
   const translationLinks = [
-    translationStatusLink("generated", "Check translations", generated),
-    translationStatusLink("reviewed", "Saved translations", reviewed)
+    translationStatusLink("generated", "번역 검토", generated),
+    translationStatusLink("reviewed", "저장한 번역", reviewed)
   ].filter(Boolean).join("");
   studyOverview.innerHTML = `${notesMarkup}
-    ${translationLinks ? `<nav class="study-overview-translations" aria-label="Translation study status">${translationLinks}</nav>` : ""}`;
+    ${translationLinks ? `<nav class="study-overview-translations" aria-label="번역 학습 상태">${translationLinks}</nav>` : ""}`;
 }
 
 function studyGroupMeta(group) {
   const noteCount = Number(group.count || group.notes?.length || 0);
   const targetCount = Number(group.target_count || 0);
   const parts = [
-    noteCount ? studyCountLabel(noteCount, "saved note") : "",
-    targetCount > 1 ? studyCountLabel(targetCount, "passage") : ""
+    noteCount ? studyCountLabel(noteCount, "저장 노트") : "",
+    targetCount > 1 ? studyCountLabel(targetCount, "대상") : ""
   ].filter(Boolean);
   return parts.join(" / ");
 }
@@ -373,7 +373,7 @@ function renderStudy(payload, translationSummary = null) {
   statusEl.textContent = "";
   resultsEl.innerHTML = groups.length
     ? groups.map((group) => {
-      const title = workDisplayName(group.corpus_id, group.work_id) || corpusDisplayName(group.corpus_id) || "Saved notes";
+      const title = workDisplayName(group.corpus_id, group.work_id) || corpusDisplayName(group.corpus_id) || "저장한 노트";
       const context = group.work_id ? corpusDisplayName(group.corpus_id) : "";
       const workHref = group.corpus_id && group.work_id ? `/work/${encodeURIComponent(group.corpus_id)}/${encodeURIComponent(group.work_id)}` : "";
       const notesHref = `/notes?corpus_id=${encodeURIComponent(group.corpus_id)}&work_id=${encodeURIComponent(group.work_id)}&review_state=reviewed`;
@@ -381,7 +381,7 @@ function renderStudy(payload, translationSummary = null) {
         .map((item) => `<span class="study-tag">${escapeHtml(item.tag)} <span>${Number(item.count || 0).toLocaleString()}</span></span>`)
         .join("");
       const tagsPanel = tagCounts
-        ? `<details class="study-tags-panel"><summary>Tags</summary><div class="study-tags">${tagCounts}</div></details>`
+        ? `<details class="study-tags-panel"><summary>태그</summary><div class="study-tags">${tagCounts}</div></details>`
         : "";
       return `<section class="study-group">
         <h2>${escapeHtml(title)}</h2>
@@ -390,8 +390,8 @@ function renderStudy(payload, translationSummary = null) {
         ${tagsPanel}
         ${group.notes.map(renderNote).join("")}
         <div class="group-actions">
-          ${workHref ? `<a href="${escapeHtml(workHref)}">Read</a>` : ""}
-          <a href="${escapeHtml(notesHref)}">Notes</a>
+          ${workHref ? `<a href="${escapeHtml(workHref)}">읽기</a>` : ""}
+          <a href="${escapeHtml(notesHref)}">노트</a>
         </div>
       </section>`;
     }).join("")
@@ -413,12 +413,12 @@ async function loadCorpora() {
     const payload = await response.json();
     archiveCorpora = payload.corpora || [];
     const current = corpusSelect.value || requestedCorpusId;
-    corpusSelect.innerHTML = `<option value="">All</option>` + archiveCorpora
+    corpusSelect.innerHTML = `<option value="">전체</option>` + archiveCorpora
       .map((corpus) => `<option value="${escapeHtml(corpus.id)}">${escapeHtml(corpus.title)}</option>`)
       .join("");
     corpusSelect.value = current;
   } catch {
-    // The hard-coded All option remains usable without archive metadata.
+    // The hard-coded fallback option remains usable without archive metadata.
   }
 }
 
@@ -439,7 +439,7 @@ async function loadStudy() {
     const response = await fetch(`/api/study?${currentParams("json")}`, { signal: controller.signal });
     if (requestId !== activeStudyRequest) return;
     if (!response.ok) {
-      statusEl.textContent = "Could not load saved notes.";
+      statusEl.textContent = "저장한 노트를 불러오지 못했습니다.";
       resultsEl.innerHTML = "";
       return;
     }
@@ -460,7 +460,7 @@ async function loadStudy() {
       return;
     }
     if (requestId === activeStudyRequest) {
-      statusEl.textContent = "Could not load saved notes.";
+      statusEl.textContent = "저장한 노트를 불러오지 못했습니다.";
       resultsEl.innerHTML = "";
     }
   } finally {

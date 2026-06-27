@@ -73,7 +73,7 @@ def check_routes(base_url: str) -> None:
         "/category/wittgenstein": "Personal Archive",
         "/search": "Search",
         "/notes": "노트",
-        "/study": "Study",
+        "/study": "학습 기록",
         "/translations": "Translations",
     }
     for path, expected in static_cases.items():

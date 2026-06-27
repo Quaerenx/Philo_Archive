@@ -192,12 +192,12 @@ def check_route_markup(route: str, html: str) -> None:
             "studyActiveFilters",
             "studyOverview",
             "studyExportTranslations",
-            "Saved translations</a>",
+            "저장한 번역</a>",
             "studyStatus",
             "aria-busy=\"false\"",
             "study.css?v=study23",
-            "study.js?v=study38",
-            'href="/study" aria-current="page">Study</a>',
+            "study.js?v=study39",
+            'href="/study" aria-current="page">학습</a>',
             "filter-panel",
             "export-tools",
         ]:
@@ -642,18 +642,18 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     });
     if (!studyPageState.hasGroups) {
       if (!studyPageState.formHidden) throw new Error(`empty study page should hide filter form: ${JSON.stringify(studyPageState)}`);
-      const hasReviewAction = studyPageState.emptyActions.some((text) => text.startsWith('Check translations'));
-      const hasSavedTranslationAction = studyPageState.emptyActions.some((text) => text.startsWith('Saved translations'));
+      const hasReviewAction = studyPageState.emptyActions.some((text) => text.startsWith('번역 검토'));
+      const hasSavedTranslationAction = studyPageState.emptyActions.some((text) => text.startsWith('저장한 번역'));
       const expectedTitle = hasReviewAction
-        ? 'Translations to check.'
-        : (hasSavedTranslationAction ? 'Saved translations.' : 'No saved notes yet.');
+        ? '검토할 번역이 있습니다.'
+        : (hasSavedTranslationAction ? '저장한 번역이 있습니다.' : '아직 저장한 노트가 없습니다.');
       if (studyPageState.emptyTitle !== expectedTitle || studyPageState.emptyBodyCount !== 0) {
         throw new Error(`empty study page should stay quiet: ${JSON.stringify(studyPageState)}`);
       }
-      if (studyPageState.emptyActions.includes('Notes')) {
+      if (studyPageState.emptyActions.includes('노트')) {
         throw new Error(`empty study page should not send users to an empty notes list: ${JSON.stringify(studyPageState)}`);
       }
-      if (!studyPageState.emptyActions.includes('Find work')) {
+      if (!studyPageState.emptyActions.includes('문서 찾기')) {
         throw new Error(`empty study page should keep a clear find action: ${JSON.stringify(studyPageState)}`);
       }
       if (!hasReviewAction && !hasSavedTranslationAction && studyPageState.emptyActions.length !== 1) {
@@ -665,11 +665,11 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if ((hasReviewAction || hasSavedTranslationAction) && !studyPageState.overviewHidden) {
         throw new Error(`empty study page should keep translation status inside the empty card, not a separate overview: ${JSON.stringify(studyPageState)}`);
       }
-      if (studyPageState.overviewText.includes('0 saved notes')) {
+      if (studyPageState.overviewText.includes('0개 저장 노트')) {
         throw new Error(`empty study page overview should not repeat zero notes: ${JSON.stringify(studyPageState)}`);
       }
     }
-    if (studyPageState.overviewText.includes('Discarded')) {
+    if (studyPageState.overviewText.includes('제외')) {
       throw new Error(`study overview should keep discarded translations out of the learning entry point: ${JSON.stringify(studyPageState)}`);
     }
   }

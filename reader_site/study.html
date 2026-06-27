@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Study / Personal Archive of Literature</title>
+  <title>학습 기록 / Personal Archive of Literature</title>
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
   <link rel="stylesheet" href="/assets/study.css?v=study23">
@@ -13,53 +13,53 @@
     <div class="spacer"></div>
     <main class="reader">
       <header class="reader-header">
-        <h1>Study</h1>
-        <nav class="toolbar" aria-label="Study navigation">
+        <h1>학습 기록</h1>
+        <nav class="toolbar" aria-label="학습 기록 내비게이션">
           <a href="/">Archive</a>
-          <a href="/search">Search</a>
-          <a href="/notes">Notes</a>
-          <a href="/study" aria-current="page">Study</a>
-          <a href="/translations">Translations</a>
+          <a href="/search">검색</a>
+          <a href="/notes">노트</a>
+          <a href="/study" aria-current="page">학습</a>
+          <a href="/translations">번역</a>
         </nav>
       </header>
 
       <form id="studyForm" class="study-form">
         <label class="query-label">
-          Find saved note
+          저장한 노트 찾기
           <input id="studyQuery" name="q" autocomplete="off">
         </label>
         <details class="filter-panel">
-          <summary>Filters</summary>
+          <summary>필터</summary>
           <div class="filter-panel-fields">
             <label>
-              Corpus
+              자료
               <select id="studyCorpus" name="corpus_id">
-                <option value="">All</option>
+                <option value="">전체</option>
               </select>
             </label>
             <label>
-              Work
+              문서
               <input id="studyWork" name="work_id" autocomplete="off">
             </label>
             <label>
-              Tag
+              태그
               <input id="studyTag" name="tag" autocomplete="off">
             </label>
           </div>
         </details>
         <div class="form-actions">
-          <button id="studySubmit" type="submit">Apply</button>
-          <button id="studyClear" type="button" class="secondary-action" disabled>Clear</button>
+          <button id="studySubmit" type="submit">적용</button>
+          <button id="studyClear" type="button" class="secondary-action" disabled>지우기</button>
         </div>
       </form>
-      <div id="studyActiveFilters" class="active-filters" aria-live="polite" aria-label="Active study filters"></div>
-      <div id="studyOverview" class="study-overview" aria-live="polite" aria-label="Study overview" hidden></div>
+      <div id="studyActiveFilters" class="active-filters" aria-live="polite" aria-label="활성 학습 필터"></div>
+      <div id="studyOverview" class="study-overview" aria-live="polite" aria-label="학습 개요" hidden></div>
 
       <details id="studyExportTools" class="export-tools" hidden>
-        <summary>Downloads</summary>
-        <div class="export-row" aria-label="Download study material">
-          <a id="studyExportMarkdown" href="/api/study/export?format=markdown">Notes</a>
-          <a id="studyExportTranslations" href="/api/sentence-translations/export?format=markdown&review_state=reviewed" hidden>Saved translations</a>
+        <summary>내보내기</summary>
+        <div class="export-row" aria-label="학습 자료 다운로드">
+          <a id="studyExportMarkdown" href="/api/study/export?format=markdown">노트</a>
+          <a id="studyExportTranslations" href="/api/sentence-translations/export?format=markdown&review_state=reviewed" hidden>저장한 번역</a>
         </div>
       </details>
 
@@ -67,6 +67,6 @@
       <section id="studyResults" class="study-results" aria-live="polite" aria-busy="false"></section>
     </main>
   </div>
-  <script src="/assets/study.js?v=study38"></script>
+  <script src="/assets/study.js?v=study39"></script>
 </body>
 </html>
