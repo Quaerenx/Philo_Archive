@@ -555,8 +555,10 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     const initialCategoryToolsState = await page.evaluate(() => {
       const browseTools = document.querySelector('.category-browse-tools');
       const primary = document.querySelector('.reading-path-link.primary');
+      const secondaryRead = document.querySelector('.reading-path-link:not(.primary)');
       const firstWork = document.querySelector('.work-link');
       const primaryStyle = primary ? window.getComputedStyle(primary) : null;
+      const secondaryReadStyle = secondaryRead ? window.getComputedStyle(secondaryRead) : null;
       const firstWorkStyle = firstWork ? window.getComputedStyle(firstWork) : null;
       const visibleInventoryMeta = Array.from(document.querySelectorAll('.section-meta, .work-meta'))
         .map((node) => node.textContent.trim())
@@ -569,6 +571,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         primaryReadLabel: primary?.getAttribute('aria-label') || '',
         primaryReadLinkHeight: primary?.getBoundingClientRect().height || 0,
         primaryReadBorderLeftColor: primaryStyle?.borderLeftColor || '',
+        secondaryReadText: secondaryRead?.textContent.trim() || '',
+        secondaryReadColor: secondaryReadStyle?.color || '',
         firstWorkLinkText: firstWork?.textContent.trim() || '',
         firstWorkLinkHeight: firstWork?.getBoundingClientRect().height || 0,
         firstWorkLinkColor: firstWorkStyle?.color || '',
@@ -593,6 +597,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (initialCategoryToolsState.hasCategoryFilter && initialCategoryToolsState.primaryReadBorderLeftColor !== 'rgb(176, 0, 0)') {
       throw new Error(`category page should keep the first reading action visually distinct: ${JSON.stringify(initialCategoryToolsState)}`);
+    }
+    if (initialCategoryToolsState.secondaryReadText && (initialCategoryToolsState.secondaryReadColor === 'rgb(255, 0, 0)' || initialCategoryToolsState.secondaryReadColor === 'rgb(176, 0, 0)')) {
+      throw new Error(`category secondary reading starts should stay quieter than the primary reading action: ${JSON.stringify(initialCategoryToolsState)}`);
     }
     if (initialCategoryToolsState.firstWorkLinkText && (initialCategoryToolsState.firstWorkLinkColor === 'rgb(255, 0, 0)' || initialCategoryToolsState.firstWorkLinkColor === 'rgb(176, 0, 0)')) {
       throw new Error(`category work lists should scan as reading lists rather than red action lists: ${JSON.stringify(initialCategoryToolsState)}`);

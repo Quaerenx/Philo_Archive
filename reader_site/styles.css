@@ -200,6 +200,17 @@ img {
   line-height: 1.35;
 }
 
+.reading-path-link:not(.primary) {
+  color: #555;
+}
+
+.reading-path-link:not(.primary):visited,
+.reading-path-link:not(.primary):active,
+.reading-path-link:not(.primary):hover,
+.reading-path-link:not(.primary):focus-visible {
+  color: #111;
+}
+
 .reading-path-link.primary {
   display: flex;
   grid-column: 1 / -1;
