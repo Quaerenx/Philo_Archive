@@ -2399,7 +2399,7 @@ h1 {
   background: #d7c67a;
   border: 1px solid #e2d69a;
   border-radius: 50%;
-  opacity: 0.46;
+  opacity: 0.32;
 }
 
 .reader-sentence.has-translation-state:hover::after,
@@ -2420,7 +2420,7 @@ h1 {
   content: "✓";
   background: #7fb389;
   border-color: #b7d3bd;
-  opacity: 0.54;
+  opacity: 0.42;
 }
 
 .reader-sentence[data-translation-state="reviewed"] {
@@ -2430,7 +2430,7 @@ h1 {
 .reader-sentence[data-translation-state="rejected"]::after {
   background: #c45a5a;
   border-color: #e2b7b7;
-  opacity: 0.52;
+  opacity: 0.4;
 }
 
 .reader-sentence[data-translation-state="reviewed"]:hover::after,

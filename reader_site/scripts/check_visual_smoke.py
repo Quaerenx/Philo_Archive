@@ -340,7 +340,7 @@ def check_route_markup(route: str, html: str) -> None:
             "목차</summary>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common124",
+            "reader-work.css?v=common125",
             "reader-work.js?v=common169",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
@@ -1277,7 +1277,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (state.readingNextWidth <= 0 || state.readingNoteVisible || state.readingSaveVisible) {
       throw new Error(`reading mode should keep only Next sentence as the immediate visible action: ${JSON.stringify(state)}`);
     }
-    if (state.markerSampleFound && Number.parseFloat(state.quietMarkerOpacity || '1') > 0.6) {
+    if (state.markerSampleFound && Number.parseFloat(state.quietMarkerOpacity || '1') > 0.4) {
       throw new Error(`translation state markers should stay quiet in the source text: ${JSON.stringify(state)}`);
     }
     if (state.selectedMarkerFound && Number.parseFloat(state.selectedMarkerOpacity || '0') < 0.75) {
