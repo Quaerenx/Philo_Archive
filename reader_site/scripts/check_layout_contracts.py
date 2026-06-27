@@ -1566,7 +1566,7 @@ def check_work_source_bundle_ui() -> None:
     ]:
         require(noisy_marker not in pending_body, f"renderTranslationPending should keep loading state quiet without {noisy_marker!r}")
     require_contains(template, "/assets/reader-work.js?v=common165", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common121", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common122", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
         'aria-label="읽기 화면 이동"',
@@ -1866,6 +1866,12 @@ def check_work_source_bundle_ui() -> None:
         ".translation-reading-actions .translation-quick-state",
         ".translation-secondary-actions",
         ".translation-secondary-actions summary",
+        "justify-self: center;",
+        "border: 1px solid transparent;",
+        ".translation-secondary-actions summary:hover",
+        "text-underline-offset: 2px;",
+        ".translation-secondary-actions[open]",
+        "justify-self: stretch;",
         ".translation-secondary-actions-body",
         ".translation-pending-result",
         ".translation-pending-copy",

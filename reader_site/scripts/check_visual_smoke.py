@@ -337,7 +337,7 @@ def check_route_markup(route: str, html: str) -> None:
             "목차</summary>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common121",
+            "reader-work.css?v=common122",
             "reader-work.js?v=common165",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
@@ -1057,7 +1057,10 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       const readingActionsNode = document.querySelector('.translation-reading-actions');
       const readingActionsStyle = readingActionsNode ? window.getComputedStyle(readingActionsNode) : null;
       const secondaryActions = document.querySelector('.translation-secondary-actions');
+      const secondaryActionsStyle = secondaryActions ? window.getComputedStyle(secondaryActions) : null;
       const secondarySummary = secondaryActions?.querySelector('summary');
+      const secondarySummaryStyle = secondarySummary ? window.getComputedStyle(secondarySummary) : null;
+      const secondarySummaryBox = secondarySummary?.getBoundingClientRect();
       const outputVisibleText = output ? output.innerText : '';
       const translationHeading = document.querySelector('.translation-section-primary h3');
       const translationHeadingBox = translationHeading?.getBoundingClientRect();
@@ -1105,6 +1108,10 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         readingSaveVisible: /(^|\n)(저장|저장됨)(\n|$)/.test(outputVisibleText),
         secondaryActionsOpen: Boolean(secondaryActions?.open),
         secondaryActionsSummary: secondarySummary?.textContent.trim() || '',
+        secondaryActionsJustifySelf: secondaryActionsStyle?.justifySelf || '',
+        secondarySummaryBackground: secondarySummaryStyle?.backgroundColor || '',
+        secondarySummaryBorderColor: secondarySummaryStyle?.borderTopColor || '',
+        secondarySummaryHeight: secondarySummaryBox?.height || 0,
         readingActionsPosition: readingActionsStyle?.position || '',
         readingActionsBottom: readingActionsStyle?.bottom || '',
         translationHeadingWidth: translationHeadingBox?.width || 0,
@@ -1186,6 +1193,12 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (state.secondaryActionsOpen || state.secondaryActionsSummary !== '기록') {
       throw new Error(`reading mode should collapse secondary note/save actions behind a clear label: ${JSON.stringify(state)}`);
+    }
+    if (state.secondaryActionsJustifySelf !== 'center' || !['rgba(0, 0, 0, 0)', 'transparent'].includes(state.secondarySummaryBackground) || !['rgba(0, 0, 0, 0)', 'transparent'].includes(state.secondarySummaryBorderColor)) {
+      throw new Error(`reading mode secondary note/save action should stay visually quiet until opened: ${JSON.stringify(state)}`);
+    }
+    if (state.secondarySummaryHeight > 26) {
+      throw new Error(`reading mode secondary note/save action should not read as a full-width button: ${JSON.stringify(state)}`);
     }
     const firstAction = state.readingActions[0] || '';
     const secondAction = state.readingActions[1] || '';
