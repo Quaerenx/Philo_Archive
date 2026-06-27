@@ -212,7 +212,6 @@ function renderEmptyStudy(translationSummary = null) {
     <div class="empty-actions">
       ${clearAction}
       ${translationAction}
-      <a href="/notes?review_state=raw">Notes</a>
       <a href="/search">Find work</a>
     </div>
   </section>`;

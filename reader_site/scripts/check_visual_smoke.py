@@ -196,7 +196,7 @@ def check_route_markup(route: str, html: str) -> None:
             "studyStatus",
             "aria-busy=\"false\"",
             "study.css?v=study22",
-            "study.js?v=study36",
+            "study.js?v=study37",
             'href="/study" aria-current="page">Study</a>',
             "filter-panel",
             "export-tools",
@@ -542,8 +542,14 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (studyPageState.emptyTitle !== expectedTitle || studyPageState.emptyBodyCount !== 0) {
         throw new Error(`empty study page should stay quiet: ${JSON.stringify(studyPageState)}`);
       }
-      if (!studyPageState.emptyActions.includes('Notes') || !studyPageState.emptyActions.includes('Find work')) {
-        throw new Error(`empty study page should keep concise actions: ${JSON.stringify(studyPageState)}`);
+      if (studyPageState.emptyActions.includes('Notes')) {
+        throw new Error(`empty study page should not send users to an empty notes list: ${JSON.stringify(studyPageState)}`);
+      }
+      if (!studyPageState.emptyActions.includes('Find work')) {
+        throw new Error(`empty study page should keep a clear find action: ${JSON.stringify(studyPageState)}`);
+      }
+      if (!hasReviewAction && !hasSavedTranslationAction && studyPageState.emptyActions.length !== 1) {
+        throw new Error(`empty study page should keep only the find action when there is nothing to review: ${JSON.stringify(studyPageState)}`);
       }
       if ((hasReviewAction || hasSavedTranslationAction) && !studyPageState.primaryAction) {
         throw new Error(`empty study page should make translation study the primary empty action: ${JSON.stringify(studyPageState)}`);

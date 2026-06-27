@@ -756,7 +756,7 @@ def check_study_ui() -> None:
     css = read_site_file("assets/study.css")
     for needle in [
         "/assets/study.css?v=study22",
-        "/assets/study.js?v=study36",
+        "/assets/study.js?v=study37",
         'href="/study" aria-current="page">Study</a>',
         "Find saved note",
         '<button id="studySubmit" type="submit">Apply</button>',
@@ -850,6 +850,7 @@ def check_study_ui() -> None:
         "Open target",
         "Edit note",
         "study-note-more-actions",
+        "href=\"/notes?review_state=raw\"",
     ]:
         require(noisy_action not in script, f"assets/study.js should keep Study actions concise without {noisy_action!r}")
     for needle in [
