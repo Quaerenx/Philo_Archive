@@ -1759,11 +1759,11 @@ function runtimeRecoveryMarkup(message) {
   if (!translationErrorIsRuntime(message)) return "";
   return `
       <details class="translation-runtime-details">
-        <summary>번역기 켜기</summary>
-        <p class="translation-runtime-note">명령을 복사해 PowerShell에서 실행하세요.</p>
+        <summary>시작 도움말</summary>
+        <p class="translation-runtime-note">아래 시작 명령을 복사해 한 번 실행한 뒤 다시 확인하세요.</p>
         <div class="translation-runtime-command-row">
           <code class="translation-runtime-command">${escapeHtml(GEMMA_RUNTIME_COMMAND)}</code>
-          <button type="button" data-translation-copy-runtime>복사</button>
+          <button type="button" data-translation-copy-runtime>시작 명령 복사</button>
         </div>
       </details>`;
 }
@@ -2866,8 +2866,8 @@ translationOutput.addEventListener("click", (event) => {
   const copyRuntime = event.target.closest("[data-translation-copy-runtime]");
   if (copyRuntime) {
     copyText(GEMMA_RUNTIME_COMMAND)
-      .then(() => setTranslationStatus("명령을 복사했습니다."))
-      .catch(() => setTranslationStatus("명령을 복사하지 못했습니다.", true));
+      .then(() => setTranslationStatus("시작 명령을 복사했습니다."))
+      .catch(() => setTranslationStatus("시작 명령을 복사하지 못했습니다.", true));
     return;
   }
   const checkRuntime = event.target.closest("[data-translation-check-runtime]");

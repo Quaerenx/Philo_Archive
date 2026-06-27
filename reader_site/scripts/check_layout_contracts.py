@@ -1217,16 +1217,16 @@ def check_work_source_bundle_ui() -> None:
         "function runtimeRecoveryMarkup",
         "번역기가 꺼져 있습니다. 시작한 뒤 다시 시도하세요.",
         "translation-runtime-details",
-        "번역기 켜기",
+        "시작 도움말",
         "translation-runtime-note",
-        "명령을 복사해 PowerShell에서 실행하세요.",
+        "아래 시작 명령을 복사해 한 번 실행한 뒤 다시 확인하세요.",
         "translation-runtime-command",
         "translation-runtime-command-row",
         "data-translation-copy-runtime",
         "data-translation-check-runtime",
         "다시 확인",
-        "복사</button>",
-        "명령을 복사했습니다.",
+        "시작 명령 복사</button>",
+        "시작 명령을 복사했습니다.",
         ".\\\\run_reader_with_gemma.ps1",
         "translation-error-actions",
         "translation-unavailable-copy",
@@ -1565,7 +1565,7 @@ def check_work_source_bundle_ui() -> None:
         "요청 취소",
     ]:
         require(noisy_marker not in pending_body, f"renderTranslationPending should keep loading state quiet without {noisy_marker!r}")
-    require_contains(template, "/assets/reader-work.js?v=common165", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common166", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common122", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
