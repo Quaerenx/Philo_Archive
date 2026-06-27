@@ -227,7 +227,7 @@ def check_route_markup(route: str, html: str) -> None:
             "aria-busy=\"false\"",
             "notes.css?v=notes20",
             "translations.css?v=trans25",
-            "translations.js?v=trans55",
+            "translations.js?v=trans56",
             'href="/translations" aria-current="page">Translations</a>',
             "Find translation",
             "translationsListTools",
@@ -305,7 +305,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common109",
-            "reader-work.js?v=common137",
+            "reader-work.js?v=common138",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
 
@@ -747,7 +747,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     const visibleManagementActions = utilityState.reviewActions
       .filter((action) => action.display !== 'none')
       .map((action) => action.text);
-    if (!visibleManagementActions.includes('Reject') || !visibleManagementActions.includes('Copy study card')) {
+    if (!visibleManagementActions.includes('Discard') || !visibleManagementActions.includes('Copy study card')) {
       throw new Error(`study management tools should keep secondary management actions available: ${JSON.stringify(utilityState)}`);
     }
     const nextFocusState = await page.evaluate(async () => {
@@ -904,8 +904,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
           statusText: document.querySelector('#translationsStatus')?.textContent.trim() || ''
         };
       });
-      if (!reviewTargetState.hasReviewTarget || !reviewTargetState.rejectText.includes('Reject') || reviewTargetState.rejectDisplay === 'none') {
-        throw new Error(`review queue should expose Reject on the active review card: ${JSON.stringify(reviewTargetState)}`);
+      if (!reviewTargetState.hasReviewTarget || !reviewTargetState.rejectText.includes('Discard') || reviewTargetState.rejectDisplay === 'none') {
+        throw new Error(`review queue should expose Discard on the active review card: ${JSON.stringify(reviewTargetState)}`);
       }
       if (reviewTargetState.saveText !== 'Save' || reviewTargetState.saveBorderColor !== 'rgb(176, 0, 0)') {
         throw new Error(`review queue Save should use the same red primary action style: ${JSON.stringify(reviewTargetState)}`);

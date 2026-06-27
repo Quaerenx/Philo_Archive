@@ -28,7 +28,7 @@ const REVIEW_LABELS = {
   all: "All",
   generated: "To check",
   reviewed: "Saved",
-  rejected: "Rejected"
+  rejected: "Discarded"
 };
 
 function escapeHtml(value) {
@@ -385,7 +385,7 @@ function renderSummary(records) {
     summaryButton("all", "All", counts.total),
     counts.generated ? summaryButton("generated", "To check", counts.generated) : "",
     counts.reviewed ? summaryButton("reviewed", "Saved", counts.reviewed) : "",
-    counts.rejected ? summaryButton("rejected", "Rejected", counts.rejected) : ""
+    counts.rejected ? summaryButton("rejected", "Discarded", counts.rejected) : ""
   ].filter(Boolean).join("");
   return `<nav class="translation-record-summary-tools translation-record-summary" aria-label="Translation status overview">
     ${buttons}
@@ -509,8 +509,8 @@ function renderRecord(record, options) {
     : "";
   const rejectAction = reviewState !== "rejected"
     ? `<details class="translation-more-actions">
-        <summary>Reject</summary>
-        <button type="button" data-review-state="rejected" aria-keyshortcuts="X" title="Confirm reject">Confirm</button>
+        <summary>Discard</summary>
+        <button type="button" data-review-state="rejected" aria-keyshortcuts="X" title="Confirm discard">Confirm</button>
       </details>`
     : "";
   const actions = showReviewActions ? [
@@ -716,7 +716,7 @@ async function updateRecordReview(recordId, corpusId, reviewState) {
 
 function reviewActionMessage(reviewState) {
   if (reviewState === "reviewed") return "Saved.";
-  if (reviewState === "rejected") return "Rejected.";
+  if (reviewState === "rejected") return "Discarded.";
   if (reviewState === "generated") return "Moved to check.";
   return "Updated.";
 }

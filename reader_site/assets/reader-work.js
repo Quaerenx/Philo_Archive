@@ -85,17 +85,17 @@ const GEMMA_RUNTIME_COMMAND = ".\\run_reader_with_gemma.ps1";
 const TRANSLATION_STATE_LABELS = {
   generated: "To check",
   reviewed: "Saved translation",
-  rejected: "Rejected translation"
+  rejected: "Discarded translation"
 };
 const TRANSLATION_REVIEW_CHIP_LABELS = {
   generated: "To check",
   reviewed: "Saved",
-  rejected: "Rejected"
+  rejected: "Discarded"
 };
 const TRANSLATION_REVIEW_CHIP_HINTS = {
   generated: "Translation to check",
   reviewed: "Saved translation",
-  rejected: "Rejected translation"
+  rejected: "Discarded translation"
 };
 const TRANSLATION_STATE_SHORT = {
   generated: "AI",
@@ -694,12 +694,12 @@ function actionConfirmationConfig(action) {
   if (action === "reject") {
     return {
       button: rejectTranslationButton,
-      defaultText: "Reject",
-      defaultTitle: "Reject translation",
-      defaultAria: "Reject translation",
-      confirmText: "Confirm reject",
+      defaultText: "Discard",
+      defaultTitle: "Discard translation",
+      defaultAria: "Discard translation",
+      confirmText: "Confirm discard",
       confirmTitle: "Click again to discard this translation",
-      confirmAria: "Confirm reject translation",
+      confirmAria: "Confirm discard translation",
       status: "Click again to discard this translation.",
       blockMessage: selectedTranslationRecord && selectedTranslationRecord.id ? "" : "Select a translation first.",
       run: () => updateTranslationReview("rejected")
@@ -2158,7 +2158,7 @@ async function updateTranslationReview(reviewState, triggerButton = null) {
     renderTranslationRecord(payload.record, true, reviewState);
     loadTranslationRecordsSummary();
     loadStudySessionSummary();
-    setTranslationStatus(reviewState === "reviewed" ? "Saved." : "Rejected.");
+    setTranslationStatus(reviewState === "reviewed" ? "Saved." : "Discarded.");
     if (reviewState === "reviewed") {
       focusNextSentenceAction();
     }

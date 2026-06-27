@@ -493,7 +493,7 @@ def check_translations_ui() -> None:
     for needle in [
         "/assets/notes.css?v=notes20",
         "/assets/translations.css?v=trans25",
-        "/assets/translations.js?v=trans55",
+        "/assets/translations.js?v=trans56",
         'href="/translations" aria-current="page">Translations</a>',
         "Find translation",
         '<option value="">All corpora</option>',
@@ -621,7 +621,7 @@ def check_translations_ui() -> None:
         "Next item.",
         "function updateRecordReview",
         "function reviewActionMessage",
-        "Rejected.",
+        "Discarded.",
         "Moved to check.",
         "const actionMessage = reviewActionMessage(nextState)",
         "translation-record-summary-tools",
@@ -636,8 +636,8 @@ def check_translations_ui() -> None:
         'params.set("q", query)',
         "primary-review-action",
         "translation-more-actions",
-        "<summary>Reject</summary>",
-        "Confirm reject",
+        "<summary>Discard</summary>",
+        "Confirm discard",
         'title="Source"',
         "reviewActionsVisible() && visibleReviewStates(visible).size > 1",
     ]:
@@ -1155,7 +1155,7 @@ def check_work_source_bundle_ui() -> None:
         "Click again to replace this translation.",
         "requestSentenceTranslation(true)",
         'handleConfirmedAction("reject")',
-        "Confirm reject",
+        "Confirm discard",
         "Click again to discard this translation.",
         "hasPendingActionConfirmation",
         "clearActionConfirmations",
@@ -1348,7 +1348,7 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common137", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common138", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common109", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
@@ -1461,7 +1461,7 @@ def check_work_source_bundle_ui() -> None:
         "Next to check",
         "markTranslationReviewed",
         'title="Regenerate translation"',
-        'aria-label="Reject translation"',
+        'aria-label="Discard translation"',
         'aria-label="Copy study card"',
         'aria-label="Add note from translation"',
     ]:
