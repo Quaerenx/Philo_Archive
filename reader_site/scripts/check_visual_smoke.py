@@ -340,7 +340,7 @@ def check_route_markup(route: str, html: str) -> None:
             "목차</summary>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common127",
+            "reader-work.css?v=common128",
             "reader-work.js?v=common169",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
@@ -1202,6 +1202,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         .map((node) => node.dataset.translationSection || '');
       const studyPageBox = studyPage?.getBoundingClientRect();
       const selectedSentenceNode = document.querySelector('.reader-sentence.selected');
+      const selectedSentenceStyle = selectedSentenceNode ? window.getComputedStyle(selectedSentenceNode) : null;
       const quietMarkedSentence = Array.from(document.querySelectorAll('.reader-sentence.has-translation-state'))
         .find((node) => node !== selectedSentenceNode) || null;
       const quietMarkerStyle = quietMarkedSentence ? window.getComputedStyle(quietMarkedSentence, '::after') : null;
@@ -1262,6 +1263,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         studyPanelToggleDisplay: studyPanelToggleStyle?.display || '',
         markerSampleFound: Boolean(quietMarkedSentence),
         quietMarkerOpacity: quietMarkerStyle?.opacity || '',
+        selectedSentenceBackground: selectedSentenceStyle?.backgroundColor || '',
+        selectedSentenceBoxShadow: selectedSentenceStyle?.boxShadow || '',
         selectedMarkerFound: Boolean(selectedMarkerStyle),
         selectedMarkerOpacity: selectedMarkerStyle?.opacity || '',
         selectedMarkerWidth: selectedMarkerStyle?.width || ''
@@ -1288,6 +1291,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (state.markerSampleFound && Number.parseFloat(state.quietMarkerOpacity || '1') > 0.4) {
       throw new Error(`translation state markers should stay quiet in the source text: ${JSON.stringify(state)}`);
+    }
+    if (state.selectedSentenceBackground === 'rgb(255, 241, 184)' || / 3px 0px 0px/.test(state.selectedSentenceBoxShadow)) {
+      throw new Error(`selected sentence should stay legible without a highlighter-heavy mark: ${JSON.stringify(state)}`);
     }
     if (state.selectedMarkerFound && Number.parseFloat(state.selectedMarkerOpacity || '0') < 0.75) {
       throw new Error(`selected translation state marker should remain legible: ${JSON.stringify(state)}`);

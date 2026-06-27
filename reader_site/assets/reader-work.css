@@ -2362,9 +2362,9 @@ h1 {
 }
 
 .reader-sentence.selected {
-  background: #fff1b8;
-  border-bottom-color: #9b7a00;
-  box-shadow: inset 3px 0 0 #c01818;
+  background: #fff7d8;
+  border-bottom-color: #c4a94a;
+  box-shadow: inset 2px 0 0 #b00000;
 }
 
 .reader-sentence.loading {
@@ -2489,8 +2489,8 @@ h1 {
 
 @keyframes archive-translation-arrival {
   0% {
-    background-color: #fff1b8;
-    box-shadow: inset 3px 0 0 #b00000;
+    background-color: #fff7d8;
+    box-shadow: inset 2px 0 0 #b00000;
   }
   100% {
     background-color: transparent;
@@ -2522,12 +2522,12 @@ h1 {
 
 @keyframes archive-source-focus {
   0% {
-    background-color: #fff7cf;
-    box-shadow: inset 3px 0 0 #b00000, 0 0 0 2px rgba(176, 0, 0, 0.12);
+    background-color: #fff9e4;
+    box-shadow: inset 2px 0 0 #b00000, 0 0 0 2px rgba(176, 0, 0, 0.1);
   }
   100% {
-    background-color: #fff1b8;
-    box-shadow: inset 3px 0 0 #c01818, 0 0 0 0 rgba(176, 0, 0, 0);
+    background-color: #fff7d8;
+    box-shadow: inset 2px 0 0 #b00000, 0 0 0 0 rgba(176, 0, 0, 0);
   }
 }
 
