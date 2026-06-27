@@ -313,7 +313,7 @@ def check_route_markup(route: str, html: str) -> None:
             "Contents</summary>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common113",
+            "reader-work.css?v=common114",
             "reader-work.js?v=common151",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
@@ -750,6 +750,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       const readingNext = document.querySelector('[data-translation-quick-action="next-sentence"]');
       const readingSave = document.querySelector('[data-translation-quick-action="mark-reviewed"], .translation-quick-state[data-review-state="reviewed"]');
       const readingNote = document.querySelector('[data-translation-quick-action="draft-note"]');
+      const readingActionsNode = document.querySelector('.translation-reading-actions');
+      const readingActionsStyle = readingActionsNode ? window.getComputedStyle(readingActionsNode) : null;
       const translationHeading = document.querySelector('.translation-section-primary h3');
       const translationHeadingBox = translationHeading?.getBoundingClientRect();
       const commentaryHeading = document.querySelector('#translationOutput .translation-commentary h3');
@@ -783,6 +785,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         readingNextWidth: readingNextBox?.width || 0,
         readingNoteWidth: readingNoteBox?.width || 0,
         readingSaveWidth: readingSaveBox?.width || 0,
+        readingActionsPosition: readingActionsStyle?.position || '',
+        readingActionsBottom: readingActionsStyle?.bottom || '',
         translationHeadingWidth: translationHeadingBox?.width || 0,
         translationHeadingHeight: translationHeadingBox?.height || 0,
         commentaryHeadingWidth: commentaryHeadingBox?.width || 0,
@@ -816,6 +820,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (state.readingNextWidth <= state.readingNoteWidth || state.readingNextWidth <= state.readingSaveWidth) {
       throw new Error(`reading mode should give Next sentence the widest action row: ${JSON.stringify(state)}`);
+    }
+    if (!state.isMobile && (state.readingActionsPosition !== 'sticky' || state.readingActionsBottom !== '8px')) {
+      throw new Error(`desktop reading mode should keep study actions reachable during long commentary: ${JSON.stringify(state)}`);
     }
     if (state.translationHeadingWidth > 2 || state.translationHeadingHeight > 2) {
       throw new Error(`reading mode should hide the redundant Translation heading: ${JSON.stringify(state)}`);

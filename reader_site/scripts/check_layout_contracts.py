@@ -1389,7 +1389,7 @@ def check_work_source_bundle_ui() -> None:
             f"{function_name} reading-first translation layout",
         )
     require_contains(template, "/assets/reader-work.js?v=common151", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common113", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common114", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
         "reading-desk",
@@ -1816,6 +1816,9 @@ def check_work_source_bundle_ui() -> None:
         "@media (min-width: 861px)",
         ".study-page .translation-output",
         "overflow: visible",
+        ".translation-output.reading-mode .translation-reading-actions",
+        "position: sticky",
+        "bottom: 8px",
         "will-change: transform",
         ".translation-output:focus-visible",
         ".translation-quick-actions",
