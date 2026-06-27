@@ -950,7 +950,7 @@ def check_work_source_bundle_ui() -> None:
         "/api/health",
         "setGemmaRuntimeIndicator(\"checking\", \"Checking translator\",",
         "Translator ready",
-        "Translator offline",
+        "Translator off",
         "Translator unavailable",
         "gemmaRuntimeCheckButton.addEventListener",
         "translationRecordsSummary",
@@ -1056,12 +1056,12 @@ def check_work_source_bundle_ui() -> None:
         "function translationErrorIsRuntime",
         "function runtimeRecoveryMarkup",
         "translation-runtime-hint",
-        "The local translator is not running yet.",
-        "Start the local translator, then try this sentence again.",
+        "Translator is off. Start it, then try again.",
+        "Start the translator, then try this sentence again.",
         "translation-runtime-details",
-        "Start manually",
+        "Copy start command",
         "translation-runtime-note",
-        "If the translator did not start automatically, run this command in PowerShell.",
+        "Run this once in PowerShell.",
         "translation-runtime-command",
         "translation-runtime-command-row",
         "data-translation-copy-runtime",
@@ -1359,7 +1359,7 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common147", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common148", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common111", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
