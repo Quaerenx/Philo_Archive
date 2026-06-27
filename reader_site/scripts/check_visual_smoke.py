@@ -548,6 +548,23 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       });
     }
   }
+  if (parsed.pathname.startsWith('/work/')) {
+    const readerToolsState = await page.evaluate(() => {
+      const details = document.querySelector('.toolbar-more');
+      const links = Array.from(details?.querySelectorAll('.toolbar-more-links a') || []);
+      return {
+        summary: details?.querySelector('summary')?.textContent.trim() || '',
+        linkText: links.map((node) => node.textContent.trim()).join(' / '),
+        linkCount: links.length
+      };
+    });
+    if (readerToolsState.summary !== '도구') {
+      throw new Error(`reader tools menu should use reader-facing wording: ${JSON.stringify(readerToolsState)}`);
+    }
+    if (readerToolsState.linkText !== '목차 / 원본 / 노트 / 학습 / 번역') {
+      throw new Error(`reader tools should prioritize document navigation before study actions: ${JSON.stringify(readerToolsState)}`);
+    }
+  }
   if (Number(widthText) <= 420 && ['/search', '/notes', '/study', '/translations'].includes(parsed.pathname)) {
     const toolbarState = await page.evaluate(() => {
       const toolbar = document.querySelector('.toolbar');

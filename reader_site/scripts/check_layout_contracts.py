@@ -1608,6 +1608,17 @@ def check_work_source_bundle_ui() -> None:
         'aria-label="번역으로 메모 추가"',
     ]:
         require_contains(template, needle, "templates/work.html")
+    require_ordered_markers(
+        template,
+        [
+            "{{TOC_LINK}}",
+            'href="{{SOURCE_HREF}}">원본</a>',
+            'href="/notes?corpus_id={{CORPUS_ID}}&work_id={{WORK_ID}}">노트</a>',
+            'href="/study?corpus_id={{CORPUS_ID}}&work_id={{WORK_ID}}">학습</a>',
+            'href="/translations?corpus_id={{CORPUS_ID}}&work_id={{WORK_ID}}">번역</a>',
+        ],
+        "templates/work.html reader tools order",
+    )
     require("작업</summary>" not in template, "templates/work.html should use reader-facing tool wording")
 
     css = read_site_file("assets/reader-work.css")
