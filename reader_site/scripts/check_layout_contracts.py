@@ -281,7 +281,7 @@ def check_search_ui() -> None:
     script = read_site_file("assets/search.js")
     css = read_site_file("assets/search.css")
     for needle in [
-        "/assets/search.css?v=phase25",
+        "/assets/search.css?v=phase26",
         "/assets/search.js?v=phase39",
         'href="/search" aria-current="page">검색</a>',
         'href="/translations"',
@@ -381,6 +381,7 @@ def check_search_ui() -> None:
         "height: 136px",
         ".reader-header",
         '.toolbar a[aria-current="page"]',
+        ".toolbar a:hover",
         "gap: 4px 10px",
         "min-height: 24px",
         "margin-bottom: 16px",
@@ -437,7 +438,7 @@ def check_notes_ui() -> None:
     script = read_site_file("assets/notes.js")
     css = read_site_file("assets/notes.css")
     for needle in [
-        "/assets/notes.css?v=notes23",
+        "/assets/notes.css?v=notes24",
         "/assets/notes.js?v=notes34",
         'href="/notes" aria-current="page">노트</a>',
         "노트 찾기",
@@ -559,6 +560,7 @@ def check_notes_ui() -> None:
         "height: 136px",
         ".reader-header",
         '.toolbar a[aria-current="page"]',
+        ".toolbar a:hover",
         "gap: 4px 10px",
         "min-height: 24px",
         "margin-bottom: 16px",
@@ -626,7 +628,7 @@ def check_translations_ui() -> None:
     base_css = read_site_file("assets/notes.css")
     css = read_site_file("assets/translations.css")
     for needle in [
-        "/assets/notes.css?v=notes23",
+        "/assets/notes.css?v=notes24",
         "/assets/translations.css?v=trans31",
         "/assets/translations.js?v=trans74",
         "<title>번역 목록 / Personal Archive of Literature</title>",
@@ -952,6 +954,7 @@ def check_translations_ui() -> None:
         ".export-tools summary",
         ".review-export-row",
         '.toolbar a[aria-current="page"]',
+        ".toolbar a:hover",
     ]:
         require_contains(base_css, needle, "assets/notes.css")
 
@@ -961,7 +964,7 @@ def check_study_ui() -> None:
     script = read_site_file("assets/study.js")
     css = read_site_file("assets/study.css")
     for needle in [
-        "/assets/study.css?v=study26",
+        "/assets/study.css?v=study27",
         "/assets/study.js?v=study46",
         'href="/study" aria-current="page">학습</a>',
         "저장한 노트 찾기",
@@ -1098,6 +1101,7 @@ def check_study_ui() -> None:
         "margin-bottom: 16px",
         "padding-bottom: 10px",
         '.toolbar a[aria-current="page"]',
+        ".toolbar a:hover",
         "gap: 4px 10px",
         "min-height: 24px",
         ".form-actions",

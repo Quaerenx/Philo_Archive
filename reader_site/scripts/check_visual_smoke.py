@@ -217,7 +217,7 @@ def check_route_markup(route: str, html: str) -> None:
             "저장한 번역</a>",
             "studyStatus",
             "aria-busy=\"false\"",
-            "study.css?v=study26",
+            "study.css?v=study27",
             "study.js?v=study46",
             'href="/study" aria-current="page">학습</a>',
             "filter-panel",
@@ -232,7 +232,7 @@ def check_route_markup(route: str, html: str) -> None:
             "notesActiveFilters",
             "notesStatus",
             "aria-busy=\"false\"",
-            "notes.css?v=notes23",
+            "notes.css?v=notes24",
             "notes.js?v=notes34",
             'href="/notes" aria-current="page">노트</a>',
             "filter-panel",
@@ -250,7 +250,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translationsResults",
             "translationsReviewQueue",
             "aria-busy=\"false\"",
-            "notes.css?v=notes23",
+            "notes.css?v=notes24",
             "translations.css?v=trans31",
             "translations.js?v=trans74",
             'href="/translations" aria-current="page">번역</a>',
@@ -270,7 +270,7 @@ def check_route_markup(route: str, html: str) -> None:
             "searchActiveFilters",
             "searchStatus",
             "aria-busy=\"false\"",
-            "search.css?v=phase25",
+            "search.css?v=phase26",
             "search.js?v=phase39",
             'href="/search" aria-current="page">검색</a>',
             "번역",
@@ -717,6 +717,19 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     });
     if (mobileAnchorState && (mobileAnchorState.position !== 'absolute' || Number.parseFloat(mobileAnchorState.opacity) > 0.05)) {
       throw new Error(`mobile reading anchors should stay out of the default reading flow: ${JSON.stringify(mobileAnchorState)}`);
+    }
+  }
+  if (['/search', '/notes', '/study', '/translations'].includes(parsed.pathname)) {
+    const secondaryToolbarTone = await page.evaluate(() => {
+      const toolbar = document.querySelector('.toolbar');
+      const links = Array.from(toolbar?.querySelectorAll('a') || []);
+      return {
+        text: links.map((node) => node.textContent.trim()).join(' / '),
+        colors: links.map((node) => window.getComputedStyle(node).color)
+      };
+    });
+    if (secondaryToolbarTone.colors.some((color) => color === 'rgb(255, 0, 0)')) {
+      throw new Error(`secondary workflow toolbar should stay quiet instead of red: ${JSON.stringify(secondaryToolbarTone)}`);
     }
   }
   if (Number(widthText) <= 420 && ['/search', '/notes', '/study', '/translations'].includes(parsed.pathname)) {
