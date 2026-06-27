@@ -247,7 +247,7 @@ def check_route_markup(route: str, html: str) -> None:
             "searchStatus",
             "aria-busy=\"false\"",
             "search.css?v=phase21",
-            "search.js?v=phase29",
+            "search.js?v=phase30",
             'href="/search" aria-current="page">Search</a>',
             "Translations",
             "filter-panel",
@@ -462,6 +462,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         hasResults: document.querySelectorAll('#results .result:not(.search-skeleton)').length > 0,
         emptyTitle: empty?.querySelector('h2')?.textContent.trim() || '',
         emptyBodyCount: empty ? empty.querySelectorAll('p').length : 0,
+        emptyBodyText: Array.from(empty?.querySelectorAll('p') || []).map((node) => node.textContent.trim()).join(' '),
+        emptyActions: Array.from(empty?.querySelectorAll('.empty-actions a') || []).map((node) => node.textContent.trim()),
+        emptyButtonActions: Array.from(empty?.querySelectorAll('.empty-actions button') || []).map((node) => node.textContent.trim()),
         actionText: Array.from(document.querySelectorAll('#results .result-actions')).map((node) => node.textContent.trim()).join(' '),
         moreActionCount: document.querySelectorAll('#results .result-more-actions').length,
         inlineActionCount: document.querySelectorAll('#results .result-actions-inline').length,
@@ -473,8 +476,17 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (searchPageState.statusText) {
       throw new Error(`search status should not duplicate rendered results: ${JSON.stringify(searchPageState)}`);
     }
-    if (!searchPageState.hasResults && searchPageState.emptyTitle !== 'No matching passages.') {
+    if (!searchPageState.hasResults && searchPageState.emptyTitle !== 'No results.') {
       throw new Error(`empty search should use a concise title: ${JSON.stringify(searchPageState)}`);
+    }
+    if (!searchPageState.hasResults && /notes|saved notes/i.test(searchPageState.emptyBodyText)) {
+      throw new Error(`empty search should not send users to a duplicate notes search: ${JSON.stringify(searchPageState)}`);
+    }
+    if (!searchPageState.hasResults && (searchPageState.emptyActions.length !== 1 || searchPageState.emptyActions[0] !== 'Archive')) {
+      throw new Error(`empty search should keep only the archive browse action: ${JSON.stringify(searchPageState)}`);
+    }
+    if (!searchPageState.hasResults && !searchPageState.emptyButtonActions.includes('Clear search')) {
+      throw new Error(`empty search should keep the clear action available: ${JSON.stringify(searchPageState)}`);
     }
     if (/Open work|Open source|Open target|Manage note/.test(searchPageState.actionText)) {
       throw new Error(`search result actions should not repeat title-link navigation: ${JSON.stringify(searchPageState)}`);

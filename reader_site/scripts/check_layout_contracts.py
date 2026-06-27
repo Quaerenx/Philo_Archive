@@ -228,7 +228,7 @@ def check_search_ui() -> None:
     css = read_site_file("assets/search.css")
     for needle in [
         "/assets/search.css?v=phase21",
-        "/assets/search.js?v=phase29",
+        "/assets/search.js?v=phase30",
         'href="/search" aria-current="page">Search</a>',
         'href="/translations"',
         "Find text",
@@ -252,7 +252,8 @@ def check_search_ui() -> None:
         "function renderSearchStart",
         "search-start-links",
         "Search the archive.",
-        "No matching passages.",
+        "No results.",
+        "Try a broader term, or browse the archive.",
         "const bodyMarkup = body ?",
         "function clearSearchFilters",
         "function updateSearchClearState",
@@ -296,6 +297,9 @@ def check_search_ui() -> None:
         "Open source",
         "Open target",
         "Manage note",
+        "Search notes",
+        "check saved notes",
+        "function notesSearchHref",
     ]:
         require(noisy_action not in script, f"assets/search.js should not expose redundant search action {noisy_action!r}")
     for needle in [

@@ -114,19 +114,11 @@ function updateSearchClearState(isBusy = form.classList.contains("is-searching")
   updateSearchFilterSummary();
 }
 
-function notesSearchHref(query) {
-  const params = new URLSearchParams();
-  if (query) params.set("q", query);
-  if (corpusSelect.value) params.set("corpus_id", corpusSelect.value);
-  if (!workSelect.disabled && workSelect.value) params.set("work_id", workSelect.value);
-  return params.toString() ? `/notes?${params}` : "/notes";
-}
-
 function renderEmptySearch(query) {
   const filtered = searchHasActiveFilters();
-  const title = query ? "No matching passages." : "Search the archive.";
+  const title = query ? "No results." : "Search the archive.";
   const body = query
-    ? "Try a broader term, clear filters, or check saved notes."
+    ? "Try a broader term, or browse the archive."
     : "";
   const clearAction = filtered
     ? '<button type="button" data-empty-action="clear-search">Clear search</button>'
@@ -137,7 +129,6 @@ function renderEmptySearch(query) {
     ${bodyMarkup}
     <div class="empty-actions">
       ${clearAction}
-      <a href="${escapeHtml(notesSearchHref(query))}">Search notes</a>
       <a href="/">Archive</a>
     </div>
   </section>`;
