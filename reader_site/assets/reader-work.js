@@ -31,6 +31,7 @@ const gemmaRuntimeStatus = document.getElementById("gemmaRuntimeStatus");
 const gemmaRuntimeStatusText = document.getElementById("gemmaRuntimeStatusText");
 const gemmaRuntimeCheckButton = document.getElementById("gemmaRuntimeCheck");
 const translationOutput = document.getElementById("translationOutput");
+const translationUtility = document.querySelector(".translation-utility");
 const translationCard = document.querySelector(".translation-card");
 const studyPage = document.querySelector(".study-page");
 const studyPanelToggle = document.getElementById("studyPanelToggle");
@@ -335,6 +336,11 @@ function setTranslationStatus(message, persistent = false) {
       translationStatus.classList.remove("visible");
     }, 3200);
   }
+}
+
+function setTranslationUtilityVisible(visible) {
+  if (!translationUtility) return;
+  translationUtility.hidden = !visible;
 }
 
 function setGemmaRuntimeIndicator(state, text, title = "") {
@@ -1517,6 +1523,7 @@ function renderCommentary(commentary) {
 
 function renderTranslationEmptyState() {
   if (!translationOutput || selectedSentence) return;
+  setTranslationUtilityVisible(false);
   translationOutput.hidden = false;
   translationOutput.setAttribute("aria-busy", "false");
   translationOutput.classList.toggle("reading-mode", translationMode === "reading");
@@ -1525,7 +1532,7 @@ function renderTranslationEmptyState() {
     <div class="translation-result translation-empty-state" role="note">
       <section class="translation-section translation-section-primary" data-translation-section="translation">
         <h3>번역</h3>
-        <p class="translation-primary translation-empty-copy">공부할 문장을 선택하세요.</p>
+        <p class="translation-primary translation-empty-copy">원문 문장을 클릭하세요.</p>
       </section>
     </div>`;
 }
@@ -1687,6 +1694,7 @@ function renderTranslationPending(regenerate = false) {
   selectedTranslationRecord = null;
   pendingTranslationRegenerate = Boolean(regenerate);
   setTranslationReviewVisualState("");
+  setTranslationUtilityVisible(true);
   translationOutput.hidden = false;
   translationOutput.classList.toggle("reading-mode", translationMode === "reading");
   translationOutput.classList.toggle("study-mode", translationMode === "study");
@@ -1766,6 +1774,7 @@ function renderTranslationError(message) {
   pendingTranslationRegenerate = false;
   setTranslationBusy(false);
   setTranslationReviewVisualState("");
+  setTranslationUtilityVisible(true);
   translationOutput.hidden = false;
   translationOutput.classList.toggle("reading-mode", translationMode === "reading");
   translationOutput.classList.toggle("study-mode", translationMode === "study");
@@ -1796,6 +1805,7 @@ function renderTranslationCancelled(message = "번역 요청이 취소되었습�
   selectedTranslationRecord = null;
   setTranslationBusy(false);
   setTranslationReviewVisualState("");
+  setTranslationUtilityVisible(true);
   translationOutput.hidden = false;
   resetTranslationOutputScroll();
   const position = selectedSentence ? selectedSentencePositionLabel() : "선택한 문장";
@@ -1826,6 +1836,7 @@ function renderStudySessionPreviewPending() {
   selectedTranslationRecord = null;
   pendingTranslationRegenerate = false;
   setTranslationReviewVisualState("");
+  setTranslationUtilityVisible(true);
   translationOutput.hidden = false;
   translationOutput.classList.toggle("reading-mode", false);
   translationOutput.classList.toggle("study-mode", true);
@@ -1942,6 +1953,7 @@ function renderStudySessionPreview(payload) {
   pendingTranslationRegenerate = false;
   setTranslationBusy(false);
   setTranslationReviewVisualState("");
+  setTranslationUtilityVisible(true);
   translationOutput.hidden = false;
   translationOutput.classList.toggle("reading-mode", false);
   translationOutput.classList.toggle("study-mode", true);
@@ -1980,6 +1992,7 @@ function renderStudySessionPreviewError(message) {
   selectedTranslationRecord = null;
   setTranslationBusy(false);
   setTranslationReviewVisualState("");
+  setTranslationUtilityVisible(true);
   translationOutput.hidden = false;
   resetTranslationOutputScroll();
   translationOutput.innerHTML = `
@@ -2023,6 +2036,7 @@ function renderTranslationRecord(record, cached, reviewFlashState = "") {
   const reviewState = normalizedTranslationReviewState(record.review_state || "generated");
   setTranslationBusy(false);
   setTranslationReviewVisualState(reviewState);
+  setTranslationUtilityVisible(true);
   translationOutput.hidden = false;
   translationOutput.classList.toggle("reading-mode", translationMode === "reading");
   translationOutput.classList.toggle("study-mode", translationMode === "study");

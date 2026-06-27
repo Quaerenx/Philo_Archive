@@ -96,7 +96,8 @@ def check_selected_sentence_dom(html: str, viewport_label: str) -> None:
 
 def check_recent_work_dom(html: str, viewport_label: str) -> None:
     context = f"home recent work {viewport_label}"
-    require("Continue reading" in html, f"{context} missing continue reading entry")
+    require("이어 읽기" in html, f"{context} missing continue reading entry")
+    require("Continue reading" not in html, f"{context} should keep recent work text in the reader language")
     require("recent-work" in html, f"{context} missing recent work markup")
     require("/work/nietzsche/GM#p-0023.s001" in html, f"{context} missing recent sentence link")
     require("Zur Genealogie der Moral" in html, f"{context} missing recent work title")

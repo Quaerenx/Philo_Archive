@@ -1198,7 +1198,9 @@ def check_work_source_bundle_ui() -> None:
         "renderTranslationEmptyState",
         "translation-empty-state",
         "translation-empty-copy",
-        "공부할 문장을 선택하세요.",
+        "원문 문장을 클릭하세요.",
+        "setTranslationUtilityVisible(false)",
+        "setTranslationUtilityVisible(true)",
         "syncTranslationModeDensity",
         "translationJumpNav",
         "translationResultToolbar",
@@ -1490,7 +1492,7 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common158", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common159", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common117", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',

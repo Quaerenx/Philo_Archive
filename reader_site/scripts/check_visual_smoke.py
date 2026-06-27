@@ -338,7 +338,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common117",
-            "reader-work.js?v=common158",
+            "reader-work.js?v=common159",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         require("Contents (" not in html, f"{route} should not expose TOC inventory counts")
@@ -587,6 +587,26 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
     } else if (readerToolsState.linksDisplay !== 'flex' || readerToolsState.firstLinkHeight < 24) {
       throw new Error(`desktop reader tools menu should keep readable open targets: ${JSON.stringify(readerToolsState)}`);
+    }
+    if (!parsed.hash) {
+      await page.waitForSelector('#translationOutput:not([hidden])', { timeout: 5000 }).catch(() => {});
+      const emptyTranslationState = await page.evaluate(() => {
+        const output = document.querySelector('#translationOutput');
+        const utility = document.querySelector('.translation-utility');
+        const utilityStyle = utility ? window.getComputedStyle(utility) : null;
+        return {
+          outputHidden: Boolean(output?.hidden),
+          emptyCopy: output?.querySelector('.translation-empty-copy')?.textContent.trim() || '',
+          utilityHidden: Boolean(utility?.hidden),
+          utilityDisplay: utilityStyle?.display || ''
+        };
+      });
+      if (emptyTranslationState.outputHidden || emptyTranslationState.emptyCopy !== '원문 문장을 클릭하세요.') {
+        throw new Error(`empty translation panel should explain the direct click workflow: ${JSON.stringify(emptyTranslationState)}`);
+      }
+      if (!emptyTranslationState.utilityHidden || emptyTranslationState.utilityDisplay !== 'none') {
+        throw new Error(`empty translation panel should hide advanced options until a sentence is selected: ${JSON.stringify(emptyTranslationState)}`);
+      }
     }
   }
   if (Number(widthText) <= 420) {
