@@ -252,7 +252,7 @@ def check_route_markup(route: str, html: str) -> None:
             "aria-busy=\"false\"",
             "notes.css?v=notes23",
             "translations.css?v=trans30",
-            "translations.js?v=trans71",
+            "translations.js?v=trans72",
             'href="/translations" aria-current="page">번역</a>',
             "번역 찾기",
             "translationsListTools",

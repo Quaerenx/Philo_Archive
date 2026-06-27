@@ -28,9 +28,9 @@ const LAST_CORPUS_STORAGE_KEY = "philoArchive.lastCorpusId";
 const PAGE_TITLE_SUFFIX = "Personal Archive of Literature";
 const REVIEW_LABELS = {
   all: "전체",
-  generated: "검토 필요",
-  reviewed: "저장됨",
-  rejected: "제외됨"
+  generated: "검토할 번역",
+  reviewed: "저장한 번역",
+  rejected: "제외한 번역"
 };
 
 function escapeHtml(value) {
@@ -150,8 +150,8 @@ function updateWorkOptions() {
     .map((option) => `<option value="${escapeHtml(option.workId)}" label="${escapeHtml(option.label)}"></option>`)
     .join("");
   workInput.placeholder = corpusSelect.value
-    ? (options.length ? `${options.length.toLocaleString()}개 문서` : "문서 ID")
-    : "문서 ID 선택";
+    ? (options.length ? "문서 선택" : "문서 직접 입력")
+    : "자료 선택 후 문서 선택";
 }
 
 function fetchParams(format = "json") {
