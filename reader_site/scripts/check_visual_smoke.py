@@ -217,7 +217,7 @@ def check_route_markup(route: str, html: str) -> None:
             "저장한 번역</a>",
             "studyStatus",
             "aria-busy=\"false\"",
-            "study.css?v=study25",
+            "study.css?v=study26",
             "study.js?v=study45",
             'href="/study" aria-current="page">학습</a>',
             "filter-panel",
@@ -898,9 +898,12 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     const studyPageState = await page.evaluate(() => {
       const empty = document.querySelector('#studyResults .empty-state');
       const overviewPrimary = document.querySelector('#studyOverview .study-overview-primary');
+      const results = document.querySelector('#studyResults');
+      const exportTools = document.querySelector('#studyExportTools');
       return {
         hasGroups: document.querySelectorAll('#studyResults .study-group:not(.study-skeleton)').length > 0,
         formHidden: Boolean(document.querySelector('#studyForm')?.hidden),
+        exportAfterResults: Boolean(results && exportTools && (results.compareDocumentPosition(exportTools) & Node.DOCUMENT_POSITION_FOLLOWING)),
         overviewHidden: Boolean(document.querySelector('#studyOverview')?.hidden),
         overviewText: document.querySelector('#studyOverview')?.textContent.trim() || '',
         overviewPrimaryText: overviewPrimary?.textContent.trim() || '',
@@ -917,6 +920,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         primaryActionTitle: empty?.querySelector('.empty-primary-action')?.getAttribute('title') || ''
       };
     });
+    if (!studyPageState.exportAfterResults) {
+      throw new Error(`study export tools should stay after the learning results: ${JSON.stringify(studyPageState)}`);
+    }
     if (!studyPageState.hasGroups) {
       if (!studyPageState.formHidden) throw new Error(`empty study page should hide filter form: ${JSON.stringify(studyPageState)}`);
       const hasReviewAction = studyPageState.primaryAction === '검토할 번역';

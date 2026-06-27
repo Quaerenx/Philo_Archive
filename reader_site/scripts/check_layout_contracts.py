@@ -884,7 +884,7 @@ def check_study_ui() -> None:
     script = read_site_file("assets/study.js")
     css = read_site_file("assets/study.css")
     for needle in [
-        "/assets/study.css?v=study25",
+        "/assets/study.css?v=study26",
         "/assets/study.js?v=study45",
         'href="/study" aria-current="page">학습</a>',
         "저장한 노트 찾기",
@@ -912,6 +912,16 @@ def check_study_ui() -> None:
         'aria-busy="false"',
     ]:
         require_contains(html, needle, "study.html")
+    require_ordered_markers(
+        html,
+        [
+            'id="studyOverview"',
+            'id="studyStatus"',
+            'id="studyResults"',
+            'id="studyExportTools"',
+        ],
+        "study.html keeps export tools after the learning results",
+    )
     for needle in [
         "activeStudyController",
         "activeStudyRequest",
@@ -1019,6 +1029,7 @@ def check_study_ui() -> None:
         ".export-tools",
         ".export-tools summary",
         ".export-tools[open] summary::after",
+        "margin: 18px 0 0",
         ".active-filters",
         ".active-filters.has-filters",
         ".study-overview",
