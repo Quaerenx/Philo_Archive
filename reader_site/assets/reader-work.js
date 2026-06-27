@@ -250,6 +250,18 @@ function setStudyPanelExpanded(expanded, remember = false) {
   }
 }
 
+function returnToSelectedSourceAfterPanelCollapse() {
+  if (!isMobileStudyLayout()) return;
+  const node = selectedSentenceNode();
+  if (!node) return;
+  window.requestAnimationFrame(() => {
+    scrollSentenceIntoView(node);
+    updateReadingPosition(node);
+    updateTranslationTargetViewState();
+    flashSourceFocus(node);
+  });
+}
+
 function updateStudyPanelScrim() {
   if (!studyPanelScrim || !studyPage) return;
   const visible = isMobileStudyLayout() && studyPage.classList.contains("is-expanded");
@@ -2771,7 +2783,11 @@ if (studyPanelToggle && studyPage) {
       ignoreNextStudyPanelToggleClick = false;
       return;
     }
-    setStudyPanelExpanded(!studyPage.classList.contains("is-expanded"), true);
+    const wasExpanded = studyPage.classList.contains("is-expanded");
+    setStudyPanelExpanded(!wasExpanded, true);
+    if (wasExpanded) {
+      returnToSelectedSourceAfterPanelCollapse();
+    }
   });
   studyPanelToggle.addEventListener("pointerdown", beginStudyPanelDrag);
   studyPanelToggle.addEventListener("pointermove", updateStudyPanelDrag);
