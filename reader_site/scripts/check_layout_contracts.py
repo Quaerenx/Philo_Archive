@@ -1049,17 +1049,19 @@ def check_work_source_bundle_ui() -> None:
         "function translationErrorIsRuntime",
         "function runtimeRecoveryMarkup",
         "translation-runtime-hint",
-        "Translator is offline.",
-        "Start the translator, then retry this sentence.",
+        "The local translator is not running yet.",
+        "Start the local translator, then try this sentence again.",
         "translation-runtime-details",
-        "Startup command",
+        "Start manually",
+        "translation-runtime-note",
+        "If the translator did not start automatically, run this command in PowerShell.",
         "translation-runtime-command",
         "translation-runtime-command-row",
         "data-translation-copy-runtime",
         "data-translation-check-runtime",
-        "Check translator",
-        "Copy startup command",
-        "Start command copied.",
+        "Check again",
+        "Copy command",
+        "Command copied.",
         ".\\\\run_reader_with_gemma.ps1",
         "translation-error-actions",
         "translation-unavailable-copy",
@@ -1346,8 +1348,8 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common136", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common108", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common137", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common109", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
         "reading-desk",
@@ -1673,6 +1675,7 @@ def check_work_source_bundle_ui() -> None:
         ".translation-runtime-details",
         ".translation-runtime-details summary",
         ".translation-runtime-details[open] summary",
+        ".translation-runtime-note",
         ".translation-runtime-command",
         ".translation-runtime-command-row",
         ".translation-runtime-command-row button",

@@ -1681,19 +1681,20 @@ function translationErrorIsRuntime(message) {
 
 function translationErrorDisplayMessage(message) {
   return translationErrorIsRuntime(message)
-    ? "Translator is offline."
+    ? "The local translator is not running yet."
     : cleanText(message || "Translation unavailable.");
 }
 
 function runtimeRecoveryMarkup(message) {
   if (!translationErrorIsRuntime(message)) return "";
   return `
-      <p class="translation-runtime-hint">Start the translator, then retry this sentence.</p>
+      <p class="translation-runtime-hint">Start the local translator, then try this sentence again.</p>
       <details class="translation-runtime-details">
-        <summary>Startup command</summary>
+        <summary>Start manually</summary>
+        <p class="translation-runtime-note">If the translator did not start automatically, run this command in PowerShell.</p>
         <div class="translation-runtime-command-row">
           <code class="translation-runtime-command">${escapeHtml(GEMMA_RUNTIME_COMMAND)}</code>
-          <button type="button" data-translation-copy-runtime>Copy startup command</button>
+          <button type="button" data-translation-copy-runtime>Copy command</button>
         </div>
       </details>`;
 }
@@ -1726,7 +1727,7 @@ function renderTranslationError(message) {
         ${runtimeRecoveryMarkup(cleanMessage)}
         <div class="translation-error-actions">
           <button type="button" data-translation-retry="${escapeHtml(retryMode)}">${escapeHtml(retryLabel)}</button>
-          ${isRuntimeError ? '<button type="button" data-translation-check-runtime>Check translator</button>' : ""}
+          ${isRuntimeError ? '<button type="button" data-translation-check-runtime>Check again</button>' : ""}
         </div>
       </div>
     </div>`;
@@ -2090,7 +2091,7 @@ async function requestSentenceTranslation(regenerate = false) {
     if (!response.ok || !payload.ok) {
       const message = cleanText(payload.error || "Translator is offline.");
       if (translationErrorIsRuntime(message)) {
-        setGemmaRuntimeIndicator("offline", "Translator offline", "Start the translator, then retry.");
+        setGemmaRuntimeIndicator("offline", "Translator offline", "Start the local translator, then try again.");
       }
       setTranslationStatus(translationErrorDisplayMessage(message), true);
       renderTranslationError(message);
@@ -2111,7 +2112,7 @@ async function requestSentenceTranslation(regenerate = false) {
     if (requestId === activeTranslationRequest) {
       const message = cleanText(error && error.message ? error.message : "Translator is offline.");
       if (translationErrorIsRuntime(message)) {
-        setGemmaRuntimeIndicator("offline", "Translator offline", "Start the translator, then retry.");
+        setGemmaRuntimeIndicator("offline", "Translator offline", "Start the local translator, then try again.");
       }
       setTranslationStatus(translationErrorDisplayMessage(message), true);
       renderTranslationError(message);
@@ -2786,8 +2787,8 @@ translationOutput.addEventListener("click", (event) => {
   const copyRuntime = event.target.closest("[data-translation-copy-runtime]");
   if (copyRuntime) {
     copyText(GEMMA_RUNTIME_COMMAND)
-      .then(() => setTranslationStatus("Start command copied."))
-      .catch(() => setTranslationStatus("Could not copy start command.", true));
+      .then(() => setTranslationStatus("Command copied."))
+      .catch(() => setTranslationStatus("Could not copy command.", true));
     return;
   }
   const checkRuntime = event.target.closest("[data-translation-check-runtime]");
