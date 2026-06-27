@@ -259,7 +259,8 @@ def check_study_target_ui() -> None:
     for needle in [
         "function noteManageHref",
         "원문 위치 없음",
-        ">수정</a>",
+        "const editLabel = `노트 수정: ${cleanText(target)}`",
+        ">노트 수정</a>",
     ]:
         require_contains(script, needle, "assets/study.js")
 
@@ -885,7 +886,7 @@ def check_study_ui() -> None:
     css = read_site_file("assets/study.css")
     for needle in [
         "/assets/study.css?v=study26",
-        "/assets/study.js?v=study45",
+        "/assets/study.js?v=study46",
         'href="/study" aria-current="page">학습</a>',
         "저장한 노트 찾기",
         '<button id="studySubmit" type="submit">적용</button>',
@@ -970,7 +971,9 @@ def check_study_ui() -> None:
         "function corpusDisplayName",
         "function workDisplayName",
         ">이어 읽기</a>",
-        ">노트</a>",
+        "const readLabel = `이어 읽기: ${title}`",
+        "const notesLabel = `노트 보기: ${title}`",
+        ">노트 보기</a>",
         "function studyCountLabel",
         "function studyGroupMeta",
         "archiveCorpora = payload.corpora || []",

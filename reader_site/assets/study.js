@@ -305,7 +305,8 @@ function renderNote(note) {
     tags ? `# ${tags}` : "",
     missingTarget
   ].filter(Boolean).join(" / ");
-  const actions = `<a href="${escapeHtml(manageHref)}">수정</a>`;
+  const editLabel = `노트 수정: ${cleanText(target)}`;
+  const actions = `<a href="${escapeHtml(manageHref)}" aria-label="${escapeHtml(editLabel)}" title="${escapeHtml(editLabel)}">노트 수정</a>`;
   return `<article class="study-note">
     <div class="note-title">
       ${targetLink}
@@ -396,6 +397,8 @@ function renderStudy(payload, translationSummary = null) {
       const context = group.work_id ? corpusDisplayName(group.corpus_id) : "";
       const workHref = studyGroupWorkHref(group);
       const notesHref = `/notes?corpus_id=${encodeURIComponent(group.corpus_id)}&work_id=${encodeURIComponent(group.work_id)}&review_state=reviewed`;
+      const readLabel = `이어 읽기: ${title}`;
+      const notesLabel = `노트 보기: ${title}`;
       const tagCounts = (group.tag_counts || [])
         .map((item) => `<span class="study-tag">${escapeHtml(item.tag)} <span>${Number(item.count || 0).toLocaleString()}</span></span>`)
         .join("");
@@ -409,8 +412,8 @@ function renderStudy(payload, translationSummary = null) {
         ${tagsPanel}
         ${group.notes.map(renderNote).join("")}
         <div class="group-actions">
-          ${workHref ? `<a href="${escapeHtml(workHref)}">이어 읽기</a>` : ""}
-          <a href="${escapeHtml(notesHref)}">노트</a>
+          ${workHref ? `<a href="${escapeHtml(workHref)}" aria-label="${escapeHtml(readLabel)}" title="${escapeHtml(readLabel)}">이어 읽기</a>` : ""}
+          <a href="${escapeHtml(notesHref)}" aria-label="${escapeHtml(notesLabel)}" title="${escapeHtml(notesLabel)}">노트 보기</a>
         </div>
       </section>`;
     }).join("")

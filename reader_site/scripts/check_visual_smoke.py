@@ -218,7 +218,7 @@ def check_route_markup(route: str, html: str) -> None:
             "studyStatus",
             "aria-busy=\"false\"",
             "study.css?v=study26",
-            "study.js?v=study45",
+            "study.js?v=study46",
             'href="/study" aria-current="page">학습</a>',
             "filter-panel",
             "조건</summary>",
@@ -912,6 +912,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         overviewLinkTexts: Array.from(document.querySelectorAll('#studyOverview .study-overview-translations a')).map((node) => node.textContent.trim()),
         overviewLinkLabels: Array.from(document.querySelectorAll('#studyOverview .study-overview-translations a')).map((node) => node.getAttribute('aria-label') || ''),
         firstGroupActions: Array.from(document.querySelectorAll('#studyResults .study-group:first-of-type .group-actions a')).map((node) => node.textContent.trim()),
+        firstGroupActionLabels: Array.from(document.querySelectorAll('#studyResults .study-group:first-of-type .group-actions a')).map((node) => node.getAttribute('aria-label') || ''),
+        firstNoteActions: Array.from(document.querySelectorAll('#studyResults .study-group:first-of-type .study-note:first-of-type .note-actions a')).map((node) => node.textContent.trim()),
+        firstNoteActionLabels: Array.from(document.querySelectorAll('#studyResults .study-group:first-of-type .study-note:first-of-type .note-actions a')).map((node) => node.getAttribute('aria-label') || ''),
         emptyTitle: empty?.querySelector('h2')?.textContent.trim() || '',
         emptyBodyCount: empty ? empty.querySelectorAll('p').length : 0,
         emptyActions: Array.from(empty?.querySelectorAll('.empty-actions a') || []).map((node) => node.textContent.trim()),
@@ -969,6 +972,18 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       if (!studyPageState.firstGroupActions.includes('이어 읽기')) {
         throw new Error(`study note groups should offer a clear continue-reading action: ${JSON.stringify(studyPageState)}`);
+      }
+      if (!studyPageState.firstGroupActions.includes('노트 보기') || studyPageState.firstGroupActions.includes('노트')) {
+        throw new Error(`study note groups should make note-list navigation explicit: ${JSON.stringify(studyPageState)}`);
+      }
+      if (studyPageState.firstGroupActionLabels.some((label) => label && !/^(이어 읽기|노트 보기):\s+/.test(label))) {
+        throw new Error(`study group actions should include readable targets in accessible labels: ${JSON.stringify(studyPageState)}`);
+      }
+      if (!studyPageState.firstNoteActions.includes('노트 수정') || studyPageState.firstNoteActions.includes('수정')) {
+        throw new Error(`study note actions should name note editing explicitly: ${JSON.stringify(studyPageState)}`);
+      }
+      if (studyPageState.firstNoteActionLabels.some((label) => label && !label.startsWith('노트 수정: '))) {
+        throw new Error(`study note edit links should include their target in accessible labels: ${JSON.stringify(studyPageState)}`);
       }
     }
     if (studyPageState.overviewText.includes('제외')) {
