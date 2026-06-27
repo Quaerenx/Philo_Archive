@@ -1168,8 +1168,10 @@ def check_work_source_bundle_ui() -> None:
         "studyPanelToggleSummary",
         "updateStudyPanelToggleLabel",
         "Select sentence",
-        "translating",
-        "needs retry",
+        "Selected sentence",
+        "Translating",
+        "Needs retry",
+        "Translation ready",
         "const action = expanded ? \"Back to text\" : \"Study\"",
         "prefersReducedMotion",
         "sentenceScrollBlock",
@@ -1388,7 +1390,7 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common151", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common152", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common115", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',

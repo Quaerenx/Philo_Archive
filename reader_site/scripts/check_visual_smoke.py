@@ -314,7 +314,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common115",
-            "reader-work.js?v=common151",
+            "reader-work.js?v=common152",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         require("Contents (" not in html, f"{route} should not expose TOC inventory counts")
@@ -746,6 +746,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       const output = document.querySelector('#translationOutput');
       const card = document.querySelector('.translation-card');
       const studyPage = document.querySelector('.study-page');
+      const studyPanelToggle = document.querySelector('#studyPanelToggle');
       const activeTab = document.querySelector('.study-tab.active');
       const readingNext = document.querySelector('[data-translation-quick-action="next-sentence"]');
       const readingSave = document.querySelector('[data-translation-quick-action="mark-reviewed"], .translation-quick-state[data-review-state="reviewed"]');
@@ -802,7 +803,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         visibleExtraCount: visibleExtras.length,
         activeTab: activeTab ? activeTab.textContent.trim() : '',
         studyToolsOpen: Boolean(document.querySelector('.translation-utility')?.open),
-        studyToolsSummary: document.querySelector('.translation-utility summary')?.textContent.trim() || ''
+        studyToolsSummary: document.querySelector('.translation-utility summary')?.textContent.trim() || '',
+        studyPanelToggleSummary: studyPanelToggle?.querySelector('.study-panel-toggle-summary')?.textContent.trim() || '',
+        studyPanelToggleLabel: studyPanelToggle?.getAttribute('aria-label') || ''
       };
     });
     if (!state.selectedSentence) throw new Error(`selected work route did not select a sentence: ${JSON.stringify(state)}`);
@@ -862,6 +865,12 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (state.activeTab !== 'Translation') throw new Error(`selected work route did not keep Translation tab active: ${JSON.stringify(state)}`);
     if (state.studyToolsOpen) throw new Error(`study tools should stay collapsed in default reading mode: ${JSON.stringify(state)}`);
     if (state.studyToolsSummary !== 'Options') throw new Error(`study tools summary should stay concise and clear: ${JSON.stringify(state)}`);
+    if (!['Selected sentence', 'Translation ready'].includes(state.studyPanelToggleSummary)) {
+      throw new Error(`mobile study toggle should describe reading state without numeric metadata: ${JSON.stringify(state)}`);
+    }
+    if (/Sentence\s+\d+\s+of\s+\d+/i.test(`${state.studyPanelToggleSummary} ${state.studyPanelToggleLabel}`)) {
+      throw new Error(`mobile study toggle should hide sentence count metadata from the primary reading handle: ${JSON.stringify(state)}`);
+    }
     if (state.isMobile && state.studyPageHeight > Math.ceil(state.viewportHeight * 0.70)) {
       throw new Error(`mobile study panel should leave source text visible above it: ${JSON.stringify(state)}`);
     }

@@ -215,17 +215,16 @@ function selectedSentencePositionLabel() {
 
 function studyPanelToggleSummary() {
   if (!selectedSentence) return "Select sentence";
-  const position = selectedSentencePositionLabel();
   if (translationCard && translationCard.classList.contains("is-loading")) {
-    return `${position} / translating`;
+    return "Translating";
   }
   if (translationOutput && translationOutput.querySelector(".translation-error")) {
-    return `${position} / needs retry`;
+    return "Needs retry";
   }
   if (selectedTranslationRecord) {
-    return position;
+    return "Translation ready";
   }
-  return position;
+  return "Selected sentence";
 }
 
 function updateStudyPanelToggleLabel() {
