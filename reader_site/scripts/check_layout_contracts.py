@@ -414,9 +414,10 @@ def check_notes_ui() -> None:
     css = read_site_file("assets/notes.css")
     for needle in [
         "/assets/notes.css?v=notes22",
-        "/assets/notes.js?v=notes31",
+        "/assets/notes.js?v=notes32",
         'href="/notes" aria-current="page">노트</a>',
         "노트 찾기",
+        "노트 찾기</summary>",
         '<button id="notesSubmit" type="submit">적용</button>',
         'id="notesSubmit"',
         'id="notesClear"',
@@ -480,6 +481,7 @@ def check_notes_ui() -> None:
         "queryInput.focus();",
         "function updateNotesClearState",
         "function updateNotesFilterSummary",
+        "active-filters-label\">조건</span>",
         "activeFiltersEl.hidden = chips.length === 0",
         "function removeNotesFilter",
         "notesClear.addEventListener",

@@ -232,9 +232,10 @@ def check_route_markup(route: str, html: str) -> None:
             "notesStatus",
             "aria-busy=\"false\"",
             "notes.css?v=notes22",
-            "notes.js?v=notes31",
+            "notes.js?v=notes32",
             'href="/notes" aria-current="page">노트</a>',
             "filter-panel",
+            "노트 찾기</summary>",
             "export-tools",
             "내보내기</summary>",
         ]:
