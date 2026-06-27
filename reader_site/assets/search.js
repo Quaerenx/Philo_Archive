@@ -18,10 +18,10 @@ const metadataEndpoints = {
   wittgenstein: "/api/wittgenstein/metadata"
 };
 const startCorpora = [
-  ["nietzsche", "Nietzsche"],
-  ["bible", "Bible"],
-  ["kierkegaard", "Kierkegaard"],
-  ["wittgenstein", "Wittgenstein"]
+  ["nietzsche", "니체"],
+  ["bible", "성경"],
+  ["kierkegaard", "키르케고르"],
+  ["wittgenstein", "비트겐슈타인"]
 ];
 
 function escapeHtml(value) {
@@ -54,9 +54,9 @@ function corpusLabel(value) {
 
 function reviewStateLabel(value) {
   const state = String(value || "").toLowerCase();
-  if (state === "reviewed") return "Reviewed";
-  if (state === "rejected") return "Rejected";
-  if (state === "generated") return "Generated";
+  if (state === "reviewed") return "저장됨";
+  if (state === "rejected") return "제외됨";
+  if (state === "generated") return "검토 필요";
   return state ? variantLabel(state) : "";
 }
 
@@ -83,7 +83,7 @@ function selectedOptionText(select) {
 }
 
 function renderFilterChip(filterName, label, value) {
-  return `<button type="button" class="filter-chip" data-filter="${escapeHtml(filterName)}" aria-label="Remove ${escapeHtml(label)} filter">
+  return `<button type="button" class="filter-chip" data-filter="${escapeHtml(filterName)}" aria-label="${escapeHtml(label)} 필터 제거">
     <span>${escapeHtml(label)}: ${escapeHtml(value)}</span>
     <span aria-hidden="true">x</span>
   </button>`;
@@ -102,13 +102,13 @@ function updateSearchFilterSummary() {
   if (!activeFiltersEl) return;
   const chips = [];
   const query = queryInput.value.trim();
-  if (query) chips.push(renderFilterChip("query", "Text", query));
-  if (corpusSelect.value) chips.push(renderFilterChip("corpus", "Corpus", selectedOptionText(corpusSelect)));
-  if (!workSelect.disabled && workSelect.value) chips.push(renderFilterChip("work", "Work", selectedOptionText(workSelect)));
-  if (!variantSelect.disabled && variantSelect.value) chips.push(renderFilterChip("variant", "Variant", selectedOptionText(variantSelect)));
+  if (query) chips.push(renderFilterChip("query", "본문", query));
+  if (corpusSelect.value) chips.push(renderFilterChip("corpus", "자료", selectedOptionText(corpusSelect)));
+  if (!workSelect.disabled && workSelect.value) chips.push(renderFilterChip("work", "문서", selectedOptionText(workSelect)));
+  if (!variantSelect.disabled && variantSelect.value) chips.push(renderFilterChip("variant", "판본", selectedOptionText(variantSelect)));
   activeFiltersEl.classList.toggle("has-filters", chips.length > 0);
   activeFiltersEl.innerHTML = chips.length
-    ? `<span class="active-filters-label">Filters</span>${chips.join("")}`
+    ? `<span class="active-filters-label">필터</span>${chips.join("")}`
     : "";
 }
 
@@ -120,12 +120,12 @@ function updateSearchClearState(isBusy = form.classList.contains("is-searching")
 
 function renderEmptySearch(query) {
   const filtered = searchHasActiveFilters();
-  const title = query ? "No results." : "Search the archive.";
+  const title = query ? "검색 결과가 없습니다." : "검색어를 입력하세요.";
   const body = query
-    ? "Try a broader term, or browse the archive."
+    ? "검색어를 줄이거나 자료 범위를 넓혀보세요."
     : "";
   const clearAction = filtered
-    ? '<button type="button" data-empty-action="clear-search">Clear search</button>'
+    ? '<button type="button" data-empty-action="clear-search">검색 지우기</button>'
     : "";
   const bodyMarkup = body ? `<p>${escapeHtml(body)}</p>` : "";
   return `<section class="empty-state">
@@ -133,7 +133,7 @@ function renderEmptySearch(query) {
     ${bodyMarkup}
     <div class="empty-actions">
       ${clearAction}
-      <a href="/">Archive</a>
+      <a href="/">전체 보기</a>
     </div>
   </section>`;
 }
@@ -142,8 +142,8 @@ function renderSearchStart() {
   const links = startCorpora
     .map(([corpusId, label]) => `<a href="/category/${escapeHtml(corpusId)}">${escapeHtml(label)}</a>`)
     .join("");
-  return `<section class="search-start" aria-label="Browse archive">
-    <h2>Browse</h2>
+  return `<section class="search-start" aria-label="자료 둘러보기">
+    <h2>둘러보기</h2>
     <div class="search-start-links">
       ${links}
     </div>
@@ -183,10 +183,6 @@ function resultGroupHeader(label) {
   </div>`;
 }
 
-function resultKind(label, className) {
-  return `<span class="result-kind ${escapeHtml(className)}">${escapeHtml(label)}</span>`;
-}
-
 function resultSnippet(href, text, query) {
   const content = highlight(text || "", query);
   const cleanHref = cleanText(href || "");
@@ -204,7 +200,7 @@ function resultSummaryNav(groups) {
       <strong>${Number(group.count || 0).toLocaleString()}</strong>
     </a>`)
     .join("");
-  return `<nav class="result-summary-nav" aria-label="Search result groups">${links}</nav>`;
+  return `<nav class="result-summary-nav" aria-label="검색 결과 묶음">${links}</nav>`;
 }
 
 function setSearchBusy(isBusy) {
@@ -222,7 +218,7 @@ function resultFooter(meta, actions) {
   const cleanActions = cleanText(actions || "");
   const actionsMarkup = !cleanActions
     ? ""
-    : `<nav class="result-actions result-actions-inline" aria-label="Result actions">${actions}</nav>`;
+    : `<nav class="result-actions result-actions-inline" aria-label="검색 결과 동작">${actions}</nav>`;
   if (!cleanMeta && !cleanActions) return "";
   return `<footer class="result-footer">
     ${cleanMeta ? `<div class="result-meta">${escapeHtml(cleanMeta)}</div>` : ""}
@@ -231,7 +227,7 @@ function resultFooter(meta, actions) {
 }
 
 function renderSearchPending(query) {
-  const label = query ? `Searching "${query}"...` : "Searching...";
+  const label = query ? `"${query}" 검색 중...` : "검색 중...";
   statusEl.textContent = label;
   resultsEl.innerHTML = `
     <article class="result search-skeleton" aria-hidden="true">
@@ -259,10 +255,9 @@ function renderResults(payload, query) {
         result.category_title || result.label
       ]);
       const variants = (result.variant_ids || []).slice(0, 8).map((variantId) => `<span class="tag">${escapeHtml(variantLabel(variantId))}</span>`).join("");
-      const actions = `<a class="result-action-read" href="${escapeHtml(result.url)}">Read</a><a class="result-action-secondary" href="/notes?corpus_id=${encodeURIComponent(result.corpus_id || "")}&work_id=${encodeURIComponent(result.work_id || "")}">Notes</a>`;
+      const actions = `<a class="result-action-read" href="${escapeHtml(result.url)}">읽기</a><a class="result-action-secondary" href="/notes?corpus_id=${encodeURIComponent(result.corpus_id || "")}&work_id=${encodeURIComponent(result.work_id || "")}">노트</a>`;
       return `<article class="result work-result">
         <div class="result-title">
-          ${resultKind("Work", "work")}
           <a href="${escapeHtml(result.url)}">${escapeHtml(result.title || result.work_id)}</a>
         </div>
         ${resultSnippet(result.url, result.snippet || "", query)}
@@ -278,10 +273,9 @@ function renderResults(payload, query) {
         result.label,
         result.variant_id ? variantLabel(result.variant_id) : ""
       ]);
-      const actions = `<a class="result-action-read" href="${escapeHtml(result.url)}">Read</a><a class="result-action-secondary" href="${escapeHtml(notesHref(result))}">Notes</a>`;
+      const actions = `<a class="result-action-read" href="${escapeHtml(result.url)}">읽기</a><a class="result-action-secondary" href="${escapeHtml(notesHref(result))}">노트</a>`;
       return `<article class="result">
         <div class="result-title">
-          ${resultKind("Passage", "segment")}
           <a href="${escapeHtml(result.url)}">${escapeHtml(result.title || result.work_id)}</a>
         </div>
         ${resultSnippet(result.url, result.snippet || "", query)}
@@ -297,11 +291,10 @@ function renderResults(payload, query) {
         reviewStateLabel(result.review_state)
       ]);
       const tags = (result.tags || []).map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join("");
-      const actions = result.url ? `<a class="result-action-read" href="${escapeHtml(result.url)}">Read</a>` : "";
+      const actions = result.url ? `<a class="result-action-read" href="${escapeHtml(result.url)}">읽기</a>` : "";
       return `<article class="result note-result">
         <div class="result-title">
-          ${resultKind("Note", "note")}
-          <a href="${escapeHtml(result.manage_url || notesHref(result))}">${escapeHtml(result.title || "Research note")}</a>
+          <a href="${escapeHtml(result.manage_url || notesHref(result))}">${escapeHtml(result.title || "연구 노트")}</a>
         </div>
         ${resultSnippet(result.manage_url || notesHref(result), result.snippet || "", query)}
         ${tags ? `<div class="tag-row">${tags}</div>` : ""}
@@ -313,25 +306,25 @@ function renderResults(payload, query) {
   if (workMarkup) {
     groups.push({
       id: "search-results-works",
-      label: "Works",
+      label: "문서",
       count: workResults.length,
-      markup: `<section id="search-results-works" class="result-group">${resultGroupHeader("Works")}${workMarkup}</section>`
+      markup: `<section id="search-results-works" class="result-group">${resultGroupHeader("문서")}${workMarkup}</section>`
     });
   }
   if (segmentMarkup) {
     groups.push({
       id: "search-results-segments",
-      label: "Passages",
+      label: "본문",
       count: segmentResults.length,
-      markup: `<section id="search-results-segments" class="result-group">${resultGroupHeader("Passages")}${segmentMarkup}</section>`
+      markup: `<section id="search-results-segments" class="result-group">${resultGroupHeader("본문")}${segmentMarkup}</section>`
     });
   }
   if (noteMarkup) {
     groups.push({
       id: "search-results-notes",
-      label: "Notes",
+      label: "노트",
       count: noteResults.length,
-      markup: `<section id="search-results-notes" class="result-group">${resultGroupHeader("Notes")}${noteMarkup}</section>`
+      markup: `<section id="search-results-notes" class="result-group">${resultGroupHeader("노트")}${noteMarkup}</section>`
     });
   }
   resultsEl.innerHTML = groups.length
@@ -360,8 +353,8 @@ function variantLabel(value) {
 
 async function populateFilters(preserveWork = "", preserveVariant = "") {
   const corpusId = corpusSelect.value;
-  workSelect.innerHTML = `<option value="">All works</option>`;
-  variantSelect.innerHTML = `<option value="">All variants</option>`;
+  workSelect.innerHTML = `<option value="">전체 문서</option>`;
+  variantSelect.innerHTML = `<option value="">전체 판본</option>`;
   workSelect.disabled = true;
   variantSelect.disabled = true;
   if (!corpusId) return;
@@ -373,7 +366,7 @@ async function populateFilters(preserveWork = "", preserveVariant = "") {
       .sort((left, right) => workLabel(left).localeCompare(workLabel(right)))
       .map((work) => `<option value="${escapeHtml(work.work_id)}">${escapeHtml(workLabel(work))}</option>`)
       .join("");
-    workSelect.innerHTML = `<option value="">All works</option>${options}`;
+    workSelect.innerHTML = `<option value="">전체 문서</option>${options}`;
     workSelect.disabled = false;
   }
 
@@ -392,7 +385,7 @@ async function populateFilters(preserveWork = "", preserveVariant = "") {
       .sort()
       .map((variantId) => `<option value="${escapeHtml(variantId)}">${escapeHtml(variantLabel(variantId))}</option>`)
       .join("");
-    variantSelect.innerHTML = `<option value="">All variants</option>${options}`;
+    variantSelect.innerHTML = `<option value="">전체 판본</option>${options}`;
     variantSelect.disabled = false;
   }
   workSelect.value = preserveWork;
@@ -446,7 +439,7 @@ async function runSearch() {
     const response = await fetch(`/api/search?${params}`, { signal: controller.signal });
     if (requestId !== activeSearchRequest) return;
     if (!response.ok) {
-      statusEl.textContent = "Could not complete search.";
+      statusEl.textContent = "검색을 완료하지 못했습니다.";
       resultsEl.innerHTML = "";
       return;
     }
@@ -456,7 +449,7 @@ async function runSearch() {
       return;
     }
     if (requestId === activeSearchRequest) {
-      statusEl.textContent = "Could not complete search.";
+      statusEl.textContent = "검색을 완료하지 못했습니다.";
       resultsEl.innerHTML = "";
     }
   } finally {

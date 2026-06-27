@@ -71,7 +71,7 @@ def check_routes(base_url: str) -> None:
         "/category/bible": "Personal Archive",
         "/category/kierkegaard": "Personal Archive",
         "/category/wittgenstein": "Personal Archive",
-        "/search": "Search",
+        "/search": "검색",
         "/notes": "노트",
         "/study": "학습 기록",
         "/translations": "번역 검토",

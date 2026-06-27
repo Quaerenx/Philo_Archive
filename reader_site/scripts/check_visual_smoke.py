@@ -247,9 +247,9 @@ def check_route_markup(route: str, html: str) -> None:
             "searchStatus",
             "aria-busy=\"false\"",
             "search.css?v=phase23",
-            "search.js?v=phase32",
-            'href="/search" aria-current="page">Search</a>',
-            "Translations",
+            "search.js?v=phase33",
+            'href="/search" aria-current="page">검색</a>',
+            "번역",
             "filter-panel",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
@@ -523,6 +523,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         inlineActionCount: document.querySelectorAll('#results .result-actions-inline').length,
         primaryReadCount: document.querySelectorAll('#results .result-actions-inline .result-action-read').length,
         secondaryNotesCount: document.querySelectorAll('#results .result-actions-inline .result-action-secondary').length,
+        resultKindCount: document.querySelectorAll('#results .result-kind').length,
         groupCountText: Array.from(document.querySelectorAll('#results .result-group-count')).map((node) => node.textContent.trim()).join(' '),
         firstPrimaryReadBorderColor: window.getComputedStyle(document.querySelector('#results .result-action-read') || document.body).borderColor
       };
@@ -530,16 +531,16 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (searchPageState.statusText) {
       throw new Error(`search status should not duplicate rendered results: ${JSON.stringify(searchPageState)}`);
     }
-    if (!searchPageState.hasResults && searchPageState.emptyTitle !== 'No results.') {
+    if (!searchPageState.hasResults && searchPageState.emptyTitle !== '검색 결과가 없습니다.') {
       throw new Error(`empty search should use a concise title: ${JSON.stringify(searchPageState)}`);
     }
     if (!searchPageState.hasResults && /notes|saved notes/i.test(searchPageState.emptyBodyText)) {
       throw new Error(`empty search should not send users to a duplicate notes search: ${JSON.stringify(searchPageState)}`);
     }
-    if (!searchPageState.hasResults && (searchPageState.emptyActions.length !== 1 || searchPageState.emptyActions[0] !== 'Archive')) {
+    if (!searchPageState.hasResults && (searchPageState.emptyActions.length !== 1 || searchPageState.emptyActions[0] !== '전체 보기')) {
       throw new Error(`empty search should keep only the archive browse action: ${JSON.stringify(searchPageState)}`);
     }
-    if (!searchPageState.hasResults && !searchPageState.emptyButtonActions.includes('Clear search')) {
+    if (!searchPageState.hasResults && !searchPageState.emptyButtonActions.includes('검색 지우기')) {
       throw new Error(`empty search should keep the clear action available: ${JSON.stringify(searchPageState)}`);
     }
     if (/Open work|Open source|Open target|Manage note/.test(searchPageState.actionText)) {
@@ -551,13 +552,13 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (searchPageState.hasResults && searchPageState.inlineActionCount === 0) {
       throw new Error(`search result actions should expose direct Read or Notes links: ${JSON.stringify(searchPageState)}`);
     }
-    if (searchPageState.hasResults && !/Read/.test(searchPageState.actionText)) {
+    if (searchPageState.hasResults && !/읽기/.test(searchPageState.actionText)) {
       throw new Error(`search result actions should make the primary destination explicit: ${JSON.stringify(searchPageState)}`);
     }
     if (searchPageState.hasResults && searchPageState.primaryReadCount === 0) {
       throw new Error(`search result actions should mark Read as the primary action: ${JSON.stringify(searchPageState)}`);
     }
-    if (searchPageState.hasResults && /Notes/.test(searchPageState.actionText) && searchPageState.secondaryNotesCount === 0) {
+    if (searchPageState.hasResults && /노트/.test(searchPageState.actionText) && searchPageState.secondaryNotesCount === 0) {
       throw new Error(`search result actions should keep Notes visually secondary: ${JSON.stringify(searchPageState)}`);
     }
     if (searchPageState.hasResults && searchPageState.firstPrimaryReadBorderColor !== 'rgb(176, 0, 0)') {
@@ -566,7 +567,10 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (searchPageState.hasResults && searchPageState.groupCountText) {
       throw new Error(`search result group headers should not repeat count summaries: ${JSON.stringify(searchPageState)}`);
     }
-    if (searchPageState.hasResults && searchPageState.activeFilterText.includes('Corpus: Nietzsche') && /\bNietzsche\b/.test(searchPageState.resultMetaText)) {
+    if (searchPageState.hasResults && searchPageState.resultKindCount > 0) {
+      throw new Error(`search result cards should avoid repeated group labels inside each card: ${JSON.stringify(searchPageState)}`);
+    }
+    if (searchPageState.hasResults && searchPageState.activeFilterText.includes('자료: 니체') && /\b니체\b/.test(searchPageState.resultMetaText)) {
       throw new Error(`search results should not repeat corpus metadata already shown in filters: ${JSON.stringify(searchPageState)}`);
     }
   }

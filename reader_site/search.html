@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Search / Personal Archive of Literature</title>
+  <title>검색 / Personal Archive of Literature</title>
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
   <link rel="stylesheet" href="/assets/search.css?v=phase23">
@@ -13,59 +13,59 @@
     <div class="spacer"></div>
     <main class="reader">
       <header class="reader-header">
-        <h1>Search</h1>
-        <nav class="toolbar" aria-label="Search navigation">
+        <h1>검색</h1>
+        <nav class="toolbar" aria-label="검색 이동">
           <a href="/">Archive</a>
-          <a href="/search" aria-current="page">Search</a>
-          <a href="/notes">Notes</a>
-          <a href="/study">Study</a>
-          <a href="/translations">Translations</a>
+          <a href="/search" aria-current="page">검색</a>
+          <a href="/notes">노트</a>
+          <a href="/study">학습</a>
+          <a href="/translations">번역</a>
         </nav>
       </header>
 
       <form id="searchForm" class="search-form">
         <label class="query-label">
-          Find text
+          본문 찾기
           <input id="queryInput" name="q" autocomplete="off" autofocus>
         </label>
         <details class="filter-panel">
-          <summary>Filters</summary>
+          <summary>필터</summary>
           <div class="filter-panel-fields">
             <label>
-              Corpus
+              자료
               <select id="corpusSelect" name="corpus_id">
-                <option value="">All</option>
-                <option value="nietzsche">Nietzsche</option>
-                <option value="bible">Bible</option>
-                <option value="kierkegaard">Kierkegaard</option>
-                <option value="wittgenstein">Wittgenstein</option>
+                <option value="">전체</option>
+                <option value="nietzsche">니체</option>
+                <option value="bible">성경</option>
+                <option value="kierkegaard">키르케고르</option>
+                <option value="wittgenstein">비트겐슈타인</option>
               </select>
             </label>
             <label>
-              Work
+              문서
               <select id="workSelect" name="work_id" disabled>
-                <option value="">All works</option>
+                <option value="">전체 문서</option>
               </select>
             </label>
             <label>
-              Variant
+              판본
               <select id="variantSelect" name="variant_id" disabled>
-                <option value="">All variants</option>
+                <option value="">전체 판본</option>
               </select>
             </label>
           </div>
         </details>
         <div class="form-actions">
-          <button id="searchSubmit" type="submit">Search</button>
-          <button id="searchClear" type="button" class="secondary-action" disabled>Clear</button>
+          <button id="searchSubmit" type="submit">검색</button>
+          <button id="searchClear" type="button" class="secondary-action" disabled>지우기</button>
         </div>
       </form>
-      <div id="searchActiveFilters" class="active-filters" aria-live="polite" aria-label="Active search filters"></div>
+      <div id="searchActiveFilters" class="active-filters" aria-live="polite" aria-label="활성 검색 필터"></div>
 
       <div id="searchStatus" class="search-status" role="status" aria-live="polite" aria-atomic="true"></div>
       <section id="results" class="results" aria-live="polite" aria-busy="false"></section>
     </main>
   </div>
-  <script src="/assets/search.js?v=phase32"></script>
+  <script src="/assets/search.js?v=phase33"></script>
 </body>
 </html>
