@@ -217,8 +217,8 @@ def check_route_markup(route: str, html: str) -> None:
             "저장한 번역</a>",
             "studyStatus",
             "aria-busy=\"false\"",
-            "study.css?v=study24",
-            "study.js?v=study44",
+            "study.css?v=study25",
+            "study.js?v=study45",
             'href="/study" aria-current="page">학습</a>',
             "filter-panel",
             "조건</summary>",
@@ -897,13 +897,18 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     await page.waitForSelector('#studyResults .study-group:not(.study-skeleton), #studyResults .empty-state', { timeout: 7000 }).catch(() => {});
     const studyPageState = await page.evaluate(() => {
       const empty = document.querySelector('#studyResults .empty-state');
+      const overviewPrimary = document.querySelector('#studyOverview .study-overview-primary');
       return {
         hasGroups: document.querySelectorAll('#studyResults .study-group:not(.study-skeleton)').length > 0,
         formHidden: Boolean(document.querySelector('#studyForm')?.hidden),
         overviewHidden: Boolean(document.querySelector('#studyOverview')?.hidden),
         overviewText: document.querySelector('#studyOverview')?.textContent.trim() || '',
+        overviewPrimaryText: overviewPrimary?.textContent.trim() || '',
+        overviewPrimaryLabel: overviewPrimary?.getAttribute('aria-label') || '',
+        overviewPrimaryBorderColor: overviewPrimary ? window.getComputedStyle(overviewPrimary).borderColor : '',
         overviewLinkTexts: Array.from(document.querySelectorAll('#studyOverview .study-overview-translations a')).map((node) => node.textContent.trim()),
         overviewLinkLabels: Array.from(document.querySelectorAll('#studyOverview .study-overview-translations a')).map((node) => node.getAttribute('aria-label') || ''),
+        firstGroupActions: Array.from(document.querySelectorAll('#studyResults .study-group:first-of-type .group-actions a')).map((node) => node.textContent.trim()),
         emptyTitle: empty?.querySelector('h2')?.textContent.trim() || '',
         emptyBodyCount: empty ? empty.querySelectorAll('p').length : 0,
         emptyActions: Array.from(empty?.querySelectorAll('.empty-actions a') || []).map((node) => node.textContent.trim()),
@@ -945,6 +950,19 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       if (studyPageState.overviewText.includes('0개 저장 노트')) {
         throw new Error(`empty study page overview should not repeat zero notes: ${JSON.stringify(studyPageState)}`);
+      }
+    } else {
+      if (studyPageState.overviewHidden || studyPageState.overviewPrimaryText !== '이어 읽기') {
+        throw new Error(`study page should expose a clear continue-reading action above saved notes: ${JSON.stringify(studyPageState)}`);
+      }
+      if (!studyPageState.overviewPrimaryLabel.startsWith('이어 읽기: ')) {
+        throw new Error(`study continue action should keep the target title in its accessible label: ${JSON.stringify(studyPageState)}`);
+      }
+      if (studyPageState.overviewPrimaryBorderColor !== 'rgb(176, 0, 0)') {
+        throw new Error(`study continue action should use the same red primary action style: ${JSON.stringify(studyPageState)}`);
+      }
+      if (!studyPageState.firstGroupActions.includes('이어 읽기')) {
+        throw new Error(`study note groups should offer a clear continue-reading action: ${JSON.stringify(studyPageState)}`);
       }
     }
     if (studyPageState.overviewText.includes('제외')) {

@@ -247,6 +247,22 @@ h1 {
   line-height: 1.4;
 }
 
+.study-overview-primary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 2px 7px;
+  color: #9a0000;
+  background: #fffafa;
+  border: 1px solid #b00000;
+}
+
+.study-overview-primary:hover,
+.study-overview-primary:focus-visible {
+  text-decoration: none;
+  background: #fff;
+}
+
 .study-overview-translations {
   display: flex;
   flex-wrap: wrap;

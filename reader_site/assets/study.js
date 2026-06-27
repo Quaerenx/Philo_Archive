@@ -284,6 +284,14 @@ function renderNoteFooter(meta, actions) {
   </footer>`;
 }
 
+function studyGroupTitle(group) {
+  return workDisplayName(group.corpus_id, group.work_id) || corpusDisplayName(group.corpus_id) || "저장한 노트";
+}
+
+function studyGroupWorkHref(group) {
+  return group.corpus_id && group.work_id ? `/work/${encodeURIComponent(group.corpus_id)}/${encodeURIComponent(group.work_id)}` : "";
+}
+
 function renderNote(note) {
   const target = note.target_label || note.target_id || "대상";
   const tags = (note.tags || []).join(", ");
@@ -310,6 +318,15 @@ function renderNote(note) {
 
 function studyCountLabel(count, label) {
   return `${count.toLocaleString()}개 ${label}`;
+}
+
+function continueStudyLink(payload) {
+  const group = (payload.groups || []).find(studyGroupWorkHref);
+  if (!group) return "";
+  const title = studyGroupTitle(group);
+  const href = studyGroupWorkHref(group);
+  const label = `이어 읽기: ${title}`;
+  return `<a class="study-overview-primary" href="${escapeHtml(href)}" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}">이어 읽기</a>`;
 }
 
 function translationStatusLink(reviewState, label, count, accessibleLabel) {
@@ -339,11 +356,12 @@ function renderStudyOverview(payload, translationSummary) {
   const notesMarkup = notesLabel
     ? `<div class="study-overview-notes">${escapeHtml(notesLabel)}</div>`
     : "";
+  const continueMarkup = continueStudyLink(payload);
   const translationLinks = [
     translationStatusLink("generated", "검토할 번역", generated, `검토할 번역 ${generated.toLocaleString()}개로 이동`),
     translationStatusLink("reviewed", "저장한 번역", reviewed, `저장한 번역 ${reviewed.toLocaleString()}개 보기`)
   ].filter(Boolean).join("");
-  studyOverview.innerHTML = `${notesMarkup}
+  studyOverview.innerHTML = `${continueMarkup}${notesMarkup}
     ${translationLinks ? `<nav class="study-overview-translations" aria-label="번역 학습 상태">${translationLinks}</nav>` : ""}`;
 }
 
@@ -374,9 +392,9 @@ function renderStudy(payload, translationSummary = null) {
   statusEl.textContent = "";
   resultsEl.innerHTML = groups.length
     ? groups.map((group) => {
-      const title = workDisplayName(group.corpus_id, group.work_id) || corpusDisplayName(group.corpus_id) || "저장한 노트";
+      const title = studyGroupTitle(group);
       const context = group.work_id ? corpusDisplayName(group.corpus_id) : "";
-      const workHref = group.corpus_id && group.work_id ? `/work/${encodeURIComponent(group.corpus_id)}/${encodeURIComponent(group.work_id)}` : "";
+      const workHref = studyGroupWorkHref(group);
       const notesHref = `/notes?corpus_id=${encodeURIComponent(group.corpus_id)}&work_id=${encodeURIComponent(group.work_id)}&review_state=reviewed`;
       const tagCounts = (group.tag_counts || [])
         .map((item) => `<span class="study-tag">${escapeHtml(item.tag)} <span>${Number(item.count || 0).toLocaleString()}</span></span>`)
@@ -391,7 +409,7 @@ function renderStudy(payload, translationSummary = null) {
         ${tagsPanel}
         ${group.notes.map(renderNote).join("")}
         <div class="group-actions">
-          ${workHref ? `<a href="${escapeHtml(workHref)}">읽기</a>` : ""}
+          ${workHref ? `<a href="${escapeHtml(workHref)}">이어 읽기</a>` : ""}
           <a href="${escapeHtml(notesHref)}">노트</a>
         </div>
       </section>`;
