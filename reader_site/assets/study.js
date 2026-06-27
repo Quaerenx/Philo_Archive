@@ -188,6 +188,10 @@ function translationActionLabel(label, count) {
   return count > 0 ? `${label} ${Number(count).toLocaleString()}개` : label;
 }
 
+function emptyTranslationAction(href, label, accessibleLabel) {
+  return `<a class="empty-primary-action" href="${escapeHtml(href)}" aria-label="${escapeHtml(accessibleLabel)}" title="${escapeHtml(accessibleLabel)}">${escapeHtml(label)}</a>`;
+}
+
 function renderEmptyStudy(translationSummary = null) {
   const filtered = hasActiveFilters();
   const counts = translationSummary?.review_state_counts || {};
@@ -203,8 +207,8 @@ function renderEmptyStudy(translationSummary = null) {
     ? '<button type="button" data-empty-action="clear-filters">필터 지우기</button>'
     : "";
   const translationAction = generated > 0
-    ? `<a class="empty-primary-action" href="${escapeHtml(studyTranslationHref("generated"))}">${escapeHtml(translationActionLabel("번역 검토", generated))}</a>`
-    : (reviewed > 0 ? `<a class="empty-primary-action" href="${escapeHtml(studyTranslationHref("reviewed"))}">${escapeHtml(translationActionLabel("저장한 번역", reviewed))}</a>` : "");
+    ? emptyTranslationAction(studyTranslationHref("generated"), "검토하기", `검토할 번역 ${generated.toLocaleString()}개로 이동`)
+    : (reviewed > 0 ? emptyTranslationAction(studyTranslationHref("reviewed"), "저장한 번역", `저장한 번역 ${reviewed.toLocaleString()}개 보기`) : "");
   const bodyMarkup = body ? `<p>${escapeHtml(body)}</p>` : "";
   return `<section class="empty empty-state">
     <h2>${escapeHtml(title)}</h2>

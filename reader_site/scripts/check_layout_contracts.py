@@ -831,7 +831,7 @@ def check_study_ui() -> None:
     css = read_site_file("assets/study.css")
     for needle in [
         "/assets/study.css?v=study23",
-        "/assets/study.js?v=study40",
+        "/assets/study.js?v=study41",
         'href="/study" aria-current="page">학습</a>',
         "저장한 노트 찾기",
         '<button id="studySubmit" type="submit">적용</button>',
@@ -874,6 +874,7 @@ def check_study_ui() -> None:
         "function translationSummaryParams",
         "function studyTranslationHref",
         "function translationActionLabel",
+        "function emptyTranslationAction",
         "/api/sentence-translations/summary",
         "function translationStatusLink",
         "function renderStudyOverview",
@@ -881,6 +882,8 @@ def check_study_ui() -> None:
         "검토할 번역이 있습니다.",
         "저장한 번역이 있습니다.",
         "const hasOverview = noteCount > 0",
+        "검토하기",
+        "검토할 번역 ${generated.toLocaleString()}개로 이동",
         "번역 검토",
         "번역 학습 상태",
         "저장한 번역",

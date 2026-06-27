@@ -218,7 +218,7 @@ def check_route_markup(route: str, html: str) -> None:
             "studyStatus",
             "aria-busy=\"false\"",
             "study.css?v=study23",
-            "study.js?v=study40",
+            "study.js?v=study41",
             'href="/study" aria-current="page">학습</a>',
             "filter-panel",
             "export-tools",
@@ -824,12 +824,14 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         emptyTitle: empty?.querySelector('h2')?.textContent.trim() || '',
         emptyBodyCount: empty ? empty.querySelectorAll('p').length : 0,
         emptyActions: Array.from(empty?.querySelectorAll('.empty-actions a') || []).map((node) => node.textContent.trim()),
-        primaryAction: empty?.querySelector('.empty-primary-action')?.textContent.trim() || ''
+        primaryAction: empty?.querySelector('.empty-primary-action')?.textContent.trim() || '',
+        primaryActionLabel: empty?.querySelector('.empty-primary-action')?.getAttribute('aria-label') || '',
+        primaryActionTitle: empty?.querySelector('.empty-primary-action')?.getAttribute('title') || ''
       };
     });
     if (!studyPageState.hasGroups) {
       if (!studyPageState.formHidden) throw new Error(`empty study page should hide filter form: ${JSON.stringify(studyPageState)}`);
-      const hasReviewAction = studyPageState.emptyActions.some((text) => text.startsWith('번역 검토'));
+      const hasReviewAction = studyPageState.primaryAction === '검토하기';
       const hasSavedTranslationAction = studyPageState.emptyActions.some((text) => text.startsWith('저장한 번역'));
       const expectedTitle = hasReviewAction
         ? '검토할 번역이 있습니다.'
@@ -848,6 +850,12 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       if ((hasReviewAction || hasSavedTranslationAction) && !studyPageState.primaryAction) {
         throw new Error(`empty study page should make translation study the primary empty action: ${JSON.stringify(studyPageState)}`);
+      }
+      if (hasReviewAction && !/^검토할 번역 .*개로 이동$/.test(studyPageState.primaryActionLabel)) {
+        throw new Error(`empty study page should keep review counts in the accessible label: ${JSON.stringify(studyPageState)}`);
+      }
+      if (hasReviewAction && studyPageState.primaryActionTitle !== studyPageState.primaryActionLabel) {
+        throw new Error(`empty study page should expose the same review count in the title: ${JSON.stringify(studyPageState)}`);
       }
       if ((hasReviewAction || hasSavedTranslationAction) && !studyPageState.overviewHidden) {
         throw new Error(`empty study page should keep translation status inside the empty card, not a separate overview: ${JSON.stringify(studyPageState)}`);
