@@ -314,7 +314,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common116",
-            "reader-work.js?v=common155",
+            "reader-work.js?v=common156",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         require("Contents (" not in html, f"{route} should not expose TOC inventory counts")
@@ -791,8 +791,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         readingNextWidth: readingNextBox?.width || 0,
         readingNoteWidth: readingNoteBox?.width || 0,
         readingSaveWidth: readingSaveBox?.width || 0,
-        readingNoteVisible: /\bAdd note\b/.test(outputVisibleText),
-        readingSaveVisible: /(^|\n)(Save|Saved)(\n|$)/.test(outputVisibleText),
+        readingNoteVisible: /메모 추가/.test(outputVisibleText),
+        readingSaveVisible: /(^|\n)(저장|저장됨)(\n|$)/.test(outputVisibleText),
         secondaryActionsOpen: Boolean(secondaryActions?.open),
         secondaryActionsSummary: secondarySummary?.textContent.trim() || '',
         readingActionsPosition: readingActionsStyle?.position || '',
@@ -823,10 +823,10 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (state.cardReviewState && state.cardBoxShadow !== 'none') {
       throw new Error(`reading mode should suppress review-state card decoration: ${JSON.stringify(state)}`);
     }
-    if (!state.readingNextVisible || state.readingNextText !== 'Next sentence') {
+    if (!state.readingNextVisible || state.readingNextText !== '다음 문장') {
       throw new Error(`reading mode should expose the next sentence action: ${JSON.stringify(state)}`);
     }
-    if (state.readingNextLabel !== 'Select and translate next sentence') {
+    if (state.readingNextLabel !== '다음 문장을 선택하고 번역') {
       throw new Error(`reading mode next action should keep a clear accessible label: ${JSON.stringify(state)}`);
     }
     if (state.readingNextBorderColor !== 'rgb(176, 0, 0)') {
@@ -858,15 +858,15 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         throw new Error(`reading mode should hide noisy translation metadata ${noisyText}: ${JSON.stringify(state)}`);
       }
     }
-    if (!['Save translation', 'Saved translation'].includes(state.readingSaveLabel) || state.readingNoteLabel !== 'Add note from translation') {
+    if (!['번역 저장', '저장된 번역'].includes(state.readingSaveLabel) || state.readingNoteLabel !== '번역으로 메모 추가') {
       throw new Error(`reading mode quick actions should keep clear accessible labels: ${JSON.stringify(state)}`);
     }
-    if (state.secondaryActionsOpen || state.secondaryActionsSummary !== 'Save or note') {
+    if (state.secondaryActionsOpen || state.secondaryActionsSummary !== '저장/메모') {
       throw new Error(`reading mode should collapse secondary note/save actions behind a clear label: ${JSON.stringify(state)}`);
     }
     const firstAction = state.readingActions[0] || '';
     const secondAction = state.readingActions[1] || '';
-    if (firstAction !== 'Next sentence' || secondAction !== 'Save or note' || state.readingActions.length !== 2) {
+    if (firstAction !== '다음 문장' || secondAction !== '저장/메모' || state.readingActions.length !== 2) {
       throw new Error(`reading mode should show only Next sentence and the collapsed secondary action label: ${JSON.stringify(state)}`);
     }
     if (state.visibleExtraCount !== 0) throw new Error(`reading mode exposed study-only translation extras: ${JSON.stringify(state)}`);
@@ -1044,7 +1044,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         outputText
       };
     });
-    if (restoredReadingState.secondaryActionsOpen || /\bAdd note\b/.test(restoredReadingState.outputText) || /(^|\n)(Save|Saved)(\n|$)/.test(restoredReadingState.outputText)) {
+    if (restoredReadingState.secondaryActionsOpen || /메모 추가/.test(restoredReadingState.outputText) || /(^|\n)(저장|저장됨)(\n|$)/.test(restoredReadingState.outputText)) {
       throw new Error(`selected work screenshot should return to the quiet reading action state: ${JSON.stringify(restoredReadingState)}`);
     }
   }

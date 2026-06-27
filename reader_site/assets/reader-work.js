@@ -1555,18 +1555,18 @@ function translationResultToolbar(record, _cached, reviewState) {
 function translationQuickActions(reviewState) {
   const normalizedReviewState = normalizedTranslationReviewState(reviewState);
   const reviewAction = normalizedReviewState === "reviewed"
-    ? '<span class="translation-quick-state" data-review-state="reviewed" title="Saved translation" aria-label="Saved translation">Saved</span>'
-    : '<button type="button" data-translation-quick-action="mark-reviewed" title="Save translation" aria-label="Save translation">Save</button>';
+    ? '<span class="translation-quick-state" data-review-state="reviewed" title="저장된 번역" aria-label="저장된 번역">저장됨</span>'
+    : '<button type="button" data-translation-quick-action="mark-reviewed" title="번역 저장" aria-label="번역 저장">저장</button>';
   const selectedIndex = selectedSentence ? sentenceIndex(selectedSentence.sentenceId) : -1;
   const nextSentenceDisabled = selectedIndex < 0 || selectedIndex >= sentenceNodes.length - 1
     ? " disabled"
     : "";
   return `<div class="translation-reading-actions" aria-label="Study actions">
-      <button type="button" data-translation-quick-action="next-sentence" title="Select and translate next sentence" aria-label="Select and translate next sentence"${nextSentenceDisabled}>Next sentence</button>
-      <details class="translation-secondary-actions" aria-label="Save or note this translation">
-        <summary>Save or note</summary>
+      <button type="button" data-translation-quick-action="next-sentence" title="다음 문장을 선택하고 번역" aria-label="다음 문장을 선택하고 번역"${nextSentenceDisabled}>다음 문장</button>
+      <details class="translation-secondary-actions" aria-label="번역 저장 또는 메모">
+        <summary>저장/메모</summary>
         <div class="translation-secondary-actions-body">
-          <button type="button" data-translation-quick-action="draft-note" title="Add note from translation" aria-label="Add note from translation">Add note</button>
+          <button type="button" data-translation-quick-action="draft-note" title="번역으로 메모 추가" aria-label="번역으로 메모 추가">메모 추가</button>
           ${reviewAction}
         </div>
       </details>

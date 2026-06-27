@@ -1322,17 +1322,17 @@ def check_work_source_bundle_ui() -> None:
         "translation-reading-actions",
         "translation-secondary-actions",
         "translation-secondary-actions-body",
-        "Save or note",
+        "저장/메모",
         "data-translation-quick-action=\"next-sentence\"",
-        "Select and translate next sentence",
-        "Save translation",
-        "Add note from translation",
-        "Next sentence",
+        "다음 문장을 선택하고 번역",
+        "번역 저장",
+        "번역으로 메모 추가",
+        "다음 문장",
         "translation-quick-actions translation-extra",
         "data-translation-quick-action",
         "Continue study",
-        "Save",
-        "Add note",
+        "저장",
+        "메모 추가",
         "translation-target-label\">Source",
         "Clipboard copy failed",
         "function revealFreshTranslationResult",
@@ -1395,7 +1395,7 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common155", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common156", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common116", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
@@ -1517,7 +1517,7 @@ def check_work_source_bundle_ui() -> None:
         'title="Regenerate translation"',
         'aria-label="Discard translation"',
         'aria-label="Copy study note"',
-        'aria-label="Add note from translation"',
+        'aria-label="번역으로 메모 추가"',
     ]:
         require_contains(template, needle, "templates/work.html")
 
