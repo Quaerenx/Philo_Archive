@@ -269,7 +269,7 @@ def check_route_markup(route: str, html: str) -> None:
             "searchStatus",
             "aria-busy=\"false\"",
             "search.css?v=phase23",
-            "search.js?v=phase34",
+            "search.js?v=phase35",
             'href="/search" aria-current="page">검색</a>',
             "번역",
             "filter-panel",
@@ -604,16 +604,23 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     await page.waitForSelector('#results .search-start', { timeout: 5000 }).catch(() => {});
     const searchStartState = await page.evaluate(() => {
       const links = Array.from(document.querySelectorAll('#results .search-start-links a'));
+      const section = document.querySelector('#results .search-start');
+      const heading = section?.querySelector('h2');
       const grid = document.querySelector('#results .search-start-links');
       const gridStyle = grid ? window.getComputedStyle(grid) : null;
       const firstLinkBox = links[0]?.getBoundingClientRect();
       return {
+        heading: heading?.textContent.trim() || '',
+        label: section?.getAttribute('aria-label') || '',
         linkText: links.map((node) => node.textContent.trim()).join(' / '),
         linkCount: links.length,
         gridColumns: (gridStyle?.gridTemplateColumns || '').trim().split(/\s+/).filter(Boolean).length,
         firstLinkHeight: firstLinkBox?.height || 0
       };
     });
+    if (searchStartState.heading !== '읽기 시작' || searchStartState.label !== '자료 선택') {
+      throw new Error(`search start should invite users into reading, not generic browsing: ${JSON.stringify(searchStartState)}`);
+    }
     if (searchStartState.linkCount !== 4) {
       throw new Error(`search start should expose the four root categories: ${JSON.stringify(searchStartState)}`);
     }

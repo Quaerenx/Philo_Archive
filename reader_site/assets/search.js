@@ -157,8 +157,8 @@ function renderSearchStart() {
   const links = startCorpora
     .map(([corpusId, label]) => `<a href="/category/${escapeHtml(corpusId)}">${escapeHtml(label)}</a>`)
     .join("");
-  return `<section class="search-start" aria-label="자료 둘러보기">
-    <h2>둘러보기</h2>
+  return `<section class="search-start" aria-label="자료 선택">
+    <h2>읽기 시작</h2>
     <div class="search-start-links">
       ${links}
     </div>

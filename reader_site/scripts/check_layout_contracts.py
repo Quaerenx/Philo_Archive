@@ -237,7 +237,7 @@ def check_search_ui() -> None:
     css = read_site_file("assets/search.css")
     for needle in [
         "/assets/search.css?v=phase23",
-        "/assets/search.js?v=phase34",
+        "/assets/search.js?v=phase35",
         'href="/search" aria-current="page">검색</a>',
         'href="/translations"',
         "본문 찾기",
@@ -260,6 +260,8 @@ def check_search_ui() -> None:
         "function renderEmptySearch",
         "function renderSearchStart",
         "search-start-links",
+        'aria-label="자료 선택"',
+        "읽기 시작",
         "검색어를 입력하세요.",
         "검색 결과가 없습니다.",
         "검색어를 줄이거나 자료 범위를 넓혀보세요.",
