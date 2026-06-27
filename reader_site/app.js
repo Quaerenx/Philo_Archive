@@ -98,8 +98,10 @@ function recentWorkMarkup() {
   if (!recent) return "";
   const meta = recent.meta ? `<span class="recent-work-meta">${escapeHtml(recent.meta)}</span>` : "";
   return `<section class="recent-work">
-    <strong>이어 읽기</strong>
-    <a href="${escapeHtml(recent.href)}">${escapeHtml(recent.title)}</a>
+    <a class="recent-work-link" href="${escapeHtml(recent.href)}" aria-label="이어 읽기: ${escapeHtml(recent.title)}">
+      <span class="recent-work-label">이어 읽기</span>
+      <span class="recent-work-title">${escapeHtml(recent.title)}</span>
+    </a>
     ${meta}
   </section>`;
 }

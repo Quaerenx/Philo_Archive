@@ -204,7 +204,7 @@ def check_route_markup(route: str, html: str) -> None:
             "노트",
             "학습",
             "번역",
-            "app.js?v=home11",
+            "app.js?v=home12",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
     if route == "/study":
@@ -508,6 +508,43 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (Number(widthText) > 420 && homeState.gridColumns < 2) {
       throw new Error(`desktop home root links should scan as a compact grid: ${JSON.stringify(homeState)}`);
+    }
+    await page.evaluate(() => {
+      window.localStorage.setItem('philo.reader.recentWork', JSON.stringify({
+        href: '/work/nietzsche/M',
+        title: 'Morgenröthe / 아침놀',
+        corpus_title: '니체'
+      }));
+    });
+    await page.reload({ waitUntil: 'domcontentloaded', timeout: 15000 });
+    await page.waitForSelector('.recent-work .recent-work-link', { timeout: 5000 }).catch(() => {});
+    const recentWorkState = await page.evaluate(() => {
+      const recent = document.querySelector('.recent-work');
+      const link = recent?.querySelector('.recent-work-link');
+      const label = recent?.querySelector('.recent-work-label');
+      const title = recent?.querySelector('.recent-work-title');
+      const meta = recent?.querySelector('.recent-work-meta');
+      const box = recent?.getBoundingClientRect();
+      return {
+        exists: Boolean(recent),
+        text: recent?.textContent.trim().replace(/\s+/g, ' ') || '',
+        linkLabel: link?.getAttribute('aria-label') || '',
+        labelText: label?.textContent.trim() || '',
+        titleText: title?.textContent.trim() || '',
+        metaText: meta?.textContent.trim() || '',
+        height: box?.height || 0,
+        hasStrong: Boolean(recent?.querySelector('strong'))
+      };
+    });
+    const maxRecentWorkHeight = Number(widthText) <= 420 ? 52 : 44;
+    if (!recentWorkState.exists || recentWorkState.hasStrong || recentWorkState.height > maxRecentWorkHeight) {
+      throw new Error(`home recent work should stay compact, not card-like: ${JSON.stringify(recentWorkState)}`);
+    }
+    if (recentWorkState.labelText !== '이어 읽기' || recentWorkState.titleText !== 'Morgenröthe / 아침놀' || recentWorkState.metaText !== '니체') {
+      throw new Error(`home recent work should preserve useful reading context: ${JSON.stringify(recentWorkState)}`);
+    }
+    if (recentWorkState.linkLabel !== '이어 읽기: Morgenröthe / 아침놀') {
+      throw new Error(`home recent work should have a clear accessible label: ${JSON.stringify(recentWorkState)}`);
     }
   }
   if (parsed.pathname.startsWith('/category/')) {

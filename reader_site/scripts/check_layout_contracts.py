@@ -93,8 +93,8 @@ def check_html_entrypoints() -> None:
         require_contains(html, 'class="page"', relative_path)
         if relative_path == "index.html":
             require_contains(html, "번역", relative_path)
-            require_contains(html, "/styles.css?v=home4", relative_path)
-            require_contains(html, "/app.js?v=home11", relative_path)
+            require_contains(html, "/styles.css?v=home5", relative_path)
+            require_contains(html, "/app.js?v=home12", relative_path)
         if relative_path in {"templates/reading.html", "templates/source.html"}:
             require_contains(html, "/assets/static-reader.css?v=static2", relative_path)
             require_contains(html, "자료 위치</summary>", relative_path)
@@ -167,6 +167,9 @@ def check_home_css() -> None:
         ".category-browse-tools[open] summary::after",
         ".category-browse-body",
         ".recent-work",
+        ".recent-work-link",
+        ".recent-work-label",
+        ".recent-work-title",
         ".recent-work-meta",
         ".root-links",
         ".root-link-list",
@@ -213,6 +216,10 @@ def check_home_script() -> None:
         "function categorySubtitle",
         "function storedRecentWork",
         "function recentWorkMarkup",
+        "recent-work-link",
+        "recent-work-label",
+        "recent-work-title",
+        'aria-label="이어 읽기: ${escapeHtml(recent.title)}"',
         "function categoryEmptyState",
         "function hasCategoryFilters",
         "browseToolsOpen",
@@ -234,6 +241,7 @@ def check_home_script() -> None:
         "START_READING_LIMIT",
     ]:
         require_contains(script, needle, "app.js")
+    require("<strong>이어 읽기</strong>" not in script, "app.js should keep recent work as a compact inline link")
 
 
 def check_reader_pages_css() -> None:
