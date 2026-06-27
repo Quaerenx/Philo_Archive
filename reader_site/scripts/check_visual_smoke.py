@@ -249,7 +249,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translationsReviewQueue",
             "aria-busy=\"false\"",
             "notes.css?v=notes21",
-            "translations.css?v=trans27",
+            "translations.css?v=trans28",
             "translations.js?v=trans66",
             'href="/translations" aria-current="page">번역</a>',
             "번역 찾기",
@@ -1134,6 +1134,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         const card = document.querySelector('#translationsResults .translation-record-card.is-review-target');
         const cardStyle = card ? window.getComputedStyle(card) : null;
         const reject = card?.querySelector('.translation-more-actions');
+        const rejectSummary = reject?.querySelector('summary');
+        const rejectSummaryStyle = rejectSummary ? window.getComputedStyle(rejectSummary) : null;
         const save = card?.querySelector('.primary-review-action');
         const footer = card?.querySelector('.translation-record-footer');
         const footerStyle = footer ? window.getComputedStyle(footer) : null;
@@ -1146,6 +1148,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
           hasReviewTarget: Boolean(card),
           rejectText: reject?.textContent.trim() || '',
           rejectDisplay: reject ? window.getComputedStyle(reject).display : '',
+          rejectSummaryBorderColor: rejectSummaryStyle?.borderColor || '',
+          rejectSummaryBackground: rejectSummaryStyle?.backgroundColor || '',
           saveText: save?.textContent.trim() || '',
           saveBorderColor: save ? window.getComputedStyle(save).borderColor : '',
           reviewFooterPosition: footerStyle?.position || '',
@@ -1165,6 +1169,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       });
       if (!reviewTargetState.hasReviewTarget || !reviewTargetState.rejectText.includes('제외') || reviewTargetState.rejectDisplay === 'none') {
         throw new Error(`review queue should expose the discard action on the active review card: ${JSON.stringify(reviewTargetState)}`);
+      }
+      if (reviewTargetState.rejectSummaryBorderColor !== 'rgba(0, 0, 0, 0)' || reviewTargetState.rejectSummaryBackground !== 'rgba(0, 0, 0, 0)') {
+        throw new Error(`review queue discard action should stay visually secondary: ${JSON.stringify(reviewTargetState)}`);
       }
       if (reviewTargetState.saveText !== '저장' || reviewTargetState.saveBorderColor !== 'rgb(176, 0, 0)') {
         throw new Error(`review queue save should use the same red primary action style: ${JSON.stringify(reviewTargetState)}`);

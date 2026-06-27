@@ -407,16 +407,23 @@
 
 .translation-more-actions summary {
   display: inline-flex;
-  min-height: 28px;
+  min-height: 26px;
   align-items: center;
-  padding: 4px 10px;
-  color: #555;
+  padding: 4px 6px;
+  color: #666;
   font-family: Verdana, Arial, Helvetica, sans-serif;
   font-size: 10px;
-  background: #fff;
-  border: 1px solid #bdbdbd;
+  background: transparent;
+  border: 1px solid transparent;
   cursor: pointer;
   list-style: none;
+}
+
+.translation-more-actions summary:hover,
+.translation-more-actions summary:focus-visible {
+  color: #7b2f2f;
+  background: #fffafa;
+  border-color: #ead0d0;
 }
 
 .translation-more-actions summary::-webkit-details-marker {

@@ -517,7 +517,7 @@ def check_translations_ui() -> None:
     css = read_site_file("assets/translations.css")
     for needle in [
         "/assets/notes.css?v=notes21",
-        "/assets/translations.css?v=trans27",
+        "/assets/translations.css?v=trans28",
         "/assets/translations.js?v=trans66",
         'href="/translations" aria-current="page">번역</a>',
         "번역 찾기",
@@ -733,6 +733,10 @@ def check_translations_ui() -> None:
         ".translation-actions",
         ".translation-more-actions",
         ".translation-more-actions summary",
+        "min-height: 26px",
+        "border: 1px solid transparent",
+        ".translation-more-actions summary:hover",
+        "border-color: #ead0d0",
         ".translation-more-actions summary::after",
         ".translation-more-actions[open] summary::after",
         ".translation-more-actions button",
