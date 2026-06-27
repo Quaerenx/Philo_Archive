@@ -205,9 +205,14 @@ function renderArchive() {
 
   el.archiveLinks.innerHTML = [
     recentWorkMarkup(),
-    visibleCorpora
-      .map((corpus) => `<a class="root-link" href="/category/${encodeURIComponent(corpus.id)}">${escapeHtml(rootLinkLabel(corpus))}</a>`)
-      .join("")
+    `<section class="root-links" aria-label="자료 선택">
+      <h2>읽기 시작</h2>
+      <div class="root-link-list">
+        ${visibleCorpora
+          .map((corpus) => `<a class="root-link" href="/category/${encodeURIComponent(corpus.id)}">${escapeHtml(rootLinkLabel(corpus))}</a>`)
+          .join("")}
+      </div>
+    </section>`
   ].join("");
 }
 

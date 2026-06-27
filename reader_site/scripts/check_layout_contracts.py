@@ -94,7 +94,7 @@ def check_html_entrypoints() -> None:
         if relative_path == "index.html":
             require_contains(html, "번역", relative_path)
             require_contains(html, "/styles.css?v=home2", relative_path)
-            require_contains(html, "/app.js?v=home8", relative_path)
+            require_contains(html, "/app.js?v=home9", relative_path)
         if relative_path in {"templates/reading.html", "templates/source.html"}:
             require_contains(html, "/assets/static-reader.css?v=static2", relative_path)
             require_contains(html, "자료 위치</summary>", relative_path)
@@ -154,6 +154,8 @@ def check_home_css() -> None:
         ".reading-path-links",
         ".recent-work",
         ".recent-work-meta",
+        ".root-links",
+        ".root-link-list",
         "@media (max-width: 860px)",
     ]:
         require_contains(css, needle, relative_path)
@@ -193,6 +195,9 @@ def check_home_script() -> None:
         "function storedRecentWork",
         "function recentWorkMarkup",
         "이어 읽기",
+        'aria-label="자료 선택"',
+        "읽기 시작",
+        "root-link-list",
         "바로 읽기",
         "작품 찾기",
         "제목 또는 약호",

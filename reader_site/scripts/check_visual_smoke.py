@@ -204,7 +204,7 @@ def check_route_markup(route: str, html: str) -> None:
             "노트",
             "학습",
             "번역",
-            "app.js?v=home8",
+            "app.js?v=home9",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
     if route == "/study":
@@ -478,6 +478,36 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
   await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 15000 });
   await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
   const parsed = new URL(url);
+  if (parsed.pathname === '/') {
+    await page.waitForSelector('#archiveLinks .root-link', { timeout: 5000 }).catch(() => {});
+    const homeState = await page.evaluate(() => {
+      const section = document.querySelector('#archiveLinks .root-links');
+      const heading = section?.querySelector('h2');
+      const links = Array.from(section?.querySelectorAll('.root-link') || []);
+      const grid = section?.querySelector('.root-link-list');
+      const gridStyle = grid ? window.getComputedStyle(grid) : null;
+      const firstLinkBox = links[0]?.getBoundingClientRect();
+      return {
+        heading: heading?.textContent.trim() || '',
+        label: section?.getAttribute('aria-label') || '',
+        linkCount: links.length,
+        gridColumns: (gridStyle?.gridTemplateColumns || '').trim().split(/\s+/).filter(Boolean).length,
+        firstLinkHeight: firstLinkBox?.height || 0
+      };
+    });
+    if (homeState.heading !== '읽기 시작' || homeState.label !== '자료 선택') {
+      throw new Error(`home should frame root categories as a reading start area: ${JSON.stringify(homeState)}`);
+    }
+    if (homeState.linkCount !== 4) {
+      throw new Error(`home should expose the four root categories: ${JSON.stringify(homeState)}`);
+    }
+    if (Number(widthText) <= 420 && homeState.firstLinkHeight < 40) {
+      throw new Error(`mobile home root links should be easy to tap: ${JSON.stringify(homeState)}`);
+    }
+    if (Number(widthText) > 420 && homeState.gridColumns < 2) {
+      throw new Error(`desktop home root links should scan as a compact grid: ${JSON.stringify(homeState)}`);
+    }
+  }
   if (Number(widthText) <= 420 && ['/search', '/notes', '/study', '/translations'].includes(parsed.pathname)) {
     const toolbarState = await page.evaluate(() => {
       const toolbar = document.querySelector('.toolbar');
