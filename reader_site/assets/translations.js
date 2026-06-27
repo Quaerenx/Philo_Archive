@@ -360,7 +360,7 @@ function updateReviewQueueButton(records = lastRecords) {
   if (!reviewQueueButton) return;
   const generatedCount = generatedRecords(records).length;
   reviewQueueButton.hidden = generatedCount === 0 || isReviewQueueOnlyView();
-  reviewQueueButton.textContent = "검토하기";
+  reviewQueueButton.textContent = "검토할 번역";
   reviewQueueButton.disabled = form.classList.contains("is-loading") || generatedCount === 0;
   reviewQueueButton.title = generatedCount
     ? `${generatedCount.toLocaleString()}개 검토 대기`

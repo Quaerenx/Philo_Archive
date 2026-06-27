@@ -567,7 +567,7 @@ def check_translations_ui() -> None:
     for needle in [
         "/assets/notes.css?v=notes22",
         "/assets/translations.css?v=trans30",
-        "/assets/translations.js?v=trans68",
+        "/assets/translations.js?v=trans69",
         "<title>번역 목록 / Personal Archive of Literature</title>",
         '<h1 id="translationsPageTitle">번역 목록</h1>',
         'aria-label="번역 이동"',
@@ -692,7 +692,7 @@ def check_translations_ui() -> None:
         "function generatedRecords",
         "function updateReviewQueueButton",
         "reviewQueueButton.hidden = generatedCount === 0 || isReviewQueueOnlyView()",
-        'reviewQueueButton.textContent = "검토하기"',
+        'reviewQueueButton.textContent = "검토할 번역"',
         "개 검토 대기",
         "reviewQueueButton.setAttribute",
         "검토할 번역",
@@ -870,7 +870,7 @@ def check_study_ui() -> None:
     css = read_site_file("assets/study.css")
     for needle in [
         "/assets/study.css?v=study24",
-        "/assets/study.js?v=study42",
+        "/assets/study.js?v=study43",
         'href="/study" aria-current="page">학습</a>',
         "저장한 노트 찾기",
         '<button id="studySubmit" type="submit">적용</button>',
@@ -920,7 +920,7 @@ def check_study_ui() -> None:
         "검토할 번역이 있습니다.",
         "저장한 번역이 있습니다.",
         "const hasOverview = noteCount > 0",
-        "검토하기",
+        "검토할 번역",
         "검토할 번역 ${generated.toLocaleString()}개로 이동",
         "번역 학습 상태",
         "저장한 번역",

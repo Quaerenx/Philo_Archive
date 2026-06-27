@@ -218,7 +218,7 @@ def check_route_markup(route: str, html: str) -> None:
             "studyStatus",
             "aria-busy=\"false\"",
             "study.css?v=study24",
-            "study.js?v=study42",
+            "study.js?v=study43",
             'href="/study" aria-current="page">학습</a>',
             "filter-panel",
             "export-tools",
@@ -250,7 +250,7 @@ def check_route_markup(route: str, html: str) -> None:
             "aria-busy=\"false\"",
             "notes.css?v=notes22",
             "translations.css?v=trans30",
-            "translations.js?v=trans68",
+            "translations.js?v=trans69",
             'href="/translations" aria-current="page">번역</a>',
             "번역 찾기",
             "translationsListTools",
@@ -908,7 +908,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     });
     if (!studyPageState.hasGroups) {
       if (!studyPageState.formHidden) throw new Error(`empty study page should hide filter form: ${JSON.stringify(studyPageState)}`);
-      const hasReviewAction = studyPageState.primaryAction === '검토하기';
+      const hasReviewAction = studyPageState.primaryAction === '검토할 번역';
       const hasSavedTranslationAction = studyPageState.emptyActions.some((text) => text.startsWith('저장한 번역'));
       const expectedTitle = hasReviewAction
         ? '검토할 번역이 있습니다.'
@@ -1003,8 +1003,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (translationsPageState.headingText !== '번역 목록' || !translationsPageState.documentTitle.startsWith('번역 목록 /')) {
         throw new Error(`default translations page should read as a list, not a review task: ${JSON.stringify(translationsPageState)}`);
       }
-      if (translationsPageState.reviewQueueText && translationsPageState.reviewQueueText !== '검토하기') {
-        throw new Error(`translations review entry should read like an action: ${JSON.stringify(translationsPageState)}`);
+      if (translationsPageState.reviewQueueText && translationsPageState.reviewQueueText !== '검토할 번역') {
+        throw new Error(`translations review entry should clearly name the review queue: ${JSON.stringify(translationsPageState)}`);
       }
       if (/\d/.test(translationsPageState.reviewQueueText)) {
         throw new Error(`translations review entry should keep counts out of the primary action text: ${JSON.stringify(translationsPageState)}`);

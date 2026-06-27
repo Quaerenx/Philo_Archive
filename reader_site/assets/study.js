@@ -203,7 +203,7 @@ function renderEmptyStudy(translationSummary = null) {
     ? '<button type="button" data-empty-action="clear-filters">필터 지우기</button>'
     : "";
   const translationAction = generated > 0
-    ? emptyTranslationAction(studyTranslationHref("generated"), "검토하기", `검토할 번역 ${generated.toLocaleString()}개로 이동`)
+    ? emptyTranslationAction(studyTranslationHref("generated"), "검토할 번역", `검토할 번역 ${generated.toLocaleString()}개로 이동`)
     : (reviewed > 0 ? emptyTranslationAction(studyTranslationHref("reviewed"), "저장한 번역", `저장한 번역 ${reviewed.toLocaleString()}개 보기`) : "");
   const bodyMarkup = body ? `<p>${escapeHtml(body)}</p>` : "";
   return `<section class="empty empty-state">
@@ -340,7 +340,7 @@ function renderStudyOverview(payload, translationSummary) {
     ? `<div class="study-overview-notes">${escapeHtml(notesLabel)}</div>`
     : "";
   const translationLinks = [
-    translationStatusLink("generated", "검토하기", generated, `검토할 번역 ${generated.toLocaleString()}개로 이동`),
+    translationStatusLink("generated", "검토할 번역", generated, `검토할 번역 ${generated.toLocaleString()}개로 이동`),
     translationStatusLink("reviewed", "저장한 번역", reviewed, `저장한 번역 ${reviewed.toLocaleString()}개 보기`)
   ].filter(Boolean).join("");
   studyOverview.innerHTML = `${notesMarkup}
