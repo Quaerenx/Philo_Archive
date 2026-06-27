@@ -335,7 +335,7 @@ def check_route_markup(route: str, html: str) -> None:
             "목차</summary>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common116",
+            "reader-work.css?v=common117",
             "reader-work.js?v=common158",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
@@ -777,6 +777,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       const card = document.querySelector('.translation-card');
       const studyPage = document.querySelector('.study-page');
       const studyPanelToggle = document.querySelector('#studyPanelToggle');
+      const studyPanelToggleBox = studyPanelToggle?.getBoundingClientRect();
+      const studyPanelToggleStyle = studyPanelToggle ? window.getComputedStyle(studyPanelToggle) : null;
       const activeTab = document.querySelector('.study-tab.active');
       const readingNext = document.querySelector('[data-translation-quick-action="next-sentence"]');
       const readingSave = document.querySelector('[data-translation-quick-action="mark-reviewed"], .translation-quick-state[data-review-state="reviewed"]');
@@ -843,7 +845,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         studyToolsOpen: Boolean(document.querySelector('.translation-utility')?.open),
         studyToolsSummary: document.querySelector('.translation-utility summary')?.textContent.trim() || '',
         studyPanelToggleSummary: studyPanelToggle?.querySelector('.study-panel-toggle-summary')?.textContent.trim() || '',
-        studyPanelToggleLabel: studyPanelToggle?.getAttribute('aria-label') || ''
+        studyPanelToggleLabel: studyPanelToggle?.getAttribute('aria-label') || '',
+        studyPanelToggleHeight: studyPanelToggleBox?.height || 0,
+        studyPanelToggleDisplay: studyPanelToggleStyle?.display || ''
       };
     });
     if (!state.selectedSentence) throw new Error(`selected work route did not select a sentence: ${JSON.stringify(state)}`);
@@ -911,6 +915,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (state.isMobile && state.studyPageHeight > Math.ceil(state.viewportHeight * 0.70)) {
       throw new Error(`mobile study panel should leave source text visible above it: ${JSON.stringify(state)}`);
+    }
+    if (state.isMobile && (state.studyPanelToggleDisplay !== 'grid' || state.studyPanelToggleHeight > 42)) {
+      throw new Error(`mobile study toggle should stay compact as a handle: ${JSON.stringify(state)}`);
     }
     const utilityState = await page.evaluate(() => {
       const utility = document.querySelector('.translation-utility');

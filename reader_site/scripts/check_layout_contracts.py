@@ -1459,7 +1459,7 @@ def check_work_source_bundle_ui() -> None:
             f"{function_name} reading-first translation layout",
         )
     require_contains(template, "/assets/reader-work.js?v=common158", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common116", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common117", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
         'aria-label="읽기 화면 이동"',
@@ -1829,12 +1829,16 @@ def check_work_source_bundle_ui() -> None:
         ".study-panel-toggle::before",
         ".study-panel-toggle-action",
         ".study-panel-toggle-summary",
+        "grid-template-rows: 4px auto",
+        "grid-template-columns: minmax(0, 1fr) auto",
+        "min-height: 34px",
         "text-overflow: ellipsis",
         ".study-page.is-expanded",
         ".study-page.is-dragging",
         ".study-page:not(.is-expanded) .study-tabs",
         "env(safe-area-inset-bottom, 0px)",
-        "scroll-padding-top: 112px",
+        "scroll-padding-top: 100px",
+        "top: 46px",
         "scroll-padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px))",
         ".study-page.is-expanded .study-panel-toggle",
         ".study-page.is-expanded .study-panel.active",

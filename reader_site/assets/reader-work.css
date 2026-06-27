@@ -2739,7 +2739,7 @@ h1 {
     padding: 10px 10px 0;
     padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
     overflow: auto;
-    scroll-padding-top: 112px;
+    scroll-padding-top: 100px;
     scroll-padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
   }
 
@@ -2748,14 +2748,20 @@ h1 {
   }
 
   .study-panel-toggle {
-    display: block;
+    display: grid;
+    grid-template-rows: 4px auto;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 4px 8px;
+    align-items: center;
     width: 100%;
-    min-height: 44px;
+    min-height: 34px;
     margin: 0 0 8px;
+    padding: 5px 10px 6px;
     color: #000;
     font-family: Verdana, Arial, Helvetica, sans-serif;
     font-size: 10px;
     line-height: 1.25;
+    text-align: left;
     background: #fff;
     border: 1px solid #bdbdbd;
     cursor: pointer;
@@ -2764,11 +2770,13 @@ h1 {
   }
 
   .study-panel-toggle::before {
+    grid-row: 1;
+    grid-column: 1 / -1;
     content: "";
     display: block;
     width: 34px;
     height: 3px;
-    margin: 0 auto 6px;
+    margin: 0 auto;
     background: #b8b8b8;
   }
 
@@ -2781,8 +2789,15 @@ h1 {
     white-space: nowrap;
   }
 
+  .study-panel-toggle-action {
+    grid-row: 2;
+    grid-column: 1;
+  }
+
   .study-panel-toggle-summary {
-    margin-top: 2px;
+    grid-row: 2;
+    grid-column: 2;
+    margin-top: 0;
     color: #555;
     font-size: 9px;
   }
@@ -2801,7 +2816,7 @@ h1 {
 
   .study-tabs {
     position: sticky;
-    top: 56px;
+    top: 46px;
     z-index: 2;
     grid-template-columns: minmax(104px, 1.35fr) minmax(80px, 1fr) repeat(2, minmax(68px, 0.78fr));
     gap: 6px;
