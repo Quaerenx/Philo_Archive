@@ -495,7 +495,7 @@ function updateStudyProgress() {
     : (pendingReview ? "review" : "complete");
   const progressText = remaining > 0
     ? (studied ? "Continue where you left off" : "Start with the first sentence")
-    : (pendingReview ? "Check translations" : (stateCounts.reviewed ? "Study session ready" : "All sentences studied"));
+    : (pendingReview ? "Check translations" : (stateCounts.reviewed ? "Study record ready" : "All sentences studied"));
   const detail = [
     `${studied.toLocaleString()} of ${total.toLocaleString()} sentences translated`,
     remaining ? `${remaining.toLocaleString()} left` : "No untranslated sentences left",
@@ -508,11 +508,11 @@ function updateStudyProgress() {
     const nextIndex = wantsReview ? nextGeneratedSentenceIndex() : continueStudySentenceIndex();
     const nextLabel = nextIndex >= 0 ? sentencePositionText(sentenceNodeId(sentenceNodes[nextIndex])) : "";
     if (wantsPreview) {
-      continueStudyButton.textContent = "Preview session";
+      continueStudyButton.textContent = "Preview record";
       continueStudyButton.dataset.studyAction = "preview-session";
       continueStudyButton.disabled = false;
       continueStudyButton.title = "Preview notes and translations";
-      continueStudyButton.setAttribute("aria-label", "Preview study session");
+      continueStudyButton.setAttribute("aria-label", "Preview study record");
     } else {
       continueStudyButton.textContent = wantsReview ? "Next to check" : "Continue study";
       continueStudyButton.dataset.studyAction = wantsReview ? "review-generated" : "continue";
@@ -612,8 +612,8 @@ function updateStudySessionExportLink(noteCount, translationCount) {
   exportStudySession.dataset.exportCount = String(total);
   exportStudySession.classList.toggle("is-empty", total === 0);
   exportStudySession.title = total
-    ? `Download study session: ${noteCount} notes and ${translationCount} translations`
-    : "No notes or translations for this session yet";
+    ? `Download study record: ${noteCount} notes and ${translationCount} translations`
+    : "No notes or translations for this record yet";
 }
 
 function studySessionExportUrl(format = "json") {
@@ -633,7 +633,7 @@ async function loadStudySessionSummary() {
     const response = await fetch(studySessionExportUrl("json"));
     const payload = await response.json().catch(() => ({}));
     if (!response.ok || !payload.ok) {
-      throw new Error(payload.error || "Study session unavailable");
+      throw new Error(payload.error || "Study record unavailable");
     }
     const noteCount = Number(payload.note_count || 0);
     const translationCount = Number(payload.translation_count || 0);
@@ -648,7 +648,7 @@ async function loadStudySessionSummary() {
     );
     updateStudySessionExportLink(noteCount, translationCount);
   } catch (error) {
-    setStudySessionSummary("Study session unavailable.", "unavailable");
+    setStudySessionSummary("Study record unavailable.", "unavailable");
     updateStudySessionExportLink(0, 0);
   }
 }
@@ -1806,10 +1806,10 @@ function renderStudySessionPreviewPending() {
   setTranslationBusy(true);
   resetTranslationOutputScroll();
   translationOutput.innerHTML = `
-    <div class="translation-loading" role="status" aria-live="polite" aria-label="Loading study session preview">
+    <div class="translation-loading" role="status" aria-live="polite" aria-label="Loading study record">
       <span class="loading-spinner" aria-hidden="true"></span>
       <span class="translation-loading-copy">
-        <strong>Loading study session preview</strong>
+        <strong>Loading study record</strong>
         <span>Notes and translations</span>
       </span>
     </div>
@@ -1824,7 +1824,7 @@ function renderStudySessionPreviewPending() {
 
 function sessionPreviewItems(items, kind) {
   if (!Array.isArray(items) || !items.length) {
-    return `<p class="session-preview-empty">No ${escapeHtml(kind)} in this session.</p>`;
+    return `<p class="session-preview-empty">No ${escapeHtml(kind)} in this record.</p>`;
   }
   const hasMore = items.length > 3;
   return `<div class="session-preview-group${hasMore ? " is-collapsed" : ""}" data-session-preview-group>
@@ -1893,17 +1893,17 @@ function toggleSessionPreviewGroup(button) {
 
 async function copyStudySessionMarkdown(button) {
   setActionButtonBusy(button, true);
-  setTranslationStatus("Copying study session...", true);
+  setTranslationStatus("Copying study record...", true);
   try {
     const response = await fetch(studySessionExportUrl("markdown"));
     if (!response.ok) {
-      throw new Error("Could not load study session.");
+      throw new Error("Could not load study record.");
     }
     const markdown = await response.text();
     await copyText(markdown);
-    setTranslationStatus("Study session copied.");
+    setTranslationStatus("Study record copied.");
   } catch (error) {
-    const message = cleanText(error && error.message ? error.message : "Could not copy study session.");
+    const message = cleanText(error && error.message ? error.message : "Could not copy study record.");
     setTranslationStatus(message, true);
   } finally {
     setActionButtonBusy(button, false);
@@ -1925,14 +1925,14 @@ function renderStudySessionPreview(payload) {
   translationOutput.innerHTML = `
     <div class="study-session-preview">
       <div class="study-session-preview-header">
-        <span>Study session</span>
+        <span>Study record</span>
         <strong>${escapeHtml(researchData.title || researchData.work_id || "Current work")}</strong>
         <div class="study-session-preview-actions">
-          <button type="button" data-session-preview-copy>Copy session</button>
-          <a href="${escapeHtml(exportUrl)}">Open session</a>
+          <button type="button" data-session-preview-copy>Copy record</button>
+          <a href="${escapeHtml(exportUrl)}">Open record</a>
         </div>
       </div>
-      <div class="study-session-preview-counts" aria-label="Study session counts">
+      <div class="study-session-preview-counts" aria-label="Study record counts">
         <span>${noteCount} notes</span>
         <span>${translationCount} translations</span>
       </div>
@@ -1957,10 +1957,10 @@ function renderStudySessionPreviewError(message) {
   resetTranslationOutputScroll();
   translationOutput.innerHTML = `
     <div class="translation-error" role="note">
-      <h3>Study session preview unavailable</h3>
-      <p>${escapeHtml(cleanText(message || "Could not load the reviewed study session."))}</p>
+      <h3>Study record preview unavailable</h3>
+      <p>${escapeHtml(cleanText(message || "Could not load the reviewed study record."))}</p>
       <div class="translation-error-actions">
-        <a href="${escapeHtml(studySessionExportUrl("markdown"))}">Open session</a>
+        <a href="${escapeHtml(studySessionExportUrl("markdown"))}">Open record</a>
       </div>
     </div>`;
   updateStudyPanelToggleLabel();
@@ -1970,18 +1970,18 @@ function renderStudySessionPreviewError(message) {
 async function previewStudySession() {
   clearActionConfirmations();
   renderStudySessionPreviewPending();
-  setTranslationStatus("Loading study session preview...", true);
+  setTranslationStatus("Loading study record...", true);
   setActionButtonBusy(continueStudyButton, true);
   try {
     const response = await fetch(studySessionExportUrl("json"));
     const payload = await response.json().catch(() => ({}));
     if (!response.ok || !payload.ok) {
-      throw new Error(payload.error || "Study session preview unavailable");
+      throw new Error(payload.error || "Study record preview unavailable");
     }
     renderStudySessionPreview(payload);
-    setTranslationStatus("Study session preview ready.");
+    setTranslationStatus("Study record ready.");
   } catch (error) {
-    const message = cleanText(error && error.message ? error.message : "Study session preview unavailable.");
+    const message = cleanText(error && error.message ? error.message : "Study record preview unavailable.");
     renderStudySessionPreviewError(message);
     setTranslationStatus(message, true);
   } finally {
@@ -3088,7 +3088,7 @@ function initializeStudyCompanion() {
   }
   if (exportStudySession) {
     exportStudySession.href = studySessionExportUrl("markdown");
-    exportStudySession.title = "Download the study session for this work";
+    exportStudySession.title = "Download the study record for this work";
   }
   syncConceptsPanelAvailability();
   selectSentenceFromHash();
