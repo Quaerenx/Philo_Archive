@@ -337,7 +337,7 @@ def check_route_markup(route: str, html: str) -> None:
             "목차</summary>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common118",
+            "reader-work.css?v=common119",
             "reader-work.js?v=common162",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
@@ -1057,8 +1057,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (state.selectedMarkerFound && Number.parseFloat(state.selectedMarkerOpacity || '0') < 0.75) {
       throw new Error(`selected translation state marker should remain legible: ${JSON.stringify(state)}`);
     }
-    if (!state.isMobile && (state.readingActionsPosition !== 'sticky' || state.readingActionsBottom !== '8px')) {
-      throw new Error(`desktop reading mode should keep study actions reachable during long commentary: ${JSON.stringify(state)}`);
+    if (state.readingActionsPosition !== 'sticky' || state.readingActionsBottom !== '8px') {
+      throw new Error(`reading mode should keep study actions reachable during long commentary: ${JSON.stringify(state)}`);
     }
     if (state.translationHeadingWidth > 2 || state.translationHeadingHeight > 2) {
       throw new Error(`reading mode should hide the redundant Translation heading: ${JSON.stringify(state)}`);

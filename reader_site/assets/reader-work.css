@@ -2941,6 +2941,13 @@ h1 {
     overflow: visible;
   }
 
+  .study-page.is-expanded .translation-output.reading-mode .translation-reading-actions {
+    position: sticky;
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    z-index: 2;
+    background: #fff;
+  }
+
   .translation-export-links {
     margin-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
   }
