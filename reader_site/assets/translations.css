@@ -449,6 +449,10 @@
   .translation-more-actions[open] {
     display: block;
   }
+
+  .translation-record-card[data-review-state="generated"]:not(.is-review-target):not(:hover):not(:focus):not(:focus-within) .translation-record-footer {
+    display: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
