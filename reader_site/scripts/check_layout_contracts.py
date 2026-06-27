@@ -1685,7 +1685,7 @@ def check_work_source_bundle_ui() -> None:
     ]:
         require(noisy_marker not in pending_body, f"renderTranslationPending should keep loading state quiet without {noisy_marker!r}")
     require_contains(template, "/assets/reader-work.js?v=common169", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common125", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common126", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
         'aria-label="읽기 화면 이동"',
@@ -1934,6 +1934,8 @@ def check_work_source_bundle_ui() -> None:
         ".study-tab:focus-visible",
         ".study-tab.active::after",
         ".study-tab-secondary",
+        "border-color: transparent;",
+        ".study-tab-secondary:hover",
         ".study-tab-secondary.active",
         ".runtime-status",
         ".runtime-status-dot",

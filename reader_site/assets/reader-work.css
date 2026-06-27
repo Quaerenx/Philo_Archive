@@ -262,9 +262,15 @@ h1 {
 }
 
 .study-tab-secondary {
-  color: #777;
-  background: #fafafa;
-  border-color: #e1e1e1;
+  color: #888;
+  background: transparent;
+  border-color: transparent;
+}
+
+.study-tab-secondary:hover {
+  color: #444;
+  background: #fbfbfb;
+  border-color: #eeeeee;
 }
 
 .study-tab-secondary.active {
