@@ -992,7 +992,10 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       tagsSummary: document.querySelector('.note-options summary')?.textContent.trim() || '',
       savedSummary: document.querySelector('.notes-filter-tools summary')?.textContent.trim() || '',
       savedToolsHidden: Boolean(document.querySelector('.notes-filter-tools')?.hidden),
-      notesEmptyText: document.querySelector('#notesList .notes-empty')?.textContent.trim() || ''
+      notesEmptyText: document.querySelector('#notesList .notes-empty')?.textContent.trim() || '',
+      noteTargetText: document.querySelector('#noteTargetPreview')?.textContent.trim() || '',
+      noteTargetLabel: document.querySelector('#noteTargetPreview')?.getAttribute('aria-label') || '',
+      lockTargetText: document.querySelector('#lockNoteTarget')?.textContent.trim() || ''
     }));
     if (notesState.notePlaceholder !== '메모 작성...' || !notesState.noteLabelHidden) {
       throw new Error(`notes tab should keep the editor quiet but accessible: ${JSON.stringify(notesState)}`);
@@ -1009,6 +1012,12 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (notesState.notesEmptyText !== '아직 노트가 없습니다.' && notesState.savedSummary !== '저장됨') {
       throw new Error(`notes tab saved filter label should stay concise when notes or filters exist: ${JSON.stringify(notesState)}`);
     }
+    if (/\b(Work|Paragraph|Section|Verse|Quote|Line)\b|p-\d+\.s\d+/i.test(`${notesState.noteTargetText} ${notesState.noteTargetLabel}`)) {
+      throw new Error(`notes target preview should use reader-language labels without internal ids: ${JSON.stringify(notesState)}`);
+    }
+    if (!['대상 고정', '고정 해제'].includes(notesState.lockTargetText)) {
+      throw new Error(`notes target lock control should stay reader-language concise: ${JSON.stringify(notesState)}`);
+    }
     await page.click('#study-tab-citation');
     await page.waitForSelector('#study-panel-citation:not([hidden])', { timeout: 5000 });
     await page.click('.citation-copy-options summary');
@@ -1016,10 +1025,14 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     const citationState = await page.evaluate(() => {
       const preview = document.querySelector('#citationPreview');
       const copied = window.citationText ? window.citationText() : '';
+      const copiedLabelText = copied.replace(/https?:\/\/\S+/g, '');
       return {
         copyText: document.querySelector('#copyCitation')?.textContent.trim() || '',
         copyLabel: document.querySelector('#copyCitation')?.getAttribute('aria-label') || '',
         copyOptionsText: document.querySelector('.citation-copy-options summary')?.textContent.trim() || '',
+        previewText: preview?.textContent || '',
+        copiedText: copied,
+        copiedLabelText,
         previewHasUrl: /https?:\/\//.test(preview?.textContent || ''),
         copiedHasUrl: /https?:\/\//.test(copied),
         urlText: document.querySelector('#copyUrl')?.textContent.trim() || '',
@@ -1036,6 +1049,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (citationState.previewHasUrl || !citationState.copiedHasUrl) {
       throw new Error(`citation preview should hide URL while copied citation keeps it: ${JSON.stringify(citationState)}`);
+    }
+    if (/\b(Work|Paragraph|Section|Verse|Quote|Line)\b|p-\d+\.s\d+/i.test(`${citationState.previewText} ${citationState.copiedLabelText}`)) {
+      throw new Error(`citation text should use reader-language position labels without internal ids: ${JSON.stringify(citationState)}`);
     }
     if (citationState.urlText !== 'URL' || citationState.urlLabel !== 'URL 복사' || citationState.bundleText !== '원문 묶음' || citationState.bundleLabel !== '원문 묶음 복사') {
       throw new Error(`citation secondary copy controls should stay concise: ${JSON.stringify(citationState)}`);

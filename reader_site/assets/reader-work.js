@@ -843,6 +843,21 @@ function sentencePositionText(sentenceId) {
   return index >= 0 ? `문장 ${index + 1} / ${sentenceNodes.length}` : sentenceId;
 }
 
+function displayPositionLabel(value) {
+  const text = cleanText(value);
+  const paragraphMatch = /^Paragraph\s+(\d+)$/i.exec(text);
+  if (paragraphMatch) return `문단 ${paragraphMatch[1]}`;
+  const sectionMatch = /^Section\s+(.+)$/i.exec(text);
+  if (sectionMatch) return `구역 ${sectionMatch[1]}`;
+  const verseMatch = /^Verse\s+(.+)$/i.exec(text);
+  if (verseMatch) return `절 ${verseMatch[1]}`;
+  const quoteMatch = /^Quote\s+(\d+)$/i.exec(text);
+  if (quoteMatch) return `인용 ${quoteMatch[1]}`;
+  const lineMatch = /^Line\s+(.+)$/i.exec(text);
+  if (lineMatch) return `행 ${lineMatch[1]}`;
+  return text;
+}
+
 function selectedSentenceNode() {
   return selectedSentence ? document.getElementById(selectedSentence.sentenceId) : null;
 }
@@ -1131,7 +1146,7 @@ function currentTarget() {
   const node = id === "work" ? null : document.getElementById(id);
   const isSentence = Boolean(node && node.classList.contains("reader-sentence"));
   const label = node
-    ? (isSentence ? sentencePositionText(id) : cleanText(node.dataset.label || node.textContent))
+    ? (isSentence ? sentencePositionText(id) : displayPositionLabel(node.dataset.label || node.textContent))
     : researchData.title;
   const type = node
     ? (isSentence ? "sentence" : (node.dataset.targetType || researchData.default_target_type || "segment"))
@@ -1146,7 +1161,7 @@ function currentTarget() {
 function targetSnapshot(target = currentTarget()) {
   return {
     id: target.id || "work",
-    label: cleanText(target.label || researchData.title || "현재 문서"),
+    label: displayPositionLabel(target.label || researchData.title || "현재 문서"),
     type: target.type || "work",
     url: target.url || location.href
   };
@@ -1157,7 +1172,7 @@ function selectedSentenceTargetSnapshot() {
   const baseUrl = location.origin + location.pathname + location.search;
   return targetSnapshot({
     id: selectedSentence.sentenceId,
-    label: `${selectedSentencePositionLabel()} / ${selectedSentence.sentenceId}`,
+    label: selectedSentencePositionLabel(),
     type: "sentence",
     url: `${baseUrl}#${encodeURIComponent(selectedSentence.sentenceId)}`
   });
@@ -1168,17 +1183,22 @@ function noteTargetForSave() {
 }
 
 function noteTargetTypeLabel(type) {
-  if (type === "work") return "Work";
-  if (type === "paragraph") return "Paragraph";
-  if (type === "verse") return "Verse";
-  if (type === "section") return "Section";
+  if (type === "work") return "문서";
+  if (type === "paragraph") return "문단";
+  if (type === "verse") return "절";
+  if (type === "section") return "구역";
   if (type === "sentence") return "문장";
   return cleanText(type || "대상");
 }
 
 function noteTargetDisplayText(target) {
   const safeTarget = targetSnapshot(target);
-  return `${noteTargetTypeLabel(safeTarget.type)} / ${safeTarget.label || safeTarget.id}`;
+  const typeLabel = noteTargetTypeLabel(safeTarget.type);
+  const label = displayPositionLabel(safeTarget.label || safeTarget.id);
+  if (!label || label === typeLabel || label.startsWith(`${typeLabel} `)) {
+    return label || typeLabel;
+  }
+  return `${typeLabel} / ${label}`;
 }
 
 function updateNoteTargetPreview() {
@@ -1189,8 +1209,8 @@ function updateNoteTargetPreview() {
   noteTargetPreview.innerHTML = `
     <span>${locked ? "고정된 노트 대상" : "선택 문장을 따라감"}</span>
     <strong>${escapeHtml(noteTargetDisplayText(target))}</strong>`;
-  noteTargetPreview.setAttribute("aria-label", `${locked ? "Locked note target" : "Note target"}: ${noteTargetDisplayText(target)}`);
-  lockNoteTargetButton.textContent = locked ? "Unlock target" : "Lock target";
+  noteTargetPreview.setAttribute("aria-label", `${locked ? "고정된 노트 대상" : "노트 대상"}: ${noteTargetDisplayText(target)}`);
+  lockNoteTargetButton.textContent = locked ? "고정 해제" : "대상 고정";
   lockNoteTargetButton.setAttribute("aria-pressed", locked ? "true" : "false");
 }
 
