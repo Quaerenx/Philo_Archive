@@ -1490,7 +1490,7 @@ function renderCommentary(commentary) {
   const text = cleanText(commentary || "");
   return `
     <section class="translation-section translation-commentary" data-translation-section="commentary">
-      <h3>Commentary</h3>
+      <h3>해설</h3>
       <p>${escapeHtml(text)}</p>
     </section>`;
 }
@@ -1514,7 +1514,7 @@ function translationJumpNav(record) {
   const hasCommentary = Boolean(cleanText(record.commentary || record.interpretation || ""));
   const buttons = [
     ["translation", "Translation"],
-    hasCommentary ? ["commentary", "Commentary"] : null
+    hasCommentary ? ["commentary", "해설"] : null
   ].filter(Boolean);
   return `<div class="translation-jump-nav" aria-label="Translation result sections">
     <button type="button" data-selected-source-jump aria-keyshortcuts="S">Source</button>
@@ -1689,7 +1689,7 @@ function renderTranslationPending(regenerate = false) {
         </div>
       </section>
       <section class="translation-section translation-commentary translation-pending-commentary" data-translation-section="commentary">
-        <h3>Commentary</h3>
+        <h3>해설</h3>
         <p class="translation-unavailable-copy">${escapeHtml(commentaryLabel)}</p>
       </section>
       <div class="translation-loading-actions">
@@ -1755,7 +1755,7 @@ function renderTranslationError(message) {
         <p class="translation-primary translation-unavailable-copy">Translation unavailable.</p>
       </section>
       <section class="translation-section translation-commentary" data-translation-section="commentary">
-        <h3>Commentary</h3>
+        <h3>해설</h3>
         <p class="translation-unavailable-copy">${escapeHtml(displayMessage)}</p>
       </section>
       <div class="translation-recovery-panel">
@@ -1789,7 +1789,7 @@ function renderTranslationCancelled(message = "Translation request cancelled.") 
         <p class="translation-primary translation-unavailable-copy">Translation cancelled.</p>
       </section>
       <section class="translation-section translation-commentary" data-translation-section="commentary">
-        <h3>Commentary</h3>
+        <h3>해설</h3>
         <p class="translation-unavailable-copy">${escapeHtml(cleanText(message))} No translation was saved for ${escapeHtml(position)}.</p>
       </section>
       <div class="translation-recovery-panel translation-error-actions">

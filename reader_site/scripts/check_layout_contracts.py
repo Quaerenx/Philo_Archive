@@ -1121,6 +1121,7 @@ def check_work_source_bundle_ui() -> None:
         "Refreshing translation",
         "Could not save note.",
         "renderCommentary",
+        "<h3>해설</h3>",
         "renderTranslationEmptyState",
         "translation-empty-state",
         "translation-empty-copy",
@@ -1393,7 +1394,7 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common153", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common154", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common116", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',

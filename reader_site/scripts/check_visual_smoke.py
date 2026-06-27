@@ -314,7 +314,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common116",
-            "reader-work.js?v=common153",
+            "reader-work.js?v=common154",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         require("Contents (" not in html, f"{route} should not expose TOC inventory counts")
@@ -801,6 +801,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         translationHeadingHeight: translationHeadingBox?.height || 0,
         commentaryHeadingWidth: commentaryHeadingBox?.width || 0,
         commentaryHeadingHeight: commentaryHeadingBox?.height || 0,
+        commentaryHeadingText: commentaryHeading?.textContent.trim() || '',
         commentaryLineHeight: commentaryBodyStyle?.lineHeight || '',
         readingSaveLabel: readingSave ? readingSave.getAttribute('aria-label') || '' : '',
         readingNoteLabel: readingNote ? readingNote.getAttribute('aria-label') || '' : '',
@@ -841,13 +842,16 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       throw new Error(`reading mode should hide the redundant Translation heading: ${JSON.stringify(state)}`);
     }
     if (state.commentaryHeadingWidth <= 2 || state.commentaryHeadingHeight <= 2) {
-      throw new Error(`reading mode should keep the Commentary heading visible: ${JSON.stringify(state)}`);
+      throw new Error(`reading mode should keep the commentary heading visible: ${JSON.stringify(state)}`);
+    }
+    if (state.commentaryHeadingText !== '해설') {
+      throw new Error(`reading mode should label commentary in the reader language: ${JSON.stringify(state)}`);
     }
     if (state.commentaryLineHeight && parseFloat(state.commentaryLineHeight) > 24) {
       throw new Error(`reading mode commentary should stay compact enough for the study panel: ${JSON.stringify(state)}`);
     }
     if (state.sectionOrder[0] !== 'translation' || state.sectionOrder[1] !== 'commentary') {
-      throw new Error(`reading mode should keep Translation and Commentary as the first visible result sections: ${JSON.stringify(state)}`);
+      throw new Error(`reading mode should keep translation and commentary as the first visible result sections: ${JSON.stringify(state)}`);
     }
     for (const noisyText of ['Literal gloss', 'Key terms', 'source_text_sha256', 'prompt_sha256']) {
       if (state.visibleOutputText.includes(noisyText)) {
