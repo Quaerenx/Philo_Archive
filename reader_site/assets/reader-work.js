@@ -411,8 +411,8 @@ function setTranslationRecordsSummary(text, state = "empty", counts = null) {
   const reviewHint = total
     ? (generated
       ? `${generated.toLocaleString()} to check`
-      : `${(reviewed || total).toLocaleString()} saved`)
-    : "No translations yet";
+      : `${(reviewed || total).toLocaleString()} ready`)
+    : "";
   const detailLabel = [
     text,
     total ? `${total.toLocaleString()} translations` : "No translations yet",
@@ -428,7 +428,7 @@ function setTranslationRecordsSummary(text, state = "empty", counts = null) {
   translationRecordsSummary.title = detailLabel;
   translationRecordsSummary.innerHTML = `
     <span class="translation-records-summary-main">${escapeHtml(text)}</span>
-    <span class="translation-records-summary-hint">${escapeHtml(reviewHint)}</span>`;
+    ${reviewHint ? `<span class="translation-records-summary-hint">${escapeHtml(reviewHint)}</span>` : ""}`;
 }
 
 function updateTranslationExportLinks(total, reviewed) {
@@ -579,10 +579,17 @@ function applySentenceTranslationStates(states) {
   updateSentenceControls();
 }
 
-function setStudySessionSummary(text, state = "empty") {
+function setStudySessionSummary(text, state = "empty", detail = "") {
   if (!studySessionSummary) return;
   studySessionSummary.textContent = text;
   studySessionSummary.dataset.sessionState = state;
+  if (detail) {
+    studySessionSummary.setAttribute("aria-label", detail);
+    studySessionSummary.title = detail;
+  } else {
+    studySessionSummary.removeAttribute("aria-label");
+    studySessionSummary.removeAttribute("title");
+  }
 }
 
 function updateStudySessionExportLink(noteCount, translationCount) {
@@ -616,9 +623,14 @@ async function loadStudySessionSummary() {
     }
     const noteCount = Number(payload.note_count || 0);
     const translationCount = Number(payload.translation_count || 0);
+    const total = noteCount + translationCount;
+    const detail = total
+      ? `Ready to export. ${noteCount.toLocaleString()} notes and ${translationCount.toLocaleString()} translations.`
+      : "Nothing saved for export yet.";
     setStudySessionSummary(
-      `Study session: ${noteCount} notes / ${translationCount} translations`,
-      noteCount + translationCount ? "has-content" : "empty"
+      total ? "Ready to export" : "Nothing saved yet",
+      total ? "has-content" : "empty",
+      detail
     );
     updateStudySessionExportLink(noteCount, translationCount);
   } catch (error) {
@@ -645,9 +657,12 @@ async function loadTranslationRecordsSummary() {
     const reviewed = Number(counts.reviewed || 0);
     const rejected = Number(counts.rejected || 0);
     const sentenceCount = Number(payload.sentence_state_count || 0);
+    const summaryText = generated
+      ? "Needs review"
+      : (total ? "Saved translations" : "No translations yet");
     applySentenceTranslationStates(payload.sentence_states || []);
     setTranslationRecordsSummary(
-      "Translations",
+      summaryText,
       generated ? "needs-review" : (total ? "has-records" : "empty"),
       { total, sentenceCount, generated, reviewed, rejected }
     );

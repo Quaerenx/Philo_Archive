@@ -1037,7 +1037,8 @@ def check_work_source_bundle_ui() -> None:
         "function studySessionExportUrl",
         "function loadStudySessionSummary",
         "await loadStudySessionSummary();",
-        "Study session:",
+        "Ready to export.",
+        "Nothing saved for export yet.",
         "review_state\", \"all\"",
         "renderTranslationPending",
         "translation-pending-context",
@@ -1348,7 +1349,7 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common139", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common140", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common109", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
@@ -1378,7 +1379,7 @@ def check_work_source_bundle_ui() -> None:
         "studyProgressText",
         "continueStudy",
         "Continue study",
-        "Translations</div>",
+        "No translations yet</div>",
         "translation-review-tools",
         "translation-review-tools-body",
         "translation-export-tools",
@@ -1391,7 +1392,7 @@ def check_work_source_bundle_ui() -> None:
         "exportStudySession",
         "Study session",
         "studySessionSummary",
-        "Study session</div>",
+        "Nothing saved yet</div>",
         "aria-label=\"Study. Select sentence\"",
         'aria-controls="studyCompanionPanel"',
         'aria-labelledby="translationCardTitle"',

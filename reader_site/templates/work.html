@@ -102,7 +102,7 @@
                           <button type="button" id="copyStudyCard" title="Copy study note" aria-label="Copy study note" disabled>Copy study note</button>
                           <button type="button" id="draftTranslationNote" class="translation-review-duplicate-action" title="Add note from translation" aria-label="Add note from translation" disabled>Add note</button>
                         </div>
-                        <div id="translationRecordsSummary" class="translation-records-summary" role="status" aria-live="polite" aria-atomic="true">Translations</div>
+                        <div id="translationRecordsSummary" class="translation-records-summary" role="status" aria-live="polite" aria-atomic="true">No translations yet</div>
                         <details class="translation-export-tools" aria-label="Export study material as Markdown">
                           <summary>Export</summary>
                           <div class="translation-export-links" aria-label="Markdown export links">
@@ -110,7 +110,7 @@
                             <a id="exportAllTranslations" class="translation-export-link" href="/api/sentence-translations/export?format=markdown&review_state=all">All translations</a>
                             <a id="exportStudySession" class="translation-export-link" href="/api/study-session/export?format=markdown">Study session</a>
                           </div>
-                          <div id="studySessionSummary" class="study-session-summary" role="status" aria-live="polite" aria-atomic="true">Study session</div>
+                          <div id="studySessionSummary" class="study-session-summary" role="status" aria-live="polite" aria-atomic="true">Nothing saved yet</div>
                         </details>
                       </div>
                     </details>
@@ -175,6 +175,6 @@
     </main>
   </div>
   <script id="researchData" type="application/json">{{RESEARCH_JSON}}</script>
-  <script src="/assets/reader-work.js?v=common139"></script>
+  <script src="/assets/reader-work.js?v=common140"></script>
 </body>
 </html>
