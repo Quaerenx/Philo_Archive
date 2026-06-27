@@ -340,7 +340,7 @@ def check_route_markup(route: str, html: str) -> None:
             "목차</summary>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common126",
+            "reader-work.css?v=common127",
             "reader-work.js?v=common169",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
@@ -1354,7 +1354,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (/Sentence\s+\d+\s+of\s+\d+/i.test(`${state.studyPanelToggleSummary} ${state.studyPanelToggleLabel}`)) {
       throw new Error(`mobile study toggle should hide sentence count metadata from the primary reading handle: ${JSON.stringify(state)}`);
     }
-    if (state.isMobile && state.studyPageHeight > Math.ceil(state.viewportHeight * 0.70)) {
+    if (state.isMobile && state.studyPageHeight > Math.ceil(state.viewportHeight * 0.66)) {
       throw new Error(`mobile study panel should leave source text visible above it: ${JSON.stringify(state)}`);
     }
     if (state.isMobile && (state.studyPanelToggleDisplay !== 'grid' || state.studyPanelToggleHeight > 42)) {

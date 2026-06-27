@@ -2801,8 +2801,8 @@ h1 {
   }
 
   .study-page.is-expanded {
-    max-height: 68vh;
-    max-height: min(68vh, calc(100dvh - 48px));
+    max-height: 64vh;
+    max-height: min(64vh, calc(100dvh - 56px));
     padding: 10px 10px 0;
     padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
     overflow: auto;
@@ -2920,7 +2920,7 @@ h1 {
   }
 
   .translation-card {
-    max-height: calc(68vh - 24px);
+    max-height: calc(64vh - 24px);
     padding: 10px 11px 12px;
   }
 

@@ -1685,7 +1685,7 @@ def check_work_source_bundle_ui() -> None:
     ]:
         require(noisy_marker not in pending_body, f"renderTranslationPending should keep loading state quiet without {noisy_marker!r}")
     require_contains(template, "/assets/reader-work.js?v=common169", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common126", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common127", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
         'aria-label="읽기 화면 이동"',
@@ -2114,7 +2114,7 @@ def check_work_source_bundle_ui() -> None:
         "touch-action: none",
         "user-select: none",
         "max(10px, env(safe-area-inset-right, 0px))",
-        "max-height: min(68vh, calc(100dvh - 48px))",
+        "max-height: min(64vh, calc(100dvh - 56px))",
         "scroll-margin-block",
         ".sentence-context",
         ".reading-position",
