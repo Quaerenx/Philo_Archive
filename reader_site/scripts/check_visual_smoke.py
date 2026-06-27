@@ -556,6 +556,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       const browseTools = document.querySelector('.category-browse-tools');
       const primary = document.querySelector('.reading-path-link.primary');
       const firstWork = document.querySelector('.work-link');
+      const primaryStyle = primary ? window.getComputedStyle(primary) : null;
+      const firstWorkStyle = firstWork ? window.getComputedStyle(firstWork) : null;
       const visibleInventoryMeta = Array.from(document.querySelectorAll('.section-meta, .work-meta'))
         .map((node) => node.textContent.trim())
         .filter((text) => /\d[\d,]*\s+(verses?|segments?|files?|works?|tokens?|chapters?)\b/i.test(text));
@@ -566,8 +568,10 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         primaryReadLink: primary?.textContent.trim() || '',
         primaryReadLabel: primary?.getAttribute('aria-label') || '',
         primaryReadLinkHeight: primary?.getBoundingClientRect().height || 0,
+        primaryReadBorderLeftColor: primaryStyle?.borderLeftColor || '',
         firstWorkLinkText: firstWork?.textContent.trim() || '',
         firstWorkLinkHeight: firstWork?.getBoundingClientRect().height || 0,
+        firstWorkLinkColor: firstWorkStyle?.color || '',
         visibleInventoryMeta
       };
     });
@@ -586,6 +590,12 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (initialCategoryToolsState.visibleInventoryMeta.length > 0) {
       throw new Error(`category page should hide inventory-style counts from the reading list: ${JSON.stringify(initialCategoryToolsState)}`);
+    }
+    if (initialCategoryToolsState.hasCategoryFilter && initialCategoryToolsState.primaryReadBorderLeftColor !== 'rgb(176, 0, 0)') {
+      throw new Error(`category page should keep the first reading action visually distinct: ${JSON.stringify(initialCategoryToolsState)}`);
+    }
+    if (initialCategoryToolsState.firstWorkLinkText && (initialCategoryToolsState.firstWorkLinkColor === 'rgb(255, 0, 0)' || initialCategoryToolsState.firstWorkLinkColor === 'rgb(176, 0, 0)')) {
+      throw new Error(`category work lists should scan as reading lists rather than red action lists: ${JSON.stringify(initialCategoryToolsState)}`);
     }
     const hasCategoryFilter = initialCategoryToolsState.hasCategoryFilter;
     if (hasCategoryFilter) {

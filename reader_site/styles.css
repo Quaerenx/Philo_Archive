@@ -363,8 +363,16 @@ img {
   gap: 10px;
   align-items: baseline;
   padding: 2px 0;
+  color: #111;
   line-height: 1.35;
   overflow-wrap: anywhere;
+}
+
+.work-link:visited,
+.work-link:active,
+.work-link:hover,
+.work-link:focus-visible {
+  color: #111;
 }
 
 .work-meta {
