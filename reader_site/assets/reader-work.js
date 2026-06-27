@@ -411,9 +411,16 @@ function setTranslationRecordsSummary(text, state = "empty", counts = null) {
   const reviewHint = total
     ? (generated
       ? `${generated.toLocaleString()} to check`
-      : `${reviewed || total} saved`)
+      : `${(reviewed || total).toLocaleString()} saved`)
     : "No translations yet";
-  const detailLabel = `${text}. ${total} translation records, ${sentenceCount} sentences, ${generated} to check, ${reviewed} saved, ${rejected} rejected.`;
+  const detailLabel = [
+    text,
+    total ? `${total.toLocaleString()} translations` : "No translations yet",
+    sentenceCount ? `${sentenceCount.toLocaleString()} sentences studied` : "",
+    generated ? `${generated.toLocaleString()} to check` : "",
+    reviewed ? `${reviewed.toLocaleString()} saved` : "",
+    rejected ? `${rejected.toLocaleString()} discarded` : ""
+  ].filter(Boolean).join(". ") + ".";
   translationRecordsSummary.setAttribute(
     "aria-label",
     detailLabel
@@ -436,8 +443,8 @@ function updateTranslationExportLinks(total, reviewed) {
     exportAllTranslations.dataset.exportCount = String(total);
     exportAllTranslations.classList.toggle("is-empty", total === 0);
     exportAllTranslations.title = total
-      ? `Download ${total} translation records`
-      : "No translation records yet";
+      ? `Download ${total} translations`
+      : "No translations yet";
   }
 }
 
@@ -630,7 +637,7 @@ async function loadTranslationRecordsSummary() {
     const response = await fetch(`/api/sentence-translations/summary?${params}`);
     const payload = await response.json().catch(() => ({}));
     if (!response.ok || !payload.ok) {
-      throw new Error(payload.error || "Translation records unavailable");
+      throw new Error(payload.error || "Translations unavailable");
     }
     const counts = payload.review_state_counts || {};
     const total = Number(payload.count || 0);
@@ -679,7 +686,7 @@ function actionConfirmationConfig(action) {
       confirmText: "Confirm regenerate",
       confirmTitle: "Click again to replace this translation",
       confirmAria: "Confirm regenerate translation",
-      status: "Click Confirm regenerate to replace this translation.",
+      status: "Click again to replace this translation.",
       blockMessage: selectedSentence ? "" : "Select a sentence first.",
       run: () => requestSentenceTranslation(true)
     };
@@ -691,10 +698,10 @@ function actionConfirmationConfig(action) {
       defaultTitle: "Reject translation",
       defaultAria: "Reject translation",
       confirmText: "Confirm reject",
-      confirmTitle: "Click again to mark this translation rejected",
+      confirmTitle: "Click again to discard this translation",
       confirmAria: "Confirm reject translation",
-      status: "Click Confirm reject to exclude this cached translation.",
-      blockMessage: selectedTranslationRecord && selectedTranslationRecord.id ? "" : "No translation record selected.",
+      status: "Click again to discard this translation.",
+      blockMessage: selectedTranslationRecord && selectedTranslationRecord.id ? "" : "Select a translation first.",
       run: () => updateTranslationReview("rejected")
     };
   }
@@ -734,7 +741,7 @@ function armActionConfirmation(action) {
   config.button.title = config.confirmTitle;
   config.button.setAttribute("aria-label", config.confirmAria);
   setTranslationStatus(config.status, true);
-  actionConfirmationTimer = window.setTimeout(() => clearActionConfirmations("Pending action expired."), ACTION_CONFIRM_MS);
+  actionConfirmationTimer = window.setTimeout(() => clearActionConfirmations("Action cancelled."), ACTION_CONFIRM_MS);
 }
 
 function handleConfirmedAction(action) {
@@ -2123,7 +2130,7 @@ async function requestSentenceTranslation(regenerate = false) {
 
 async function updateTranslationReview(reviewState, triggerButton = null) {
   if (!selectedTranslationRecord || !selectedTranslationRecord.id) {
-    setTranslationStatus("No translation record selected.", true);
+    setTranslationStatus("Select a translation first.", true);
     return;
   }
   clearActionConfirmations();
@@ -2342,7 +2349,7 @@ function clearNoteDraft() {
 
 async function copyStudyCard() {
   if (!selectedTranslationRecord) {
-    setTranslationStatus("No translation record selected.", true);
+    setTranslationStatus("Select a translation first.", true);
     return;
   }
   setActionButtonBusy(copyStudyCardButton, true);
@@ -2867,7 +2874,7 @@ document.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && hasPendingActionConfirmation()) {
     event.preventDefault();
     clearActionConfirmations();
-    setTranslationStatus("Pending action cancelled.");
+    setTranslationStatus("Action cancelled.");
     return;
   }
   if (event.key === "Escape" && isMobileStudyLayout() && studyPage?.classList.contains("is-expanded")) {

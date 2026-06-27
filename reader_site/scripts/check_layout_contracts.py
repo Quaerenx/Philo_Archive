@@ -1150,15 +1150,14 @@ def check_work_source_bundle_ui() -> None:
         "handleConfirmedAction",
         'handleConfirmedAction("regenerate")',
         "Confirm regenerate",
-        "Click Confirm regenerate to replace this translation.",
+        "Click again to replace this translation.",
         "requestSentenceTranslation(true)",
         'handleConfirmedAction("reject")',
         "Confirm reject",
-        "Click Confirm reject to exclude this cached translation.",
+        "Click again to discard this translation.",
         "hasPendingActionConfirmation",
         "clearActionConfirmations",
-        "Pending action cancelled.",
-        "Pending action expired.",
+        "Action cancelled.",
         "setTranslationStatus(config.status, true)",
         "isMobileStudyLayout",
         "function visibleViewportTop",
@@ -1347,7 +1346,7 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common135", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common136", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common108", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
@@ -1377,7 +1376,7 @@ def check_work_source_bundle_ui() -> None:
         "studyProgressText",
         "continueStudy",
         "Continue study",
-        "Saved translations</div>",
+        "Translations</div>",
         "translation-review-tools",
         "translation-review-tools-body",
         "translation-export-tools",
