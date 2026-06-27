@@ -894,9 +894,15 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
           documentTitle: document.title,
           reviewQueueText: document.querySelector('#translationsReviewQueue')?.textContent.trim() || '',
           reviewQueueLabel: document.querySelector('#translationsReviewQueue')?.getAttribute('aria-label') || '',
-          exportLabels: Array.from(document.querySelectorAll('#translationsExportTools .export-row a')).map((node) => node.textContent.trim())
+          exportLabels: Array.from(document.querySelectorAll('#translationsExportTools .export-row a')).map((node) => node.textContent.trim()),
+          corpusOptions: Array.from(document.querySelectorAll('#translationsCorpus option')).map((node) => node.textContent.trim())
         };
     });
+    for (const expectedCorpusLabel of ['니체', '성경', '키르케고르', '비트겐슈타인']) {
+      if (!translationsPageState.corpusOptions.includes(expectedCorpusLabel)) {
+        throw new Error(`translations corpus filter should use consistent Korean archive labels: ${JSON.stringify(translationsPageState)}`);
+      }
+    }
     if (translationsPageState.exportLabels.join(' / ') !== '읽기용 / 데이터') {
       throw new Error(`translations export controls should expose reader-purpose labels: ${JSON.stringify(translationsPageState)}`);
     }
