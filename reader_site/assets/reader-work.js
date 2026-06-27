@@ -639,10 +639,10 @@ async function loadStudySessionSummary() {
     const translationCount = Number(payload.translation_count || 0);
     const total = noteCount + translationCount;
     const detail = total
-      ? `Ready to export. ${noteCount.toLocaleString()} notes and ${translationCount.toLocaleString()} translations.`
-      : "Nothing saved for export yet.";
+      ? `Ready to download. ${noteCount.toLocaleString()} notes and ${translationCount.toLocaleString()} translations.`
+      : "Nothing saved to download yet.";
     setStudySessionSummary(
-      total ? "Ready to export" : "Nothing saved yet",
+      total ? "Ready to download" : "Nothing to download",
       total ? "has-content" : "empty",
       detail
     );
@@ -3088,7 +3088,7 @@ function initializeStudyCompanion() {
   }
   if (exportStudySession) {
     exportStudySession.href = studySessionExportUrl("markdown");
-    exportStudySession.title = "Export the study session for this work";
+    exportStudySession.title = "Download the study session for this work";
   }
   syncConceptsPanelAvailability();
   selectSentenceFromHash();
