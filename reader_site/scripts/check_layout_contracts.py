@@ -228,7 +228,7 @@ def check_search_ui() -> None:
     css = read_site_file("assets/search.css")
     for needle in [
         "/assets/search.css?v=phase23",
-        "/assets/search.js?v=phase31",
+        "/assets/search.js?v=phase32",
         'href="/search" aria-current="page">Search</a>',
         'href="/translations"',
         "Find text",
@@ -267,6 +267,7 @@ def check_search_ui() -> None:
         "function corpusLabel",
         "function reviewStateLabel",
         "function resultMeta",
+        "function resultCorpusMeta",
         "function resultFooter",
         "result-actions-inline",
         "result-action-read",

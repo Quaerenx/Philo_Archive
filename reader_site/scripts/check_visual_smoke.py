@@ -247,7 +247,7 @@ def check_route_markup(route: str, html: str) -> None:
             "searchStatus",
             "aria-busy=\"false\"",
             "search.css?v=phase23",
-            "search.js?v=phase31",
+            "search.js?v=phase32",
             'href="/search" aria-current="page">Search</a>',
             "Translations",
             "filter-panel",
@@ -517,6 +517,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         emptyActions: Array.from(empty?.querySelectorAll('.empty-actions a') || []).map((node) => node.textContent.trim()),
         emptyButtonActions: Array.from(empty?.querySelectorAll('.empty-actions button') || []).map((node) => node.textContent.trim()),
         actionText: Array.from(document.querySelectorAll('#results .result-actions')).map((node) => node.textContent.trim()).join(' '),
+        activeFilterText: document.querySelector('#searchActiveFilters')?.textContent.trim() || '',
+        resultMetaText: Array.from(document.querySelectorAll('#results .result-meta')).map((node) => node.textContent.trim()).join(' '),
         moreActionCount: document.querySelectorAll('#results .result-more-actions').length,
         inlineActionCount: document.querySelectorAll('#results .result-actions-inline').length,
         primaryReadCount: document.querySelectorAll('#results .result-actions-inline .result-action-read').length,
@@ -563,6 +565,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (searchPageState.hasResults && searchPageState.groupCountText) {
       throw new Error(`search result group headers should not repeat count summaries: ${JSON.stringify(searchPageState)}`);
+    }
+    if (searchPageState.hasResults && searchPageState.activeFilterText.includes('Corpus: Nietzsche') && /\bNietzsche\b/.test(searchPageState.resultMetaText)) {
+      throw new Error(`search results should not repeat corpus metadata already shown in filters: ${JSON.stringify(searchPageState)}`);
     }
   }
   if (parsed.pathname === '/search' && !parsed.search) {

@@ -64,6 +64,10 @@ function resultMeta(parts) {
   return parts.map(cleanText).filter(Boolean).join(" / ");
 }
 
+function resultCorpusMeta(corpusId) {
+  return corpusSelect.value ? "" : corpusLabel(corpusId);
+}
+
 function updateUrl(query, corpusId, workId, variantId) {
   const params = new URLSearchParams();
   if (query) params.set("q", query);
@@ -251,7 +255,7 @@ function renderResults(payload, query) {
   const workMarkup = (payload.work_results || [])
     .map((result) => {
       const meta = resultMeta([
-        corpusLabel(result.corpus_id),
+        resultCorpusMeta(result.corpus_id),
         result.category_title || result.label
       ]);
       const variants = (result.variant_ids || []).slice(0, 8).map((variantId) => `<span class="tag">${escapeHtml(variantLabel(variantId))}</span>`).join("");
@@ -270,7 +274,7 @@ function renderResults(payload, query) {
   const segmentMarkup = segmentResults
     .map((result) => {
       const meta = resultMeta([
-        corpusLabel(result.corpus_id),
+        resultCorpusMeta(result.corpus_id),
         result.label,
         result.variant_id ? variantLabel(result.variant_id) : ""
       ]);
@@ -288,7 +292,7 @@ function renderResults(payload, query) {
   const noteMarkup = noteResults
     .map((result) => {
       const meta = resultMeta([
-        corpusLabel(result.corpus_id),
+        resultCorpusMeta(result.corpus_id),
         result.target_label,
         reviewStateLabel(result.review_state)
       ]);
