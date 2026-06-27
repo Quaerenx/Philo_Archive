@@ -1603,7 +1603,7 @@ h1 {
 
 .translation-reading-actions {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 6px;
   padding-top: 10px;
   border-top: 1px solid #eeeeee;
@@ -1623,7 +1623,6 @@ h1 {
 }
 
 .translation-reading-actions button[data-translation-quick-action="next-sentence"] {
-  grid-column: 1 / -1;
   min-height: 31px;
 }
 
@@ -1637,6 +1636,47 @@ h1 {
   color: #888;
   background: #f7f7f7;
   border-color: #dddddd;
+}
+
+.translation-secondary-actions {
+  min-width: 0;
+}
+
+.translation-secondary-actions summary {
+  display: flex;
+  min-height: 26px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 3px 8px;
+  color: #555;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  line-height: 1.25;
+  text-align: center;
+  cursor: pointer;
+  background: #fff;
+  border: 1px solid #dddddd;
+}
+
+.translation-secondary-actions summary::-webkit-details-marker {
+  display: none;
+}
+
+.translation-secondary-actions summary::after {
+  content: "+";
+  color: #999;
+}
+
+.translation-secondary-actions[open] summary::after {
+  content: "-";
+}
+
+.translation-secondary-actions-body {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 6px;
 }
 
 .translation-quick-actions {

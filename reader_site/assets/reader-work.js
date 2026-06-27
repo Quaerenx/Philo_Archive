@@ -1563,8 +1563,13 @@ function translationQuickActions(reviewState) {
     : "";
   return `<div class="translation-reading-actions" aria-label="Study actions">
       <button type="button" data-translation-quick-action="next-sentence" title="Select and translate next sentence" aria-label="Select and translate next sentence"${nextSentenceDisabled}>Next sentence</button>
-      <button type="button" data-translation-quick-action="draft-note" title="Add note from translation" aria-label="Add note from translation">Add note</button>
-      ${reviewAction}
+      <details class="translation-secondary-actions" aria-label="Save or note this translation">
+        <summary>Save or note</summary>
+        <div class="translation-secondary-actions-body">
+          <button type="button" data-translation-quick-action="draft-note" title="Add note from translation" aria-label="Add note from translation">Add note</button>
+          ${reviewAction}
+        </div>
+      </details>
     </div>
     <div class="translation-quick-actions translation-extra" aria-label="Study queue">
       <button type="button" data-translation-quick-action="continue" title="Continue study">Continue study</button>

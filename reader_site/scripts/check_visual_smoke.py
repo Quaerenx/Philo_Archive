@@ -313,8 +313,8 @@ def check_route_markup(route: str, html: str) -> None:
             "Contents</summary>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common115",
-            "reader-work.js?v=common152",
+            "reader-work.css?v=common116",
+            "reader-work.js?v=common153",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         require("Contents (" not in html, f"{route} should not expose TOC inventory counts")
@@ -753,13 +753,16 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       const readingNote = document.querySelector('[data-translation-quick-action="draft-note"]');
       const readingActionsNode = document.querySelector('.translation-reading-actions');
       const readingActionsStyle = readingActionsNode ? window.getComputedStyle(readingActionsNode) : null;
+      const secondaryActions = document.querySelector('.translation-secondary-actions');
+      const secondarySummary = secondaryActions?.querySelector('summary');
+      const outputVisibleText = output ? output.innerText : '';
       const translationHeading = document.querySelector('.translation-section-primary h3');
       const translationHeadingBox = translationHeading?.getBoundingClientRect();
       const commentaryHeading = document.querySelector('#translationOutput .translation-commentary h3');
       const commentaryHeadingBox = commentaryHeading?.getBoundingClientRect();
       const commentaryBody = document.querySelector('#translationOutput .translation-commentary p');
       const commentaryBodyStyle = commentaryBody ? window.getComputedStyle(commentaryBody) : null;
-      const readingActions = Array.from(document.querySelectorAll('.translation-reading-actions > *'))
+      const readingActions = Array.from(document.querySelectorAll('.translation-reading-actions > button, .translation-reading-actions > details > summary'))
         .filter((node) => window.getComputedStyle(node).display !== 'none')
         .map((node) => node.textContent.trim());
       const readingNextBox = readingNext?.getBoundingClientRect();
@@ -788,6 +791,10 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         readingNextWidth: readingNextBox?.width || 0,
         readingNoteWidth: readingNoteBox?.width || 0,
         readingSaveWidth: readingSaveBox?.width || 0,
+        readingNoteVisible: /\bAdd note\b/.test(outputVisibleText),
+        readingSaveVisible: /(^|\n)(Save|Saved)(\n|$)/.test(outputVisibleText),
+        secondaryActionsOpen: Boolean(secondaryActions?.open),
+        secondaryActionsSummary: secondarySummary?.textContent.trim() || '',
         readingActionsPosition: readingActionsStyle?.position || '',
         readingActionsBottom: readingActionsStyle?.bottom || '',
         translationHeadingWidth: translationHeadingBox?.width || 0,
@@ -799,7 +806,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         readingNoteLabel: readingNote ? readingNote.getAttribute('aria-label') || '' : '',
         readingActions,
         sectionOrder,
-        visibleOutputText: output ? output.innerText : '',
+        visibleOutputText: outputVisibleText,
         visibleExtraCount: visibleExtras.length,
         activeTab: activeTab ? activeTab.textContent.trim() : '',
         studyToolsOpen: Boolean(document.querySelector('.translation-utility')?.open),
@@ -824,8 +831,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (state.readingNextBorderColor !== 'rgb(176, 0, 0)') {
       throw new Error(`reading mode next action should be visually primary: ${JSON.stringify(state)}`);
     }
-    if (state.readingNextWidth <= state.readingNoteWidth || state.readingNextWidth <= state.readingSaveWidth) {
-      throw new Error(`reading mode should give Next sentence the widest action row: ${JSON.stringify(state)}`);
+    if (state.readingNextWidth <= 0 || state.readingNoteVisible || state.readingSaveVisible) {
+      throw new Error(`reading mode should keep only Next sentence as the immediate visible action: ${JSON.stringify(state)}`);
     }
     if (!state.isMobile && (state.readingActionsPosition !== 'sticky' || state.readingActionsBottom !== '8px')) {
       throw new Error(`desktop reading mode should keep study actions reachable during long commentary: ${JSON.stringify(state)}`);
@@ -850,16 +857,13 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (!['Save translation', 'Saved translation'].includes(state.readingSaveLabel) || state.readingNoteLabel !== 'Add note from translation') {
       throw new Error(`reading mode quick actions should keep clear accessible labels: ${JSON.stringify(state)}`);
     }
-    for (const actionText of ['Next sentence', 'Save', 'Add note']) {
-      if (!state.readingActions.includes(actionText) && !(actionText === 'Save' && state.readingActions.includes('Saved'))) {
-        throw new Error(`reading mode should expose immediate study action ${actionText}: ${JSON.stringify(state)}`);
-      }
+    if (state.secondaryActionsOpen || state.secondaryActionsSummary !== 'Save or note') {
+      throw new Error(`reading mode should collapse secondary note/save actions behind a clear label: ${JSON.stringify(state)}`);
     }
     const firstAction = state.readingActions[0] || '';
     const secondAction = state.readingActions[1] || '';
-    const thirdAction = state.readingActions[2] || '';
-    if (firstAction !== 'Next sentence' || secondAction !== 'Add note' || !['Save', 'Saved'].includes(thirdAction)) {
-      throw new Error(`reading mode should order actions as Next sentence, Add note, then Save: ${JSON.stringify(state)}`);
+    if (firstAction !== 'Next sentence' || secondAction !== 'Save or note' || state.readingActions.length !== 2) {
+      throw new Error(`reading mode should show only Next sentence and the collapsed secondary action label: ${JSON.stringify(state)}`);
     }
     if (state.visibleExtraCount !== 0) throw new Error(`reading mode exposed study-only translation extras: ${JSON.stringify(state)}`);
     if (state.activeTab !== 'Translation') throw new Error(`selected work route did not keep Translation tab active: ${JSON.stringify(state)}`);
@@ -932,6 +936,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (!nextFocusState.ok || nextFocusState.activeAction !== 'next-sentence') {
       throw new Error(`saved review flow should focus the next sentence action: ${JSON.stringify(nextFocusState)}`);
     }
+    await page.click('.translation-secondary-actions summary');
     await page.click('[data-translation-quick-action="draft-note"]');
     await page.waitForSelector('#study-panel-notes:not([hidden])', { timeout: 5000 });
     await page.waitForFunction(() => document.activeElement?.id === 'noteText', null, { timeout: 3000 }).catch(() => {});
@@ -1026,6 +1031,18 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     await page.click('#study-tab-translation');
     await page.waitForSelector('#study-panel-translation:not([hidden])', { timeout: 5000 });
+    const restoredReadingState = await page.evaluate(() => {
+      const secondaryActions = document.querySelector('.translation-secondary-actions');
+      if (secondaryActions) secondaryActions.open = false;
+      const outputText = document.querySelector('#translationOutput')?.innerText || '';
+      return {
+        secondaryActionsOpen: Boolean(secondaryActions?.open),
+        outputText
+      };
+    });
+    if (restoredReadingState.secondaryActionsOpen || /\bAdd note\b/.test(restoredReadingState.outputText) || /(^|\n)(Save|Saved)(\n|$)/.test(restoredReadingState.outputText)) {
+      throw new Error(`selected work screenshot should return to the quiet reading action state: ${JSON.stringify(restoredReadingState)}`);
+    }
   }
   if (parsed.pathname === '/translations' && parsed.searchParams.get('review_state') === 'generated') {
     await page.waitForSelector('#translationsResults .translation-record-card, #translationsResults .empty-state', { timeout: 7000 }).catch(() => {});
