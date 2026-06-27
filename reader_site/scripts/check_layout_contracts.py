@@ -968,6 +968,12 @@ def check_work_source_bundle_ui() -> None:
         "studyProgressText",
         "function setStudyProgress",
         "function updateStudyProgress",
+        "Loading progress",
+        "Continue where you left off",
+        "Start with the first sentence",
+        "Check translations",
+        "Study session ready",
+        "All sentences studied",
         "function translationStateCountsFromSentences",
         "translationSentenceStatesLoaded",
         "function sentenceHasTranslationState",
@@ -1349,7 +1355,7 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common140", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common141", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common109", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
@@ -1377,6 +1383,7 @@ def check_work_source_bundle_ui() -> None:
         "translationRecordsSummary",
         "studyProgress",
         "studyProgressText",
+        "Loading progress",
         "continueStudy",
         "Continue study",
         "No translations yet</div>",

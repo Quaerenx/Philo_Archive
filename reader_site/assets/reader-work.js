@@ -448,12 +448,19 @@ function updateTranslationExportLinks(total, reviewed) {
   }
 }
 
-function setStudyProgress(text, state = "loading") {
+function setStudyProgress(text, state = "loading", detail = "") {
   if (studyProgressText) {
     studyProgressText.textContent = text;
   }
   if (studyProgress) {
     studyProgress.dataset.progressState = state;
+    if (detail) {
+      studyProgress.setAttribute("aria-label", detail);
+      studyProgress.title = detail;
+    } else {
+      studyProgress.removeAttribute("aria-label");
+      studyProgress.removeAttribute("title");
+    }
   }
 }
 
@@ -469,7 +476,7 @@ function translationStateCountsFromSentences() {
 function updateStudyProgress() {
   if (!studyProgress) return;
   if (!translationSentenceStatesLoaded) {
-    setStudyProgress("Progress", "loading");
+    setStudyProgress("Loading progress", "loading", "Loading study progress.");
     if (continueStudyButton) {
       continueStudyButton.textContent = "Continue study";
       continueStudyButton.disabled = true;
@@ -486,8 +493,15 @@ function updateStudyProgress() {
   const state = remaining > 0
     ? (studied ? "active" : "empty")
     : (pendingReview ? "review" : "complete");
-  const reviewText = pendingReview ? ` / ${pendingReview} to check` : "";
-  setStudyProgress(`${studied}/${total} translated / ${remaining} left${reviewText}`, state);
+  const progressText = remaining > 0
+    ? (studied ? "Continue where you left off" : "Start with the first sentence")
+    : (pendingReview ? "Check translations" : (stateCounts.reviewed ? "Study session ready" : "All sentences studied"));
+  const detail = [
+    `${studied.toLocaleString()} of ${total.toLocaleString()} sentences translated`,
+    remaining ? `${remaining.toLocaleString()} left` : "No untranslated sentences left",
+    pendingReview ? `${pendingReview.toLocaleString()} to check` : ""
+  ].filter(Boolean).join(". ") + ".";
+  setStudyProgress(progressText, state, detail);
   if (continueStudyButton) {
     const wantsReview = remaining === 0 && pendingReview > 0;
     const wantsPreview = remaining === 0 && pendingReview === 0 && stateCounts.reviewed > 0;

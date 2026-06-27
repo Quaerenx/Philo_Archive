@@ -293,6 +293,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translationRecordsSummary",
             "No translations yet</div>",
             "studyProgress",
+            "Loading progress",
             "Continue study",
             "translation-export-tools",
             "Export study material as Markdown",
@@ -307,7 +308,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common109",
-            "reader-work.js?v=common140",
+            "reader-work.js?v=common141",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
 
