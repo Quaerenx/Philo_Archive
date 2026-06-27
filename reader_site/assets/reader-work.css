@@ -2082,11 +2082,8 @@ h1 {
 }
 
 .note-item.is-recent {
-  padding: 8px 8px 8px 10px;
-  background: #fff9df;
-  border: 1px solid #d8c36a;
-  border-left: 3px solid #b00000;
-  animation: archive-note-highlight 1.8s ease-out 1;
+  padding-left: 10px;
+  box-shadow: inset 3px 0 0 #b00000;
 }
 
 .note-item:first-child {
@@ -2096,9 +2093,7 @@ h1 {
 }
 
 .note-item.is-recent:first-child {
-  padding: 8px 8px 8px 10px;
-  border: 1px solid #d8c36a;
-  border-left: 3px solid #b00000;
+  border-top: 0;
 }
 
 .note-item.is-recent:focus {
@@ -2428,15 +2423,6 @@ h1 {
   }
 }
 
-@keyframes archive-note-highlight {
-  0% {
-    background-color: #fff0b8;
-  }
-  100% {
-    background-color: #fff9df;
-  }
-}
-
 @keyframes archive-translation-arrival {
   0% {
     background-color: #fff1b8;
@@ -2597,7 +2583,6 @@ h1 {
   .translation-skeleton-line,
   .notes-list-skeleton,
   .study-panel.active,
-  .note-item.is-recent,
   .reader-sentence.loading,
   .reader-sentence.just-studied,
   .reader-sentence.just-loaded-cache,

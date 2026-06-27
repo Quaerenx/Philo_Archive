@@ -1559,7 +1559,7 @@ def check_work_source_bundle_ui() -> None:
     ]:
         require(noisy_marker not in pending_body, f"renderTranslationPending should keep loading state quiet without {noisy_marker!r}")
     require_contains(template, "/assets/reader-work.js?v=common164", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common120", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common121", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
         'aria-label="읽기 화면 이동"',
@@ -1944,7 +1944,6 @@ def check_work_source_bundle_ui() -> None:
         ".note-danger-actions summary::after",
         ".note-danger-actions[open] summary::after",
         ".note-danger-actions button",
-        "@keyframes archive-note-highlight",
         ".study-panel-toggle",
         ".study-panel-toggle::before",
         ".study-panel-toggle-action",
@@ -2030,6 +2029,11 @@ def check_work_source_bundle_ui() -> None:
         "@media (prefers-reduced-motion: reduce)",
     ]:
         require_contains(css, needle, "assets/reader-work.css")
+    note_item_recent_block = css_rule_block(css, ".note-item.is-recent", "assets/reader-work.css recent note item marker")
+    require_contains(note_item_recent_block, "box-shadow: inset 3px 0 0 #b00000", "assets/reader-work.css recent note item marker")
+    for noisy_marker in ["background: #fff9df", "border: 1px solid #d8c36a", "animation:"]:
+        require(noisy_marker not in note_item_recent_block, f"assets/reader-work.css recent note item marker should stay quiet without {noisy_marker!r}")
+    require("archive-note-highlight" not in css, "assets/reader-work.css should not animate recent note items")
 
 
 def main() -> None:
