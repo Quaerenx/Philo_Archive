@@ -44,10 +44,10 @@ const ROOT_LINK_LABELS = {
 };
 
 const CATEGORY_SUBTITLES = {
-  nietzsche: "Published works and reading groups",
-  bible: "Hebrew Bible, Greek New Testament, and LXX",
-  kierkegaard: "Primary texts organized for reading",
-  wittgenstein: "Notebooks, remarks, and philosophical investigations",
+  nietzsche: "출간 저작과 독서 경로",
+  bible: "히브리어 성경, 그리스어 신약, 칠십인역",
+  kierkegaard: "읽기용으로 정리한 원전",
+  wittgenstein: "노트, 단상, 철학적 탐구",
 };
 
 const el = {
@@ -81,7 +81,7 @@ function storedRecentWork() {
     if (!item || typeof item !== "object") return null;
     const href = cleanText(item.href || "");
     if (!href.startsWith("/work/")) return null;
-    const title = cleanText(item.title || item.work_id || "Recent work");
+    const title = cleanText(item.title || item.work_id || "최근 문서");
     const corpus = cleanText(item.corpus_title || item.corpus_id || "");
     return {
       href,
@@ -98,7 +98,7 @@ function recentWorkMarkup() {
   if (!recent) return "";
   const meta = recent.meta ? `<span class="recent-work-meta">${escapeHtml(recent.meta)}</span>` : "";
   return `<section class="recent-work">
-    <strong>Continue reading</strong>
+    <strong>이어 읽기</strong>
     <a href="${escapeHtml(recent.href)}">${escapeHtml(recent.title)}</a>
     ${meta}
   </section>`;
@@ -195,11 +195,11 @@ function renderArchive() {
     return;
   }
 
-  renderShell("Personal Archive of Literature", "Primary Texts / Authors / Traditions");
+  renderShell("Personal Archive of Literature", "원전 / 저자 / 전통");
   const visibleCorpora = state.archive.corpora;
 
   if (!visibleCorpora.length) {
-    el.archiveLinks.innerHTML = `<div class="empty">Archive categories are not available.</div>`;
+    el.archiveLinks.innerHTML = `<div class="empty">아카이브 카테고리를 불러올 수 없습니다.</div>`;
     return;
   }
 
@@ -214,10 +214,10 @@ function renderArchive() {
 function renderCategory(categoryId) {
   const corpus = state.archive.corpora.find((item) => item.id === categoryId);
   if (!corpus) {
-    renderShell("Not found", "Unknown category");
+    renderShell("찾을 수 없음", "알 수 없는 카테고리");
     el.archiveLinks.innerHTML = [
-      `<a class="back-link" href="/">Archive</a>`,
-      `<div class="empty">Category not found.</div>`,
+      `<a class="back-link" href="/">아카이브</a>`,
+      `<div class="empty">카테고리를 찾을 수 없습니다.</div>`,
     ].join("");
     return;
   }
@@ -230,15 +230,15 @@ function renderCategory(categoryId) {
   const sections = filteredCategorySections(corpus);
   if (!sections.length) {
     el.archiveLinks.innerHTML = [
-      `<a class="back-link" href="/">Archive</a>`,
+      `<a class="back-link" href="/">아카이브</a>`,
       categoryControls(corpus, baseSections),
-      `<div class="empty">No works match this filter.</div>`,
+      `<div class="empty">조건에 맞는 작품이 없습니다.</div>`,
     ].join("");
     return;
   }
 
   el.archiveLinks.innerHTML = [
-    `<a class="back-link" href="/">Archive</a>`,
+    `<a class="back-link" href="/">아카이브</a>`,
     categoryControls(corpus, baseSections),
     sections
       .map((section) => {
@@ -261,15 +261,15 @@ function categoryControls(corpus, sections) {
     .map((link, index) => `<a class="reading-path-link${index === 0 ? " primary" : ""}" href="${escapeHtml(link.href)}"${startReadingTitle(link)}>${escapeHtml(startReadingLabel(link))}</a>`)
     .join("");
   const sectionButtons = [
-    `<button type="button" class="section-filter${state.activeSection === "all" ? " active" : ""}" data-section-filter="all">All</button>`,
+    `<button type="button" class="section-filter${state.activeSection === "all" ? " active" : ""}" data-section-filter="all">전체</button>`,
     ...sections.map((section) => (
       `<button type="button" class="section-filter${state.activeSection === section.title ? " active" : ""}" data-section-filter="${escapeHtml(section.title)}">${escapeHtml(section.title)}</button>`
     )),
   ].join("");
   return `<section class="category-tools">
-    <div class="reading-path"><strong>Start reading</strong><div class="reading-path-links">${pathLinks || '<span class="empty">No starting works available.</span>'}</div></div>
-    <label class="category-filter">Find work<input id="categoryFilter" value="${escapeHtml(state.categoryQuery)}" autocomplete="off" placeholder="Title or siglum"></label>
-    <div class="section-filters" aria-label="Sections">${sectionButtons}</div>
+    <div class="reading-path"><strong>바로 읽기</strong><div class="reading-path-links">${pathLinks || '<span class="empty">시작 문서가 없습니다.</span>'}</div></div>
+    <label class="category-filter">작품 찾기<input id="categoryFilter" value="${escapeHtml(state.categoryQuery)}" autocomplete="off" placeholder="제목 또는 약호"></label>
+    <div class="section-filters" aria-label="분류">${sectionButtons}</div>
   </section>`;
 }
 
@@ -301,7 +301,7 @@ async function init() {
     state.archive = await response.json();
     renderArchive();
   } catch (error) {
-    el.archiveLinks.innerHTML = `<div class="empty">Archive could not be loaded.</div>`;
+    el.archiveLinks.innerHTML = `<div class="empty">아카이브를 불러올 수 없습니다.</div>`;
   }
 }
 

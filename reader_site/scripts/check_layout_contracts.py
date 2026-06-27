@@ -92,9 +92,9 @@ def check_html_entrypoints() -> None:
         require_contains(html, "/assets/design-tokens.css", relative_path)
         require_contains(html, 'class="page"', relative_path)
         if relative_path == "index.html":
-            require_contains(html, "Translations", relative_path)
+            require_contains(html, "번역", relative_path)
             require_contains(html, "/styles.css?v=home2", relative_path)
-            require_contains(html, "/app.js?v=home7", relative_path)
+            require_contains(html, "/app.js?v=home8", relative_path)
         if relative_path in {"templates/reading.html", "templates/source.html"}:
             require_contains(html, "/assets/static-reader.css?v=static2", relative_path)
             require_contains(html, "자료 위치</summary>", relative_path)
@@ -192,7 +192,12 @@ def check_home_script() -> None:
         "function categorySubtitle",
         "function storedRecentWork",
         "function recentWorkMarkup",
-        "Continue reading",
+        "이어 읽기",
+        "바로 읽기",
+        "작품 찾기",
+        "제목 또는 약호",
+        "전체</button>",
+        "원전 / 저자 / 전통",
         "linksByWorkId",
         "START_READING_WORK_IDS[corpus.id]",
         "START_READING_LIMIT",

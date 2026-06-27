@@ -200,11 +200,11 @@ def check_route_markup(route: str, html: str) -> None:
         require("javascript:;" not in html, f"{route} should avoid inert markdown javascript links")
     if route == "/":
         for needle in [
-            "Search",
-            "Notes",
-            "Study",
-            "Translations",
-            "app.js?v=home7",
+            "검색",
+            "노트",
+            "학습",
+            "번역",
+            "app.js?v=home8",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
     if route == "/study":
