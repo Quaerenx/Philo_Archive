@@ -250,7 +250,7 @@ def check_route_markup(route: str, html: str) -> None:
             "aria-busy=\"false\"",
             "notes.css?v=notes21",
             "translations.css?v=trans29",
-            "translations.js?v=trans67",
+            "translations.js?v=trans68",
             'href="/translations" aria-current="page">번역</a>',
             "번역 찾기",
             "translationsListTools",
@@ -872,6 +872,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
           emptyActions: Array.from(empty?.querySelectorAll('.empty-actions a') || []).map((node) => node.textContent.trim()),
           reviewBadgeCount: document.querySelectorAll('#translationsResults .review-badge').length,
           summaryButtons: Array.from(document.querySelectorAll('#translationsResults .translation-record-summary [data-translation-summary-filter]')).map((node) => node.textContent.trim()),
+          sourceDisclosureCount: document.querySelectorAll('#translationsResults .translation-source').length,
           groupTitleCount: document.querySelectorAll('#translationsResults .translation-record-group-title').length,
           firstGroupTitle: document.querySelector('#translationsResults .translation-record-group-title')?.textContent.trim() || '',
           reviewQueueBorderColor: window.getComputedStyle(document.querySelector('#translationsReviewQueue')).borderColor,
@@ -894,6 +895,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     } else {
       if (translationsPageState.reviewBadgeCount !== 0) {
         throw new Error(`default translations list should hide review-state badges: ${JSON.stringify(translationsPageState)}`);
+      }
+      if (translationsPageState.sourceDisclosureCount !== 0) {
+        throw new Error(`default translations list should hide repeated source disclosures: ${JSON.stringify(translationsPageState)}`);
       }
       if (translationsPageState.headingText !== '번역 목록' || !translationsPageState.documentTitle.startsWith('번역 목록 /')) {
         throw new Error(`default translations page should read as a list, not a review task: ${JSON.stringify(translationsPageState)}`);

@@ -539,7 +539,7 @@ def check_translations_ui() -> None:
     for needle in [
         "/assets/notes.css?v=notes21",
         "/assets/translations.css?v=trans29",
-        "/assets/translations.js?v=trans67",
+        "/assets/translations.js?v=trans68",
         "<title>번역 목록 / Personal Archive of Literature</title>",
         '<h1 id="translationsPageTitle">번역 목록</h1>',
         'aria-label="번역 이동"',
@@ -639,7 +639,9 @@ def check_translations_ui() -> None:
         "function visibleReviewStates",
         "showReviewBadge",
         "showReviewActions",
+        "showSourceDetail",
         "showGroupActions: !inReviewQueue",
+        "showSourceDetail: showReviewActions",
         "record.target_label || sentenceDisplayName(record)",
         "corpusDisplayName(record.corpus_id)",
         "workDisplayName(record.corpus_id, record.work_id)",

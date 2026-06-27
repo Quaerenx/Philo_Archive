@@ -524,6 +524,7 @@ function renderRecord(record, options) {
   const showReviewBadge = options.showReviewBadge !== false;
   const showReviewActions = options.showReviewActions === true;
   const showContext = options.showContext !== false;
+  const showSourceDetail = options.showSourceDetail === true;
   const reviewKicker = showReviewBadge
     ? `<div class="translation-record-kicker">
         <span class="review-badge" aria-label="검토 상태: ${escapeHtml(reviewLabel)}">${escapeHtml(reviewLabel)}</span>
@@ -552,7 +553,7 @@ function renderRecord(record, options) {
     </header>
     ${translation ? `<p class="translation-text">${escapeHtml(translation)}</p>` : ""}
     ${commentary ? `<section class="translation-commentary" aria-label="해설"><h3>해설</h3><p>${escapeHtml(commentary)}</p></section>` : ""}
-    ${source ? `<details class="translation-source"><summary>원문</summary><blockquote>${escapeHtml(source)}</blockquote></details>` : ""}
+    ${source && showSourceDetail ? `<details class="translation-source"><summary>원문</summary><blockquote>${escapeHtml(source)}</blockquote></details>` : ""}
     ${actions ? `<footer class="translation-record-footer">
       <div class="translation-actions">
         ${actions}
@@ -589,7 +590,7 @@ function renderRecords(records) {
   const inReviewQueue = isReviewQueueOnlyView();
   statusEl.textContent = "";
   resultsEl.innerHTML = queryMatched.length
-    ? renderSummary(queryMatched) + (visible.length ? renderRecordGroups(visible, { showReviewBadge: showReviewBadges, showReviewActions, showGroupActions: !inReviewQueue }) : renderEmptyRecords())
+    ? renderSummary(queryMatched) + (visible.length ? renderRecordGroups(visible, { showReviewBadge: showReviewBadges, showReviewActions, showGroupActions: !inReviewQueue, showSourceDetail: showReviewActions }) : renderEmptyRecords())
     : renderEmptyRecords();
   if (pendingReviewQueueFocus) {
     const reviewMessage = pendingReviewQueueMessage;
