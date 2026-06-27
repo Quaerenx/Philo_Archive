@@ -208,29 +208,29 @@ function rememberStudyPanelExpanded(expanded) {
 }
 
 function selectedSentencePositionLabel() {
-  if (!selectedSentence) return "Select sentence";
+  if (!selectedSentence) return "문장 선택";
   const index = sentenceIndex(selectedSentence.sentenceId);
   return index >= 0 ? `Sentence ${index + 1} of ${sentenceNodes.length}` : selectedSentence.sentenceId;
 }
 
 function studyPanelToggleSummary() {
-  if (!selectedSentence) return "Select sentence";
+  if (!selectedSentence) return "문장 선택";
   if (translationCard && translationCard.classList.contains("is-loading")) {
-    return "Translating";
+    return "번역 중";
   }
   if (translationOutput && translationOutput.querySelector(".translation-error")) {
-    return "Needs retry";
+    return "다시 시도 필요";
   }
   if (selectedTranslationRecord) {
-    return "Translation ready";
+    return "번역 완료";
   }
-  return "Selected sentence";
+  return "선택한 문장";
 }
 
 function updateStudyPanelToggleLabel() {
   if (!studyPage || !studyPanelToggle) return;
   const expanded = studyPage.classList.contains("is-expanded");
-  const action = expanded ? "Back to text" : "Study";
+  const action = expanded ? "본문으로" : "학습";
   const summary = studyPanelToggleSummary();
   studyPanelToggle.innerHTML = `
     <span class="study-panel-toggle-action">${escapeHtml(action)}</span>

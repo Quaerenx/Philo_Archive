@@ -314,7 +314,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common116",
-            "reader-work.js?v=common156",
+            "reader-work.js?v=common157",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         require("Contents (" not in html, f"{route} should not expose TOC inventory counts")
@@ -870,10 +870,10 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       throw new Error(`reading mode should show only Next sentence and the collapsed secondary action label: ${JSON.stringify(state)}`);
     }
     if (state.visibleExtraCount !== 0) throw new Error(`reading mode exposed study-only translation extras: ${JSON.stringify(state)}`);
-    if (state.activeTab !== 'Translation') throw new Error(`selected work route did not keep Translation tab active: ${JSON.stringify(state)}`);
+    if (state.activeTab !== '번역') throw new Error(`selected work route did not keep Translation tab active: ${JSON.stringify(state)}`);
     if (state.studyToolsOpen) throw new Error(`study tools should stay collapsed in default reading mode: ${JSON.stringify(state)}`);
-    if (state.studyToolsSummary !== 'Options') throw new Error(`study tools summary should stay concise and clear: ${JSON.stringify(state)}`);
-    if (!['Selected sentence', 'Translation ready'].includes(state.studyPanelToggleSummary)) {
+    if (state.studyToolsSummary !== '옵션') throw new Error(`study tools summary should stay concise and clear: ${JSON.stringify(state)}`);
+    if (!['선택한 문장', '번역 완료'].includes(state.studyPanelToggleSummary)) {
       throw new Error(`mobile study toggle should describe reading state without numeric metadata: ${JSON.stringify(state)}`);
     }
     if (/Sentence\s+\d+\s+of\s+\d+/i.test(`${state.studyPanelToggleSummary} ${state.studyPanelToggleLabel}`)) {
@@ -955,7 +955,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         activeElementId: document.activeElement?.id || ''
       };
     });
-    if (draftState.activeTab !== 'Notes') {
+    if (draftState.activeTab !== '노트') {
       throw new Error(`Add note should switch to Notes tab: ${JSON.stringify(draftState)}`);
     }
     for (const expectedText of ['Translation', 'Commentary']) {

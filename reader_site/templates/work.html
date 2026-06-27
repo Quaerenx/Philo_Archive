@@ -37,27 +37,27 @@
         </section>
         <button type="button" id="studyPanelScrim" class="study-panel-scrim" aria-label="Close study panel" hidden></button>
         <aside id="studyCompanionPanel" class="study-page" aria-label="Study companion">
-          <button type="button" id="studyPanelToggle" class="study-panel-toggle" aria-expanded="false" aria-controls="studyCompanionPanel" aria-label="Study. Select sentence"><span class="study-panel-toggle-action">Study</span><span class="study-panel-toggle-summary">Select sentence</span></button>
-          <nav class="study-tabs" role="tablist" aria-label="Study companion tools" aria-orientation="horizontal">
-            <button type="button" id="study-tab-translation" class="study-tab active" role="tab" aria-selected="true" aria-controls="study-panel-translation" tabindex="0" data-study-tab="translation">Translation</button>
-            <button type="button" id="study-tab-notes" class="study-tab" role="tab" aria-selected="false" aria-controls="study-panel-notes" tabindex="-1" data-study-tab="notes">Notes</button>
-            <button type="button" id="study-tab-citation" class="study-tab study-tab-secondary" role="tab" aria-selected="false" aria-controls="study-panel-citation" tabindex="-1" data-study-tab="citation">Citation</button>
-            <button type="button" id="study-tab-concepts" class="study-tab study-tab-secondary" role="tab" aria-selected="false" aria-controls="study-panel-concepts" tabindex="-1" data-study-tab="concepts">Concepts</button>
+          <button type="button" id="studyPanelToggle" class="study-panel-toggle" aria-expanded="false" aria-controls="studyCompanionPanel" aria-label="학습. 문장 선택"><span class="study-panel-toggle-action">학습</span><span class="study-panel-toggle-summary">문장 선택</span></button>
+          <nav class="study-tabs" role="tablist" aria-label="학습 도구" aria-orientation="horizontal">
+            <button type="button" id="study-tab-translation" class="study-tab active" role="tab" aria-selected="true" aria-controls="study-panel-translation" tabindex="0" data-study-tab="translation">번역</button>
+            <button type="button" id="study-tab-notes" class="study-tab" role="tab" aria-selected="false" aria-controls="study-panel-notes" tabindex="-1" data-study-tab="notes">노트</button>
+            <button type="button" id="study-tab-citation" class="study-tab study-tab-secondary" role="tab" aria-selected="false" aria-controls="study-panel-citation" tabindex="-1" data-study-tab="citation">인용</button>
+            <button type="button" id="study-tab-concepts" class="study-tab study-tab-secondary" role="tab" aria-selected="false" aria-controls="study-panel-concepts" tabindex="-1" data-study-tab="concepts">개념</button>
           </nav>
           <section id="study-panel-translation" class="study-panel active" role="tabpanel" aria-labelledby="study-tab-translation" tabindex="0" data-study-panel="translation">
             <section class="research-card translation-card" aria-labelledby="translationCardTitle">
-              <h2 id="translationCardTitle" class="visually-hidden">Translation</h2>
-              <div id="translationOutput" class="translation-output reading-mode" aria-label="Translation result" aria-busy="false" tabindex="0" hidden></div>
-              <details class="translation-utility" aria-label="Study options">
+              <h2 id="translationCardTitle" class="visually-hidden">번역</h2>
+              <div id="translationOutput" class="translation-output reading-mode" aria-label="번역 결과" aria-busy="false" tabindex="0" hidden></div>
+              <details class="translation-utility" aria-label="학습 옵션">
                 <summary>
-                  <span>Options</span>
+                  <span>옵션</span>
                 </summary>
                 <div class="translation-utility-body">
                   <section class="translation-utility-group" aria-label="View controls">
                     <div class="translation-utility-group-label visually-hidden">View</div>
-                    <div class="mode-toggle" role="group" aria-label="Translation display mode">
-                      <button type="button" id="readingMode" class="active">Reading</button>
-                      <button type="button" id="studyMode">Study</button>
+                    <div class="mode-toggle" role="group" aria-label="번역 표시 방식">
+                      <button type="button" id="readingMode" class="active">읽기</button>
+                      <button type="button" id="studyMode">학습</button>
                     </div>
                   </section>
                   <section class="translation-utility-group" aria-label="Sentence controls">
@@ -175,6 +175,6 @@
     </main>
   </div>
   <script id="researchData" type="application/json">{{RESEARCH_JSON}}</script>
-  <script src="/assets/reader-work.js?v=common156"></script>
+  <script src="/assets/reader-work.js?v=common157"></script>
 </body>
 </html>
