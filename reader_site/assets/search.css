@@ -656,8 +656,14 @@ mark {
   }
 
   .toolbar {
-    gap: 10px;
-    margin-top: 8px;
+    gap: 4px 10px;
+    margin-top: 6px;
+  }
+
+  .toolbar a {
+    display: inline-flex;
+    min-height: 24px;
+    align-items: center;
   }
 
   .search-form {

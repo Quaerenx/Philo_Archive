@@ -227,7 +227,7 @@ def check_search_ui() -> None:
     script = read_site_file("assets/search.js")
     css = read_site_file("assets/search.css")
     for needle in [
-        "/assets/search.css?v=phase22",
+        "/assets/search.css?v=phase23",
         "/assets/search.js?v=phase31",
         'href="/search" aria-current="page">Search</a>',
         'href="/translations"',
@@ -309,6 +309,8 @@ def check_search_ui() -> None:
         "height: 136px",
         ".reader-header",
         '.toolbar a[aria-current="page"]',
+        "gap: 4px 10px",
+        "min-height: 24px",
         "margin-bottom: 16px",
         "padding-bottom: 10px",
         ".form-actions",
@@ -356,7 +358,7 @@ def check_notes_ui() -> None:
     script = read_site_file("assets/notes.js")
     css = read_site_file("assets/notes.css")
     for needle in [
-        "/assets/notes.css?v=notes20",
+        "/assets/notes.css?v=notes21",
         "/assets/notes.js?v=notes29",
         'href="/notes" aria-current="page">Notes</a>',
         "Find note",
@@ -449,6 +451,8 @@ def check_notes_ui() -> None:
         "height: 136px",
         ".reader-header",
         '.toolbar a[aria-current="page"]',
+        "gap: 4px 10px",
+        "min-height: 24px",
         "margin-bottom: 16px",
         "padding-bottom: 10px",
         ".form-actions",
@@ -501,7 +505,7 @@ def check_translations_ui() -> None:
     base_css = read_site_file("assets/notes.css")
     css = read_site_file("assets/translations.css")
     for needle in [
-        "/assets/notes.css?v=notes20",
+        "/assets/notes.css?v=notes21",
         "/assets/translations.css?v=trans25",
         "/assets/translations.js?v=trans58",
         'href="/translations" aria-current="page">Translations</a>',
@@ -765,7 +769,7 @@ def check_study_ui() -> None:
     script = read_site_file("assets/study.js")
     css = read_site_file("assets/study.css")
     for needle in [
-        "/assets/study.css?v=study22",
+        "/assets/study.css?v=study23",
         "/assets/study.js?v=study37",
         'href="/study" aria-current="page">Study</a>',
         "Find saved note",
@@ -873,6 +877,8 @@ def check_study_ui() -> None:
         "margin-bottom: 16px",
         "padding-bottom: 10px",
         '.toolbar a[aria-current="page"]',
+        "gap: 4px 10px",
+        "min-height: 24px",
         ".form-actions",
         ".secondary-action",
         ".filter-panel",

@@ -195,7 +195,7 @@ def check_route_markup(route: str, html: str) -> None:
             "Saved translations</a>",
             "studyStatus",
             "aria-busy=\"false\"",
-            "study.css?v=study22",
+            "study.css?v=study23",
             "study.js?v=study37",
             'href="/study" aria-current="page">Study</a>',
             "filter-panel",
@@ -209,7 +209,7 @@ def check_route_markup(route: str, html: str) -> None:
             "notesActiveFilters",
             "notesStatus",
             "aria-busy=\"false\"",
-            "notes.css?v=notes20",
+            "notes.css?v=notes21",
             "notes.js?v=notes29",
             'href="/notes" aria-current="page">Notes</a>',
             "filter-panel",
@@ -226,7 +226,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translationsResults",
             "translationsReviewQueue",
             "aria-busy=\"false\"",
-            "notes.css?v=notes20",
+            "notes.css?v=notes21",
             "translations.css?v=trans25",
             "translations.js?v=trans58",
             'href="/translations" aria-current="page">Translations</a>',
@@ -246,7 +246,7 @@ def check_route_markup(route: str, html: str) -> None:
             "searchActiveFilters",
             "searchStatus",
             "aria-busy=\"false\"",
-            "search.css?v=phase22",
+            "search.css?v=phase23",
             "search.js?v=phase31",
             'href="/search" aria-current="page">Search</a>',
             "Translations",
@@ -453,6 +453,29 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
   await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 15000 });
   await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
   const parsed = new URL(url);
+  if (Number(widthText) <= 420 && ['/search', '/notes', '/study', '/translations'].includes(parsed.pathname)) {
+    const toolbarState = await page.evaluate(() => {
+      const toolbar = document.querySelector('.toolbar');
+      const links = Array.from(toolbar?.querySelectorAll('a') || []);
+      const toolbarBox = toolbar?.getBoundingClientRect();
+      const firstLinkBox = links[0]?.getBoundingClientRect();
+      return {
+        text: links.map((node) => node.textContent.trim()).join(' / '),
+        linkCount: links.length,
+        toolbarHeight: toolbarBox?.height || 0,
+        firstLinkHeight: firstLinkBox?.height || 0
+      };
+    });
+    if (toolbarState.linkCount !== 5) {
+      throw new Error(`mobile toolbar should keep the five primary destinations: ${JSON.stringify(toolbarState)}`);
+    }
+    if (toolbarState.firstLinkHeight < 22) {
+      throw new Error(`mobile toolbar links should keep a stable tap height: ${JSON.stringify(toolbarState)}`);
+    }
+    if (toolbarState.toolbarHeight > 56) {
+      throw new Error(`mobile toolbar should stay compact above the main workflow: ${JSON.stringify(toolbarState)}`);
+    }
+  }
   if (parsed.pathname === '/search' && parsed.searchParams.get('q')) {
     await page.waitForSelector('.result:not(.search-skeleton), .empty-state', { timeout: 5000 }).catch(() => {});
     const searchPageState = await page.evaluate(() => {
