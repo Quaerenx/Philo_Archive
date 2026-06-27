@@ -1450,7 +1450,7 @@ def check_work_source_bundle_ui() -> None:
         "Translation display mode",
         "Sentence controls",
         "Study flow",
-        "Manage</summary>",
+        "Actions</summary>",
         "translation-review-duplicate-action",
         "<span>More</span>",
         "study-tabs",

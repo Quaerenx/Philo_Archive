@@ -736,19 +736,19 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (utilityState.labels.some((label) => label.width > 2 || label.height > 2)) {
       throw new Error(`study tools utility labels should stay visually quiet: ${JSON.stringify(utilityState)}`);
     }
-    if (utilityState.manageSummary !== 'Manage') {
-      throw new Error(`study management tools should have a concise summary: ${JSON.stringify(utilityState)}`);
+    if (utilityState.manageSummary !== 'Actions') {
+      throw new Error(`study action tools should have a concise summary: ${JSON.stringify(utilityState)}`);
     }
     const hiddenDuplicates = utilityState.reviewActions
       .filter((action) => ['markTranslationReviewed', 'draftTranslationNote'].includes(action.id));
     if (hiddenDuplicates.length !== 2 || hiddenDuplicates.some((action) => action.display !== 'none')) {
-      throw new Error(`study management tools should hide actions already exposed in the reading card: ${JSON.stringify(utilityState)}`);
+      throw new Error(`study action tools should hide actions already exposed in the reading card: ${JSON.stringify(utilityState)}`);
     }
     const visibleManagementActions = utilityState.reviewActions
       .filter((action) => action.display !== 'none')
       .map((action) => action.text);
     if (!visibleManagementActions.includes('Discard') || !visibleManagementActions.includes('Copy study note')) {
-      throw new Error(`study management tools should keep secondary management actions available: ${JSON.stringify(utilityState)}`);
+      throw new Error(`study action tools should keep secondary actions available: ${JSON.stringify(utilityState)}`);
     }
     const nextFocusState = await page.evaluate(async () => {
       const ok = typeof window.focusNextSentenceAction === 'function'
