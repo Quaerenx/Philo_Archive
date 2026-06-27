@@ -228,7 +228,7 @@ def check_search_ui() -> None:
     css = read_site_file("assets/search.css")
     for needle in [
         "/assets/search.css?v=phase21",
-        "/assets/search.js?v=phase30",
+        "/assets/search.js?v=phase31",
         'href="/search" aria-current="page">Search</a>',
         'href="/translations"',
         "Find text",
@@ -263,8 +263,6 @@ def check_search_ui() -> None:
         "function resultKind",
         "function resultSnippet",
         "function resultSummaryNav",
-        "function compactCount",
-        "function searchStatusText",
         "function cleanText",
         "function corpusLabel",
         "function reviewStateLabel",
@@ -279,7 +277,6 @@ def check_search_ui() -> None:
         "Passage",
         "Passages",
         "search-results-notes",
-        "result-group-count",
         "result-kind",
         "searchClear.addEventListener",
         "activeFiltersEl.addEventListener",
@@ -300,6 +297,10 @@ def check_search_ui() -> None:
         "Search notes",
         "check saved notes",
         "function notesSearchHref",
+        "function pluralize",
+        "function compactCount",
+        "function searchStatusText",
+        "result-group-count",
     ]:
         require(noisy_action not in script, f"assets/search.js should not expose redundant search action {noisy_action!r}")
     for needle in [
@@ -321,7 +322,6 @@ def check_search_ui() -> None:
         ".result-summary-nav",
         ".result-summary-link",
         ".result-group-header",
-        ".result-group-count",
         ".result-kind",
         ".result-kind.work",
         ".result-kind.segment",
@@ -347,6 +347,7 @@ def check_search_ui() -> None:
         "@media (prefers-reduced-motion: reduce)",
     ]:
         require_contains(css, needle, "assets/search.css")
+    require("result-group-count" not in css, "assets/search.css should avoid duplicate search group counts")
 
 
 def check_notes_ui() -> None:

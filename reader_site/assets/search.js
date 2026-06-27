@@ -173,15 +173,9 @@ function notesHref(result) {
   return `/notes?${params}`;
 }
 
-function pluralize(count, singular, plural = `${singular}s`) {
-  const value = Number(count || 0);
-  return `${value.toLocaleString()} ${value === 1 ? "result" : "results"}`;
-}
-
-function resultGroupHeader(label, count, noun) {
+function resultGroupHeader(label) {
   return `<div class="result-group-header">
     <h2>${escapeHtml(label)}</h2>
-    <span class="result-group-count">${escapeHtml(pluralize(count, noun))}</span>
   </div>`;
 }
 
@@ -219,15 +213,6 @@ function setSearchBusy(isBusy) {
   updateSearchClearState(isBusy);
 }
 
-function compactCount(count, label) {
-  const value = Number(count || 0);
-  return `${value.toLocaleString()} ${label}${value === 1 ? "" : "s"}`;
-}
-
-function searchStatusText(workCount, segmentCount, noteCount, query, direct) {
-  return "";
-}
-
 function resultFooter(meta, actions) {
   const cleanMeta = cleanText(meta || "");
   const cleanActions = cleanText(actions || "");
@@ -259,13 +244,10 @@ function renderSearchPending(query) {
 }
 
 function renderResults(payload, query) {
-  const workCount = Number(payload.work_count || 0);
-  const segmentCount = Number(payload.count || 0);
-  const noteCount = Number(payload.note_count || 0);
   const workResults = payload.work_results || [];
   const segmentResults = payload.results || [];
   const noteResults = payload.note_results || [];
-  statusEl.textContent = searchStatusText(workCount, segmentCount, noteCount, query, Boolean(payload.direct));
+  statusEl.textContent = "";
   const workMarkup = (payload.work_results || [])
     .map((result) => {
       const meta = resultMeta([
@@ -329,7 +311,7 @@ function renderResults(payload, query) {
       id: "search-results-works",
       label: "Works",
       count: workResults.length,
-      markup: `<section id="search-results-works" class="result-group">${resultGroupHeader("Works", workResults.length, "work")}${workMarkup}</section>`
+      markup: `<section id="search-results-works" class="result-group">${resultGroupHeader("Works")}${workMarkup}</section>`
     });
   }
   if (segmentMarkup) {
@@ -337,7 +319,7 @@ function renderResults(payload, query) {
       id: "search-results-segments",
       label: "Passages",
       count: segmentResults.length,
-      markup: `<section id="search-results-segments" class="result-group">${resultGroupHeader("Passages", segmentResults.length, "passage")}${segmentMarkup}</section>`
+      markup: `<section id="search-results-segments" class="result-group">${resultGroupHeader("Passages")}${segmentMarkup}</section>`
     });
   }
   if (noteMarkup) {
@@ -345,7 +327,7 @@ function renderResults(payload, query) {
       id: "search-results-notes",
       label: "Notes",
       count: noteResults.length,
-      markup: `<section id="search-results-notes" class="result-group">${resultGroupHeader("Notes", noteResults.length, "note")}${noteMarkup}</section>`
+      markup: `<section id="search-results-notes" class="result-group">${resultGroupHeader("Notes")}${noteMarkup}</section>`
     });
   }
   resultsEl.innerHTML = groups.length

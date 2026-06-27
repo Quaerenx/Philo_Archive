@@ -247,7 +247,7 @@ def check_route_markup(route: str, html: str) -> None:
             "searchStatus",
             "aria-busy=\"false\"",
             "search.css?v=phase21",
-            "search.js?v=phase30",
+            "search.js?v=phase31",
             'href="/search" aria-current="page">Search</a>',
             "Translations",
             "filter-panel",
@@ -470,6 +470,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         inlineActionCount: document.querySelectorAll('#results .result-actions-inline').length,
         primaryReadCount: document.querySelectorAll('#results .result-actions-inline .result-action-read').length,
         secondaryNotesCount: document.querySelectorAll('#results .result-actions-inline .result-action-secondary').length,
+        groupCountText: Array.from(document.querySelectorAll('#results .result-group-count')).map((node) => node.textContent.trim()).join(' '),
         firstPrimaryReadBorderColor: window.getComputedStyle(document.querySelector('#results .result-action-read') || document.body).borderColor
       };
     });
@@ -508,6 +509,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (searchPageState.hasResults && searchPageState.firstPrimaryReadBorderColor !== 'rgb(176, 0, 0)') {
       throw new Error(`search result Read action should use the archive primary color: ${JSON.stringify(searchPageState)}`);
+    }
+    if (searchPageState.hasResults && searchPageState.groupCountText) {
+      throw new Error(`search result group headers should not repeat count summaries: ${JSON.stringify(searchPageState)}`);
     }
   }
   if (parsed.pathname === '/notes' && !parsed.search) {
