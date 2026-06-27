@@ -288,7 +288,7 @@ def check_route_markup(route: str, html: str) -> None:
             "study-tabs",
             "study-tab-secondary",
             "citation-copy-options",
-            "복사</summary>",
+            "옵션</summary>",
             "studyPanelToggle",
             "studyPanelScrim",
             "study-panel-toggle-action",
@@ -1300,8 +1300,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (citationState.copyText !== '복사' || citationState.copyLabel !== '인용 복사') {
       throw new Error(`citation tab primary copy control should stay concise: ${JSON.stringify(citationState)}`);
     }
-    if (citationState.copyOptionsText !== '복사') {
-      throw new Error(`citation tab secondary copy summary should stay task-specific: ${JSON.stringify(citationState)}`);
+    if (citationState.copyOptionsText !== '옵션') {
+      throw new Error(`citation tab secondary copy summary should stay distinct from the primary copy action: ${JSON.stringify(citationState)}`);
     }
     if (citationState.previewHasUrl || !citationState.copiedHasUrl) {
       throw new Error(`citation preview should hide URL while copied citation keeps it: ${JSON.stringify(citationState)}`);

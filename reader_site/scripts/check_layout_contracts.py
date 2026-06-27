@@ -1022,7 +1022,7 @@ def check_work_source_bundle_ui() -> None:
         "citation-copy-actions",
         'id="copyCitation" aria-label="인용 복사"',
         'class="citation-copy-options" aria-label="복사 옵션"',
-        "복사</summary>",
+        "옵션</summary>",
         'id="copyUrl" aria-label="URL 복사"',
         'id="copySourceBundle" aria-label="원문 묶음 복사"',
         ">원문 묶음</button>",
