@@ -392,7 +392,7 @@ h1 {
   padding: 14px;
   background: #fbfbfb;
   border: 1px solid #d4d4d4;
-  border-left: 3px solid #b00000;
+  border-left: 3px solid #c8c8c8;
 }
 
 .empty-state h2 {
@@ -417,6 +417,15 @@ h1 {
 .empty-actions a {
   display: inline-flex;
   align-items: center;
+}
+
+.empty-actions a:not(.empty-primary-action) {
+  color: #555;
+}
+
+.empty-actions a:not(.empty-primary-action):hover,
+.empty-actions a:not(.empty-primary-action):focus-visible {
+  color: #111;
 }
 
 .empty-actions a.empty-primary-action {

@@ -217,7 +217,7 @@ def check_route_markup(route: str, html: str) -> None:
             "저장한 번역</a>",
             "studyStatus",
             "aria-busy=\"false\"",
-            "study.css?v=study27",
+            "study.css?v=study28",
             "study.js?v=study46",
             'href="/study" aria-current="page">학습</a>',
             "filter-panel",
@@ -1002,7 +1002,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         emptyActions: Array.from(empty?.querySelectorAll('.empty-actions a') || []).map((node) => node.textContent.trim()),
         primaryAction: empty?.querySelector('.empty-primary-action')?.textContent.trim() || '',
         primaryActionLabel: empty?.querySelector('.empty-primary-action')?.getAttribute('aria-label') || '',
-        primaryActionTitle: empty?.querySelector('.empty-primary-action')?.getAttribute('title') || ''
+        primaryActionTitle: empty?.querySelector('.empty-primary-action')?.getAttribute('title') || '',
+        emptyBorderLeftColor: empty ? window.getComputedStyle(empty).borderLeftColor : '',
+        findActionColor: empty?.querySelector('.empty-actions a:not(.empty-primary-action)') ? window.getComputedStyle(empty.querySelector('.empty-actions a:not(.empty-primary-action)')).color : ''
       };
     });
     if (!studyPageState.exportAfterResults) {
@@ -1023,6 +1025,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       if (!studyPageState.emptyActions.includes('읽을 문서 찾기')) {
         throw new Error(`empty study page should keep a clear find action: ${JSON.stringify(studyPageState)}`);
+      }
+      if (studyPageState.emptyBorderLeftColor === 'rgb(176, 0, 0)' || studyPageState.findActionColor === 'rgb(176, 0, 0)') {
+        throw new Error(`empty study page should keep secondary empty-state cues visually quiet: ${JSON.stringify(studyPageState)}`);
       }
       if (!hasReviewAction && !hasSavedTranslationAction && studyPageState.emptyActions.length !== 1) {
         throw new Error(`empty study page should keep only the find action when there is nothing to review: ${JSON.stringify(studyPageState)}`);

@@ -965,7 +965,7 @@ def check_study_ui() -> None:
     script = read_site_file("assets/study.js")
     css = read_site_file("assets/study.css")
     for needle in [
-        "/assets/study.css?v=study27",
+        "/assets/study.css?v=study28",
         "/assets/study.js?v=study46",
         'href="/study" aria-current="page">학습</a>',
         "저장한 노트 찾기",
@@ -1139,6 +1139,7 @@ def check_study_ui() -> None:
         ".empty-state",
         ".empty-actions",
         ".empty-actions a",
+        ".empty-actions a:not(.empty-primary-action)",
         ".empty-actions a.empty-primary-action",
         ".study-skeleton-line",
         "@keyframes archive-spin",
