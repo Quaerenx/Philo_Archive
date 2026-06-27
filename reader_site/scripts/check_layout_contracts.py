@@ -1685,7 +1685,7 @@ def check_work_source_bundle_ui() -> None:
     ]:
         require(noisy_marker not in pending_body, f"renderTranslationPending should keep loading state quiet without {noisy_marker!r}")
     require_contains(template, "/assets/reader-work.js?v=common168", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common123", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common124", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
         'aria-label="읽기 화면 이동"',
@@ -1844,6 +1844,10 @@ def check_work_source_bundle_ui() -> None:
         "flex: 0 0 auto",
         ".toolbar-more[open]",
         ".toolbar-more summary",
+        ".toolbar a:hover",
+        "color: #666;",
+        "color: #999;",
+        ".toolbar-more summary:hover",
         "gap: 4px 10px",
         "min-height: 24px",
         ".toolbar-more summary::-webkit-details-marker",

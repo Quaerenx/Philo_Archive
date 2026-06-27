@@ -340,7 +340,7 @@ def check_route_markup(route: str, html: str) -> None:
             "목차</summary>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common123",
+            "reader-work.css?v=common124",
             "reader-work.js?v=common168",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
@@ -637,11 +637,18 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       const links = Array.from(details?.querySelectorAll('.toolbar-more-links a') || []);
       const linksContainer = details?.querySelector('.toolbar-more-links');
+      const toolbar = document.querySelector('.toolbar');
+      const toolbarLinks = Array.from(toolbar?.querySelectorAll(':scope > a') || []);
+      const toolbarLinkStyle = toolbarLinks[0] ? window.getComputedStyle(toolbarLinks[0]) : null;
+      const summaryNode = details?.querySelector('summary');
+      const summaryStyle = summaryNode ? window.getComputedStyle(summaryNode) : null;
       const linksContainerStyle = linksContainer ? window.getComputedStyle(linksContainer) : null;
       const firstLinkStyle = links[0] ? window.getComputedStyle(links[0]) : null;
       const firstLinkBox = links[0]?.getBoundingClientRect();
       const state = {
-        summary: details?.querySelector('summary')?.textContent.trim() || '',
+        summary: summaryNode?.textContent.trim() || '',
+        toolbarLinkColor: toolbarLinkStyle?.color || '',
+        summaryColor: summaryStyle?.color || '',
         linkText: links.map((node) => node.textContent.trim()).join(' / '),
         linkCount: links.length,
         linksDisplay: linksContainerStyle?.display || '',
@@ -658,6 +665,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (readerToolsState.linkText !== '목차 / 원본 / 노트 / 학습 / 번역') {
       throw new Error(`reader tools should prioritize document navigation before study actions: ${JSON.stringify(readerToolsState)}`);
+    }
+    if (readerToolsState.toolbarLinkColor === 'rgb(255, 0, 0)' || readerToolsState.summaryColor === 'rgb(176, 0, 0)') {
+      throw new Error(`reader header navigation should stay visually secondary, not red like source emphasis: ${JSON.stringify(readerToolsState)}`);
     }
     if (readerToolsState.linkCount !== 5 || !['flex', 'inline-flex'].includes(readerToolsState.firstLinkDisplay)) {
       throw new Error(`reader tools menu should expose five readable link targets: ${JSON.stringify(readerToolsState)}`);

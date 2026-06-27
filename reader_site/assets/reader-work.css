@@ -113,7 +113,12 @@ h1 {
 
 .toolbar a {
   min-width: 0;
+  color: #666;
   overflow-wrap: anywhere;
+}
+
+.toolbar a:hover {
+  color: #333;
 }
 
 .toolbar-more {
@@ -126,7 +131,7 @@ h1 {
 }
 
 .toolbar-more summary {
-  color: #b00000;
+  color: #666;
   cursor: pointer;
   list-style: none;
 }
@@ -137,8 +142,12 @@ h1 {
 
 .toolbar-more summary::after {
   margin-left: 4px;
-  color: #777;
+  color: #999;
   content: "+";
+}
+
+.toolbar-more summary:hover {
+  color: #333;
 }
 
 .toolbar-more[open] summary::after {
