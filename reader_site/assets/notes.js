@@ -120,7 +120,7 @@ function hasActiveFilters() {
 }
 
 function renderFilterChip(filterName, label, value) {
-  return `<button type="button" class="filter-chip" data-filter="${escapeHtml(filterName)}" aria-label="${escapeHtml(label)} 필터 제거">
+  return `<button type="button" class="filter-chip" data-filter="${escapeHtml(filterName)}" aria-label="${escapeHtml(label)} 조건 제거">
     <span>${escapeHtml(label)}: ${escapeHtml(value)}</span>
     <span aria-hidden="true">x</span>
   </button>`;
@@ -162,9 +162,9 @@ function updateNotesListChrome(count = lastNotes.length) {
 function renderEmptyNotes() {
   const filtered = hasActiveFilters();
   const title = filtered ? "조건에 맞는 노트가 없습니다." : "아직 노트가 없습니다.";
-  const body = filtered ? "필터를 지우거나 문서, 태그, 상태 조건을 넓혀보세요." : "";
+  const body = filtered ? "조건을 지우거나 문서, 태그, 상태 범위를 넓혀보세요." : "";
   const clearAction = filtered
-    ? '<button type="button" data-empty-action="clear-filters">필터 지우기</button>'
+    ? '<button type="button" data-empty-action="clear-filters">조건 지우기</button>'
     : "";
   const bodyMarkup = body ? `<p>${escapeHtml(body)}</p>` : "";
   return `<section class="empty empty-state">
@@ -272,8 +272,8 @@ function renderNotesSummary(notes) {
   const counts = notesSummaryCounts(notes);
   return `<nav class="notes-summary-nav" aria-label="보이는 노트 상태">
     ${notesSummaryButton("", "전체", counts.total)}
-    ${notesSummaryButton("raw", "작성 중", counts.raw)}
-    ${notesSummaryButton("reviewed", "저장됨", counts.reviewed)}
+    ${notesSummaryButton("raw", "작성 중인 노트", counts.raw)}
+    ${notesSummaryButton("reviewed", "저장한 노트", counts.reviewed)}
   </nav>`;
 }
 
@@ -301,7 +301,7 @@ function renderNotes(notes) {
       const tags = (note.tags || []).join(", ");
       const reviewState = note.review_state || "raw";
       const reviewAction = reviewState === "reviewed" ? "mark-raw" : "mark-reviewed";
-      const reviewActionLabel = reviewState === "reviewed" ? "다시 열기" : "저장";
+      const reviewActionLabel = reviewState === "reviewed" ? "작성 중으로" : "저장 완료";
       const quote = note.quote ? `<blockquote class="note-quote">${escapeHtml(cleanText(note.quote))}</blockquote>` : "";
       const href = note.url ? `<a href="${escapeHtml(note.url)}">${escapeHtml(title || "노트 대상 열기")}</a>` : escapeHtml(title || "제목 없는 노트");
       const isRecent = note.id === recentlyChangedNoteId;
@@ -555,7 +555,7 @@ resultsEl.addEventListener("click", async (event) => {
         recentlyChangedNoteId = noteId;
       }
       statusEl.textContent = ok
-        ? (nextState === "reviewed" ? "저장했습니다." : "다시 열었습니다.")
+        ? (nextState === "reviewed" ? "노트로 저장했습니다." : "작성 중으로 옮겼습니다.")
         : "저장하지 못했습니다.";
       await loadNotes();
     } finally {

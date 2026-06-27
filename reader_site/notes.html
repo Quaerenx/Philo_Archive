@@ -49,8 +49,8 @@
               상태
               <select id="notesReview" name="review_state">
                 <option value="">전체</option>
-                <option value="raw">작성 중</option>
-                <option value="reviewed">저장됨</option>
+                <option value="raw">작성 중인 노트</option>
+                <option value="reviewed">저장한 노트</option>
               </select>
             </label>
           </div>
@@ -60,7 +60,7 @@
           <button id="notesClear" type="button" class="secondary-action" disabled>지우기</button>
         </div>
       </form>
-      <div id="notesActiveFilters" class="active-filters" aria-live="polite" aria-label="활성 노트 필터"></div>
+      <div id="notesActiveFilters" class="active-filters" aria-live="polite" aria-label="활성 노트 조건"></div>
 
       <details id="notesExportTools" class="export-tools" hidden>
         <summary>내보내기</summary>
@@ -75,6 +75,6 @@
       <section id="notesResults" class="notes-results" aria-live="polite" aria-busy="false"></section>
     </main>
   </div>
-  <script src="/assets/notes.js?v=notes32"></script>
+  <script src="/assets/notes.js?v=notes33"></script>
 </body>
 </html>

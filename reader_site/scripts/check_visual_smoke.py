@@ -233,7 +233,7 @@ def check_route_markup(route: str, html: str) -> None:
             "notesStatus",
             "aria-busy=\"false\"",
             "notes.css?v=notes22",
-            "notes.js?v=notes32",
+            "notes.js?v=notes33",
             'href="/notes" aria-current="page">노트</a>',
             "filter-panel",
             "노트 찾기</summary>",
@@ -868,9 +868,17 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         emptyBodyCount: empty ? empty.querySelectorAll('p').length : 0,
         emptyActions: Array.from(empty?.querySelectorAll('.empty-actions a') || []).map((node) => node.textContent.trim()),
         exportLabels: Array.from(document.querySelectorAll('#notesExportTools .export-row a:not([hidden])')).map((node) => node.textContent.trim()),
-        jsonlHidden: Boolean(document.querySelector('#exportJsonl')?.hidden)
+        jsonlHidden: Boolean(document.querySelector('#exportJsonl')?.hidden),
+        reviewOptions: Array.from(document.querySelectorAll('#notesReview option')).map((node) => node.textContent.trim()),
+        summaryButtons: Array.from(document.querySelectorAll('#notesResults .notes-summary-filter')).map((node) => node.textContent.trim()),
+        actionText: Array.from(document.querySelectorAll('#notesResults .note-actions')).map((node) => node.textContent.trim()).join(' ')
       };
     });
+    for (const expectedNoteState of ['작성 중인 노트', '저장한 노트']) {
+      if (!notesPageState.reviewOptions.includes(expectedNoteState)) {
+        throw new Error(`notes status filter should use learner-facing labels: ${JSON.stringify(notesPageState)}`);
+      }
+    }
     if (notesPageState.exportLabels.join(' / ') !== '읽기용 / 데이터' || !notesPageState.jsonlHidden) {
       throw new Error(`notes export controls should expose reader-purpose labels and hide JSONL by default: ${JSON.stringify(notesPageState)}`);
     }
@@ -883,9 +891,11 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         throw new Error(`empty notes page should keep only the find action: ${JSON.stringify(notesPageState)}`);
       }
     } else {
-      const notesActionText = await page.evaluate(() => Array.from(document.querySelectorAll('#notesResults .note-actions')).map((node) => node.textContent.trim()).join(' '));
-      if (/Open target|Open work|Manage note|Edit note/.test(notesActionText)) {
-        throw new Error(`notes page actions should stay concise: ${notesActionText}`);
+      if (/Open target|Open work|Manage note|Edit note|다시 열기/.test(notesPageState.actionText)) {
+        throw new Error(`notes page actions should stay concise and unambiguous: ${notesPageState.actionText}`);
+      }
+      if (notesPageState.summaryButtons.some((text) => text.includes('저장됨') || text === '작성 중')) {
+        throw new Error(`notes status summary should use learner-facing labels: ${JSON.stringify(notesPageState)}`);
       }
       const notesDangerText = await page.evaluate(() => Array.from(document.querySelectorAll('#notesResults .note-danger-actions summary')).map((node) => node.textContent.trim()).join(' '));
       if (notesDangerText.includes('More')) {
