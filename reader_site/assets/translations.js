@@ -259,7 +259,7 @@ function updateFilterSummary() {
   activeFiltersEl.hidden = chips.length === 0;
   activeFiltersEl.classList.toggle("has-filters", chips.length > 0);
   activeFiltersEl.innerHTML = chips.length
-    ? `<span class="active-filters-label">필터</span>${chips.join("")}`
+    ? `<span class="active-filters-label">조건</span>${chips.join("")}`
     : "";
 }
 
