@@ -173,7 +173,6 @@ function renderEmptyNotes() {
     <div class="empty-actions">
       ${clearAction}
       <a href="/search">Find work</a>
-      <a href="/study">Study</a>
     </div>
   </section>`;
 }

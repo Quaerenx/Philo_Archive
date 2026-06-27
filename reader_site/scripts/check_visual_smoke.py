@@ -210,7 +210,7 @@ def check_route_markup(route: str, html: str) -> None:
             "notesStatus",
             "aria-busy=\"false\"",
             "notes.css?v=notes20",
-            "notes.js?v=notes28",
+            "notes.js?v=notes29",
             'href="/notes" aria-current="page">Notes</a>',
             "filter-panel",
             "export-tools",
@@ -228,7 +228,7 @@ def check_route_markup(route: str, html: str) -> None:
             "aria-busy=\"false\"",
             "notes.css?v=notes20",
             "translations.css?v=trans25",
-            "translations.js?v=trans57",
+            "translations.js?v=trans58",
             'href="/translations" aria-current="page">Translations</a>',
             "Find record",
             "translationsListTools",
@@ -503,8 +503,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (notesPageState.emptyTitle !== 'No notes yet.' || notesPageState.emptyBodyCount !== 0) {
         throw new Error(`empty notes page should stay quiet: ${JSON.stringify(notesPageState)}`);
       }
-      if (!notesPageState.emptyActions.includes('Find work')) {
-        throw new Error(`empty notes page should keep a concise find action: ${JSON.stringify(notesPageState)}`);
+      if (notesPageState.emptyActions.length !== 1 || notesPageState.emptyActions[0] !== 'Find work') {
+        throw new Error(`empty notes page should keep only the find action: ${JSON.stringify(notesPageState)}`);
       }
     } else {
       const notesActionText = await page.evaluate(() => Array.from(document.querySelectorAll('#notesResults .note-actions')).map((node) => node.textContent.trim()).join(' '));
@@ -581,8 +581,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (translationsPageState.emptyTitle !== 'No translation records yet.' || translationsPageState.emptyBodyCount !== 0) {
         throw new Error(`empty translations page should stay quiet: ${JSON.stringify(translationsPageState)}`);
       }
-      if (!translationsPageState.emptyActions.includes('Find work') || !translationsPageState.emptyActions.includes('Study')) {
-        throw new Error(`empty translations page should keep concise actions: ${JSON.stringify(translationsPageState)}`);
+      if (translationsPageState.emptyActions.length !== 1 || translationsPageState.emptyActions[0] !== 'Find work') {
+        throw new Error(`empty translations page should keep only the find action: ${JSON.stringify(translationsPageState)}`);
       }
     } else {
       if (translationsPageState.reviewBadgeCount !== 0) {

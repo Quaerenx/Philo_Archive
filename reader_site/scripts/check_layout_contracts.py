@@ -347,7 +347,7 @@ def check_notes_ui() -> None:
     css = read_site_file("assets/notes.css")
     for needle in [
         "/assets/notes.css?v=notes20",
-        "/assets/notes.js?v=notes28",
+        "/assets/notes.js?v=notes29",
         'href="/notes" aria-current="page">Notes</a>',
         "Find note",
         '<button id="notesSubmit" type="submit">Apply</button>',
@@ -406,7 +406,6 @@ def check_notes_ui() -> None:
         "form.hidden = !showTools",
         "No notes yet.",
         "Find work",
-        "Study",
         "function clearNotesFilters",
         "queryInput.focus();",
         "function updateNotesClearState",
@@ -494,7 +493,7 @@ def check_translations_ui() -> None:
     for needle in [
         "/assets/notes.css?v=notes20",
         "/assets/translations.css?v=trans25",
-        "/assets/translations.js?v=trans57",
+        "/assets/translations.js?v=trans58",
         'href="/translations" aria-current="page">Translations</a>',
         "Find record",
         '<option value="">All corpora</option>',
@@ -552,7 +551,6 @@ def check_translations_ui() -> None:
         "No translation records yet.",
         "const bodyMarkup = body ?",
         "Find work",
-        "Study",
         "function clearFilters",
         "queryInput.focus();",
         "function updateFilterSummary",
