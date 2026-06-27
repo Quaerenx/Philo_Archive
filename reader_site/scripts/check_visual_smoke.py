@@ -196,7 +196,7 @@ def check_route_markup(route: str, html: str) -> None:
             "studyStatus",
             "aria-busy=\"false\"",
             "study.css?v=study22",
-            "study.js?v=study34",
+            "study.js?v=study35",
             'href="/study" aria-current="page">Study</a>',
             "filter-panel",
             "export-tools",
@@ -533,10 +533,10 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     });
     if (!studyPageState.hasGroups) {
       if (!studyPageState.formHidden) throw new Error(`empty study page should hide filter form: ${JSON.stringify(studyPageState)}`);
-      const hasReviewAction = studyPageState.emptyActions.some((text) => text.startsWith('Review translations'));
+      const hasReviewAction = studyPageState.emptyActions.some((text) => text.startsWith('Check translations'));
       const hasSavedTranslationAction = studyPageState.emptyActions.some((text) => text.startsWith('Saved translations'));
       const expectedTitle = hasReviewAction
-        ? 'Translations waiting to review.'
+        ? 'Translations to check.'
         : (hasSavedTranslationAction ? 'Saved translations.' : 'No saved notes yet.');
       if (studyPageState.emptyTitle !== expectedTitle || studyPageState.emptyBodyCount !== 0) {
         throw new Error(`empty study page should stay quiet: ${JSON.stringify(studyPageState)}`);

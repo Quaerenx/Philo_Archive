@@ -196,14 +196,14 @@ function renderEmptyStudy(translationSummary = null) {
   const title = filtered
     ? "No saved notes match these filters."
     : (generated > 0
-      ? "Translations waiting to review."
+      ? "Translations to check."
       : (reviewed > 0 ? "Saved translations." : "No saved notes yet."));
   const body = filtered ? "Clear filters, or edit the saved notes list." : "";
   const clearAction = filtered
     ? '<button type="button" data-empty-action="clear-filters">Clear filters</button>'
     : "";
   const translationAction = generated > 0
-    ? `<a class="empty-primary-action" href="${escapeHtml(studyTranslationHref("generated"))}">${escapeHtml(translationActionLabel("Review translations", generated))}</a>`
+    ? `<a class="empty-primary-action" href="${escapeHtml(studyTranslationHref("generated"))}">${escapeHtml(translationActionLabel("Check translations", generated))}</a>`
     : (reviewed > 0 ? `<a class="empty-primary-action" href="${escapeHtml(studyTranslationHref("reviewed"))}">${escapeHtml(translationActionLabel("Saved translations", reviewed))}</a>` : "");
   const bodyMarkup = body ? `<p>${escapeHtml(body)}</p>` : "";
   return `<section class="empty empty-state">
@@ -341,7 +341,7 @@ function renderStudyOverview(payload, translationSummary) {
     ? `<div class="study-overview-notes">${escapeHtml(notesLabel)}</div>`
     : "";
   const translationLinks = [
-    translationStatusLink("generated", "Review translations", generated),
+    translationStatusLink("generated", "Check translations", generated),
     translationStatusLink("reviewed", "Saved translations", reviewed),
     translationStatusLink("rejected", "Rejected", rejected)
   ].filter(Boolean).join("");
