@@ -217,8 +217,8 @@ def check_route_markup(route: str, html: str) -> None:
             "저장한 번역</a>",
             "studyStatus",
             "aria-busy=\"false\"",
-            "study.css?v=study23",
-            "study.js?v=study41",
+            "study.css?v=study24",
+            "study.js?v=study42",
             'href="/study" aria-current="page">학습</a>',
             "filter-panel",
             "export-tools",
@@ -890,6 +890,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         formHidden: Boolean(document.querySelector('#studyForm')?.hidden),
         overviewHidden: Boolean(document.querySelector('#studyOverview')?.hidden),
         overviewText: document.querySelector('#studyOverview')?.textContent.trim() || '',
+        overviewLinkTexts: Array.from(document.querySelectorAll('#studyOverview .study-overview-translations a')).map((node) => node.textContent.trim()),
+        overviewLinkLabels: Array.from(document.querySelectorAll('#studyOverview .study-overview-translations a')).map((node) => node.getAttribute('aria-label') || ''),
         emptyTitle: empty?.querySelector('h2')?.textContent.trim() || '',
         emptyBodyCount: empty ? empty.querySelectorAll('p').length : 0,
         emptyActions: Array.from(empty?.querySelectorAll('.empty-actions a') || []).map((node) => node.textContent.trim()),
@@ -935,6 +937,12 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (studyPageState.overviewText.includes('제외')) {
       throw new Error(`study overview should keep discarded translations out of the learning entry point: ${JSON.stringify(studyPageState)}`);
+    }
+    if (!studyPageState.overviewHidden && studyPageState.overviewLinkTexts.some((text) => /\d/.test(text) || text === '번역 검토')) {
+      throw new Error(`study overview translation links should show action labels without visible counts: ${JSON.stringify(studyPageState)}`);
+    }
+    if (!studyPageState.overviewHidden && studyPageState.overviewLinkLabels.some((label) => label && !/\d/.test(label))) {
+      throw new Error(`study overview translation link labels should retain count details accessibly: ${JSON.stringify(studyPageState)}`);
     }
   }
   if (parsed.pathname === '/translations' && !parsed.search) {

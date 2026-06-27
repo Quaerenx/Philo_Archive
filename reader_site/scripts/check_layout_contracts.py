@@ -866,8 +866,8 @@ def check_study_ui() -> None:
     script = read_site_file("assets/study.js")
     css = read_site_file("assets/study.css")
     for needle in [
-        "/assets/study.css?v=study23",
-        "/assets/study.js?v=study41",
+        "/assets/study.css?v=study24",
+        "/assets/study.js?v=study42",
         'href="/study" aria-current="page">학습</a>',
         "저장한 노트 찾기",
         '<button id="studySubmit" type="submit">적용</button>',
@@ -909,7 +909,6 @@ def check_study_ui() -> None:
         "studyOverview",
         "function translationSummaryParams",
         "function studyTranslationHref",
-        "function translationActionLabel",
         "function emptyTranslationAction",
         "/api/sentence-translations/summary",
         "function translationStatusLink",
@@ -920,9 +919,10 @@ def check_study_ui() -> None:
         "const hasOverview = noteCount > 0",
         "검토하기",
         "검토할 번역 ${generated.toLocaleString()}개로 이동",
-        "번역 검토",
         "번역 학습 상태",
         "저장한 번역",
+        "저장한 번역 ${reviewed.toLocaleString()}개 보기",
+        "aria-label=\"${escapeHtml(detail)}\"",
         "renderStudy(payload, translationSummary)",
         "renderStudyPending",
         "function renderEmptyStudy",
@@ -964,6 +964,9 @@ def check_study_ui() -> None:
         "Edit note",
         "study-note-more-actions",
         "href=\"/notes?review_state=raw\"",
+        "function translationActionLabel",
+        "번역 검토",
+        "<strong>${Number(count || 0).toLocaleString()}</strong>",
     ]:
         require(noisy_action not in script, f"assets/study.js should keep Study actions concise without {noisy_action!r}")
     for needle in [
@@ -993,7 +996,6 @@ def check_study_ui() -> None:
         ".study-overview-notes",
         ".study-overview-translations",
         ".study-overview-translations a",
-        ".study-overview-translations strong",
         ".filter-chip",
         ".study-form.is-loading #studySubmit",
         "padding-bottom: 12px",

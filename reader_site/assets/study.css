@@ -255,9 +255,7 @@ h1 {
 }
 
 .study-overview-translations a {
-  display: inline-grid;
-  grid-template-columns: minmax(0, auto) auto;
-  gap: 5px;
+  display: inline-flex;
   align-items: center;
   min-height: 24px;
   padding: 2px 7px;
@@ -270,11 +268,6 @@ h1 {
 .study-overview-translations a:focus-visible {
   border-color: #999;
   text-decoration: none;
-}
-
-.study-overview-translations strong {
-  color: #555;
-  font-weight: normal;
 }
 
 .filter-chip {

@@ -184,10 +184,6 @@ function studyTranslationHref(reviewState) {
   return `/translations?${params}`;
 }
 
-function translationActionLabel(label, count) {
-  return count > 0 ? `${label} ${Number(count).toLocaleString()}개` : label;
-}
-
 function emptyTranslationAction(href, label, accessibleLabel) {
   return `<a class="empty-primary-action" href="${escapeHtml(href)}" aria-label="${escapeHtml(accessibleLabel)}" title="${escapeHtml(accessibleLabel)}">${escapeHtml(label)}</a>`;
 }
@@ -316,9 +312,10 @@ function studyCountLabel(count, label) {
   return `${count.toLocaleString()}개 ${label}`;
 }
 
-function translationStatusLink(reviewState, label, count) {
+function translationStatusLink(reviewState, label, count, accessibleLabel) {
   if (!count) return "";
-  return `<a href="${escapeHtml(studyTranslationHref(reviewState))}"><span>${escapeHtml(label)}</span><strong>${Number(count || 0).toLocaleString()}</strong></a>`;
+  const detail = accessibleLabel || `${label} ${Number(count || 0).toLocaleString()}개`;
+  return `<a href="${escapeHtml(studyTranslationHref(reviewState))}" aria-label="${escapeHtml(detail)}" title="${escapeHtml(detail)}">${escapeHtml(label)}</a>`;
 }
 
 function renderStudyOverview(payload, translationSummary) {
@@ -343,8 +340,8 @@ function renderStudyOverview(payload, translationSummary) {
     ? `<div class="study-overview-notes">${escapeHtml(notesLabel)}</div>`
     : "";
   const translationLinks = [
-    translationStatusLink("generated", "번역 검토", generated),
-    translationStatusLink("reviewed", "저장한 번역", reviewed)
+    translationStatusLink("generated", "검토하기", generated, `검토할 번역 ${generated.toLocaleString()}개로 이동`),
+    translationStatusLink("reviewed", "저장한 번역", reviewed, `저장한 번역 ${reviewed.toLocaleString()}개 보기`)
   ].filter(Boolean).join("");
   studyOverview.innerHTML = `${notesMarkup}
     ${translationLinks ? `<nav class="study-overview-translations" aria-label="번역 학습 상태">${translationLinks}</nav>` : ""}`;
