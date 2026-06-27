@@ -60,8 +60,23 @@ function reviewStateLabel(value) {
   return state ? variantLabel(state) : "";
 }
 
+function displayMetaLabel(value) {
+  const text = cleanText(value);
+  const paragraphMatch = /^Paragraph\s+(\d+)$/i.exec(text);
+  if (paragraphMatch) return `문단 ${paragraphMatch[1]}`;
+  const sectionMatch = /^Section\s+(.+)$/i.exec(text);
+  if (sectionMatch) return `구역 ${sectionMatch[1]}`;
+  const verseMatch = /^Verse\s+(.+)$/i.exec(text);
+  if (verseMatch) return `절 ${verseMatch[1]}`;
+  const quoteMatch = /^Quote\s+(\d+)$/i.exec(text);
+  if (quoteMatch) return `인용 ${quoteMatch[1]}`;
+  const lineMatch = /^Line\s+(.+)$/i.exec(text);
+  if (lineMatch) return `행 ${lineMatch[1]}`;
+  return text;
+}
+
 function resultMeta(parts) {
-  return parts.map(cleanText).filter(Boolean).join(" / ");
+  return parts.map(displayMetaLabel).map(cleanText).filter(Boolean).join(" / ");
 }
 
 function resultCorpusMeta(corpusId) {

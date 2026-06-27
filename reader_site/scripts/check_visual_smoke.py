@@ -570,6 +570,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (searchPageState.hasResults && searchPageState.resultKindCount > 0) {
       throw new Error(`search result cards should avoid repeated group labels inside each card: ${JSON.stringify(searchPageState)}`);
     }
+    if (searchPageState.hasResults && /\b(Paragraph|Section|Verse|Quote|Line)\s+\d+/i.test(searchPageState.resultMetaText)) {
+      throw new Error(`search result metadata should use reader-language position labels: ${JSON.stringify(searchPageState)}`);
+    }
     if (searchPageState.hasResults && searchPageState.activeFilterText.includes('자료: 니체') && /\b니체\b/.test(searchPageState.resultMetaText)) {
       throw new Error(`search results should not repeat corpus metadata already shown in filters: ${JSON.stringify(searchPageState)}`);
     }
