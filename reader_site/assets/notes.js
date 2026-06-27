@@ -57,7 +57,7 @@ function workDisplayName(corpusId, workId) {
 }
 
 function noteTitle(note) {
-  return cleanText(note.target_label || note.target_id || note.work_id || "Untitled note");
+  return cleanText(note.target_label || note.target_id || note.work_id || "제목 없는 노트");
 }
 
 function noteContext(note) {
@@ -120,7 +120,7 @@ function hasActiveFilters() {
 }
 
 function renderFilterChip(filterName, label, value) {
-  return `<button type="button" class="filter-chip" data-filter="${escapeHtml(filterName)}" aria-label="Remove ${escapeHtml(label)} filter">
+  return `<button type="button" class="filter-chip" data-filter="${escapeHtml(filterName)}" aria-label="${escapeHtml(label)} 필터 제거">
     <span>${escapeHtml(label)}: ${escapeHtml(value)}</span>
     <span aria-hidden="true">x</span>
   </button>`;
@@ -132,16 +132,16 @@ function updateNotesFilterSummary() {
   const query = queryInput.value.trim();
   const workId = workInput.value.trim();
   const tag = tagInput.value.trim().replace(/^#/, "");
-  if (query) chips.push(renderFilterChip("query", "Text", query));
-  if (corpusSelect.value) chips.push(renderFilterChip("corpus", "Corpus", selectedOptionText(corpusSelect)));
-  if (workId) chips.push(renderFilterChip("work", "Work", workId));
-  if (tag) chips.push(renderFilterChip("tag", "Tag", tag));
-  if (reviewSelect.value) chips.push(renderFilterChip("review", "Status", selectedOptionText(reviewSelect)));
-  if (requestedTargetId) chips.push(renderFilterChip("target", "Target", requestedTargetId));
+  if (query) chips.push(renderFilterChip("query", "본문", query));
+  if (corpusSelect.value) chips.push(renderFilterChip("corpus", "자료", selectedOptionText(corpusSelect)));
+  if (workId) chips.push(renderFilterChip("work", "문서", workId));
+  if (tag) chips.push(renderFilterChip("tag", "태그", tag));
+  if (reviewSelect.value) chips.push(renderFilterChip("review", "상태", selectedOptionText(reviewSelect)));
+  if (requestedTargetId) chips.push(renderFilterChip("target", "대상", requestedTargetId));
   activeFiltersEl.hidden = chips.length === 0;
   activeFiltersEl.classList.toggle("has-filters", chips.length > 0);
   activeFiltersEl.innerHTML = chips.length
-    ? `<span class="active-filters-label">Filters</span>${chips.join("")}`
+    ? `<span class="active-filters-label">필터</span>${chips.join("")}`
     : "";
 }
 
@@ -161,10 +161,10 @@ function updateNotesListChrome(count = lastNotes.length) {
 
 function renderEmptyNotes() {
   const filtered = hasActiveFilters();
-  const title = filtered ? "No notes match these filters." : "No notes yet.";
-  const body = filtered ? "Clear filters, or broaden the work, tag, and status fields." : "";
+  const title = filtered ? "조건에 맞는 노트가 없습니다." : "아직 노트가 없습니다.";
+  const body = filtered ? "필터를 지우거나 문서, 태그, 상태 조건을 넓혀보세요." : "";
   const clearAction = filtered
-    ? '<button type="button" data-empty-action="clear-filters">Clear filters</button>'
+    ? '<button type="button" data-empty-action="clear-filters">필터 지우기</button>'
     : "";
   const bodyMarkup = body ? `<p>${escapeHtml(body)}</p>` : "";
   return `<section class="empty empty-state">
@@ -172,7 +172,7 @@ function renderEmptyNotes() {
     ${bodyMarkup}
     <div class="empty-actions">
       ${clearAction}
-      <a href="/search">Find work</a>
+      <a href="/search">문서 찾기</a>
     </div>
   </section>`;
 }
@@ -270,10 +270,10 @@ function notesSummaryButton(filter, label, count) {
 function renderNotesSummary(notes) {
   if (!notes.length) return "";
   const counts = notesSummaryCounts(notes);
-  return `<nav class="notes-summary-nav" aria-label="Visible notes by status">
-    ${notesSummaryButton("", "All", counts.total)}
-    ${notesSummaryButton("raw", "Working", counts.raw)}
-    ${notesSummaryButton("reviewed", "Saved", counts.reviewed)}
+  return `<nav class="notes-summary-nav" aria-label="보이는 노트 상태">
+    ${notesSummaryButton("", "전체", counts.total)}
+    ${notesSummaryButton("raw", "작성 중", counts.raw)}
+    ${notesSummaryButton("reviewed", "저장됨", counts.reviewed)}
   </nav>`;
 }
 
@@ -301,20 +301,20 @@ function renderNotes(notes) {
       const tags = (note.tags || []).join(", ");
       const reviewState = note.review_state || "raw";
       const reviewAction = reviewState === "reviewed" ? "mark-raw" : "mark-reviewed";
-      const reviewActionLabel = reviewState === "reviewed" ? "Reopen" : "Save";
+      const reviewActionLabel = reviewState === "reviewed" ? "다시 열기" : "저장";
       const quote = note.quote ? `<blockquote class="note-quote">${escapeHtml(cleanText(note.quote))}</blockquote>` : "";
-      const href = note.url ? `<a href="${escapeHtml(note.url)}">${escapeHtml(title || "Open note target")}</a>` : escapeHtml(title || "Untitled note");
+      const href = note.url ? `<a href="${escapeHtml(note.url)}">${escapeHtml(title || "노트 대상 열기")}</a>` : escapeHtml(title || "제목 없는 노트");
       const isRecent = note.id === recentlyChangedNoteId;
-      const recentAttrs = isRecent ? ' tabindex="-1" aria-label="Recently changed note"' : "";
+      const recentAttrs = isRecent ? ' tabindex="-1" aria-label="최근 변경된 노트"' : "";
       const meta = [
         tags ? `# ${tags}` : ""
       ].filter(Boolean).join(" / ");
       const actions = `
           <button type="button" data-action="${escapeHtml(reviewAction)}">${escapeHtml(reviewActionLabel)}</button>
-          <button type="button" data-action="edit">Edit</button>
+          <button type="button" data-action="edit">수정</button>
           <details class="note-danger-actions">
-            <summary>Delete</summary>
-            <button type="button" data-action="delete">Confirm</button>
+            <summary>삭제</summary>
+            <button type="button" data-action="delete">삭제 확인</button>
           </details>`;
       return `<article class="note-card${isRecent ? " is-recent" : ""}" data-note-id="${escapeHtml(note.id)}" data-corpus-id="${escapeHtml(note.corpus_id)}" data-review-state="${escapeHtml(reviewState)}"${recentAttrs}>
         <div class="note-title">
@@ -325,11 +325,11 @@ function renderNotes(notes) {
         ${quote}
         ${renderNoteFooter(meta, actions)}
         <form class="note-edit-form" hidden>
-          <label>Tags<input name="tags" value="${escapeHtml(tags)}" autocomplete="off"></label>
-          <label>Note<textarea name="note" required>${escapeHtml(note.note)}</textarea></label>
+          <label>태그<input name="tags" value="${escapeHtml(tags)}" autocomplete="off"></label>
+          <label>노트<textarea name="note" required>${escapeHtml(note.note)}</textarea></label>
           <div class="note-edit-actions">
-            <button type="submit">Save</button>
-            <button type="button" data-action="cancel">Cancel</button>
+            <button type="submit">저장</button>
+            <button type="button" data-action="cancel">취소</button>
           </div>
         </form>
       </article>`;
@@ -351,7 +351,7 @@ function revealRecentlyChangedNote() {
   const recentNote = Array.from(resultsEl.querySelectorAll(".note-card"))
     .find((card) => card.dataset.noteId === recentlyChangedNoteId);
   if (!recentNote) {
-    statusEl.textContent = "Recently changed note is hidden by the current filters.";
+    statusEl.textContent = "최근 변경한 노트가 현재 필터에 가려져 있습니다.";
     return;
   }
   if (typeof recentNote.scrollIntoView === "function") {
@@ -458,7 +458,7 @@ async function loadCorpora() {
     const payload = await response.json();
     archiveCorpora = payload.corpora || [];
     const current = corpusSelect.value || requestedCorpusId;
-    corpusSelect.innerHTML = `<option value="">All</option>` + archiveCorpora
+    corpusSelect.innerHTML = `<option value="">전체</option>` + archiveCorpora
       .map((corpus) => `<option value="${escapeHtml(corpus.id)}">${escapeHtml(corpus.title)}</option>`)
       .join("");
     corpusSelect.value = current;
@@ -483,7 +483,7 @@ async function loadNotes() {
     const response = await fetch(`/api/notes/export?${currentParams("json")}`, { signal: controller.signal });
     if (requestId !== activeNotesRequest) return;
     if (!response.ok) {
-      statusEl.textContent = "Could not load notes.";
+      statusEl.textContent = "노트를 불러오지 못했습니다.";
       resultsEl.innerHTML = "";
       return;
     }
@@ -494,7 +494,7 @@ async function loadNotes() {
       return;
     }
     if (requestId === activeNotesRequest) {
-      statusEl.textContent = "Could not load notes.";
+      statusEl.textContent = "노트를 불러오지 못했습니다.";
       resultsEl.innerHTML = "";
     }
   } finally {
@@ -555,8 +555,8 @@ resultsEl.addEventListener("click", async (event) => {
         recentlyChangedNoteId = noteId;
       }
       statusEl.textContent = ok
-        ? (nextState === "reviewed" ? "Saved." : "Reopened.")
-        : "Could not save.";
+        ? (nextState === "reviewed" ? "저장했습니다." : "다시 열었습니다.")
+        : "저장하지 못했습니다.";
       await loadNotes();
     } finally {
       setActionButtonBusy(button, false);
@@ -569,11 +569,11 @@ resultsEl.addEventListener("click", async (event) => {
     return;
   }
   if (button.dataset.action === "delete") {
-    if (!window.confirm("Delete this note?")) return;
+    if (!window.confirm("이 노트를 삭제할까요?")) return;
     setActionButtonBusy(button, true);
     try {
       const ok = await deleteNote(noteId, corpusId);
-      statusEl.textContent = ok ? "Note deleted." : "Could not delete note.";
+      statusEl.textContent = ok ? "노트를 삭제했습니다." : "노트를 삭제하지 못했습니다.";
       await loadNotes();
     } finally {
       setActionButtonBusy(button, false);
@@ -590,7 +590,7 @@ resultsEl.addEventListener("keydown", (event) => {
     event.preventDefault();
     resetNoteEditor(card);
     toggleEditor(card, false);
-    statusEl.textContent = "Edit cancelled.";
+    statusEl.textContent = "수정을 취소했습니다.";
     return;
   }
   if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
@@ -610,7 +610,7 @@ resultsEl.addEventListener("submit", async (event) => {
   const corpusId = card.dataset.corpusId || "";
   const noteText = editForm.elements.note.value.trim();
   if (!noteText) {
-    statusEl.textContent = "Note text is required.";
+    statusEl.textContent = "노트 내용을 입력하세요.";
     editForm.elements.note.focus();
     return;
   }
@@ -621,7 +621,7 @@ resultsEl.addEventListener("submit", async (event) => {
     if (ok) {
       recentlyChangedNoteId = noteId;
     }
-    statusEl.textContent = ok ? "Note updated." : "Could not update note.";
+    statusEl.textContent = ok ? "노트를 수정했습니다." : "노트를 수정하지 못했습니다.";
     await loadNotes();
   } finally {
     setActionButtonBusy(saveButton, false);

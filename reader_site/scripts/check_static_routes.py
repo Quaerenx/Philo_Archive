@@ -72,7 +72,7 @@ def check_routes(base_url: str) -> None:
         "/category/kierkegaard": "Personal Archive",
         "/category/wittgenstein": "Personal Archive",
         "/search": "Search",
-        "/notes": "Notes",
+        "/notes": "노트",
         "/study": "Study",
         "/translations": "Translations",
     }

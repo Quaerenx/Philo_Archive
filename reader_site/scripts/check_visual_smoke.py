@@ -210,11 +210,11 @@ def check_route_markup(route: str, html: str) -> None:
             "notesStatus",
             "aria-busy=\"false\"",
             "notes.css?v=notes21",
-            "notes.js?v=notes29",
-            'href="/notes" aria-current="page">Notes</a>',
+            "notes.js?v=notes30",
+            'href="/notes" aria-current="page">노트</a>',
             "filter-panel",
             "export-tools",
-            "Downloads</summary>",
+            "내보내기</summary>",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
     if route.startswith("/translations"):
@@ -608,10 +608,10 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     });
     if (!notesPageState.hasNotes) {
       if (!notesPageState.formHidden) throw new Error(`empty notes page should hide filter form: ${JSON.stringify(notesPageState)}`);
-      if (notesPageState.emptyTitle !== 'No notes yet.' || notesPageState.emptyBodyCount !== 0) {
+      if (notesPageState.emptyTitle !== '아직 노트가 없습니다.' || notesPageState.emptyBodyCount !== 0) {
         throw new Error(`empty notes page should stay quiet: ${JSON.stringify(notesPageState)}`);
       }
-      if (notesPageState.emptyActions.length !== 1 || notesPageState.emptyActions[0] !== 'Find work') {
+      if (notesPageState.emptyActions.length !== 1 || notesPageState.emptyActions[0] !== '문서 찾기') {
         throw new Error(`empty notes page should keep only the find action: ${JSON.stringify(notesPageState)}`);
       }
     } else {
