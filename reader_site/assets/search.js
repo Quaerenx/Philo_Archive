@@ -148,7 +148,7 @@ function renderEmptySearch(query) {
     ${bodyMarkup}
     <div class="empty-actions">
       ${clearAction}
-      <a href="/">전체 보기</a>
+      <a href="/">아카이브 보기</a>
     </div>
   </section>`;
 }

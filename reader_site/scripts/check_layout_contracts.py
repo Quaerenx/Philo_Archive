@@ -237,7 +237,7 @@ def check_search_ui() -> None:
     css = read_site_file("assets/search.css")
     for needle in [
         "/assets/search.css?v=phase23",
-        "/assets/search.js?v=phase33",
+        "/assets/search.js?v=phase34",
         'href="/search" aria-current="page">검색</a>',
         'href="/translations"',
         "본문 찾기",
@@ -370,7 +370,7 @@ def check_notes_ui() -> None:
     css = read_site_file("assets/notes.css")
     for needle in [
         "/assets/notes.css?v=notes21",
-        "/assets/notes.js?v=notes30",
+        "/assets/notes.js?v=notes31",
         'href="/notes" aria-current="page">노트</a>',
         "노트 찾기",
         '<button id="notesSubmit" type="submit">적용</button>',
@@ -428,7 +428,7 @@ def check_notes_ui() -> None:
         "function updateNotesListChrome",
         "form.hidden = !showTools",
         "아직 노트가 없습니다.",
-        "문서 찾기",
+        "읽을 문서 찾기",
         "function clearNotesFilters",
         "queryInput.focus();",
         "function updateNotesClearState",
@@ -518,7 +518,7 @@ def check_translations_ui() -> None:
     for needle in [
         "/assets/notes.css?v=notes21",
         "/assets/translations.css?v=trans27",
-        "/assets/translations.js?v=trans65",
+        "/assets/translations.js?v=trans66",
         'href="/translations" aria-current="page">번역</a>',
         "번역 찾기",
         '<option value="">전체 자료</option>',
@@ -577,7 +577,7 @@ def check_translations_ui() -> None:
         "form.hidden = !showTools",
         "아직 번역이 없습니다.",
         "const bodyMarkup = body ?",
-        "문서 찾기",
+        "읽을 문서 찾기",
         "function clearFilters",
         "queryInput.focus();",
         "function updateFilterSummary",
@@ -793,7 +793,7 @@ def check_study_ui() -> None:
     css = read_site_file("assets/study.css")
     for needle in [
         "/assets/study.css?v=study23",
-        "/assets/study.js?v=study39",
+        "/assets/study.js?v=study40",
         'href="/study" aria-current="page">학습</a>',
         "저장한 노트 찾기",
         '<button id="studySubmit" type="submit">적용</button>',
@@ -863,7 +863,7 @@ def check_study_ui() -> None:
         "archiveCorpora = payload.corpora || []",
         'statusEl.textContent = "";',
         "노트",
-        "문서 찾기",
+        "읽을 문서 찾기",
         "function clearStudyFilters",
         "queryInput.focus();",
         "function updateStudyClearState",

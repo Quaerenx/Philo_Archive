@@ -218,7 +218,7 @@ def check_route_markup(route: str, html: str) -> None:
             "studyStatus",
             "aria-busy=\"false\"",
             "study.css?v=study23",
-            "study.js?v=study39",
+            "study.js?v=study40",
             'href="/study" aria-current="page">학습</a>',
             "filter-panel",
             "export-tools",
@@ -232,7 +232,7 @@ def check_route_markup(route: str, html: str) -> None:
             "notesStatus",
             "aria-busy=\"false\"",
             "notes.css?v=notes21",
-            "notes.js?v=notes30",
+            "notes.js?v=notes31",
             'href="/notes" aria-current="page">노트</a>',
             "filter-panel",
             "export-tools",
@@ -250,7 +250,7 @@ def check_route_markup(route: str, html: str) -> None:
             "aria-busy=\"false\"",
             "notes.css?v=notes21",
             "translations.css?v=trans27",
-            "translations.js?v=trans65",
+            "translations.js?v=trans66",
             'href="/translations" aria-current="page">번역</a>',
             "번역 찾기",
             "translationsListTools",
@@ -269,7 +269,7 @@ def check_route_markup(route: str, html: str) -> None:
             "searchStatus",
             "aria-busy=\"false\"",
             "search.css?v=phase23",
-            "search.js?v=phase33",
+            "search.js?v=phase34",
             'href="/search" aria-current="page">검색</a>',
             "번역",
             "filter-panel",
@@ -560,7 +560,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (!searchPageState.hasResults && /notes|saved notes/i.test(searchPageState.emptyBodyText)) {
       throw new Error(`empty search should not send users to a duplicate notes search: ${JSON.stringify(searchPageState)}`);
     }
-    if (!searchPageState.hasResults && (searchPageState.emptyActions.length !== 1 || searchPageState.emptyActions[0] !== '전체 보기')) {
+    if (!searchPageState.hasResults && (searchPageState.emptyActions.length !== 1 || searchPageState.emptyActions[0] !== '아카이브 보기')) {
       throw new Error(`empty search should keep only the archive browse action: ${JSON.stringify(searchPageState)}`);
     }
     if (!searchPageState.hasResults && !searchPageState.emptyButtonActions.includes('검색 지우기')) {
@@ -641,7 +641,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (notesPageState.emptyTitle !== '아직 노트가 없습니다.' || notesPageState.emptyBodyCount !== 0) {
         throw new Error(`empty notes page should stay quiet: ${JSON.stringify(notesPageState)}`);
       }
-      if (notesPageState.emptyActions.length !== 1 || notesPageState.emptyActions[0] !== '문서 찾기') {
+      if (notesPageState.emptyActions.length !== 1 || notesPageState.emptyActions[0] !== '읽을 문서 찾기') {
         throw new Error(`empty notes page should keep only the find action: ${JSON.stringify(notesPageState)}`);
       }
     } else {
@@ -683,7 +683,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (studyPageState.emptyActions.includes('노트')) {
         throw new Error(`empty study page should not send users to an empty notes list: ${JSON.stringify(studyPageState)}`);
       }
-      if (!studyPageState.emptyActions.includes('문서 찾기')) {
+      if (!studyPageState.emptyActions.includes('읽을 문서 찾기')) {
         throw new Error(`empty study page should keep a clear find action: ${JSON.stringify(studyPageState)}`);
       }
       if (!hasReviewAction && !hasSavedTranslationAction && studyPageState.emptyActions.length !== 1) {
@@ -728,7 +728,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (translationsPageState.emptyTitle !== '아직 번역이 없습니다.' || translationsPageState.emptyBodyCount !== 0) {
         throw new Error(`empty translations page should stay quiet: ${JSON.stringify(translationsPageState)}`);
       }
-      if (translationsPageState.emptyActions.length !== 1 || translationsPageState.emptyActions[0] !== '문서 찾기') {
+      if (translationsPageState.emptyActions.length !== 1 || translationsPageState.emptyActions[0] !== '읽을 문서 찾기') {
         throw new Error(`empty translations page should keep only the find action: ${JSON.stringify(translationsPageState)}`);
       }
     } else {
