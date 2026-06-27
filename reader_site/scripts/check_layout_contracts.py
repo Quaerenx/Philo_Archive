@@ -728,7 +728,7 @@ def check_study_ui() -> None:
     css = read_site_file("assets/study.css")
     for needle in [
         "/assets/study.css?v=study20",
-        "/assets/study.js?v=study32",
+        "/assets/study.js?v=study33",
         'id="studySubmit"',
         'id="studyClear"',
         'id="studyActiveFilters"',
@@ -766,6 +766,7 @@ def check_study_ui() -> None:
         "exportTranslations.hidden = reviewedTranslationCount === 0",
         "studyOverview",
         "function translationSummaryParams",
+        "function studyTranslationHref",
         "/api/sentence-translations/summary",
         "function translationStatusLink",
         "function renderStudyOverview",
@@ -776,6 +777,7 @@ def check_study_ui() -> None:
         "renderStudy(payload, translationSummary)",
         "renderStudyPending",
         "function renderEmptyStudy",
+        "renderEmptyStudy(translationSummary)",
         "function updateStudyListChrome",
         "form.hidden = !showTools",
         "function renderNoteFooter",

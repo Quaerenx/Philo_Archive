@@ -195,7 +195,7 @@ def check_route_markup(route: str, html: str) -> None:
             "studyStatus",
             "aria-busy=\"false\"",
             "study.css?v=study20",
-            "study.js?v=study32",
+            "study.js?v=study33",
             "filter-panel",
             "export-tools",
         ]:
@@ -522,6 +522,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       if (!studyPageState.emptyActions.includes('Notes') || !studyPageState.emptyActions.includes('Find work')) {
         throw new Error(`empty study page should keep concise actions: ${JSON.stringify(studyPageState)}`);
+      }
+      if (studyPageState.overviewText.includes('Review translations') && !studyPageState.emptyActions.includes('Review translations')) {
+        throw new Error(`empty study page should make translation review reachable from the empty card: ${JSON.stringify(studyPageState)}`);
       }
       if (!studyPageState.overviewHidden && !/Review translations|Saved translations/.test(studyPageState.overviewText)) {
         throw new Error(`empty study page overview should point to translation study status when present: ${JSON.stringify(studyPageState)}`);

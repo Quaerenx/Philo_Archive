@@ -178,19 +178,32 @@ function updateStudyListChrome(count = 0) {
   }
 }
 
-function renderEmptyStudy() {
+function studyTranslationHref(reviewState) {
+  const params = translationSummaryParams();
+  params.set("review_state", reviewState);
+  return `/translations?${params}`;
+}
+
+function renderEmptyStudy(translationSummary = null) {
   const filtered = hasActiveFilters();
   const title = filtered ? "No saved notes match these filters." : "No saved notes yet.";
   const body = filtered ? "Clear filters, or edit the saved notes list." : "";
   const clearAction = filtered
     ? '<button type="button" data-empty-action="clear-filters">Clear filters</button>'
     : "";
+  const counts = translationSummary?.review_state_counts || {};
+  const generated = Number(counts.generated || 0);
+  const reviewed = Number(counts.reviewed || 0);
+  const translationAction = generated > 0
+    ? `<a href="${escapeHtml(studyTranslationHref("generated"))}">Review translations</a>`
+    : (reviewed > 0 ? `<a href="${escapeHtml(studyTranslationHref("reviewed"))}">Saved translations</a>` : "");
   const bodyMarkup = body ? `<p>${escapeHtml(body)}</p>` : "";
   return `<section class="empty empty-state">
     <h2>${escapeHtml(title)}</h2>
     ${bodyMarkup}
     <div class="empty-actions">
       ${clearAction}
+      ${translationAction}
       <a href="/notes?review_state=raw">Notes</a>
       <a href="/search">Find work</a>
     </div>
@@ -294,9 +307,7 @@ function studyCountLabel(count, singular, plural = `${singular}s`) {
 
 function translationStatusLink(reviewState, label, count) {
   if (!count) return "";
-  const params = translationSummaryParams();
-  params.set("review_state", reviewState);
-  return `<a href="/translations?${params}"><span>${escapeHtml(label)}</span><strong>${Number(count || 0).toLocaleString()}</strong></a>`;
+  return `<a href="${escapeHtml(studyTranslationHref(reviewState))}"><span>${escapeHtml(label)}</span><strong>${Number(count || 0).toLocaleString()}</strong></a>`;
 }
 
 function renderStudyOverview(payload, translationSummary) {
@@ -380,7 +391,7 @@ function renderStudy(payload, translationSummary = null) {
         </div>
       </section>`;
     }).join("")
-    : renderEmptyStudy();
+    : renderEmptyStudy(translationSummary);
 }
 
 resultsEl.addEventListener("click", (event) => {
