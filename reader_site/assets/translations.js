@@ -394,9 +394,9 @@ function visibleSummaryStates(counts) {
 
 function summaryButton(filter, label, count) {
   const selected = (filter || "all") === (reviewSelect.value || "all");
-  return `<button type="button" class="${selected ? "active" : ""}" data-translation-summary-filter="${escapeHtml(filter)}" aria-pressed="${selected ? "true" : "false"}">
+  const detail = `${label} ${Number(count || 0).toLocaleString()}개`;
+  return `<button type="button" class="${selected ? "active" : ""}" data-translation-summary-filter="${escapeHtml(filter)}" aria-pressed="${selected ? "true" : "false"}" aria-label="${escapeHtml(detail)}" title="${escapeHtml(detail)}">
     <span>${escapeHtml(label)}</span>
-    <strong>${Number(count || 0).toLocaleString()}</strong>
   </button>`;
 }
 

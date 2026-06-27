@@ -92,11 +92,6 @@
   background: #f1f1f1;
 }
 
-.translation-record-summary strong {
-  color: #555;
-  font-weight: normal;
-}
-
 .translation-review-queue {
   min-height: 24px;
   padding: 2px 9px;

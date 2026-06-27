@@ -627,8 +627,8 @@ def check_translations_ui() -> None:
     css = read_site_file("assets/translations.css")
     for needle in [
         "/assets/notes.css?v=notes23",
-        "/assets/translations.css?v=trans30",
-        "/assets/translations.js?v=trans72",
+        "/assets/translations.css?v=trans31",
+        "/assets/translations.js?v=trans73",
         "<title>번역 목록 / Personal Archive of Literature</title>",
         '<h1 id="translationsPageTitle">번역 목록</h1>',
         'aria-label="번역 이동"',
@@ -722,6 +722,8 @@ def check_translations_ui() -> None:
         "function renderSummary",
         "counts.total <= 0",
         "function visibleSummaryStates",
+        "const detail = `${label} ${Number(count || 0).toLocaleString()}개`",
+        'aria-label="${escapeHtml(detail)}"',
         "번역 상태 요약",
         "검토할 번역",
         "저장한 번역",
@@ -816,6 +818,10 @@ def check_translations_ui() -> None:
         "reviewActionsVisible() && visibleReviewStates(visible).size > 1",
     ]:
         require_contains(script, needle, "assets/translations.js")
+    require(
+        "<strong>${Number(count || 0).toLocaleString()}</strong>" not in script,
+        "assets/translations.js should keep summary counts out of visible translation filter buttons",
+    )
     require_ordered_markers(
         js_function_body(script, "renderRecord"),
         [
@@ -909,6 +915,10 @@ def check_translations_ui() -> None:
         "justify-content: center",
     ]:
         require_contains(css, needle, "assets/translations.css")
+    require(
+        ".translation-record-summary strong" not in css,
+        "assets/translations.css should not keep dead visible-count styling for translation summaries",
+    )
     translation_recent_block = css_rule_block(css, ".translation-record-card.is-recent", "assets/translations.css recent translation marker")
     require_contains(translation_recent_block, "box-shadow: inset 3px 0 0 #b00000", "assets/translations.css recent translation marker")
     for noisy_marker in ["background: #fff9df", "border: 1px solid #d8c36a", "animation:"]:

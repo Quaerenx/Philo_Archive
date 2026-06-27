@@ -251,8 +251,8 @@ def check_route_markup(route: str, html: str) -> None:
             "translationsReviewQueue",
             "aria-busy=\"false\"",
             "notes.css?v=notes23",
-            "translations.css?v=trans30",
-            "translations.js?v=trans72",
+            "translations.css?v=trans31",
+            "translations.js?v=trans73",
             'href="/translations" aria-current="page">번역</a>',
             "번역 찾기",
             "translationsListTools",
@@ -1062,6 +1062,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
           emptyActions: Array.from(empty?.querySelectorAll('.empty-actions a') || []).map((node) => node.textContent.trim()),
           reviewBadgeCount: document.querySelectorAll('#translationsResults .review-badge').length,
           summaryButtons: Array.from(document.querySelectorAll('#translationsResults .translation-record-summary [data-translation-summary-filter]')).map((node) => node.textContent.trim()),
+          summaryLabels: Array.from(document.querySelectorAll('#translationsResults .translation-record-summary [data-translation-summary-filter]')).map((node) => node.getAttribute('aria-label') || ''),
           sourceDisclosureCount: document.querySelectorAll('#translationsResults .translation-source').length,
           groupTitleCount: document.querySelectorAll('#translationsResults .translation-record-group-title').length,
           firstGroupTitle: document.querySelector('#translationsResults .translation-record-group-title')?.textContent.trim() || '',
@@ -1117,13 +1118,11 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (translationsPageState.summaryButtons.length && !translationsPageState.summaryButtons.some((text) => text.startsWith('전체'))) {
         throw new Error(`default translations list should expose a compact status overview: ${JSON.stringify(translationsPageState)}`);
       }
-      if (translationsPageState.summaryButtons.length === 2) {
-        const reviewCount = Number(((translationsPageState.reviewQueueText.match(/(\d[\d,]*)/) || [])[1] || '0').replace(/,/g, ''));
-        const allCount = Number((translationsPageState.summaryButtons.find((text) => text.startsWith('전체')) || '').match(/\d+/)?.[0] || 0);
-        const toCheckCount = Number((translationsPageState.summaryButtons.find((text) => text.startsWith('검토할 번역')) || '').match(/\d+/)?.[0] || 0);
-        if (reviewCount && allCount === reviewCount && toCheckCount === reviewCount) {
-          throw new Error(`translations page should not repeat all-generated counts in both review queue and summary: ${JSON.stringify(translationsPageState)}`);
-        }
+      if (translationsPageState.summaryButtons.some((text) => /\d/.test(text))) {
+        throw new Error(`translations status summary should hide visible counts from the reading flow: ${JSON.stringify(translationsPageState)}`);
+      }
+      if (translationsPageState.summaryLabels.some((label) => label && !/\d/.test(label))) {
+        throw new Error(`translations status summary should keep counts in accessible labels: ${JSON.stringify(translationsPageState)}`);
       }
       if (translationsPageState.groupTitleCount === 0 || !translationsPageState.firstGroupTitle) {
         throw new Error(`default translations list should group records by work context: ${JSON.stringify(translationsPageState)}`);
