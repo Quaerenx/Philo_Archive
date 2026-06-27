@@ -339,13 +339,15 @@ function updateReviewQueueButton(records = lastRecords) {
   if (!reviewQueueButton) return;
   const generatedCount = generatedRecords(records).length;
   reviewQueueButton.hidden = generatedCount === 0;
-  reviewQueueButton.textContent = generatedCount
-    ? `Check translations ${generatedCount.toLocaleString()}`
-    : "Check translations";
+  reviewQueueButton.textContent = "Check translations";
   reviewQueueButton.disabled = form.classList.contains("is-loading") || generatedCount === 0;
   reviewQueueButton.title = generatedCount
-    ? `${generatedCount.toLocaleString()} records to check`
+    ? `${generatedCount.toLocaleString()} translations to check`
     : "Nothing to check";
+  reviewQueueButton.setAttribute(
+    "aria-label",
+    generatedCount ? `Check translations, ${generatedCount.toLocaleString()} to check` : "Check translations"
+  );
 }
 
 function recordMatchesReview(record) {

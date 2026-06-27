@@ -228,7 +228,7 @@ def check_route_markup(route: str, html: str) -> None:
             "aria-busy=\"false\"",
             "notes.css?v=notes21",
             "translations.css?v=trans25",
-            "translations.js?v=trans58",
+            "translations.js?v=trans59",
             'href="/translations" aria-current="page">Translations</a>',
             "Find record",
             "translationsListTools",
@@ -707,6 +707,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       if (translationsPageState.reviewQueueText && !translationsPageState.reviewQueueText.startsWith('Check translations')) {
         throw new Error(`translations review entry should stay concise: ${JSON.stringify(translationsPageState)}`);
+      }
+      if (/\d/.test(translationsPageState.reviewQueueText)) {
+        throw new Error(`translations review entry should keep counts out of the primary action text: ${JSON.stringify(translationsPageState)}`);
       }
       if (translationsPageState.reviewQueueText && translationsPageState.reviewQueueBorderColor !== 'rgb(176, 0, 0)') {
         throw new Error(`translations review entry should use the same red primary action style: ${JSON.stringify(translationsPageState)}`);

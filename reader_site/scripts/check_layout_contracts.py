@@ -508,7 +508,7 @@ def check_translations_ui() -> None:
     for needle in [
         "/assets/notes.css?v=notes21",
         "/assets/translations.css?v=trans25",
-        "/assets/translations.js?v=trans58",
+        "/assets/translations.js?v=trans59",
         'href="/translations" aria-current="page">Translations</a>',
         "Find record",
         '<option value="">All corpora</option>',
@@ -611,6 +611,9 @@ def check_translations_ui() -> None:
         "function generatedRecords",
         "function updateReviewQueueButton",
         "reviewQueueButton.hidden = generatedCount === 0",
+        'reviewQueueButton.textContent = "Check translations"',
+        "translations to check",
+        "reviewQueueButton.setAttribute",
         "Check translations",
         "function focusFirstReviewQueueRecord",
         "function clearReviewTargetHighlight",
