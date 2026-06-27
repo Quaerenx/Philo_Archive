@@ -252,7 +252,8 @@ function updateClearState(isBusy = form.classList.contains("is-loading")) {
 function updateTranslationsListChrome(count = lastRecords.length) {
   const activeFilters = hasActiveFilters();
   const shouldOpenTools = hasSearchFilters();
-  const showTools = count > 0 || activeFilters;
+  const inReviewQueue = isReviewQueueOnlyView();
+  const showTools = !inReviewQueue && (count > 0 || activeFilters);
   if (listTools) {
     listTools.hidden = !showTools;
     listTools.open = shouldOpenTools;

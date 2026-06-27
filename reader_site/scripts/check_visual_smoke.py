@@ -228,7 +228,7 @@ def check_route_markup(route: str, html: str) -> None:
             "aria-busy=\"false\"",
             "notes.css?v=notes21",
             "translations.css?v=trans26",
-            "translations.js?v=trans61",
+            "translations.js?v=trans62",
             'href="/translations" aria-current="page">Translations</a>',
             "Find record",
             "translationsListTools",
@@ -1012,12 +1012,14 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       const cards = document.querySelectorAll('#translationsResults .translation-record-card:not(.notes-skeleton)').length;
       return {
         cards,
+        toolsHidden: Boolean(document.querySelector('#translationsListTools')?.hidden),
         toolsOpen: Boolean(document.querySelector('#translationsListTools')?.open),
         activeFiltersHidden: Boolean(activeFilters?.hidden),
         activeFiltersText: activeFilters ? activeFilters.textContent.trim() : '',
         reviewQueueHidden: Boolean(document.querySelector('#translationsReviewQueue')?.hidden)
       };
     });
+    if (state.cards > 0 && !state.toolsHidden) throw new Error(`review queue should hide filter tools while reviewing: ${JSON.stringify(state)}`);
     if (state.cards > 0 && state.toolsOpen) throw new Error(`review queue should keep list tools collapsed: ${JSON.stringify(state)}`);
     if (state.cards > 0 && (!state.activeFiltersHidden || state.activeFiltersText)) {
       throw new Error(`review queue should not repeat the status filter chip: ${JSON.stringify(state)}`);

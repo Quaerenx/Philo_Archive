@@ -508,7 +508,7 @@ def check_translations_ui() -> None:
     for needle in [
         "/assets/notes.css?v=notes21",
         "/assets/translations.css?v=trans26",
-        "/assets/translations.js?v=trans61",
+        "/assets/translations.js?v=trans62",
         'href="/translations" aria-current="page">Translations</a>',
         "Find record",
         '<option value="">All corpora</option>',
@@ -562,6 +562,8 @@ def check_translations_ui() -> None:
         "function updateWorkOptions",
         "function renderEmptyRecords",
         "function updateTranslationsListChrome",
+        "const inReviewQueue = isReviewQueueOnlyView()",
+        "const showTools = !inReviewQueue && (count > 0 || activeFilters)",
         "form.hidden = !showTools",
         "No translation records yet.",
         "const bodyMarkup = body ?",
