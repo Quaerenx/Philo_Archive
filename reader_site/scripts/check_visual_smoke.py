@@ -228,7 +228,7 @@ def check_route_markup(route: str, html: str) -> None:
             "aria-busy=\"false\"",
             "notes.css?v=notes21",
             "translations.css?v=trans26",
-            "translations.js?v=trans59",
+            "translations.js?v=trans60",
             'href="/translations" aria-current="page">Translations</a>',
             "Find record",
             "translationsListTools",
@@ -1061,8 +1061,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (reviewTargetState.nonTargetFooterDisplay && reviewTargetState.nonTargetFooterDisplay !== 'none') {
         throw new Error(`review queue should keep inactive review actions visually quiet on desktop: ${JSON.stringify(reviewTargetState)}`);
       }
-      if (!reviewTargetState.sourceOpen || !reviewTargetState.sourceText.includes('Original')) {
-        throw new Error(`review queue should open the active source text: ${JSON.stringify(reviewTargetState)}`);
+      if (reviewTargetState.sourceOpen || !reviewTargetState.sourceText.includes('Original')) {
+        throw new Error(`review queue should keep original source available but collapsed by default: ${JSON.stringify(reviewTargetState)}`);
       }
       if (reviewTargetState.reviewTargetBackground !== 'rgb(255, 255, 255)') {
         throw new Error(`review queue target should stay visually quiet on a white reading surface: ${JSON.stringify(reviewTargetState)}`);
