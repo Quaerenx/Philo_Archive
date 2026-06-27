@@ -196,7 +196,10 @@ img {
 }
 
 .reading-path-link.primary {
+  display: flex;
   grid-column: 1 / -1;
+  min-height: 38px;
+  align-items: center;
   padding: 6px 8px;
   color: #000;
   font-weight: bold;
@@ -432,6 +435,10 @@ img {
   }
 
   .root-link {
+    min-height: 42px;
+  }
+
+  .reading-path-link.primary {
     min-height: 42px;
   }
 

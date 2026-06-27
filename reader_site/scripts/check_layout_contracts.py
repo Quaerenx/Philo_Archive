@@ -93,8 +93,8 @@ def check_html_entrypoints() -> None:
         require_contains(html, 'class="page"', relative_path)
         if relative_path == "index.html":
             require_contains(html, "번역", relative_path)
-            require_contains(html, "/styles.css?v=home3", relative_path)
-            require_contains(html, "/app.js?v=home10", relative_path)
+            require_contains(html, "/styles.css?v=home4", relative_path)
+            require_contains(html, "/app.js?v=home11", relative_path)
         if relative_path in {"templates/reading.html", "templates/source.html"}:
             require_contains(html, "/assets/static-reader.css?v=static2", relative_path)
             require_contains(html, "자료 위치</summary>", relative_path)
@@ -160,6 +160,7 @@ def check_home_css() -> None:
         "background: var(--reader-background",
         "border: 1px solid var(--reader-border",
         ".reading-path-link.primary",
+        "min-height: 38px",
         ".reading-path-links",
         ".category-browse-tools",
         ".category-browse-tools summary",
@@ -180,6 +181,8 @@ def check_home_css() -> None:
         "flex: 0 1 auto;",
         "width: 100%;",
         "padding: 0 10px 24px;",
+        ".reading-path-link.primary",
+        "min-height: 42px;",
     ]:
         require_contains(responsive, needle, f"{relative_path} responsive block")
 
@@ -204,6 +207,8 @@ def check_home_script() -> None:
         "function uniqueLinks",
         "function startReadingLabel",
         "function startReadingTitle",
+        "function startReadingAriaLabel",
+        "추천 읽기 시작",
         "function rootLinkLabel",
         "function categorySubtitle",
         "function storedRecentWork",

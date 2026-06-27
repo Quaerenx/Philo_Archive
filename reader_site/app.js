@@ -171,6 +171,11 @@ function startReadingTitle(link) {
   return displayLabel !== link.label ? ` title="${escapeHtml(link.label)}"` : "";
 }
 
+function startReadingAriaLabel(link, index) {
+  if (index !== 0) return "";
+  return ` aria-label="추천 읽기 시작: ${escapeHtml(startReadingLabel(link))}"`;
+}
+
 function rootLinkLabel(corpus) {
   return ROOT_LINK_LABELS[corpus.id] || corpus.title;
 }
@@ -276,7 +281,7 @@ function categoryEmptyState() {
 function categoryControls(corpus, sections) {
   const browseToolsOpen = hasCategoryFilters() ? " open" : "";
   const pathLinks = readingPathLinks(corpus)
-    .map((link, index) => `<a class="reading-path-link${index === 0 ? " primary" : ""}" href="${escapeHtml(link.href)}"${startReadingTitle(link)}>${escapeHtml(startReadingLabel(link))}</a>`)
+    .map((link, index) => `<a class="reading-path-link${index === 0 ? " primary" : ""}" href="${escapeHtml(link.href)}"${startReadingTitle(link)}${startReadingAriaLabel(link, index)}>${escapeHtml(startReadingLabel(link))}</a>`)
     .join("");
   const sectionButtons = [
     `<button type="button" class="section-filter${state.activeSection === "all" ? " active" : ""}" data-section-filter="all">전체</button>`,

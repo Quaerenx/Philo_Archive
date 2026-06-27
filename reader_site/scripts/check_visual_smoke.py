@@ -204,7 +204,7 @@ def check_route_markup(route: str, html: str) -> None:
             "노트",
             "학습",
             "번역",
-            "app.js?v=home10",
+            "app.js?v=home11",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
     if route == "/study":
@@ -520,14 +520,19 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         browseToolsOpen: Boolean(browseTools?.open),
         browseToolsSummary: browseTools?.querySelector('summary')?.textContent.trim() || '',
         primaryReadLink: primary?.textContent.trim() || '',
+        primaryReadLabel: primary?.getAttribute('aria-label') || '',
         primaryReadLinkHeight: primary?.getBoundingClientRect().height || 0
       };
     });
     if (initialCategoryToolsState.hasCategoryFilter && (initialCategoryToolsState.browseToolsOpen || initialCategoryToolsState.browseToolsSummary !== '목록 좁히기')) {
       throw new Error(`category page should keep browse filters collapsed behind a concise label: ${JSON.stringify(initialCategoryToolsState)}`);
     }
-    if (initialCategoryToolsState.hasCategoryFilter && (!initialCategoryToolsState.primaryReadLink || initialCategoryToolsState.primaryReadLinkHeight < 24)) {
+    const minimumPrimaryReadHeight = Number(widthText) <= 420 ? 40 : 34;
+    if (initialCategoryToolsState.hasCategoryFilter && (!initialCategoryToolsState.primaryReadLink || initialCategoryToolsState.primaryReadLinkHeight < minimumPrimaryReadHeight)) {
       throw new Error(`category page should make the first reading action clear before filters: ${JSON.stringify(initialCategoryToolsState)}`);
+    }
+    if (initialCategoryToolsState.hasCategoryFilter && !initialCategoryToolsState.primaryReadLabel.startsWith('추천 읽기 시작: ')) {
+      throw new Error(`category page primary reading action should have a clear accessible label: ${JSON.stringify(initialCategoryToolsState)}`);
     }
     const hasCategoryFilter = initialCategoryToolsState.hasCategoryFilter;
     if (hasCategoryFilter) {
