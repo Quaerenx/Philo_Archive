@@ -19,7 +19,7 @@ def toc_markup(toc: list[dict[str, int | str]]) -> str:
         label = html.escape(str(item["label"]))
         links.append(f'<a class="toc-link level-{level}" href="#{anchor}">{label}</a>')
     return (
-        f'<details class="toc"><summary>Contents ({len(toc)})</summary>'
+        '<details class="toc"><summary>Contents</summary>'
         f'<div class="toc-links">{"".join(links)}</div></details>'
     )
 

@@ -310,12 +310,14 @@ def check_route_markup(route: str, html: str) -> None:
             "Study record",
             "studySessionSummary",
             "Nothing to download</div>",
+            "Contents</summary>",
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common113",
             "reader-work.js?v=common151",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
+        require("Contents (" not in html, f"{route} should not expose TOC inventory counts")
 
 
 def paeth_predictor(left: int, up: int, up_left: int) -> int:

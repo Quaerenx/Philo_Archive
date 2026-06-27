@@ -1430,6 +1430,7 @@ def check_work_source_bundle_ui() -> None:
         "readingPosition",
         "Current reading position",
         'class="reading-position" aria-label="Current reading position" hidden',
+        "{{TOC}}",
         "noteTargetPreview",
         "lockNoteTarget",
         "Lock target",
@@ -1502,6 +1503,9 @@ def check_work_source_bundle_ui() -> None:
         require_contains(template, needle, "templates/work.html")
 
     css = read_site_file("assets/reader-work.css")
+    work_markup = read_site_file("rendering/work_markup.py")
+    require_contains(work_markup, "<summary>Contents</summary>", "rendering/work_markup.py")
+    require("Contents (" not in work_markup, "rendering/work_markup.py should keep TOC summary quiet")
     mobile_css = css.split("@media (max-width: 860px)", maxsplit=1)[1]
     mobile_page_before = css_rule_block(mobile_css, ".page::before", "assets/reader-work.css mobile block")
     for needle in [
