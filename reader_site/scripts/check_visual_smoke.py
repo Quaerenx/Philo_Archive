@@ -251,7 +251,7 @@ def check_route_markup(route: str, html: str) -> None:
             "aria-busy=\"false\"",
             "notes.css?v=notes22",
             "translations.css?v=trans30",
-            "translations.js?v=trans70",
+            "translations.js?v=trans71",
             'href="/translations" aria-current="page">번역</a>',
             "번역 찾기",
             "translationsListTools",
@@ -1026,7 +1026,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (translationsPageState.summaryButtons.length === 2) {
         const reviewCount = Number(((translationsPageState.reviewQueueText.match(/(\d[\d,]*)/) || [])[1] || '0').replace(/,/g, ''));
         const allCount = Number((translationsPageState.summaryButtons.find((text) => text.startsWith('전체')) || '').match(/\d+/)?.[0] || 0);
-        const toCheckCount = Number((translationsPageState.summaryButtons.find((text) => text.startsWith('검토 필요')) || '').match(/\d+/)?.[0] || 0);
+        const toCheckCount = Number((translationsPageState.summaryButtons.find((text) => text.startsWith('검토할 번역')) || '').match(/\d+/)?.[0] || 0);
         if (reviewCount && allCount === reviewCount && toCheckCount === reviewCount) {
           throw new Error(`translations page should not repeat all-generated counts in both review queue and summary: ${JSON.stringify(translationsPageState)}`);
         }

@@ -237,7 +237,7 @@ function isReviewQueueOnlyView() {
 }
 
 function renderFilterChip(filterName, label, value) {
-  return `<button type="button" class="filter-chip" data-filter="${escapeHtml(filterName)}" aria-label="${escapeHtml(label)} 필터 제거">
+  return `<button type="button" class="filter-chip" data-filter="${escapeHtml(filterName)}" aria-label="${escapeHtml(label)} 조건 제거">
     <span>${escapeHtml(label)}: ${escapeHtml(value)}</span>
     <span aria-hidden="true">x</span>
   </button>`;
@@ -406,9 +406,9 @@ function renderSummary(records) {
   if (visibleSummaryStates(counts).length <= 1) return "";
   const buttons = [
     summaryButton("all", "전체", counts.total),
-    counts.generated ? summaryButton("generated", "검토 필요", counts.generated) : "",
-    counts.reviewed ? summaryButton("reviewed", "저장됨", counts.reviewed) : "",
-    counts.rejected ? summaryButton("rejected", "제외됨", counts.rejected) : ""
+    counts.generated ? summaryButton("generated", "검토할 번역", counts.generated) : "",
+    counts.reviewed ? summaryButton("reviewed", "저장한 번역", counts.reviewed) : "",
+    counts.rejected ? summaryButton("rejected", "제외한 번역", counts.rejected) : ""
   ].filter(Boolean).join("");
   return `<nav class="translation-record-summary-tools translation-record-summary" aria-label="번역 상태 요약">
     ${buttons}
@@ -419,10 +419,10 @@ function renderEmptyRecords() {
   const filtered = hasActiveFilters();
   const title = filtered ? "조건에 맞는 번역이 없습니다." : "아직 번역이 없습니다.";
   const body = filtered
-    ? "필터를 지우거나 문서와 상태 조건을 넓혀보세요."
+    ? "조건을 지우거나 문서와 상태 범위를 넓혀보세요."
     : "";
   const clearAction = filtered
-    ? '<button type="button" data-empty-action="clear-filters">필터 지우기</button>'
+    ? '<button type="button" data-empty-action="clear-filters">조건 지우기</button>'
     : "";
   const bodyMarkup = body ? `<p>${escapeHtml(body)}</p>` : "";
   return `<section class="empty empty-state">
@@ -541,7 +541,7 @@ function renderRecord(record, options) {
       ? '<button type="button" class="primary-review-action" data-review-state="reviewed" aria-keyshortcuts="R" title="번역 저장">저장</button>'
       : "",
     reviewState !== "generated"
-      ? '<button type="button" data-review-state="generated" aria-keyshortcuts="G" title="검토 대상으로 되돌리기">검토 필요</button>'
+      ? '<button type="button" data-review-state="generated" aria-keyshortcuts="G" title="검토 대상으로 되돌리기">다시 검토</button>'
       : "",
     rejectAction
   ].filter(Boolean).join("") : "";
@@ -735,7 +735,7 @@ async function updateRecordReview(recordId, corpusId, reviewState) {
 function reviewActionMessage(reviewState) {
   if (reviewState === "reviewed") return "저장했습니다.";
   if (reviewState === "rejected") return "제외했습니다.";
-  if (reviewState === "generated") return "검토 대상으로 되돌렸습니다.";
+  if (reviewState === "generated") return "다시 검토할 목록으로 옮겼습니다.";
   return "반영했습니다.";
 }
 

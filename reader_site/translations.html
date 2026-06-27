@@ -51,9 +51,9 @@
               상태
               <select id="translationsReview" name="review_state">
                 <option value="all">전체</option>
-                <option value="generated">검토 필요</option>
-                <option value="reviewed">저장됨</option>
-                <option value="rejected">제외됨</option>
+                <option value="generated">검토할 번역</option>
+                <option value="reviewed">저장한 번역</option>
+                <option value="rejected">제외한 번역</option>
               </select>
             </label>
           </div>
@@ -70,7 +70,7 @@
           </div>
         </details>
       </details>
-      <div id="translationsActiveFilters" class="active-filters" aria-live="polite" aria-label="활성 번역 필터"></div>
+      <div id="translationsActiveFilters" class="active-filters" aria-live="polite" aria-label="활성 번역 조건"></div>
 
       <div class="review-export-row">
         <button id="translationsReviewQueue" type="button" class="translation-review-queue" aria-keyshortcuts="Q" title="검토할 번역 없음" disabled>검토할 번역</button>
@@ -80,6 +80,6 @@
       <section id="translationsResults" class="notes-results translations-results" aria-live="polite" aria-busy="false"></section>
     </main>
   </div>
-  <script src="/assets/translations.js?v=trans70"></script>
+  <script src="/assets/translations.js?v=trans71"></script>
 </body>
 </html>
