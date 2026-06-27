@@ -314,6 +314,10 @@ h1 {
   margin: 0 0 14px;
 }
 
+.notes-results + .export-tools {
+  margin: 18px 0 0;
+}
+
 .review-export-row {
   display: flex;
   flex-wrap: wrap;
@@ -429,11 +433,6 @@ h1 {
 
 .notes-summary-filter.active {
   background: #f1f1f1;
-}
-
-.notes-summary-filter strong {
-  color: #555;
-  font-weight: normal;
 }
 
 .note-card {

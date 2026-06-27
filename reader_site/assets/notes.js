@@ -261,9 +261,9 @@ function notesSummaryCounts(notes) {
 
 function notesSummaryButton(filter, label, count) {
   const selected = (filter || "") === reviewSelect.value;
-  return `<button type="button" class="notes-summary-filter${selected ? " active" : ""}" data-notes-summary-filter="${escapeHtml(filter)}" aria-pressed="${selected ? "true" : "false"}">
+  const detail = `${label} ${Number(count || 0).toLocaleString()}개`;
+  return `<button type="button" class="notes-summary-filter${selected ? " active" : ""}" data-notes-summary-filter="${escapeHtml(filter)}" aria-pressed="${selected ? "true" : "false"}" aria-label="${escapeHtml(detail)}" title="${escapeHtml(detail)}">
     <span>${escapeHtml(label)}</span>
-    <strong>${Number(count || 0).toLocaleString()}</strong>
   </button>`;
 }
 

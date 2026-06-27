@@ -232,8 +232,8 @@ def check_route_markup(route: str, html: str) -> None:
             "notesActiveFilters",
             "notesStatus",
             "aria-busy=\"false\"",
-            "notes.css?v=notes22",
-            "notes.js?v=notes33",
+            "notes.css?v=notes23",
+            "notes.js?v=notes34",
             'href="/notes" aria-current="page">노트</a>',
             "filter-panel",
             "노트 찾기</summary>",
@@ -250,7 +250,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translationsResults",
             "translationsReviewQueue",
             "aria-busy=\"false\"",
-            "notes.css?v=notes22",
+            "notes.css?v=notes23",
             "translations.css?v=trans30",
             "translations.js?v=trans71",
             'href="/translations" aria-current="page">번역</a>',
@@ -861,9 +861,12 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     await page.waitForSelector('#notesResults .note-card:not(.notes-skeleton), #notesResults .empty-state', { timeout: 7000 }).catch(() => {});
     const notesPageState = await page.evaluate(() => {
       const empty = document.querySelector('#notesResults .empty-state');
+      const results = document.querySelector('#notesResults');
+      const exportTools = document.querySelector('#notesExportTools');
       return {
         hasNotes: document.querySelectorAll('#notesResults .note-card:not(.notes-skeleton)').length > 0,
         formHidden: Boolean(document.querySelector('#notesForm')?.hidden),
+        exportAfterResults: Boolean(results && exportTools && (results.compareDocumentPosition(exportTools) & Node.DOCUMENT_POSITION_FOLLOWING)),
         emptyTitle: empty?.querySelector('h2')?.textContent.trim() || '',
         emptyBodyCount: empty ? empty.querySelectorAll('p').length : 0,
         emptyActions: Array.from(empty?.querySelectorAll('.empty-actions a') || []).map((node) => node.textContent.trim()),
@@ -871,9 +874,13 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         jsonlHidden: Boolean(document.querySelector('#exportJsonl')?.hidden),
         reviewOptions: Array.from(document.querySelectorAll('#notesReview option')).map((node) => node.textContent.trim()),
         summaryButtons: Array.from(document.querySelectorAll('#notesResults .notes-summary-filter')).map((node) => node.textContent.trim()),
+        summaryLabels: Array.from(document.querySelectorAll('#notesResults .notes-summary-filter')).map((node) => node.getAttribute('aria-label') || ''),
         actionText: Array.from(document.querySelectorAll('#notesResults .note-actions')).map((node) => node.textContent.trim()).join(' ')
       };
     });
+    if (!notesPageState.exportAfterResults) {
+      throw new Error(`notes export tools should stay after the note results: ${JSON.stringify(notesPageState)}`);
+    }
     for (const expectedNoteState of ['작성 중인 노트', '저장한 노트']) {
       if (!notesPageState.reviewOptions.includes(expectedNoteState)) {
         throw new Error(`notes status filter should use learner-facing labels: ${JSON.stringify(notesPageState)}`);
@@ -896,6 +903,12 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       if (notesPageState.summaryButtons.some((text) => text.includes('저장됨') || text === '작성 중')) {
         throw new Error(`notes status summary should use learner-facing labels: ${JSON.stringify(notesPageState)}`);
+      }
+      if (notesPageState.summaryButtons.some((text) => /\d/.test(text))) {
+        throw new Error(`notes status summary should hide visible counts from the reading flow: ${JSON.stringify(notesPageState)}`);
+      }
+      if (notesPageState.summaryLabels.some((label) => label && !/\d/.test(label))) {
+        throw new Error(`notes status summary should keep counts in accessible labels: ${JSON.stringify(notesPageState)}`);
       }
       const notesDangerText = await page.evaluate(() => Array.from(document.querySelectorAll('#notesResults .note-danger-actions summary')).map((node) => node.textContent.trim()).join(' '));
       if (notesDangerText.includes('More')) {

@@ -414,8 +414,8 @@ def check_notes_ui() -> None:
     script = read_site_file("assets/notes.js")
     css = read_site_file("assets/notes.css")
     for needle in [
-        "/assets/notes.css?v=notes22",
-        "/assets/notes.js?v=notes33",
+        "/assets/notes.css?v=notes23",
+        "/assets/notes.js?v=notes34",
         'href="/notes" aria-current="page">노트</a>',
         "노트 찾기",
         "노트 찾기</summary>",
@@ -441,6 +441,16 @@ def check_notes_ui() -> None:
         'aria-busy="false"',
     ]:
         require_contains(html, needle, "notes.html")
+    require_ordered_markers(
+        html,
+        [
+            'id="notesActiveFilters"',
+            'id="notesStatus"',
+            'id="notesResults"',
+            'id="notesExportTools"',
+        ],
+        "notes.html keeps export tools after the note results",
+    )
     for needle in [
         "activeNotesController",
         "activeNotesRequest",
@@ -451,6 +461,8 @@ def check_notes_ui() -> None:
         "renderNotesPending",
         "function notesSummaryCounts",
         "function notesSummaryButton",
+        "const detail = `${label} ${Number(count || 0).toLocaleString()}개`",
+        'aria-label="${escapeHtml(detail)}"',
         "function renderNotesSummary",
         "function archiveCorpusById",
         "function corpusDisplayName",
@@ -536,6 +548,7 @@ def check_notes_ui() -> None:
         ".export-tools",
         ".export-tools summary",
         ".export-tools[open] summary::after",
+        ".notes-results + .export-tools",
         ".active-filters",
         ".active-filters.has-filters",
         ".filter-chip",
@@ -574,6 +587,14 @@ def check_notes_ui() -> None:
     for noisy_marker in ["background: #fff9df", "border: 1px solid #d8c36a", "animation:"]:
         require(noisy_marker not in note_recent_block, f"assets/notes.css recent note marker should stay quiet without {noisy_marker!r}")
     require("archive-note-highlight" not in css, "assets/notes.css should not animate recent note cards")
+    require(
+        "<strong>${Number(count || 0).toLocaleString()}</strong>" not in script,
+        "assets/notes.js should keep summary counts out of visible note filter buttons",
+    )
+    require(
+        ".notes-summary-filter strong" not in css,
+        "assets/notes.css should not keep dead visible-count styling for note summaries",
+    )
 
 
 def check_translations_ui() -> None:
@@ -582,7 +603,7 @@ def check_translations_ui() -> None:
     base_css = read_site_file("assets/notes.css")
     css = read_site_file("assets/translations.css")
     for needle in [
-        "/assets/notes.css?v=notes22",
+        "/assets/notes.css?v=notes23",
         "/assets/translations.css?v=trans30",
         "/assets/translations.js?v=trans71",
         "<title>번역 목록 / Personal Archive of Literature</title>",

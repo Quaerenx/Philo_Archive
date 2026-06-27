@@ -6,7 +6,7 @@
   <title>노트 / Personal Archive of Literature</title>
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/design-tokens.css?v=frame1">
-  <link rel="stylesheet" href="/assets/notes.css?v=notes22">
+  <link rel="stylesheet" href="/assets/notes.css?v=notes23">
 </head>
 <body>
   <div class="page">
@@ -62,6 +62,9 @@
       </form>
       <div id="notesActiveFilters" class="active-filters" aria-live="polite" aria-label="활성 노트 조건"></div>
 
+      <div id="notesStatus" class="notes-status" role="status" aria-live="polite" aria-atomic="true"></div>
+      <section id="notesResults" class="notes-results" aria-live="polite" aria-busy="false"></section>
+
       <details id="notesExportTools" class="export-tools" hidden>
         <summary>내보내기</summary>
         <div class="export-row" aria-label="노트 다운로드">
@@ -70,11 +73,8 @@
           <a id="exportJsonl" href="/api/notes/export?format=jsonl" title="JSONL 데이터 다운로드" hidden tabindex="-1" aria-hidden="true">JSONL</a>
         </div>
       </details>
-
-      <div id="notesStatus" class="notes-status" role="status" aria-live="polite" aria-atomic="true"></div>
-      <section id="notesResults" class="notes-results" aria-live="polite" aria-busy="false"></section>
     </main>
   </div>
-  <script src="/assets/notes.js?v=notes33"></script>
+  <script src="/assets/notes.js?v=notes34"></script>
 </body>
 </html>
