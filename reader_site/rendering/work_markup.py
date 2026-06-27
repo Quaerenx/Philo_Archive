@@ -19,7 +19,7 @@ def toc_markup(toc: list[dict[str, int | str]]) -> str:
         label = html.escape(str(item["label"]))
         links.append(f'<a class="toc-link level-{level}" href="#{anchor}">{label}</a>')
     return (
-        '<details class="toc"><summary>목차</summary>'
+        '<details id="toc" class="toc"><summary>목차</summary>'
         f'<div class="toc-links">{"".join(links)}</div></details>'
     )
 
@@ -94,6 +94,7 @@ def apply_template(template: str, values: dict[str, str]) -> str:
 
 def render_work_page_html(template: str, model: dict) -> str:
     research_json = json.dumps(model["research"], ensure_ascii=False).replace("</", "<\\/")
+    toc_link = '<a href="#toc">목차</a>' if model.get("toc") else ""
     return apply_template(
         template,
         {
@@ -107,6 +108,7 @@ def render_work_page_html(template: str, model: dict) -> str:
             "SOURCE_PATH": html.escape(str(model.get("source_path", ""))),
             "SOURCE_HREF": html.escape(str(model.get("source_href", "#")), quote=True),
             "CATEGORY_HREF": html.escape(str(model.get("category_href", "/")), quote=True),
+            "TOC_LINK": toc_link,
             "TOC": str(model.get("toc", "")),
             "CONCEPTS": str(model.get("concepts", "")),
             "VARIANT_TABS": str(model.get("variant_tabs", "")),

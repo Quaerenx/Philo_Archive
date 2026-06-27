@@ -1490,6 +1490,7 @@ def check_work_source_bundle_ui() -> None:
         "toolbar-more",
         "toolbar-more-links",
         "작업</summary>",
+        "{{TOC_LINK}}",
         'href="/notes?corpus_id={{CORPUS_ID}}&work_id={{WORK_ID}}">노트</a>',
         'href="/study?corpus_id={{CORPUS_ID}}&work_id={{WORK_ID}}">학습</a>',
         'href="/translations?corpus_id={{CORPUS_ID}}&work_id={{WORK_ID}}">번역</a>',
@@ -1610,7 +1611,9 @@ def check_work_source_bundle_ui() -> None:
 
     css = read_site_file("assets/reader-work.css")
     work_markup = read_site_file("rendering/work_markup.py")
-    require_contains(work_markup, "<summary>목차</summary>", "rendering/work_markup.py")
+    require_contains(work_markup, '<details id="toc" class="toc"><summary>목차</summary>', "rendering/work_markup.py")
+    require_contains(work_markup, 'toc_link = \'<a href="#toc">목차</a>\' if model.get("toc") else ""', "rendering/work_markup.py")
+    require_contains(work_markup, '"TOC_LINK": toc_link', "rendering/work_markup.py")
     require("Contents (" not in work_markup, "rendering/work_markup.py should keep TOC summary quiet")
     mobile_css = css.split("@media (max-width: 860px)", maxsplit=1)[1]
     mobile_page_before = css_rule_block(mobile_css, ".page::before", "assets/reader-work.css mobile block")
