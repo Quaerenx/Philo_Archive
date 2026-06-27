@@ -243,9 +243,10 @@ pre {
   }
 
   .segment-anchor {
-    position: static;
-    margin-left: 0;
-    margin-right: 6px;
-    opacity: 0.35;
+    position: absolute;
+    width: 18px;
+    margin-left: -22px;
+    margin-right: 0;
+    opacity: 0;
   }
 }

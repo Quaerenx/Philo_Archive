@@ -589,6 +589,25 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       throw new Error(`desktop reader tools menu should keep readable open targets: ${JSON.stringify(readerToolsState)}`);
     }
   }
+  if (Number(widthText) <= 420) {
+    const mobileAnchorState = await page.evaluate(() => {
+      const anchor = document.querySelector('.reading-body .segment-anchor');
+      if (!anchor) {
+        return null;
+      }
+      const style = window.getComputedStyle(anchor);
+      return {
+        text: anchor.textContent.trim(),
+        position: style.position,
+        opacity: style.opacity,
+        marginLeft: style.marginLeft,
+        parentTag: anchor.parentElement?.tagName || ''
+      };
+    });
+    if (mobileAnchorState && (mobileAnchorState.position !== 'absolute' || Number.parseFloat(mobileAnchorState.opacity) > 0.05)) {
+      throw new Error(`mobile reading anchors should stay out of the default reading flow: ${JSON.stringify(mobileAnchorState)}`);
+    }
+  }
   if (Number(widthText) <= 420 && ['/search', '/notes', '/study', '/translations'].includes(parsed.pathname)) {
     const toolbarState = await page.evaluate(() => {
       const toolbar = document.querySelector('.toolbar');

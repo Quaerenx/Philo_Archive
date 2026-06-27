@@ -139,6 +139,15 @@ def check_reader_css(relative_path: str, css: str) -> None:
             require_contains(css, needle, relative_path)
     else:
         require_contains(css, "width: var(--reader-column-width", relative_path)
+    if relative_path in {"assets/reader-work.css", "assets/static-reader.css"}:
+        mobile_css = css.split("@media (max-width: 860px)", maxsplit=1)[1]
+        mobile_anchor = css_rule_block(mobile_css, ".segment-anchor", f"{relative_path} mobile segment anchor")
+        for needle in [
+            "position: absolute;",
+            "margin-left: -22px;",
+            "opacity: 0;",
+        ]:
+            require_contains(mobile_anchor, needle, f"{relative_path} mobile segment anchor")
 
 
 def check_home_css() -> None:
