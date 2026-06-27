@@ -33,10 +33,9 @@ The intended human workflow is:
 4. Click a sentence.
 5. Read translation and commentary in the study panel.
 6. Use `Next sentence` to continue.
-7. Use `Add note` when a sentence needs a personal research note.
-8. Use `Save` when a translation should be kept.
-9. Use `Translations` -> `Review (n)` to review generated local AI outputs.
-10. Use `Study` as the quiet saved-notes/study-pack view.
+7. Open `Record` (`기록`) only when a sentence needs a note or a translation should be saved.
+8. Use `Translations` -> `Review (n)` to review generated local AI outputs.
+9. Use `Study` as the quiet saved-notes/study-pack view.
 
 The default reader experience should stay quiet. Technical provenance, model hashes, literal glosses, key-term dumps, and cache labels must not compete with the translation and commentary while reading.
 
@@ -53,8 +52,9 @@ Status: implemented.
 - Clicking a source sentence starts translation directly.
 - Translation and commentary are the first visible result sections.
 - `Literal gloss`, `Key terms`, model/runtime metadata, and checksum fields are hidden from the reading card.
-- Immediate actions are ordered as `Next sentence`, `Add note`, then `Save`.
-- Study-only details are collapsed behind `More`.
+- The immediate reading action is `Next sentence`.
+- Note/save actions are reachable through a quiet collapsed `Record` (`기록`) control.
+- Study-only details are collapsed behind `Options` (`옵션`).
 
 ### Translation Review
 
