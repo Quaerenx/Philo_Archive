@@ -204,7 +204,7 @@ def check_route_markup(route: str, html: str) -> None:
             "노트",
             "학습",
             "번역",
-            "app.js?v=home13",
+            "app.js?v=home14",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
     if route == "/study":
@@ -556,6 +556,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       const browseTools = document.querySelector('.category-browse-tools');
       const primary = document.querySelector('.reading-path-link.primary');
       const firstWork = document.querySelector('.work-link');
+      const visibleInventoryMeta = Array.from(document.querySelectorAll('.section-meta, .work-meta'))
+        .map((node) => node.textContent.trim())
+        .filter((text) => /\d[\d,]*\s+(verses?|segments?|files?|works?|tokens?|chapters?)\b/i.test(text));
       return {
         hasCategoryFilter: Boolean(document.querySelector('#categoryFilter')),
         browseToolsOpen: Boolean(browseTools?.open),
@@ -564,7 +567,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         primaryReadLabel: primary?.getAttribute('aria-label') || '',
         primaryReadLinkHeight: primary?.getBoundingClientRect().height || 0,
         firstWorkLinkText: firstWork?.textContent.trim() || '',
-        firstWorkLinkHeight: firstWork?.getBoundingClientRect().height || 0
+        firstWorkLinkHeight: firstWork?.getBoundingClientRect().height || 0,
+        visibleInventoryMeta
       };
     });
     if (initialCategoryToolsState.hasCategoryFilter && (initialCategoryToolsState.browseToolsOpen || initialCategoryToolsState.browseToolsSummary !== '작품 찾기')) {
@@ -579,6 +583,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (Number(widthText) <= 420 && initialCategoryToolsState.firstWorkLinkText && initialCategoryToolsState.firstWorkLinkHeight < 34) {
       throw new Error(`mobile category work links should remain touch-friendly without becoming card-heavy: ${JSON.stringify(initialCategoryToolsState)}`);
+    }
+    if (initialCategoryToolsState.visibleInventoryMeta.length > 0) {
+      throw new Error(`category page should hide inventory-style counts from the reading list: ${JSON.stringify(initialCategoryToolsState)}`);
     }
     const hasCategoryFilter = initialCategoryToolsState.hasCategoryFilter;
     if (hasCategoryFilter) {

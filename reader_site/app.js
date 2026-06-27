@@ -186,6 +186,14 @@ function categorySubtitle(corpus) {
   return CATEGORY_SUBTITLES[corpus.id] || corpus.subtitle || corpus.id;
 }
 
+function archiveDisplayMeta(value) {
+  const text = cleanText(value);
+  if (!text) return "";
+  const parts = text.split(/\s*·\s*/).map(cleanText).filter(Boolean);
+  const useful = parts.filter((part) => !/^\d[\d,]*\s+(verses?|segments?|files?|works?|tokens?|chapters?)$/i.test(part));
+  return useful.join(" · ");
+}
+
 function renderShell(title, subtitle) {
   el.pageTitle.textContent = title;
   el.pageSubtitle.textContent = subtitle;
@@ -255,10 +263,12 @@ function renderCategory(categoryId) {
     categoryControls(corpus, baseSections),
     sections
       .map((section) => {
-        const sectionMeta = section.meta ? `<div class="section-meta">${escapeHtml(section.meta)}</div>` : "";
+        const sectionMetaText = archiveDisplayMeta(section.meta);
+        const sectionMeta = sectionMetaText ? `<div class="section-meta">${escapeHtml(sectionMetaText)}</div>` : "";
         const links = section.links
           .map((link) => {
-            const meta = link.meta ? `<span class="work-meta">${escapeHtml(link.meta)}</span>` : "";
+            const metaText = archiveDisplayMeta(link.meta);
+            const meta = metaText ? `<span class="work-meta">${escapeHtml(metaText)}</span>` : "";
             return `<a class="work-link" href="${escapeHtml(link.href)}"><span class="work-title">${escapeHtml(link.label)}</span>${meta}</a>`;
           })
           .join("");
