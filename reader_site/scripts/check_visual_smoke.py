@@ -311,7 +311,7 @@ def check_route_markup(route: str, html: str) -> None:
             "Nothing saved yet</div>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common110",
+            "reader-work.css?v=common111",
             "reader-work.js?v=common147",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
@@ -635,6 +635,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       const readingActions = Array.from(document.querySelectorAll('.translation-reading-actions > *'))
         .filter((node) => window.getComputedStyle(node).display !== 'none')
         .map((node) => node.textContent.trim());
+      const readingNextBox = readingNext?.getBoundingClientRect();
+      const readingNoteBox = readingNote?.getBoundingClientRect();
+      const readingSaveBox = readingSave?.getBoundingClientRect();
       const visibleExtras = Array.from(document.querySelectorAll('#translationOutput .translation-extra'))
         .filter((node) => window.getComputedStyle(node).display !== 'none');
       const sectionOrder = Array.from(document.querySelectorAll('#translationOutput .translation-result > [data-translation-section]'))
@@ -651,6 +654,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         readingNextText: readingNext ? readingNext.textContent.trim() : '',
         readingNextLabel: readingNext ? readingNext.getAttribute('aria-label') || '' : '',
         readingNextBorderColor: readingNext ? window.getComputedStyle(readingNext).borderColor : '',
+        readingNextWidth: readingNextBox?.width || 0,
+        readingNoteWidth: readingNoteBox?.width || 0,
+        readingSaveWidth: readingSaveBox?.width || 0,
         translationHeadingWidth: translationHeadingBox?.width || 0,
         translationHeadingHeight: translationHeadingBox?.height || 0,
         commentaryHeadingWidth: commentaryHeadingBox?.width || 0,
@@ -681,6 +687,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (state.readingNextBorderColor !== 'rgb(176, 0, 0)') {
       throw new Error(`reading mode next action should be visually primary: ${JSON.stringify(state)}`);
+    }
+    if (state.readingNextWidth <= state.readingNoteWidth || state.readingNextWidth <= state.readingSaveWidth) {
+      throw new Error(`reading mode should give Next sentence the widest action row: ${JSON.stringify(state)}`);
     }
     if (state.translationHeadingWidth > 2 || state.translationHeadingHeight > 2) {
       throw new Error(`reading mode should hide the redundant Translation heading: ${JSON.stringify(state)}`);
