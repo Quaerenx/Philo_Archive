@@ -1545,7 +1545,7 @@ function renderTranslationEmptyState() {
     <div class="translation-result translation-empty-state" role="note">
       <section class="translation-section translation-section-primary" data-translation-section="translation">
         <h3>번역</h3>
-        <p class="translation-primary translation-empty-copy">원문 문장을 클릭하세요.</p>
+        <p class="translation-primary translation-empty-copy">문장을 누르면 번역됩니다.</p>
       </section>
     </div>`;
 }

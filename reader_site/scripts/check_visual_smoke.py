@@ -341,7 +341,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common124",
-            "reader-work.js?v=common168",
+            "reader-work.js?v=common169",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         require("Contents (" not in html, f"{route} should not expose TOC inventory counts")
@@ -692,7 +692,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
           utilityDisplay: utilityStyle?.display || ''
         };
       });
-      if (emptyTranslationState.outputHidden || emptyTranslationState.emptyCopy !== '원문 문장을 클릭하세요.') {
+      if (emptyTranslationState.outputHidden || emptyTranslationState.emptyCopy !== '문장을 누르면 번역됩니다.') {
         throw new Error(`empty translation panel should explain the direct click workflow: ${JSON.stringify(emptyTranslationState)}`);
       }
       if (!emptyTranslationState.utilityHidden || emptyTranslationState.utilityDisplay !== 'none') {

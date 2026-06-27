@@ -1373,7 +1373,7 @@ def check_work_source_bundle_ui() -> None:
         "renderTranslationEmptyState",
         "translation-empty-state",
         "translation-empty-copy",
-        "원문 문장을 클릭하세요.",
+        "문장을 누르면 번역됩니다.",
         "setTranslationUtilityVisible(false)",
         "setTranslationUtilityVisible(true)",
         "syncTranslationModeDensity",
@@ -1684,7 +1684,7 @@ def check_work_source_bundle_ui() -> None:
         "요청 취소",
     ]:
         require(noisy_marker not in pending_body, f"renderTranslationPending should keep loading state quiet without {noisy_marker!r}")
-    require_contains(template, "/assets/reader-work.js?v=common168", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common169", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common124", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
