@@ -252,7 +252,7 @@ def check_route_markup(route: str, html: str) -> None:
             "aria-busy=\"false\"",
             "notes.css?v=notes23",
             "translations.css?v=trans31",
-            "translations.js?v=trans73",
+            "translations.js?v=trans74",
             'href="/translations" aria-current="page">번역</a>',
             "번역 찾기",
             "translationsListTools",
@@ -1592,6 +1592,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         const cardStyle = card ? window.getComputedStyle(card) : null;
         const reject = card?.querySelector('.translation-more-actions');
         const rejectSummary = reject?.querySelector('summary');
+        const rejectButton = reject?.querySelector('button[data-review-state="rejected"]');
         const rejectSummaryStyle = rejectSummary ? window.getComputedStyle(rejectSummary) : null;
         const save = card?.querySelector('.primary-review-action');
         const saveBox = save?.getBoundingClientRect();
@@ -1607,10 +1608,13 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         return {
           hasReviewTarget: Boolean(card),
           rejectText: reject?.textContent.trim() || '',
+          rejectButtonText: rejectButton?.textContent.trim() || '',
+          rejectButtonLabel: rejectButton?.getAttribute('aria-label') || '',
           rejectDisplay: reject ? window.getComputedStyle(reject).display : '',
           rejectSummaryBorderColor: rejectSummaryStyle?.borderColor || '',
           rejectSummaryBackground: rejectSummaryStyle?.backgroundColor || '',
           saveText: save?.textContent.trim() || '',
+          saveLabel: save?.getAttribute('aria-label') || '',
           saveBorderColor: save ? window.getComputedStyle(save).borderColor : '',
           saveWidth: saveBox?.width || 0,
           saveHeight: saveBox?.height || 0,
@@ -1639,8 +1643,11 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (reviewTargetState.rejectSummaryBorderColor !== 'rgba(0, 0, 0, 0)' || reviewTargetState.rejectSummaryBackground !== 'rgba(0, 0, 0, 0)') {
         throw new Error(`review queue discard action should stay visually secondary: ${JSON.stringify(reviewTargetState)}`);
       }
-      if (reviewTargetState.saveText !== '저장' || reviewTargetState.saveBorderColor !== 'rgb(176, 0, 0)') {
+      if (reviewTargetState.saveText !== '저장 완료' || reviewTargetState.saveLabel !== '저장한 번역으로 표시' || reviewTargetState.saveBorderColor !== 'rgb(176, 0, 0)') {
         throw new Error(`review queue save should use the same red primary action style: ${JSON.stringify(reviewTargetState)}`);
+      }
+      if (reviewTargetState.rejectButtonText !== '제외하기' || reviewTargetState.rejectButtonLabel !== '이 번역 제외하기') {
+        throw new Error(`review queue discard confirmation should name the result of the action: ${JSON.stringify(reviewTargetState)}`);
       }
       if (!reviewTargetState.isDesktopLayout) {
         if (reviewTargetState.reviewFooterDisplay !== 'block') {

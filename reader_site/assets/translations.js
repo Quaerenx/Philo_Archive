@@ -533,15 +533,15 @@ function renderRecord(record, options) {
   const rejectAction = reviewState !== "rejected"
     ? `<details class="translation-more-actions">
         <summary>제외</summary>
-        <button type="button" data-review-state="rejected" aria-keyshortcuts="X" title="제외 확인">확인</button>
+        <button type="button" data-review-state="rejected" aria-keyshortcuts="X" title="이 번역 제외하기" aria-label="이 번역 제외하기">제외하기</button>
       </details>`
     : "";
   const actions = showReviewActions ? [
     reviewState !== "reviewed"
-      ? '<button type="button" class="primary-review-action" data-review-state="reviewed" aria-keyshortcuts="R" title="번역 저장">저장</button>'
+      ? '<button type="button" class="primary-review-action" data-review-state="reviewed" aria-keyshortcuts="R" title="저장한 번역으로 표시" aria-label="저장한 번역으로 표시">저장 완료</button>'
       : "",
     reviewState !== "generated"
-      ? '<button type="button" data-review-state="generated" aria-keyshortcuts="G" title="검토 대상으로 되돌리기">다시 검토</button>'
+      ? '<button type="button" data-review-state="generated" aria-keyshortcuts="G" title="검토할 번역으로 되돌리기" aria-label="검토할 번역으로 되돌리기">검토로 되돌리기</button>'
       : "",
     rejectAction
   ].filter(Boolean).join("") : "";
@@ -733,9 +733,9 @@ async function updateRecordReview(recordId, corpusId, reviewState) {
 }
 
 function reviewActionMessage(reviewState) {
-  if (reviewState === "reviewed") return "저장했습니다.";
-  if (reviewState === "rejected") return "제외했습니다.";
-  if (reviewState === "generated") return "다시 검토할 목록으로 옮겼습니다.";
+  if (reviewState === "reviewed") return "저장한 번역으로 표시했습니다.";
+  if (reviewState === "rejected") return "제외한 번역으로 옮겼습니다.";
+  if (reviewState === "generated") return "검토할 번역으로 되돌렸습니다.";
   return "반영했습니다.";
 }
 
@@ -882,7 +882,7 @@ resultsEl.addEventListener("click", async (event) => {
       pendingReviewQueueFocus = reviewSelect.value === "generated" && nextState !== "generated";
       pendingReviewQueueMessage = pendingReviewQueueFocus ? actionMessage : "";
     }
-    statusEl.textContent = ok ? actionMessage : "저장하지 못했습니다.";
+    statusEl.textContent = ok ? actionMessage : "변경하지 못했습니다.";
     await loadRecords();
   } finally {
     setActionButtonBusy(reviewButton, false);
