@@ -227,7 +227,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translationsReviewQueue",
             "aria-busy=\"false\"",
             "notes.css?v=notes21",
-            "translations.css?v=trans26",
+            "translations.css?v=trans27",
             "translations.js?v=trans63",
             'href="/translations" aria-current="page">Translations</a>',
             "Find record",
@@ -1039,6 +1039,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         const cardStyle = card ? window.getComputedStyle(card) : null;
         const reject = card?.querySelector('.translation-more-actions');
         const save = card?.querySelector('.primary-review-action');
+        const footer = card?.querySelector('.translation-record-footer');
+        const footerStyle = footer ? window.getComputedStyle(footer) : null;
         const nonTargetFooter = Array.from(document.querySelectorAll('#translationsResults .translation-record-card[data-review-state="generated"]:not(.is-review-target) .translation-record-footer'))
           .find((node) => node.querySelector('.primary-review-action'));
         const source = card?.querySelector('.translation-source');
@@ -1050,7 +1052,10 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
           rejectDisplay: reject ? window.getComputedStyle(reject).display : '',
           saveText: save?.textContent.trim() || '',
           saveBorderColor: save ? window.getComputedStyle(save).borderColor : '',
+          reviewFooterPosition: footerStyle?.position || '',
+          reviewFooterBottom: footerStyle?.bottom || '',
           nonTargetFooterDisplay: nonTargetFooter ? window.getComputedStyle(nonTargetFooter).display : '',
+          isDesktopLayout: window.innerWidth > 860,
           sourceOpen: Boolean(source?.open),
           sourceText: source?.textContent.trim() || '',
           reviewTargetBackground: cardStyle?.backgroundColor || '',
@@ -1067,6 +1072,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       if (reviewTargetState.saveText !== 'Save' || reviewTargetState.saveBorderColor !== 'rgb(176, 0, 0)') {
         throw new Error(`review queue Save should use the same red primary action style: ${JSON.stringify(reviewTargetState)}`);
+      }
+      if (reviewTargetState.isDesktopLayout && (reviewTargetState.reviewFooterPosition !== 'sticky' || reviewTargetState.reviewFooterBottom !== '8px')) {
+        throw new Error(`review queue should keep active review actions reachable on desktop: ${JSON.stringify(reviewTargetState)}`);
       }
       if (reviewTargetState.nonTargetFooterDisplay && reviewTargetState.nonTargetFooterDisplay !== 'none') {
         throw new Error(`review queue should keep inactive review actions visually quiet on desktop: ${JSON.stringify(reviewTargetState)}`);

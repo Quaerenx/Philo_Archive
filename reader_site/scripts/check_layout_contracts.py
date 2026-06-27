@@ -507,7 +507,7 @@ def check_translations_ui() -> None:
     css = read_site_file("assets/translations.css")
     for needle in [
         "/assets/notes.css?v=notes21",
-        "/assets/translations.css?v=trans26",
+        "/assets/translations.css?v=trans27",
         "/assets/translations.js?v=trans63",
         'href="/translations" aria-current="page">Translations</a>',
         "Find record",
@@ -731,6 +731,10 @@ def check_translations_ui() -> None:
         ".translation-record-card:focus-within .translation-more-actions",
         ".translation-record-card.is-review-target .translation-more-actions",
         '.translation-record-card[data-review-state="generated"]:not(.is-review-target):not(:hover):not(:focus):not(:focus-within) .translation-record-footer',
+        "@media (min-width: 861px)",
+        ".translation-record-card.is-review-target .translation-record-footer",
+        "position: sticky",
+        "bottom: 8px",
         ".translation-actions .primary-review-action:not(:disabled)",
         ".translation-actions .primary-review-action:not(:disabled):hover",
         ".translation-actions button.is-working",

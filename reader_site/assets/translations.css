@@ -455,6 +455,15 @@
   }
 }
 
+@media (min-width: 861px) {
+  .translation-record-card.is-review-target .translation-record-footer {
+    position: sticky;
+    bottom: 8px;
+    z-index: 1;
+    background: #fff;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .translation-record-card.is-recent,
   .translation-actions button.is-working::after {
