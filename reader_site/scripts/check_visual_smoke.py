@@ -313,7 +313,7 @@ def check_route_markup(route: str, html: str) -> None:
             "Contents</summary>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common114",
+            "reader-work.css?v=common115",
             "reader-work.js?v=common151",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
@@ -756,6 +756,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       const translationHeadingBox = translationHeading?.getBoundingClientRect();
       const commentaryHeading = document.querySelector('#translationOutput .translation-commentary h3');
       const commentaryHeadingBox = commentaryHeading?.getBoundingClientRect();
+      const commentaryBody = document.querySelector('#translationOutput .translation-commentary p');
+      const commentaryBodyStyle = commentaryBody ? window.getComputedStyle(commentaryBody) : null;
       const readingActions = Array.from(document.querySelectorAll('.translation-reading-actions > *'))
         .filter((node) => window.getComputedStyle(node).display !== 'none')
         .map((node) => node.textContent.trim());
@@ -791,6 +793,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         translationHeadingHeight: translationHeadingBox?.height || 0,
         commentaryHeadingWidth: commentaryHeadingBox?.width || 0,
         commentaryHeadingHeight: commentaryHeadingBox?.height || 0,
+        commentaryLineHeight: commentaryBodyStyle?.lineHeight || '',
         readingSaveLabel: readingSave ? readingSave.getAttribute('aria-label') || '' : '',
         readingNoteLabel: readingNote ? readingNote.getAttribute('aria-label') || '' : '',
         readingActions,
@@ -829,6 +832,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (state.commentaryHeadingWidth <= 2 || state.commentaryHeadingHeight <= 2) {
       throw new Error(`reading mode should keep the Commentary heading visible: ${JSON.stringify(state)}`);
+    }
+    if (state.commentaryLineHeight && parseFloat(state.commentaryLineHeight) > 24) {
+      throw new Error(`reading mode commentary should stay compact enough for the study panel: ${JSON.stringify(state)}`);
     }
     if (state.sectionOrder[0] !== 'translation' || state.sectionOrder[1] !== 'commentary') {
       throw new Error(`reading mode should keep Translation and Commentary as the first visible result sections: ${JSON.stringify(state)}`);
