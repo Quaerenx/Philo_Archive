@@ -1313,6 +1313,7 @@ def check_work_source_bundle_ui() -> None:
         "translation-target-excerpt",
         "data-selected-source-jump",
         'aria-keyshortcuts="S"',
+        "원문 보기",
         "화면 안",
         "화면 밖",
         "원문이 화면 밖에 있음",
@@ -1419,6 +1420,7 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
+    require(("Show " + "source") not in script, "assets/reader-work.js should keep source-jump UI in reader language")
 
     static_pages = read_site_file("rendering/static_pages.py")
     for needle in [

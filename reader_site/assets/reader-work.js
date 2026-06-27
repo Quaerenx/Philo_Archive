@@ -917,7 +917,7 @@ function renderTranslationTarget() {
       <span class="translation-target-status" data-selected-source-status></span>
       <p class="translation-target-excerpt" title="${escapeHtml(sourceText)}">${escapeHtml(sourceText)}</p>
     </div>
-    <button type="button" data-selected-source-jump aria-keyshortcuts="S">Show source</button>`;
+    <button type="button" data-selected-source-jump aria-keyshortcuts="S">원문 보기</button>`;
   updateTranslationTargetViewState();
 }
 
