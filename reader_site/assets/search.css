@@ -671,6 +671,10 @@ mark {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .search-start-links a {
+    min-height: 42px;
+  }
+
   .form-actions button {
     min-height: 32px;
   }

@@ -246,7 +246,7 @@ def check_route_markup(route: str, html: str) -> None:
             "searchActiveFilters",
             "searchStatus",
             "aria-busy=\"false\"",
-            "search.css?v=phase21",
+            "search.css?v=phase22",
             "search.js?v=phase31",
             'href="/search" aria-current="page">Search</a>',
             "Translations",
@@ -512,6 +512,30 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (searchPageState.hasResults && searchPageState.groupCountText) {
       throw new Error(`search result group headers should not repeat count summaries: ${JSON.stringify(searchPageState)}`);
+    }
+  }
+  if (parsed.pathname === '/search' && !parsed.search) {
+    await page.waitForSelector('#results .search-start', { timeout: 5000 }).catch(() => {});
+    const searchStartState = await page.evaluate(() => {
+      const links = Array.from(document.querySelectorAll('#results .search-start-links a'));
+      const grid = document.querySelector('#results .search-start-links');
+      const gridStyle = grid ? window.getComputedStyle(grid) : null;
+      const firstLinkBox = links[0]?.getBoundingClientRect();
+      return {
+        linkText: links.map((node) => node.textContent.trim()).join(' / '),
+        linkCount: links.length,
+        gridColumns: (gridStyle?.gridTemplateColumns || '').trim().split(/\s+/).filter(Boolean).length,
+        firstLinkHeight: firstLinkBox?.height || 0
+      };
+    });
+    if (searchStartState.linkCount !== 4) {
+      throw new Error(`search start should expose the four root categories: ${JSON.stringify(searchStartState)}`);
+    }
+    if (Number(widthText) <= 420 && searchStartState.gridColumns !== 2) {
+      throw new Error(`mobile search start should use a two-column browse grid: ${JSON.stringify(searchStartState)}`);
+    }
+    if (Number(widthText) <= 420 && searchStartState.firstLinkHeight < 40) {
+      throw new Error(`mobile search start category links should be easy to tap: ${JSON.stringify(searchStartState)}`);
     }
   }
   if (parsed.pathname === '/notes' && !parsed.search) {

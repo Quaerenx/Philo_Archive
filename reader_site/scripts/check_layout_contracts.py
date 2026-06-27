@@ -227,7 +227,7 @@ def check_search_ui() -> None:
     script = read_site_file("assets/search.js")
     css = read_site_file("assets/search.css")
     for needle in [
-        "/assets/search.css?v=phase21",
+        "/assets/search.css?v=phase22",
         "/assets/search.js?v=phase31",
         'href="/search" aria-current="page">Search</a>',
         'href="/translations"',
@@ -339,6 +339,7 @@ def check_search_ui() -> None:
         ".empty-state",
         ".search-start",
         ".search-start-links",
+        "min-height: 42px",
         ".empty-actions",
         ".empty-actions a",
         ".search-skeleton-line",
