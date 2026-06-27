@@ -214,6 +214,7 @@ def check_route_markup(route: str, html: str) -> None:
             'href="/notes" aria-current="page">Notes</a>',
             "filter-panel",
             "export-tools",
+            "Downloads</summary>",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
     if route.startswith("/translations"):
