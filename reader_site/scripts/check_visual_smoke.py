@@ -337,7 +337,7 @@ def check_route_markup(route: str, html: str) -> None:
             "목차</summary>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common117",
+            "reader-work.css?v=common118",
             "reader-work.js?v=common161",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
@@ -963,11 +963,18 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         .filter((node) => window.getComputedStyle(node).display !== 'none')
         .map((node) => node.dataset.translationSection || '');
       const studyPageBox = studyPage?.getBoundingClientRect();
+      const selectedSentenceNode = document.querySelector('.reader-sentence.selected');
+      const quietMarkedSentence = Array.from(document.querySelectorAll('.reader-sentence.has-translation-state'))
+        .find((node) => node !== selectedSentenceNode) || null;
+      const quietMarkerStyle = quietMarkedSentence ? window.getComputedStyle(quietMarkedSentence, '::after') : null;
+      const selectedMarkerStyle = selectedSentenceNode?.classList.contains('has-translation-state')
+        ? window.getComputedStyle(selectedSentenceNode, '::after')
+        : null;
       return {
         isMobile: window.innerWidth <= 860,
         viewportHeight: window.innerHeight,
         studyPageHeight: studyPageBox?.height || 0,
-        selectedSentence: Boolean(document.querySelector('.reader-sentence.selected')),
+        selectedSentence: Boolean(selectedSentenceNode),
         outputVisible: Boolean(output && !output.hidden),
         readingMode: Boolean(output && output.classList.contains('reading-mode')),
         cardReadingMode: Boolean(card && card.classList.contains('reading-mode')),
@@ -1004,7 +1011,12 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         studyPanelToggleSummary: studyPanelToggle?.querySelector('.study-panel-toggle-summary')?.textContent.trim() || '',
         studyPanelToggleLabel: studyPanelToggle?.getAttribute('aria-label') || '',
         studyPanelToggleHeight: studyPanelToggleBox?.height || 0,
-        studyPanelToggleDisplay: studyPanelToggleStyle?.display || ''
+        studyPanelToggleDisplay: studyPanelToggleStyle?.display || '',
+        markerSampleFound: Boolean(quietMarkedSentence),
+        quietMarkerOpacity: quietMarkerStyle?.opacity || '',
+        selectedMarkerFound: Boolean(selectedMarkerStyle),
+        selectedMarkerOpacity: selectedMarkerStyle?.opacity || '',
+        selectedMarkerWidth: selectedMarkerStyle?.width || ''
       };
     });
     if (!state.selectedSentence) throw new Error(`selected work route did not select a sentence: ${JSON.stringify(state)}`);
@@ -1025,6 +1037,12 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (state.readingNextWidth <= 0 || state.readingNoteVisible || state.readingSaveVisible) {
       throw new Error(`reading mode should keep only Next sentence as the immediate visible action: ${JSON.stringify(state)}`);
+    }
+    if (state.markerSampleFound && Number.parseFloat(state.quietMarkerOpacity || '1') > 0.6) {
+      throw new Error(`translation state markers should stay quiet in the source text: ${JSON.stringify(state)}`);
+    }
+    if (state.selectedMarkerFound && Number.parseFloat(state.selectedMarkerOpacity || '0') < 0.75) {
+      throw new Error(`selected translation state marker should remain legible: ${JSON.stringify(state)}`);
     }
     if (!state.isMobile && (state.readingActionsPosition !== 'sticky' || state.readingActionsBottom !== '8px')) {
       throw new Error(`desktop reading mode should keep study actions reachable during long commentary: ${JSON.stringify(state)}`);
