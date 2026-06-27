@@ -1214,6 +1214,8 @@ def check_work_source_bundle_ui() -> None:
         "translation-target-excerpt",
         "data-selected-source-jump",
         'aria-keyshortcuts="S"',
+        "In view",
+        "Off screen",
         "Source off screen",
         "NOTE_DRAFT_STORAGE_KEY",
         "noteDraftPayload",
@@ -1357,7 +1359,7 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common144", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common145", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common110", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',

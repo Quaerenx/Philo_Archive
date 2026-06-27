@@ -867,7 +867,8 @@ function updateTranslationTargetViewState() {
   const status = translationTarget.querySelector("[data-selected-source-status]");
   if (status) {
     status.dataset.sourceState = sourceState;
-    status.textContent = sourceVisible ? "Source in view" : "Source off screen";
+    status.textContent = sourceVisible ? "In view" : "Off screen";
+    status.setAttribute("aria-label", sourceVisible ? "Source in view" : "Source off screen");
   }
   const jumpButton = translationTarget.querySelector("[data-selected-source-jump]");
   if (jumpButton) {
