@@ -293,11 +293,11 @@ def check_route_markup(route: str, html: str) -> None:
             "noteSort",
             "gemmaRuntimeStatus",
             "Translator status",
-            "Click a sentence to begin.",
+            "Select a sentence.",
             "translationRecordsSummary",
-            "No translations yet</div>",
+            "No saved translations</div>",
             "studyProgress",
-            "Loading progress",
+            "Checking progress",
             "Continue study",
             "translation-export-tools",
             "Export study material as Markdown",
@@ -312,7 +312,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common111",
-            "reader-work.js?v=common148",
+            "reader-work.js?v=common149",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
 
@@ -752,7 +752,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (utilityState.labels.some((label) => label.width > 2 || label.height > 2)) {
       throw new Error(`study tools utility labels should stay visually quiet: ${JSON.stringify(utilityState)}`);
     }
-    if (utilityState.manageSummary !== 'Actions') {
+    if (utilityState.manageSummary !== 'Study tools') {
       throw new Error(`study action tools should have a concise summary: ${JSON.stringify(utilityState)}`);
     }
     const hiddenDuplicates = utilityState.reviewActions

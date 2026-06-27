@@ -415,7 +415,7 @@ function setTranslationRecordsSummary(text, state = "empty", counts = null) {
     : "";
   const detailLabel = [
     text,
-    total ? `${total.toLocaleString()} translations` : "No translations yet",
+    total ? `${total.toLocaleString()} translations` : "No saved translations",
     sentenceCount ? `${sentenceCount.toLocaleString()} sentences studied` : "",
     generated ? `${generated.toLocaleString()} to check` : "",
     reviewed ? `${reviewed.toLocaleString()} saved` : "",
@@ -444,7 +444,7 @@ function updateTranslationExportLinks(total, reviewed) {
     exportAllTranslations.classList.toggle("is-empty", total === 0);
     exportAllTranslations.title = total
       ? `Download ${total} translations`
-      : "No translations yet";
+      : "No saved translations yet";
   }
 }
 
@@ -476,7 +476,7 @@ function translationStateCountsFromSentences() {
 function updateStudyProgress() {
   if (!studyProgress) return;
   if (!translationSentenceStatesLoaded) {
-    setStudyProgress("Loading progress", "loading", "Loading study progress.");
+    setStudyProgress("Checking progress", "loading", "Checking study progress.");
     if (continueStudyButton) {
       continueStudyButton.textContent = "Continue study";
       continueStudyButton.disabled = true;
@@ -889,7 +889,7 @@ function updateTranslationTargetViewState() {
 function renderTranslationTarget() {
   if (!translationTarget) return;
   if (!selectedSentence) {
-    translationTarget.textContent = "Click a sentence to begin.";
+    translationTarget.textContent = "Select a sentence.";
     translationTarget.classList.remove("is-source-visible", "is-source-away");
     delete translationTarget.dataset.sourceState;
     return;

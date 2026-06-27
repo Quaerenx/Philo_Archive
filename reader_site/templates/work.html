@@ -67,7 +67,7 @@
                       <span id="gemmaRuntimeStatusText" class="runtime-status-text" role="status" aria-live="polite" aria-atomic="true">Checking translator</span>
                       <button type="button" id="gemmaRuntimeCheck" title="Check translator">Check</button>
                     </div>
-                    <div id="translationTarget" class="translation-target">Click a sentence to begin.</div>
+                    <div id="translationTarget" class="translation-target">Select a sentence.</div>
                     <div id="readingPosition" class="reading-position" aria-label="Current reading position" hidden></div>
                     <details class="sentence-context-tools" aria-label="Around this sentence" hidden>
                       <summary>Context</summary>
@@ -90,11 +90,11 @@
                     <div class="translation-utility-group-label visually-hidden">Study</div>
                     <div id="translationStatus" class="translation-status" role="status" aria-live="polite" aria-atomic="true"></div>
                     <div id="studyProgress" class="study-progress" data-progress-state="loading" role="status" aria-live="polite" aria-atomic="true">
-                      <span id="studyProgressText">Loading progress</span>
+                      <span id="studyProgressText">Checking progress</span>
                       <button type="button" id="continueStudy" title="Continue with the next sentence without a translation" disabled>Continue study</button>
                     </div>
                     <details class="translation-review-tools">
-                      <summary>Actions</summary>
+                      <summary>Study tools</summary>
                       <div class="translation-review-tools-body">
                         <div class="translation-review-actions" aria-label="Study actions">
                           <button type="button" id="markTranslationReviewed" class="translation-review-duplicate-action" title="Save translation" aria-label="Save translation" disabled>Save</button>
@@ -102,7 +102,7 @@
                           <button type="button" id="copyStudyCard" title="Copy study note" aria-label="Copy study note" disabled>Copy study note</button>
                           <button type="button" id="draftTranslationNote" class="translation-review-duplicate-action" title="Add note from translation" aria-label="Add note from translation" disabled>Add note</button>
                         </div>
-                        <div id="translationRecordsSummary" class="translation-records-summary" role="status" aria-live="polite" aria-atomic="true">No translations yet</div>
+                        <div id="translationRecordsSummary" class="translation-records-summary" role="status" aria-live="polite" aria-atomic="true">No saved translations</div>
                         <details class="translation-export-tools" aria-label="Export study material as Markdown">
                           <summary>Export</summary>
                           <div class="translation-export-links" aria-label="Markdown export links">
@@ -175,6 +175,6 @@
     </main>
   </div>
   <script id="researchData" type="application/json">{{RESEARCH_JSON}}</script>
-  <script src="/assets/reader-work.js?v=common148"></script>
+  <script src="/assets/reader-work.js?v=common149"></script>
 </body>
 </html>

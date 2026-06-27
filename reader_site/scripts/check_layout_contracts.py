@@ -968,7 +968,7 @@ def check_work_source_bundle_ui() -> None:
         "studyProgressText",
         "function setStudyProgress",
         "function updateStudyProgress",
-        "Loading progress",
+        "Checking progress",
         "Continue where you left off",
         "Start with the first sentence",
         "Check translations",
@@ -1202,7 +1202,7 @@ def check_work_source_bundle_ui() -> None:
         "data-reading-cue-select",
         "readingPosition.addEventListener",
         "function renderTranslationTarget",
-        "Click a sentence to begin.",
+        "Select a sentence.",
         "function selectedSentenceIsVisible",
         "function updateTranslationTargetViewState",
         "translationTarget.dataset.sourceState",
@@ -1359,7 +1359,7 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common148", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common149", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common111", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
@@ -1384,14 +1384,14 @@ def check_work_source_bundle_ui() -> None:
         "gemmaRuntimeCheck",
         "Translator status",
         ">Checking translator</span>",
-        "Click a sentence to begin.",
+        "Select a sentence.",
         "translationRecordsSummary",
         "studyProgress",
         "studyProgressText",
-        "Loading progress",
+        "Checking progress",
         "continueStudy",
         "Continue study",
-        "No translations yet</div>",
+        "No saved translations</div>",
         "translation-review-tools",
         "translation-review-tools-body",
         "translation-export-tools",
@@ -1467,7 +1467,7 @@ def check_work_source_bundle_ui() -> None:
         "Translation display mode",
         "Sentence controls",
         "Study flow",
-        "Actions</summary>",
+        "Study tools</summary>",
         "translation-review-duplicate-action",
         "<span>More</span>",
         "study-tabs",
