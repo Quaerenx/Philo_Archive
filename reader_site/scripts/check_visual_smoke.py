@@ -789,9 +789,14 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         formHidden: Boolean(document.querySelector('#notesForm')?.hidden),
         emptyTitle: empty?.querySelector('h2')?.textContent.trim() || '',
         emptyBodyCount: empty ? empty.querySelectorAll('p').length : 0,
-        emptyActions: Array.from(empty?.querySelectorAll('.empty-actions a') || []).map((node) => node.textContent.trim())
+        emptyActions: Array.from(empty?.querySelectorAll('.empty-actions a') || []).map((node) => node.textContent.trim()),
+        exportLabels: Array.from(document.querySelectorAll('#notesExportTools .export-row a:not([hidden])')).map((node) => node.textContent.trim()),
+        jsonlHidden: Boolean(document.querySelector('#exportJsonl')?.hidden)
       };
     });
+    if (notesPageState.exportLabels.join(' / ') !== '읽기용 / 데이터' || !notesPageState.jsonlHidden) {
+      throw new Error(`notes export controls should expose reader-purpose labels and hide JSONL by default: ${JSON.stringify(notesPageState)}`);
+    }
     if (!notesPageState.hasNotes) {
       if (!notesPageState.formHidden) throw new Error(`empty notes page should hide filter form: ${JSON.stringify(notesPageState)}`);
       if (notesPageState.emptyTitle !== '아직 노트가 없습니다.' || notesPageState.emptyBodyCount !== 0) {
@@ -888,9 +893,13 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
           headingText: document.querySelector('#translationsPageTitle')?.textContent.trim() || '',
           documentTitle: document.title,
           reviewQueueText: document.querySelector('#translationsReviewQueue')?.textContent.trim() || '',
-          reviewQueueLabel: document.querySelector('#translationsReviewQueue')?.getAttribute('aria-label') || ''
+          reviewQueueLabel: document.querySelector('#translationsReviewQueue')?.getAttribute('aria-label') || '',
+          exportLabels: Array.from(document.querySelectorAll('#translationsExportTools .export-row a')).map((node) => node.textContent.trim())
         };
     });
+    if (translationsPageState.exportLabels.join(' / ') !== '읽기용 / 데이터') {
+      throw new Error(`translations export controls should expose reader-purpose labels: ${JSON.stringify(translationsPageState)}`);
+    }
     if (!translationsPageState.hasRecords) {
       if (!translationsPageState.formHidden) throw new Error(`empty translations page should hide filter form: ${JSON.stringify(translationsPageState)}`);
       if (translationsPageState.emptyTitle !== '아직 번역이 없습니다.' || translationsPageState.emptyBodyCount !== 0) {

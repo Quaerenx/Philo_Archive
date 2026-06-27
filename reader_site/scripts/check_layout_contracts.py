@@ -399,6 +399,9 @@ def check_notes_ui() -> None:
         'id="notesExportTools"',
         "내보내기</summary>",
         'aria-label="노트 다운로드"',
+        'title="Markdown 다운로드">읽기용</a>',
+        'title="JSON 데이터 다운로드">데이터</a>',
+        'id="exportJsonl" href="/api/notes/export?format=jsonl" title="JSONL 데이터 다운로드" hidden tabindex="-1" aria-hidden="true"',
         'class="filter-panel"',
         'class="filter-panel-fields"',
         'class="export-tools"',
@@ -561,6 +564,8 @@ def check_translations_ui() -> None:
         'class="review-export-row"',
         'class="export-tools"',
         "내보내기</summary>",
+        'title="Markdown 다운로드">읽기용</a>',
+        'title="JSON 데이터 다운로드">데이터</a>',
         'role="status"',
         'aria-busy="false"',
     ]:
