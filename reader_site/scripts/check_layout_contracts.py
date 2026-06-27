@@ -94,7 +94,7 @@ def check_html_entrypoints() -> None:
         if relative_path == "index.html":
             require_contains(html, "번역", relative_path)
             require_contains(html, "/styles.css?v=home6", relative_path)
-            require_contains(html, "/app.js?v=home12", relative_path)
+            require_contains(html, "/app.js?v=home13", relative_path)
         if relative_path in {"templates/reading.html", "templates/source.html"}:
             require_contains(html, "/assets/static-reader.css?v=static2", relative_path)
             require_contains(html, "자료 위치</summary>", relative_path)
@@ -227,7 +227,7 @@ def check_home_script() -> None:
         "function hasCategoryFilters",
         "browseToolsOpen",
         "category-browse-tools",
-        "목록 좁히기",
+        "작품 찾기",
         'data-category-action="clear-filters"',
         "필터 지우기",
         "이어 읽기",

@@ -204,7 +204,7 @@ def check_route_markup(route: str, html: str) -> None:
             "노트",
             "학습",
             "번역",
-            "app.js?v=home12",
+            "app.js?v=home13",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
     if route == "/study":
@@ -564,7 +564,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         firstWorkLinkHeight: firstWork?.getBoundingClientRect().height || 0
       };
     });
-    if (initialCategoryToolsState.hasCategoryFilter && (initialCategoryToolsState.browseToolsOpen || initialCategoryToolsState.browseToolsSummary !== '목록 좁히기')) {
+    if (initialCategoryToolsState.hasCategoryFilter && (initialCategoryToolsState.browseToolsOpen || initialCategoryToolsState.browseToolsSummary !== '작품 찾기')) {
       throw new Error(`category page should keep browse filters collapsed behind a concise label: ${JSON.stringify(initialCategoryToolsState)}`);
     }
     const minimumPrimaryReadHeight = Number(widthText) <= 420 ? 40 : 34;
