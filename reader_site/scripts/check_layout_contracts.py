@@ -1095,7 +1095,7 @@ def check_work_source_bundle_ui() -> None:
         "renderTranslationEmptyState",
         "translation-empty-state",
         "translation-empty-copy",
-        "Click a sentence to read translation and commentary.",
+        "Select a sentence to study.",
         "syncTranslationModeDensity",
         "translationJumpNav",
         "translationResultToolbar",
@@ -1359,7 +1359,7 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common146", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common147", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common110", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',

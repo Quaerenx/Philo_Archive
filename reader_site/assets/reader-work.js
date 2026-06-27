@@ -1506,7 +1506,7 @@ function renderTranslationEmptyState() {
     <div class="translation-result translation-empty-state" role="note">
       <section class="translation-section translation-section-primary" data-translation-section="translation">
         <h3>Translation</h3>
-        <p class="translation-primary translation-empty-copy">Click a sentence to read translation and commentary.</p>
+        <p class="translation-primary translation-empty-copy">Select a sentence to study.</p>
       </section>
     </div>`;
 }

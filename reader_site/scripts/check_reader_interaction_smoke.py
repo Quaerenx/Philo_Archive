@@ -70,7 +70,7 @@ def check_selected_sentence_dom(html: str, viewport_label: str) -> None:
         f"{context} did not mark a source sentence selected",
     )
     require(
-        '<span class="translation-target-label">Selected source</span>' in html,
+        '<span class="translation-target-label">Source</span>' in html,
         f"{context} did not render human-readable source target label",
     )
     require(
@@ -86,7 +86,7 @@ def check_selected_sentence_dom(html: str, viewport_label: str) -> None:
     require("<h3>Commentary</h3>" in html, f"{context} missing commentary heading")
     require("translation-primary" in html, f"{context} missing readable translation body")
     require("translation-commentary" in html, f"{context} missing readable commentary body")
-    require("문장을 누르면 번역과 해설이 여기에 표시됩니다." not in html, f"{context} still shows empty translation state")
+    require("Select a sentence to study." not in html, f"{context} still shows empty translation state")
     for noisy_text in ("source_text_sha256", "sentence_text_sha256", "prompt_sha256", "Literal gloss", "Key terms", "Cached result", "New result"):
         require(noisy_text not in html, f"{context} exposes noisy translation metadata: {noisy_text}")
 
