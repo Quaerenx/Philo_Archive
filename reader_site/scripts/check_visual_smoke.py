@@ -271,7 +271,7 @@ def check_route_markup(route: str, html: str) -> None:
             "searchStatus",
             "aria-busy=\"false\"",
             "search.css?v=phase25",
-            "search.js?v=phase38",
+            "search.js?v=phase39",
             'href="/search" aria-current="page">검색</a>',
             "번역",
             "filter-panel",
@@ -755,6 +755,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     await page.waitForSelector('.result:not(.search-skeleton), .empty-state', { timeout: 5000 }).catch(() => {});
     const searchPageState = await page.evaluate(() => {
       const empty = document.querySelector('#results .empty-state');
+      const firstNoteSourceRead = document.querySelector('#results .note-result .result-action-read');
       return {
         statusText: document.querySelector('#searchStatus')?.textContent.trim() || '',
         hasResults: document.querySelectorAll('#results .result:not(.search-skeleton)').length > 0,
@@ -771,10 +772,15 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         resultMetaText: Array.from(document.querySelectorAll('#results .result-meta')).map((node) => node.textContent.trim()).join(' '),
         moreActionCount: document.querySelectorAll('#results .result-more-actions').length,
         inlineActionCount: document.querySelectorAll('#results .result-actions-inline').length,
-        primaryReadCount: document.querySelectorAll('#results .result-actions-inline .result-action-read').length,
+        workSegmentReadActionCount: document.querySelectorAll('#results .work-result .result-action-read, #results .segment-result .result-action-read').length,
+        readableTitleCount: document.querySelectorAll('#results .work-result .result-title > a[aria-label^="읽기:"], #results .segment-result .result-title > a[aria-label^="읽기:"]').length,
+        readableSnippetCount: document.querySelectorAll('#results .work-result .snippet-link[aria-label^="읽기:"], #results .segment-result .snippet-link[aria-label^="읽기:"]').length,
+        noteSourceReadCount: document.querySelectorAll('#results .note-result .result-action-read').length,
+        firstNoteSourceReadText: firstNoteSourceRead?.textContent.trim() || '',
+        firstNoteSourceReadLabel: firstNoteSourceRead?.getAttribute('aria-label') || '',
+        firstNoteSourceReadBorderColor: window.getComputedStyle(firstNoteSourceRead || document.body).borderColor,
         resultKindCount: document.querySelectorAll('#results .result-kind').length,
-        groupCountText: Array.from(document.querySelectorAll('#results .result-group-count')).map((node) => node.textContent.trim()).join(' '),
-        firstPrimaryReadBorderColor: window.getComputedStyle(document.querySelector('#results .result-action-read') || document.body).borderColor
+        groupCountText: Array.from(document.querySelectorAll('#results .result-group-count')).map((node) => node.textContent.trim()).join(' ')
       };
     });
     if (searchPageState.statusText) {
@@ -804,20 +810,26 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (searchPageState.hasResults && searchPageState.moreActionCount > 0) {
       throw new Error(`single search result actions should be visible without More: ${JSON.stringify(searchPageState)}`);
     }
-    if (searchPageState.hasResults && searchPageState.inlineActionCount === 0) {
-      throw new Error(`search result actions should expose direct Read links: ${JSON.stringify(searchPageState)}`);
+    if (searchPageState.hasResults && searchPageState.workSegmentReadActionCount > 0) {
+      throw new Error(`work and segment search cards should not repeat title-link navigation with footer Read actions: ${JSON.stringify(searchPageState)}`);
     }
-    if (searchPageState.hasResults && !/읽기/.test(searchPageState.actionText)) {
-      throw new Error(`search result actions should make the primary destination explicit: ${JSON.stringify(searchPageState)}`);
+    if (searchPageState.hasResults && searchPageState.readableTitleCount === 0 && searchPageState.noteSourceReadCount === 0) {
+      throw new Error(`search results should expose readable destinations through links or note source actions: ${JSON.stringify(searchPageState)}`);
     }
-    if (searchPageState.hasResults && searchPageState.primaryReadCount === 0) {
-      throw new Error(`search result actions should mark Read as the primary action: ${JSON.stringify(searchPageState)}`);
+    if (searchPageState.hasResults && searchPageState.readableTitleCount > 0 && searchPageState.readableSnippetCount === 0) {
+      throw new Error(`work and segment snippets should carry the same reading destination label as titles: ${JSON.stringify(searchPageState)}`);
     }
     if (searchPageState.hasResults && /노트/.test(searchPageState.actionText)) {
       throw new Error(`search result actions should keep repeated Notes links out of the result list: ${JSON.stringify(searchPageState)}`);
     }
-    if (searchPageState.hasResults && searchPageState.firstPrimaryReadBorderColor !== 'rgb(176, 0, 0)') {
-      throw new Error(`search result Read action should use the archive primary color: ${JSON.stringify(searchPageState)}`);
+    if (searchPageState.noteSourceReadCount > 0 && searchPageState.firstNoteSourceReadText !== '원문 읽기') {
+      throw new Error(`note search result source action should be labeled 원문 읽기: ${JSON.stringify(searchPageState)}`);
+    }
+    if (searchPageState.noteSourceReadCount > 0 && !searchPageState.firstNoteSourceReadLabel.startsWith('읽기:')) {
+      throw new Error(`note search result source action should expose its reading target accessibly: ${JSON.stringify(searchPageState)}`);
+    }
+    if (searchPageState.noteSourceReadCount > 0 && searchPageState.firstNoteSourceReadBorderColor !== 'rgb(176, 0, 0)') {
+      throw new Error(`note source Read action should use the archive primary color: ${JSON.stringify(searchPageState)}`);
     }
     if (searchPageState.hasResults && searchPageState.groupCountText) {
       throw new Error(`search result group headers should not repeat count summaries: ${JSON.stringify(searchPageState)}`);

@@ -54,9 +54,10 @@ function corpusLabel(value) {
 
 function reviewStateLabel(value) {
   const state = String(value || "").toLowerCase();
-  if (state === "reviewed") return "저장됨";
-  if (state === "rejected") return "제외됨";
-  if (state === "generated") return "검토 필요";
+  if (state === "reviewed") return "저장한 노트";
+  if (state === "raw") return "작성 중인 노트";
+  if (state === "rejected") return "제외한 번역";
+  if (state === "generated") return "검토할 번역";
   return state ? variantLabel(state) : "";
 }
 
@@ -198,13 +199,20 @@ function resultGroupHeader(label) {
   </div>`;
 }
 
-function resultSnippet(href, text, query) {
+function resultReadLabel(title) {
+  return `읽기: ${cleanText(title || "본문")}`;
+}
+
+function resultSnippet(href, text, query, linkLabel = "") {
   const content = highlight(text || "", query);
   const cleanHref = cleanText(href || "");
   if (!cleanHref) {
     return `<p class="snippet">${content}</p>`;
   }
-  return `<a class="snippet snippet-link" href="${escapeHtml(cleanHref)}">${content}</a>`;
+  const labelAttrs = linkLabel
+    ? ` aria-label="${escapeHtml(linkLabel)}" title="${escapeHtml(linkLabel)}"`
+    : "";
+  return `<a class="snippet snippet-link" href="${escapeHtml(cleanHref)}"${labelAttrs}>${content}</a>`;
 }
 
 function resultSummaryNav(groups) {
@@ -267,53 +275,58 @@ function renderResults(payload, query) {
   statusEl.textContent = "";
   const workMarkup = (payload.work_results || [])
     .map((result) => {
+      const title = result.title || result.work_id;
+      const readLabel = resultReadLabel(title);
       const meta = resultMeta([
         resultCorpusMeta(result.corpus_id),
         result.category_title || result.label
       ]);
       const variants = (result.variant_ids || []).slice(0, 8).map((variantId) => `<span class="tag">${escapeHtml(variantLabel(variantId))}</span>`).join("");
-      const actions = `<a class="result-action-read" href="${escapeHtml(result.url)}">읽기</a>`;
       return `<article class="result work-result">
         <div class="result-title">
-          <a href="${escapeHtml(result.url)}">${escapeHtml(result.title || result.work_id)}</a>
+          <a href="${escapeHtml(result.url)}" aria-label="${escapeHtml(readLabel)}" title="${escapeHtml(readLabel)}">${escapeHtml(title)}</a>
         </div>
-        ${resultSnippet(result.url, result.snippet || "", query)}
+        ${resultSnippet(result.url, result.snippet || "", query, readLabel)}
         ${variants ? `<div class="tag-row">${variants}</div>` : ""}
-        ${resultFooter(meta, actions)}
+        ${resultFooter(meta, "")}
       </article>`;
     })
     .join("");
   const segmentMarkup = segmentResults
     .map((result) => {
+      const title = result.title || result.work_id;
+      const readLabel = resultReadLabel(title);
       const meta = resultMeta([
         resultCorpusMeta(result.corpus_id),
         result.label,
         result.variant_id ? variantLabel(result.variant_id) : ""
       ]);
-      const actions = `<a class="result-action-read" href="${escapeHtml(result.url)}">읽기</a>`;
-      return `<article class="result">
+      return `<article class="result segment-result">
         <div class="result-title">
-          <a href="${escapeHtml(result.url)}">${escapeHtml(result.title || result.work_id)}</a>
+          <a href="${escapeHtml(result.url)}" aria-label="${escapeHtml(readLabel)}" title="${escapeHtml(readLabel)}">${escapeHtml(title)}</a>
         </div>
-        ${resultSnippet(result.url, result.snippet || "", query)}
-        ${resultFooter(meta, actions)}
+        ${resultSnippet(result.url, result.snippet || "", query, readLabel)}
+        ${resultFooter(meta, "")}
       </article>`;
     })
     .join("");
   const noteMarkup = noteResults
     .map((result) => {
+      const title = result.title || "연구 노트";
+      const noteLabel = `노트 보기: ${cleanText(title)}`;
+      const sourceLabel = resultReadLabel(result.target_label || title);
       const meta = resultMeta([
         resultCorpusMeta(result.corpus_id),
         result.target_label,
         reviewStateLabel(result.review_state)
       ]);
       const tags = (result.tags || []).map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join("");
-      const actions = result.url ? `<a class="result-action-read" href="${escapeHtml(result.url)}">읽기</a>` : "";
+      const actions = result.url ? `<a class="result-action-read" href="${escapeHtml(result.url)}" aria-label="${escapeHtml(sourceLabel)}" title="${escapeHtml(sourceLabel)}">원문 읽기</a>` : "";
       return `<article class="result note-result">
         <div class="result-title">
-          <a href="${escapeHtml(result.manage_url || notesHref(result))}">${escapeHtml(result.title || "연구 노트")}</a>
+          <a href="${escapeHtml(result.manage_url || notesHref(result))}" aria-label="${escapeHtml(noteLabel)}" title="${escapeHtml(noteLabel)}">${escapeHtml(title)}</a>
         </div>
-        ${resultSnippet(result.manage_url || notesHref(result), result.snippet || "", query)}
+        ${resultSnippet(result.manage_url || notesHref(result), result.snippet || "", query, noteLabel)}
         ${tags ? `<div class="tag-row">${tags}</div>` : ""}
         ${resultFooter(meta, actions)}
       </article>`;
