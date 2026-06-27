@@ -227,8 +227,8 @@ def check_search_ui() -> None:
     script = read_site_file("assets/search.js")
     css = read_site_file("assets/search.css")
     for needle in [
-        "/assets/search.css?v=phase20",
-        "/assets/search.js?v=phase28",
+        "/assets/search.css?v=phase21",
+        "/assets/search.js?v=phase29",
         'href="/search" aria-current="page">Search</a>',
         'href="/translations"',
         "Find text",
@@ -270,6 +270,8 @@ def check_search_ui() -> None:
         "function resultMeta",
         "function resultFooter",
         "result-actions-inline",
+        "result-action-read",
+        "result-action-secondary",
         'aria-label="Result actions"',
         "search-results-works",
         "search-results-segments",
@@ -323,6 +325,8 @@ def check_search_ui() -> None:
         ".result-title > a",
         ".result-footer",
         ".result-actions-inline",
+        ".result-action-read",
+        ".result-action-secondary",
         ".snippet-link",
         "grid-template-columns: minmax(0, 1fr) auto",
         "justify-content: flex-end",

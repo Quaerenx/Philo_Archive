@@ -246,8 +246,8 @@ def check_route_markup(route: str, html: str) -> None:
             "searchActiveFilters",
             "searchStatus",
             "aria-busy=\"false\"",
-            "search.css?v=phase20",
-            "search.js?v=phase28",
+            "search.css?v=phase21",
+            "search.js?v=phase29",
             'href="/search" aria-current="page">Search</a>',
             "Translations",
             "filter-panel",
@@ -464,7 +464,10 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         emptyBodyCount: empty ? empty.querySelectorAll('p').length : 0,
         actionText: Array.from(document.querySelectorAll('#results .result-actions')).map((node) => node.textContent.trim()).join(' '),
         moreActionCount: document.querySelectorAll('#results .result-more-actions').length,
-        inlineActionCount: document.querySelectorAll('#results .result-actions-inline').length
+        inlineActionCount: document.querySelectorAll('#results .result-actions-inline').length,
+        primaryReadCount: document.querySelectorAll('#results .result-actions-inline .result-action-read').length,
+        secondaryNotesCount: document.querySelectorAll('#results .result-actions-inline .result-action-secondary').length,
+        firstPrimaryReadBorderColor: window.getComputedStyle(document.querySelector('#results .result-action-read') || document.body).borderColor
       };
     });
     if (searchPageState.statusText) {
@@ -484,6 +487,15 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (searchPageState.hasResults && !/Read/.test(searchPageState.actionText)) {
       throw new Error(`search result actions should make the primary destination explicit: ${JSON.stringify(searchPageState)}`);
+    }
+    if (searchPageState.hasResults && searchPageState.primaryReadCount === 0) {
+      throw new Error(`search result actions should mark Read as the primary action: ${JSON.stringify(searchPageState)}`);
+    }
+    if (searchPageState.hasResults && /Notes/.test(searchPageState.actionText) && searchPageState.secondaryNotesCount === 0) {
+      throw new Error(`search result actions should keep Notes visually secondary: ${JSON.stringify(searchPageState)}`);
+    }
+    if (searchPageState.hasResults && searchPageState.firstPrimaryReadBorderColor !== 'rgb(176, 0, 0)') {
+      throw new Error(`search result Read action should use the archive primary color: ${JSON.stringify(searchPageState)}`);
     }
   }
   if (parsed.pathname === '/notes' && !parsed.search) {
