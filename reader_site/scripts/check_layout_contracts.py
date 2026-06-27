@@ -1148,10 +1148,11 @@ def check_work_source_bundle_ui() -> None:
         "아직 내보낼 저장 항목이 없습니다.",
         "review_state\", \"all\"",
         "renderTranslationPending",
-        "translation-pending-context",
         "translation-pending-commentary",
-        "번역과 함께 해설을 준비하고 있습니다.",
-        "selectedSentencePositionLabel()",
+        "해설 준비 중",
+        "다시 생성 중",
+        "setTranslationStatus(regenerate ? \"다시 생성 중\" : \"번역 중\", true)",
+        "이미 번역 중입니다.",
         "renderTranslationError",
         "GEMMA_RUNTIME_COMMAND",
         "function translationErrorIsRuntime",
@@ -1190,8 +1191,8 @@ def check_work_source_bundle_ui() -> None:
         "setActionButtonBusy",
         "translation-pending-result",
         "translation-pending-copy",
-        "번역 준비 중",
-        "번역을 다시 준비하는 중",
+        "번역 중",
+        "취소</button>",
         "노트를 저장하지 못했습니다.",
         "renderCommentary",
         "<h3>해설</h3>",
@@ -1258,7 +1259,7 @@ def check_work_source_bundle_ui() -> None:
         "activeTranslationTargetKey",
         "pendingTranslationRegenerate",
         "selectedTranslationTargetKey",
-        "이미 번역 중입니다...",
+        "이미 번역 중입니다.",
         "activeTranslationController.abort()",
         "signal: controller.signal",
         'error.name === "AbortError"',
@@ -1494,7 +1495,18 @@ def check_work_source_bundle_ui() -> None:
             markers,
             f"{function_name} reading-first translation layout",
         )
-    require_contains(template, "/assets/reader-work.js?v=common160", "templates/work.html")
+    pending_body = js_function_body(script, "renderTranslationPending")
+    for noisy_marker in [
+        "translation-pending-context",
+        "selectedSentencePositionLabel()",
+        "translation-study-skeleton",
+        "번역 준비 중",
+        "번역을 다시 준비하는 중",
+        "번역 중...",
+        "요청 취소",
+    ]:
+        require(noisy_marker not in pending_body, f"renderTranslationPending should keep loading state quiet without {noisy_marker!r}")
+    require_contains(template, "/assets/reader-work.js?v=common161", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common117", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
@@ -1834,7 +1846,6 @@ def check_work_source_bundle_ui() -> None:
         "line-height: 1.68",
         ".translation-loading",
         ".translation-loading-copy",
-        ".translation-pending-context",
         ".translation-pending-commentary",
         ".translation-loading-actions",
         ".translation-loading-actions button",

@@ -1712,28 +1712,20 @@ function renderTranslationPending(regenerate = false) {
   translationOutput.classList.toggle("study-mode", translationMode === "study");
   setTranslationBusy(true);
   resetTranslationOutputScroll();
-  const actionLabel = regenerate ? "번역을 다시 준비하는 중" : "번역 준비 중";
-  const commentaryLabel = regenerate ? "해설을 다시 준비하고 있습니다." : "번역과 함께 해설을 준비하고 있습니다.";
-  const position = selectedSentencePositionLabel();
+  const actionLabel = regenerate ? "다시 생성 중" : "번역 중";
+  const commentaryLabel = regenerate ? "해설 다시 준비 중" : "해설 준비 중";
   translationOutput.innerHTML = `
-    <div class="translation-result translation-pending-result" role="status" aria-live="polite" aria-label="${escapeHtml(`${actionLabel}: ${position}`)}">
+    <div class="translation-result translation-pending-result" role="status" aria-live="polite" aria-label="${escapeHtml(actionLabel)}">
       <section class="translation-section translation-section-primary" data-translation-section="translation">
         <h3>번역</h3>
-        <p class="translation-primary translation-pending-copy">${escapeHtml(actionLabel)}...</p>
-        <p class="translation-pending-context">${escapeHtml(position)}</p>
-        <div class="translation-skeleton translation-study-skeleton" aria-hidden="true">
-          <div class="translation-skeleton-block primary">
-            <span class="translation-skeleton-line wide"></span>
-            <span class="translation-skeleton-line"></span>
-          </div>
-        </div>
+        <p class="translation-primary translation-pending-copy">${escapeHtml(actionLabel)}</p>
       </section>
       <section class="translation-section translation-commentary translation-pending-commentary" data-translation-section="commentary">
         <h3>해설</h3>
         <p class="translation-unavailable-copy">${escapeHtml(commentaryLabel)}</p>
       </section>
       <div class="translation-loading-actions">
-        <button type="button" data-translation-cancel>요청 취소</button>
+        <button type="button" data-translation-cancel>취소</button>
       </div>
     </div>`;
   updateSentenceControls();
@@ -2138,7 +2130,7 @@ async function requestSentenceTranslation(regenerate = false) {
   }
   const targetKey = selectedTranslationTargetKey();
   if (!regenerate && activeTranslationController && activeTranslationTargetKey === targetKey) {
-    setTranslationStatus("이미 번역 중입니다...", true);
+    setTranslationStatus("이미 번역 중입니다.", true);
     return;
   }
   if (activeTranslationController) {
@@ -2150,7 +2142,7 @@ async function requestSentenceTranslation(regenerate = false) {
   activeTranslationController = controller;
   activeTranslationTargetKey = targetKey;
   const sentenceNode = document.getElementById(selectedSentence.sentenceId);
-  setTranslationStatus(regenerate ? "다시 생성 중..." : "번역 중...", true);
+  setTranslationStatus(regenerate ? "다시 생성 중" : "번역 중", true);
   renderTranslationPending(regenerate);
   regenerateSentenceButton.disabled = true;
   if (sentenceNode) {
