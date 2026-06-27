@@ -228,7 +228,7 @@ def check_route_markup(route: str, html: str) -> None:
             "aria-busy=\"false\"",
             "notes.css?v=notes21",
             "translations.css?v=trans26",
-            "translations.js?v=trans62",
+            "translations.js?v=trans63",
             'href="/translations" aria-current="page">Translations</a>',
             "Find record",
             "translationsListTools",
@@ -1016,7 +1016,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         toolsOpen: Boolean(document.querySelector('#translationsListTools')?.open),
         activeFiltersHidden: Boolean(activeFilters?.hidden),
         activeFiltersText: activeFilters ? activeFilters.textContent.trim() : '',
-        reviewQueueHidden: Boolean(document.querySelector('#translationsReviewQueue')?.hidden)
+        reviewQueueHidden: Boolean(document.querySelector('#translationsReviewQueue')?.hidden),
+        groupActionText: Array.from(document.querySelectorAll('#translationsResults .translation-record-group-actions')).map((node) => node.textContent.trim()).join(' ')
       };
     });
     if (state.cards > 0 && !state.toolsHidden) throw new Error(`review queue should hide filter tools while reviewing: ${JSON.stringify(state)}`);
@@ -1026,6 +1027,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (state.cards > 0 && !state.reviewQueueHidden) {
       throw new Error(`review queue should not repeat the Check translations entry action while already reviewing: ${JSON.stringify(state)}`);
+    }
+    if (state.cards > 0 && state.groupActionText) {
+      throw new Error(`review queue should keep repeated group actions out of the review flow: ${JSON.stringify(state)}`);
     }
     if (state.cards > 0) {
       await page.keyboard.press('q');

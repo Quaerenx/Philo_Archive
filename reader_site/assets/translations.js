@@ -542,11 +542,13 @@ function renderRecord(record, options) {
 }
 
 function renderRecordGroups(records, options) {
+  options = options || {};
+  const showGroupActions = options.showGroupActions !== false;
   return groupedTranslationRecords(records).map((group, groupIndex) => `
     <section class="translation-record-group" data-translation-record-group="${groupIndex + 1}">
       <div class="translation-record-group-title">
         <span>${escapeHtml(group.label)}</span>
-        ${renderGroupActions(group)}
+        ${showGroupActions ? renderGroupActions(group) : ""}
       </div>
       ${group.records.map((record) => renderRecord(record, { ...options, showContext: false })).join("")}
     </section>`).join("");
@@ -564,9 +566,10 @@ function renderRecords(records) {
   }
   const showReviewBadges = reviewActionsVisible() && visibleReviewStates(visible).size > 1;
   const showReviewActions = reviewActionsVisible();
+  const inReviewQueue = isReviewQueueOnlyView();
   statusEl.textContent = "";
   resultsEl.innerHTML = queryMatched.length
-    ? renderSummary(queryMatched) + (visible.length ? renderRecordGroups(visible, { showReviewBadge: showReviewBadges, showReviewActions }) : renderEmptyRecords())
+    ? renderSummary(queryMatched) + (visible.length ? renderRecordGroups(visible, { showReviewBadge: showReviewBadges, showReviewActions, showGroupActions: !inReviewQueue }) : renderEmptyRecords())
     : renderEmptyRecords();
   if (pendingReviewQueueFocus) {
     const reviewMessage = pendingReviewQueueMessage;
