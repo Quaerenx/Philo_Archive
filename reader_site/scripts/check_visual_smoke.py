@@ -552,13 +552,16 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     const initialCategoryToolsState = await page.evaluate(() => {
       const browseTools = document.querySelector('.category-browse-tools');
       const primary = document.querySelector('.reading-path-link.primary');
+      const firstWork = document.querySelector('.work-link');
       return {
         hasCategoryFilter: Boolean(document.querySelector('#categoryFilter')),
         browseToolsOpen: Boolean(browseTools?.open),
         browseToolsSummary: browseTools?.querySelector('summary')?.textContent.trim() || '',
         primaryReadLink: primary?.textContent.trim() || '',
         primaryReadLabel: primary?.getAttribute('aria-label') || '',
-        primaryReadLinkHeight: primary?.getBoundingClientRect().height || 0
+        primaryReadLinkHeight: primary?.getBoundingClientRect().height || 0,
+        firstWorkLinkText: firstWork?.textContent.trim() || '',
+        firstWorkLinkHeight: firstWork?.getBoundingClientRect().height || 0
       };
     });
     if (initialCategoryToolsState.hasCategoryFilter && (initialCategoryToolsState.browseToolsOpen || initialCategoryToolsState.browseToolsSummary !== '목록 좁히기')) {
@@ -570,6 +573,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (initialCategoryToolsState.hasCategoryFilter && !initialCategoryToolsState.primaryReadLabel.startsWith('추천 읽기 시작: ')) {
       throw new Error(`category page primary reading action should have a clear accessible label: ${JSON.stringify(initialCategoryToolsState)}`);
+    }
+    if (Number(widthText) <= 420 && initialCategoryToolsState.firstWorkLinkText && initialCategoryToolsState.firstWorkLinkHeight < 34) {
+      throw new Error(`mobile category work links should remain touch-friendly without becoming card-heavy: ${JSON.stringify(initialCategoryToolsState)}`);
     }
     const hasCategoryFilter = initialCategoryToolsState.hasCategoryFilter;
     if (hasCategoryFilter) {

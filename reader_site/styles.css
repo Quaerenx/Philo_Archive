@@ -450,6 +450,9 @@ img {
   .work-link {
     grid-template-columns: 1fr;
     gap: 1px;
+    min-height: 34px;
+    align-content: center;
+    padding: 5px 0;
   }
 
   .work-meta {

@@ -93,7 +93,7 @@ def check_html_entrypoints() -> None:
         require_contains(html, 'class="page"', relative_path)
         if relative_path == "index.html":
             require_contains(html, "번역", relative_path)
-            require_contains(html, "/styles.css?v=home5", relative_path)
+            require_contains(html, "/styles.css?v=home6", relative_path)
             require_contains(html, "/app.js?v=home12", relative_path)
         if relative_path in {"templates/reading.html", "templates/source.html"}:
             require_contains(html, "/assets/static-reader.css?v=static2", relative_path)
@@ -186,6 +186,9 @@ def check_home_css() -> None:
         "padding: 0 10px 24px;",
         ".reading-path-link.primary",
         "min-height: 42px;",
+        ".work-link",
+        "min-height: 34px;",
+        "align-content: center;",
     ]:
         require_contains(responsive, needle, f"{relative_path} responsive block")
 
