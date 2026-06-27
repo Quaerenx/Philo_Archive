@@ -1789,14 +1789,6 @@ h1 {
   border-top: 1px solid #eeeeee;
 }
 
-.translation-recovery-panel .translation-runtime-hint {
-  margin: 0;
-}
-
-.translation-runtime-hint {
-  color: #4b3030;
-}
-
 .translation-runtime-details {
   margin: 0 0 8px;
 }

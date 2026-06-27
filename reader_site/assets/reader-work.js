@@ -1757,13 +1757,12 @@ function translationErrorDisplayMessage(message) {
 function runtimeRecoveryMarkup(message) {
   if (!translationErrorIsRuntime(message)) return "";
   return `
-      <p class="translation-runtime-hint">번역기를 시작한 뒤 이 문장을 다시 시도하세요.</p>
       <details class="translation-runtime-details">
-        <summary>시작 명령 복사</summary>
-        <p class="translation-runtime-note">PowerShell에서 한 번 실행하세요.</p>
+        <summary>번역기 켜기</summary>
+        <p class="translation-runtime-note">명령을 복사해 PowerShell에서 실행하세요.</p>
         <div class="translation-runtime-command-row">
           <code class="translation-runtime-command">${escapeHtml(GEMMA_RUNTIME_COMMAND)}</code>
-          <button type="button" data-translation-copy-runtime>명령 복사</button>
+          <button type="button" data-translation-copy-runtime>복사</button>
         </div>
       </details>`;
 }

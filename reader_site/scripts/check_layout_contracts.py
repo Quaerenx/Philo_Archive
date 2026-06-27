@@ -1174,19 +1174,17 @@ def check_work_source_bundle_ui() -> None:
         "function translationErrorIsRuntime",
         "text.includes(\"번역기\")",
         "function runtimeRecoveryMarkup",
-        "translation-runtime-hint",
         "번역기가 꺼져 있습니다. 시작한 뒤 다시 시도하세요.",
-        "번역기를 시작한 뒤 이 문장을 다시 시도하세요.",
         "translation-runtime-details",
-        "시작 명령 복사",
+        "번역기 켜기",
         "translation-runtime-note",
-        "PowerShell에서 한 번 실행하세요.",
+        "명령을 복사해 PowerShell에서 실행하세요.",
         "translation-runtime-command",
         "translation-runtime-command-row",
         "data-translation-copy-runtime",
         "data-translation-check-runtime",
         "다시 확인",
-        "명령 복사",
+        "복사</button>",
         "명령을 복사했습니다.",
         ".\\\\run_reader_with_gemma.ps1",
         "translation-error-actions",
@@ -1522,8 +1520,8 @@ def check_work_source_bundle_ui() -> None:
         "요청 취소",
     ]:
         require(noisy_marker not in pending_body, f"renderTranslationPending should keep loading state quiet without {noisy_marker!r}")
-    require_contains(template, "/assets/reader-work.js?v=common162", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common119", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common163", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common120", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
         'aria-label="읽기 화면 이동"',
@@ -1888,9 +1886,7 @@ def check_work_source_bundle_ui() -> None:
         ".translation-result.translation-cancelled",
         ".translation-unavailable-copy",
         ".translation-recovery-panel",
-        ".translation-recovery-panel .translation-runtime-hint",
         ".translation-result.translation-cancelled button",
-        ".translation-runtime-hint",
         ".translation-runtime-details",
         ".translation-runtime-details summary",
         ".translation-runtime-details[open] summary",

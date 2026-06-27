@@ -337,8 +337,8 @@ def check_route_markup(route: str, html: str) -> None:
             "목차</summary>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common119",
-            "reader-work.js?v=common162",
+            "reader-work.css?v=common120",
+            "reader-work.js?v=common163",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         require("Contents (" not in html, f"{route} should not expose TOC inventory counts")
