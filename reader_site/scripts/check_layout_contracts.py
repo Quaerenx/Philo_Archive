@@ -281,7 +281,7 @@ def check_search_ui() -> None:
     script = read_site_file("assets/search.js")
     css = read_site_file("assets/search.css")
     for needle in [
-        "/assets/search.css?v=phase26",
+        "/assets/search.css?v=phase27",
         "/assets/search.js?v=phase39",
         'href="/search" aria-current="page">검색</a>',
         'href="/translations"',

@@ -270,7 +270,7 @@ def check_route_markup(route: str, html: str) -> None:
             "searchActiveFilters",
             "searchStatus",
             "aria-busy=\"false\"",
-            "search.css?v=phase26",
+            "search.css?v=phase27",
             "search.js?v=phase39",
             'href="/search" aria-current="page">검색</a>',
             "번역",
@@ -794,6 +794,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         emptyBodyText: Array.from(empty?.querySelectorAll('p') || []).map((node) => node.textContent.trim()).join(' '),
         emptyActions: Array.from(empty?.querySelectorAll('.empty-actions a') || []).map((node) => node.textContent.trim()),
         emptyButtonActions: Array.from(empty?.querySelectorAll('.empty-actions button') || []).map((node) => node.textContent.trim()),
+        emptyBorderLeftColor: empty ? window.getComputedStyle(empty).borderLeftColor : '',
+        emptyArchiveLinkColor: empty?.querySelector('.empty-actions a') ? window.getComputedStyle(empty.querySelector('.empty-actions a')).color : '',
         actionText: Array.from(document.querySelectorAll('#results .result-actions')).map((node) => node.textContent.trim()).join(' '),
         activeFilterText: document.querySelector('#searchActiveFilters')?.textContent.trim() || '',
         activeFilterLabel: document.querySelector('#searchActiveFilters')?.getAttribute('aria-label') || '',
@@ -833,6 +835,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (!searchPageState.hasResults && !searchPageState.emptyButtonActions.includes('검색 지우기')) {
       throw new Error(`empty search should keep the clear action available: ${JSON.stringify(searchPageState)}`);
+    }
+    if (!searchPageState.hasResults && (searchPageState.emptyBorderLeftColor === 'rgb(176, 0, 0)' || searchPageState.emptyArchiveLinkColor === 'rgb(176, 0, 0)')) {
+      throw new Error(`empty search should keep secondary empty-state cues visually quiet: ${JSON.stringify(searchPageState)}`);
     }
     if (/Open work|Open source|Open target|Manage note/.test(searchPageState.actionText)) {
       throw new Error(`search result actions should not repeat title-link navigation: ${JSON.stringify(searchPageState)}`);
