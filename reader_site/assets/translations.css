@@ -110,14 +110,16 @@
 }
 
 .translation-review-queue:not(:disabled) {
-  color: #9a0000;
-  background: #fffafa;
-  border-color: #b00000;
+  color: #444;
+  background: #fff;
+  border-color: #c8c8c8;
 }
 
 .translation-review-queue:not(:disabled):hover,
 .translation-review-queue:not(:disabled):focus-visible {
-  background: #fff;
+  color: #111;
+  background: #f7f7f7;
+  border-color: #888;
   text-decoration: none;
 }
 

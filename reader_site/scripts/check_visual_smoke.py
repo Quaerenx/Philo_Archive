@@ -251,7 +251,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translationsReviewQueue",
             "aria-busy=\"false\"",
             "notes.css?v=notes25",
-            "translations.css?v=trans31",
+            "translations.css?v=trans32",
             "translations.js?v=trans74",
             'href="/translations" aria-current="page">번역</a>',
             "번역 찾기",
@@ -1095,6 +1095,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
           groupTitleCount: document.querySelectorAll('#translationsResults .translation-record-group-title').length,
           firstGroupTitle: document.querySelector('#translationsResults .translation-record-group-title')?.textContent.trim() || '',
           reviewQueueBorderColor: window.getComputedStyle(document.querySelector('#translationsReviewQueue')).borderColor,
+          reviewQueueColor: window.getComputedStyle(document.querySelector('#translationsReviewQueue')).color,
+          reviewQueueBackgroundColor: window.getComputedStyle(document.querySelector('#translationsReviewQueue')).backgroundColor,
           firstRecordTitle: document.querySelector('#translationsResults .translation-record-card .translation-record-title')?.textContent.trim() || '',
           firstGroupActions: Array.from(document.querySelectorAll('#translationsResults .translation-record-group:first-of-type .translation-record-group-actions a')).map((node) => node.textContent.trim()),
           headingText: document.querySelector('#translationsPageTitle')?.textContent.trim() || '',
@@ -1140,8 +1142,15 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (translationsPageState.reviewQueueText && !/^검토할 번역 .*개로 이동$/.test(translationsPageState.reviewQueueLabel)) {
         throw new Error(`translations review entry should keep count details in the accessible label: ${JSON.stringify(translationsPageState)}`);
       }
-      if (translationsPageState.reviewQueueText && translationsPageState.reviewQueueBorderColor !== 'rgb(176, 0, 0)') {
-        throw new Error(`translations review entry should use the same red primary action style: ${JSON.stringify(translationsPageState)}`);
+      if (
+        translationsPageState.reviewQueueText &&
+        (
+          translationsPageState.reviewQueueBorderColor === 'rgb(176, 0, 0)' ||
+          translationsPageState.reviewQueueColor === 'rgb(154, 0, 0)' ||
+          translationsPageState.reviewQueueBackgroundColor === 'rgb(255, 250, 250)'
+        )
+      ) {
+        throw new Error(`translations review entry should stay visually secondary in the default reading list: ${JSON.stringify(translationsPageState)}`);
       }
       if (translationsPageState.summaryButtons.length && !translationsPageState.summaryButtons.some((text) => text.startsWith('전체'))) {
         throw new Error(`default translations list should expose a compact status overview: ${JSON.stringify(translationsPageState)}`);

@@ -630,7 +630,7 @@ def check_translations_ui() -> None:
     css = read_site_file("assets/translations.css")
     for needle in [
         "/assets/notes.css?v=notes25",
-        "/assets/translations.css?v=trans31",
+        "/assets/translations.css?v=trans32",
         "/assets/translations.js?v=trans74",
         "<title>번역 목록 / Personal Archive of Literature</title>",
         '<h1 id="translationsPageTitle">번역 목록</h1>',
