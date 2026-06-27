@@ -123,7 +123,7 @@ function updateSearchFilterSummary() {
   if (!variantSelect.disabled && variantSelect.value) chips.push(renderFilterChip("variant", "판본", selectedOptionText(variantSelect)));
   activeFiltersEl.classList.toggle("has-filters", chips.length > 0);
   activeFiltersEl.innerHTML = chips.length
-    ? `<span class="active-filters-label">필터</span>${chips.join("")}`
+    ? `<span class="active-filters-label">조건</span>${chips.join("")}`
     : "";
 }
 

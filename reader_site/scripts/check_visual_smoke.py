@@ -269,10 +269,11 @@ def check_route_markup(route: str, html: str) -> None:
             "searchStatus",
             "aria-busy=\"false\"",
             "search.css?v=phase24",
-            "search.js?v=phase36",
+            "search.js?v=phase37",
             'href="/search" aria-current="page">검색</a>',
             "번역",
             "filter-panel",
+            "검색 범위</summary>",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
     if route.startswith("/work/"):
@@ -773,6 +774,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     });
     if (searchPageState.statusText) {
       throw new Error(`search status should not duplicate rendered results: ${JSON.stringify(searchPageState)}`);
+    }
+    if (searchPageState.activeFilterText && !searchPageState.activeFilterText.startsWith('조건')) {
+      throw new Error(`search active filters should read as applied conditions: ${JSON.stringify(searchPageState)}`);
     }
     if (!searchPageState.hasResults && searchPageState.emptyTitle !== '검색 결과가 없습니다.') {
       throw new Error(`empty search should use a concise title: ${JSON.stringify(searchPageState)}`);

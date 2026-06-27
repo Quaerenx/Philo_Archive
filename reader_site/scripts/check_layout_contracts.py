@@ -279,10 +279,11 @@ def check_search_ui() -> None:
     css = read_site_file("assets/search.css")
     for needle in [
         "/assets/search.css?v=phase24",
-        "/assets/search.js?v=phase36",
+        "/assets/search.js?v=phase37",
         'href="/search" aria-current="page">검색</a>',
         'href="/translations"',
         "본문 찾기",
+        "검색 범위</summary>",
         "번역",
         'class="filter-panel"',
         'class="filter-panel-fields"',
@@ -311,6 +312,7 @@ def check_search_ui() -> None:
         "function clearSearchFilters",
         "function updateSearchClearState",
         "function updateSearchFilterSummary",
+        "active-filters-label\">조건</span>",
         "function removeSearchFilter",
         "function resultGroupHeader",
         "function resultSnippet",
