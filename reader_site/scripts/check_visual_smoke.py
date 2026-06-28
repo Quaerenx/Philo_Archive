@@ -178,7 +178,7 @@ def fetch_html(url: str) -> str:
 def check_route_markup(route: str, html: str) -> None:
     if route.startswith("/read?"):
         for needle in [
-            "자료 위치</summary>",
+            "파일 정보</summary>",
             'aria-label="읽기 화면 이동"',
             'href="/">아카이브</a>',
             ">원문</a>",
@@ -190,7 +190,7 @@ def check_route_markup(route: str, html: str) -> None:
             require(noisy_text not in html, f"{route} should avoid raw markdown or English paragraph labels {noisy_text!r}")
     if route.startswith("/source?"):
         for needle in [
-            "자료 위치</summary>",
+            "파일 정보</summary>",
             'href="/">아카이브</a>',
             ">읽기</a>",
         ]:

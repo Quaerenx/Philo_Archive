@@ -97,8 +97,9 @@ def check_html_entrypoints() -> None:
             require_contains(html, "/app.js?v=home14", relative_path)
         if relative_path in {"templates/reading.html", "templates/source.html"}:
             require_contains(html, "/assets/static-reader.css?v=static2", relative_path)
-            require_contains(html, "자료 위치</summary>", relative_path)
+            require_contains(html, "파일 정보</summary>", relative_path)
             require("Path</summary>" not in html, f"{relative_path} should avoid tool-oriented path text")
+            require("자료 위치</summary>" not in html, f"{relative_path} should avoid storage-oriented source detail text")
         if relative_path == "templates/reading.html":
             require_contains(html, 'aria-label="읽기 화면 이동"', relative_path)
             require_contains(html, 'href="{{SOURCE_HREF}}">원문</a>', relative_path)
