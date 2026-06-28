@@ -35,6 +35,12 @@ def require(condition: bool, message: str) -> None:
         raise AssertionError(message)
 
 
+def check_ai_dir_override_contract() -> None:
+    source = Path(sentence_translation_service.__file__).read_text(encoding="utf-8")
+    require("PHILO_AI_DIR" in source, "sentence translation storage should support an isolated AI data directory")
+    require('os.environ.get("PHILO_AI_DIR"' in source, "sentence translation storage should use PHILO_AI_DIR")
+
+
 def synthetic_sentence_target() -> dict:
     source_text = "Das Leben ist Wille zur Macht. Dies ist ein zweiter Satz."
     sentence_text = "Das Leben ist Wille zur Macht."
@@ -252,6 +258,7 @@ def main() -> None:
     parser.add_argument("--with-source-targets", action="store_true")
     args = parser.parse_args()
 
+    check_ai_dir_override_contract()
     check_sentence_units()
     synthetic_target = synthetic_sentence_target()
     check_prompt_and_record(synthetic_target)

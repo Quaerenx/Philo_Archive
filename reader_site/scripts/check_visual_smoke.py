@@ -60,6 +60,11 @@ ROUTES = [
     ("translations", "/translations", True),
     ("translations-review", "/translations?review_state=generated", True),
 ]
+EMPTY_STATE_ROUTES = [
+    ("notes-empty", "/notes", True),
+    ("study-empty", "/study", True),
+    ("translations-empty", "/translations", True),
+]
 VIEWPORTS = [
     ("desktop", 1365, 768),
     ("mobile", 390, 844),
@@ -2273,6 +2278,56 @@ def clear_previous_screenshots(output_dir: Path) -> None:
         path.unlink()
 
 
+def capture_smoke_routes(
+    *,
+    base_url: str,
+    routes: list[tuple[str, str, bool]],
+    output_dir: Path,
+    html_only: bool,
+    allow_screenshot_failures: bool,
+    browser: str,
+    playwright_node: str,
+    playwright_node_path: str,
+) -> tuple[int, int, list[str]]:
+    html_count = 0
+    screenshot_count = 0
+    screenshot_failures: list[str] = []
+    for route_label, route, should_capture in routes:
+        url = f"{base_url}{route}"
+        html = fetch_html(url)
+        require("<html" in html.lower(), f"{route} response does not look like a page")
+        require(
+            "Personal Archive of Literature" in html or "아카이브" in html,
+            f"{route} is missing archive identity text",
+        )
+        check_route_markup(route, html)
+        html_count += 1
+        if html_only or not should_capture:
+            continue
+        for viewport_label, width, height in VIEWPORTS:
+            output_path = output_dir / f"{route_label}-{viewport_label}.png"
+            try:
+                capture(browser, playwright_node, playwright_node_path, url, output_path, width, height)
+                screenshot_count += 1
+            except AssertionError as exc:
+                message = f"{route_label}/{viewport_label}: {exc}"
+                if not allow_screenshot_failures:
+                    raise AssertionError(message) from exc
+                screenshot_failures.append(message)
+    return html_count, screenshot_count, screenshot_failures
+
+
+def start_visual_server(port: int, server_env: dict[str, str]) -> subprocess.Popen[str]:
+    return subprocess.Popen(
+        [sys.executable, str(SITE / "server.py"), "--host", "127.0.0.1", "--port", str(port)],
+        cwd=SITE,
+        env=server_env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Capture local browser screenshots for reader-site visual smoke QA.", allow_abbrev=False)
     parser.add_argument("--browser", default="", help="Path to Edge/Chrome/Chromium. Defaults to common local installs.")
@@ -2292,62 +2347,80 @@ def main() -> None:
             playwright_node = node
             playwright_node_path = node_path
         clear_previous_screenshots(args.output)
+    html_count = 0
+    screenshot_count = 0
+    screenshot_failures: list[str] = []
+
     port = free_port()
     base_url = f"http://127.0.0.1:{port}"
     with tempfile.TemporaryDirectory(prefix="philo_visual_notes_") as notes_temp_dir:
         server_env = os.environ.copy()
         server_env["PHILO_NOTES_DIR"] = str(Path(notes_temp_dir))
         seed_visual_notes(Path(notes_temp_dir))
-        server = subprocess.Popen(
-            [sys.executable, str(SITE / "server.py"), "--host", "127.0.0.1", "--port", str(port)],
-            cwd=SITE,
-            env=server_env,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-        )
+        server = start_visual_server(port, server_env)
         try:
             wait_for_health(base_url, server)
             routes = [*ROUTES, *discover_source_routes()]
-            html_count = 0
-            screenshot_count = 0
-            screenshot_failures = []
-            for route_label, route, should_capture in routes:
-                url = f"{base_url}{route}"
-                html = fetch_html(url)
-                require("<html" in html.lower(), f"{route} response does not look like a page")
-                require(
-                    "Personal Archive of Literature" in html or "아카이브" in html,
-                    f"{route} is missing archive identity text",
-                )
-                check_route_markup(route, html)
-                html_count += 1
-                if args.html_only or not should_capture:
-                    continue
-                for viewport_label, width, height in VIEWPORTS:
-                    output_path = args.output / f"{route_label}-{viewport_label}.png"
-                    try:
-                        capture(browser, playwright_node, playwright_node_path, url, output_path, width, height)
-                        screenshot_count += 1
-                    except AssertionError as exc:
-                        message = f"{route_label}/{viewport_label}: {exc}"
-                        if not args.allow_screenshot_failures:
-                            raise AssertionError(message) from exc
-                        screenshot_failures.append(message)
-            if args.html_only:
-                print(f"visual smoke html ok ({html_count} routes)")
-            elif screenshot_failures:
-                print(f"visual smoke html ok ({html_count} routes); screenshot failures allowed ({len(screenshot_failures)})")
-                for failure in screenshot_failures:
-                    print(f"- {failure}")
-            else:
-                print(f"visual smoke ok ({screenshot_count} screenshots in {args.output})")
+            route_html_count, route_screenshot_count, route_failures = capture_smoke_routes(
+                base_url=base_url,
+                routes=routes,
+                output_dir=args.output,
+                html_only=args.html_only,
+                allow_screenshot_failures=args.allow_screenshot_failures,
+                browser=browser,
+                playwright_node=playwright_node,
+                playwright_node_path=playwright_node_path,
+            )
+            html_count += route_html_count
+            screenshot_count += route_screenshot_count
+            screenshot_failures.extend(route_failures)
         finally:
             server.terminate()
             try:
                 server.wait(timeout=5)
             except subprocess.TimeoutExpired:
                 server.kill()
+
+    empty_port = free_port()
+    empty_base_url = f"http://127.0.0.1:{empty_port}"
+    with (
+        tempfile.TemporaryDirectory(prefix="philo_visual_empty_notes_") as empty_notes_dir,
+        tempfile.TemporaryDirectory(prefix="philo_visual_empty_ai_") as empty_ai_dir,
+    ):
+        empty_env = os.environ.copy()
+        empty_env["PHILO_NOTES_DIR"] = str(Path(empty_notes_dir))
+        empty_env["PHILO_AI_DIR"] = str(Path(empty_ai_dir))
+        empty_server = start_visual_server(empty_port, empty_env)
+        try:
+            wait_for_health(empty_base_url, empty_server)
+            empty_html_count, empty_screenshot_count, empty_failures = capture_smoke_routes(
+                base_url=empty_base_url,
+                routes=EMPTY_STATE_ROUTES,
+                output_dir=args.output,
+                html_only=args.html_only,
+                allow_screenshot_failures=args.allow_screenshot_failures,
+                browser=browser,
+                playwright_node=playwright_node,
+                playwright_node_path=playwright_node_path,
+            )
+            html_count += empty_html_count
+            screenshot_count += empty_screenshot_count
+            screenshot_failures.extend(empty_failures)
+        finally:
+            empty_server.terminate()
+            try:
+                empty_server.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                empty_server.kill()
+
+    if args.html_only:
+        print(f"visual smoke html ok ({html_count} routes)")
+    elif screenshot_failures:
+        print(f"visual smoke html ok ({html_count} routes); screenshot failures allowed ({len(screenshot_failures)})")
+        for failure in screenshot_failures:
+            print(f"- {failure}")
+    else:
+        print(f"visual smoke ok ({screenshot_count} screenshots in {args.output})")
 
 
 if __name__ == "__main__":

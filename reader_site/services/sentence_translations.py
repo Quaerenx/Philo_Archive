@@ -16,7 +16,7 @@ from services.source_targets import sha256_text
 
 
 SITE = Path(__file__).resolve().parents[1]
-AI_DIR = SITE / "data" / "ai"
+AI_DIR = Path(os.environ.get("PHILO_AI_DIR", str(SITE / "data" / "ai")))
 PROMPT_TEMPLATE_ID = "sentence_translation_study_v1"
 MODEL_NAME = os.environ.get("PHILO_GEMMA_MODEL_NAME", "gemma-4-26B-A4B-it-Q4_K_M")
 MODEL_RUNTIME = os.environ.get("PHILO_GEMMA_RUNTIME", "llama.cpp b9371-f12cc6d0f")
