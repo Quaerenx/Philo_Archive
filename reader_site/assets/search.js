@@ -101,7 +101,7 @@ function selectedOptionText(select) {
 function renderFilterChip(filterName, label, value) {
   return `<button type="button" class="filter-chip" data-filter="${escapeHtml(filterName)}" aria-label="${escapeHtml(label)} 조건 제거">
     <span>${escapeHtml(label)}: ${escapeHtml(value)}</span>
-    <span aria-hidden="true">x</span>
+    <span aria-hidden="true">×</span>
   </button>`;
 }
 

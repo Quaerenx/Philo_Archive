@@ -228,9 +228,9 @@ h1 {
   display: inline-flex;
   align-items: center;
   max-width: 100%;
-  min-height: 24px;
-  gap: 5px;
-  padding: 2px 7px;
+  min-height: 28px;
+  gap: 7px;
+  padding: 3px 8px;
   color: #000;
   font-family: Verdana, Arial, Helvetica, sans-serif;
   font-size: 10px;
@@ -250,6 +250,9 @@ h1 {
 }
 
 .filter-chip span[aria-hidden="true"] {
+  display: inline-flex;
+  min-width: 12px;
+  justify-content: center;
   color: #b00000;
   font-weight: bold;
 }

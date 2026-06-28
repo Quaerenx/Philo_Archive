@@ -284,8 +284,8 @@ def check_search_ui() -> None:
     script = read_site_file("assets/search.js")
     css = read_site_file("assets/search.css")
     for needle in [
-        "/assets/search.css?v=phase28",
-        "/assets/search.js?v=phase39",
+        "/assets/search.css?v=phase29",
+        "/assets/search.js?v=phase40",
         'href="/search" aria-current="page">검색</a>',
         'href="/translations"',
         "본문 찾기",
@@ -309,6 +309,7 @@ def check_search_ui() -> None:
         "renderSearchPending",
         "function renderEmptySearch",
         "function renderSearchStart",
+        "<span aria-hidden=\"true\">×</span>",
         "search-start-links",
         'aria-label="자료 선택"',
         "읽기 시작",
@@ -397,6 +398,7 @@ def check_search_ui() -> None:
         ".active-filters",
         ".active-filters.has-filters",
         ".filter-chip",
+        "min-height: 28px",
         ".result-summary-nav",
         ".result-summary-link",
         ".result-group-header",

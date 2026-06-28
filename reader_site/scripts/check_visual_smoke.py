@@ -270,8 +270,8 @@ def check_route_markup(route: str, html: str) -> None:
             "searchActiveFilters",
             "searchStatus",
             "aria-busy=\"false\"",
-            "search.css?v=phase28",
-            "search.js?v=phase39",
+            "search.css?v=phase29",
+            "search.js?v=phase40",
             'href="/search" aria-current="page">검색</a>',
             "번역",
             "filter-panel",
@@ -821,6 +821,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         actionText: Array.from(document.querySelectorAll('#results .result-actions')).map((node) => node.textContent.trim()).join(' '),
         activeFilterText: document.querySelector('#searchActiveFilters')?.textContent.trim() || '',
         activeFilterLabel: document.querySelector('#searchActiveFilters')?.getAttribute('aria-label') || '',
+        filterChipHeights: Array.from(document.querySelectorAll('#searchActiveFilters .filter-chip')).map((node) => Math.round(node.getBoundingClientRect().height)),
+        filterChipCloseText: Array.from(document.querySelectorAll('#searchActiveFilters .filter-chip span[aria-hidden="true"]')).map((node) => node.textContent.trim()).join(''),
         summaryLinkTexts: Array.from(document.querySelectorAll('#results .result-summary-link')).map((node) => node.textContent.trim()),
         summaryLinkLabels: Array.from(document.querySelectorAll('#results .result-summary-link')).map((node) => node.getAttribute('aria-label') || ''),
         markBackgroundColor: document.querySelector('#results mark') ? window.getComputedStyle(document.querySelector('#results mark')).backgroundColor : '',
@@ -847,6 +849,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (searchPageState.activeFilterText && searchPageState.activeFilterLabel !== '활성 검색 조건') {
       throw new Error(`search active filters should expose condition wording accessibly: ${JSON.stringify(searchPageState)}`);
+    }
+    if (searchPageState.activeFilterText && (searchPageState.filterChipHeights.some((height) => height < 28) || !searchPageState.filterChipCloseText.includes('×'))) {
+      throw new Error(`search filter chips should be easy to remove on touch screens: ${JSON.stringify(searchPageState)}`);
     }
     if (!searchPageState.hasResults && searchPageState.emptyTitle !== '검색 결과가 없습니다.') {
       throw new Error(`empty search should use a concise title: ${JSON.stringify(searchPageState)}`);
