@@ -1731,8 +1731,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
     }
     if (state.studyToolsOpen) throw new Error(`study tools should stay collapsed in default reading mode: ${JSON.stringify(state)}`);
-    if (state.studyToolsSummary !== '도구') throw new Error(`study tools summary should stay compact in the reading flow: ${JSON.stringify(state)}`);
-    if (/저장|노트|이동/.test(state.studyToolsSummary)) {
+    if (state.studyToolsSummary !== '설정') throw new Error(`study tools summary should stay compact in the reading flow: ${JSON.stringify(state)}`);
+    if (/저장|노트|이동|번역기|진행/.test(state.studyToolsSummary)) {
       throw new Error(`study tools summary should not enumerate hidden management actions in reading mode: ${JSON.stringify(state)}`);
     }
     if (state.studyToolsSummaryHeight > 24 || state.studyToolsSummaryWidth > 64 || parseFloat(state.studyToolsSummaryFontSize || '99') > 10) {
