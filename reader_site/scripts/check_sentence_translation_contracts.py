@@ -223,6 +223,27 @@ def check_restored_source_target() -> None:
     check_cache_and_review_compatibility(target)
 
 
+def check_runtime_error_copy(target: dict) -> None:
+    prompt_bundle = build_sentence_prompt_bundle(target)
+    original_urlopen = sentence_translation_service.urlopen
+
+    def failing_urlopen(*_args, **_kwargs):
+        raise OSError("connection refused")
+
+    sentence_translation_service.urlopen = failing_urlopen
+    try:
+        try:
+            sentence_translation_service.call_llama_server(prompt_bundle)
+        except ConnectionError as exc:
+            message = str(exc)
+            require("번역기가 꺼져 있습니다." in message, "runtime connection failure should use reader-language copy")
+            require("Gemma runtime is not running" not in message, "runtime connection failure should not expose English backend copy")
+        else:
+            require(False, "runtime connection failure should raise ConnectionError")
+    finally:
+        sentence_translation_service.urlopen = original_urlopen
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Validate on-demand sentence translation contracts.", allow_abbrev=False)
     parser.add_argument("--with-source-targets", action="store_true")
@@ -232,6 +253,7 @@ def main() -> None:
     synthetic_target = synthetic_sentence_target()
     check_prompt_and_record(synthetic_target)
     check_cache_and_review_compatibility(synthetic_target)
+    check_runtime_error_copy(synthetic_target)
     if args.with_source_targets:
         check_restored_source_target()
     print("sentence translation contracts ok")
