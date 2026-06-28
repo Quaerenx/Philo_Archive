@@ -1413,7 +1413,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       throw new Error(`secondary study tabs should stay visually quieter than translation and notes: ${JSON.stringify(state)}`);
     }
     if (state.studyToolsOpen) throw new Error(`study tools should stay collapsed in default reading mode: ${JSON.stringify(state)}`);
-    if (state.studyToolsSummary !== '학습 설정') throw new Error(`study tools summary should stay concise and clear: ${JSON.stringify(state)}`);
+    if (state.studyToolsSummary !== '도구') throw new Error(`study tools summary should stay concise and clear: ${JSON.stringify(state)}`);
     if (state.studyToolsSummaryHeight > 24 || state.studyToolsSummaryWidth > 84 || parseFloat(state.studyToolsSummaryFontSize || '99') > 10) {
       throw new Error(`reading mode study tools summary should stay visually secondary: ${JSON.stringify(state)}`);
     }
@@ -1476,7 +1476,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (utilityState.labels.some((label) => label.width > 2 || label.height > 2)) {
       throw new Error(`study tools utility labels should stay visually quiet: ${JSON.stringify(utilityState)}`);
     }
-    if (utilityState.manageSummary !== '저장/내보내기') {
+    if (utilityState.manageSummary !== '저장 · 내보내기') {
       throw new Error(`study action tools should have a concise summary: ${JSON.stringify(utilityState)}`);
     }
     if (!utilityState.sourceStatusClass.includes('visually-hidden') || utilityState.sourceStatusWidth > 2 || utilityState.sourceStatusHeight > 2) {

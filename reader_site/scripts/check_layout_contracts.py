@@ -1810,7 +1810,7 @@ def check_work_source_bundle_ui() -> None:
         "copyStudyCard",
         "translation-card",
         "translation-utility",
-        "학습 옵션",
+        "읽기 도구",
         "translation-utility-group",
         "translation-utility-group-label",
         'class="translation-utility-group-label visually-hidden"',
@@ -1819,9 +1819,9 @@ def check_work_source_bundle_ui() -> None:
         "번역 표시 방식",
         "문장 이동",
         "학습 흐름",
-        "저장/내보내기</summary>",
+        "저장 · 내보내기</summary>",
         "translation-review-duplicate-action",
-        "<span>학습 설정</span>",
+        "<span>도구</span>",
         "study-tabs",
         "previousSentence",
         "nextUnstudiedSentence",
@@ -1835,6 +1835,8 @@ def check_work_source_bundle_ui() -> None:
         'aria-label="번역으로 메모 추가"',
     ]:
         require_contains(template, needle, "templates/work.html")
+    for noisy_marker in ["학습 옵션", "<span>학습 설정</span>", "저장/내보내기</summary>"]:
+        require(noisy_marker not in template, f"templates/work.html should keep reading utility labels light without {noisy_marker!r}")
     require_ordered_markers(
         template,
         [
