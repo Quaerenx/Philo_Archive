@@ -286,7 +286,7 @@ def check_route_markup(route: str, html: str) -> None:
             "aria-busy=\"false\"",
             "notes.css?v=notes28",
             "translations.css?v=trans35",
-            "translations.js?v=trans85",
+            "translations.js?v=trans86",
             'href="/translations" aria-current="page">번역</a>',
             "번역 찾기",
             "translationsListTools",
@@ -2114,7 +2114,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         if (more) more.open = wasMoreOpen;
         return state;
       });
-      if (!reviewTargetState.hasReviewTarget || !reviewTargetState.immediateActionText.includes('저장') || !reviewTargetState.immediateActionText.includes('원문 열기') || !reviewTargetState.immediateActionText.includes('더보기')) {
+      if (!reviewTargetState.hasReviewTarget || !reviewTargetState.immediateActionText.includes('저장') || !reviewTargetState.immediateActionText.includes('원문 읽기') || !reviewTargetState.immediateActionText.includes('더보기')) {
         throw new Error(`review queue should expose save, source, and more as immediate actions: ${JSON.stringify(reviewTargetState)}`);
       }
       if (/제외하기|삭제|검토로 되돌리기/.test(reviewTargetState.immediateActionText)) {
@@ -2135,7 +2135,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (reviewTargetState.saveText !== '저장' || reviewTargetState.saveLabel !== '저장한 번역으로 표시' || reviewTargetState.saveBorderColor !== 'rgb(176, 0, 0)') {
         throw new Error(`review queue save should use the same red primary action style: ${JSON.stringify(reviewTargetState)}`);
       }
-      if (reviewTargetState.sourceActionText !== '원문 열기' || !reviewTargetState.sourceActionLabel.startsWith('원문 열기: ') || !reviewTargetState.sourceActionHref.startsWith('/work/')) {
+      if (reviewTargetState.sourceActionText !== '원문 읽기' || !reviewTargetState.sourceActionLabel.startsWith('원문 읽기: ') || !reviewTargetState.sourceActionHref.startsWith('/work/')) {
         throw new Error(`review queue should expose a clear source navigation action on the active review card: ${JSON.stringify(reviewTargetState)}`);
       }
       if (reviewTargetState.rejectButtonText !== '제외하기' || reviewTargetState.rejectButtonLabel !== '이 번역 제외하기') {

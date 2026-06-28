@@ -552,7 +552,7 @@ function renderRecord(record, options) {
       </details>`
     : "";
   const sourceAction = targetUrl
-    ? `<a href="${escapeHtml(targetUrl)}" data-open-source aria-keyshortcuts="O" title="원문으로 이동" aria-label="원문 열기: ${escapeHtml(title)}">원문 열기</a>`
+    ? `<a href="${escapeHtml(targetUrl)}" data-open-source aria-keyshortcuts="O" title="원문으로 이동" aria-label="원문 읽기: ${escapeHtml(title)}">원문 읽기</a>`
     : "";
   const actions = showReviewActions ? [
     reviewState !== "reviewed"
