@@ -1661,7 +1661,7 @@ def check_work_source_bundle_ui() -> None:
     for needle in [
         "def source_mode_links",
         '<a href="/">아카이브</a>',
-        ">읽기</a>",
+        ">본문 보기</a>",
     ]:
         require_contains(static_pages, needle, "rendering/static_pages.py")
     for noisy_text in [

@@ -192,7 +192,7 @@ def check_route_markup(route: str, html: str) -> None:
         for needle in [
             "파일 정보</summary>",
             'href="/">아카이브</a>',
-            ">읽기</a>",
+            ">본문 보기</a>",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         for noisy_text in ["Path</summary>", "Reading mode", "Personal Archive of Literature</a>"]:
