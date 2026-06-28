@@ -309,7 +309,7 @@ def check_route_markup(route: str, html: str) -> None:
             'href="/search" aria-current="page">검색</a>',
             "번역",
             "filter-panel",
-            "검색 범위</summary>",
+            "범위</summary>",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
     if route.startswith("/work/"):

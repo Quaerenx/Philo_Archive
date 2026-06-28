@@ -317,7 +317,7 @@ def check_search_ui() -> None:
         'href="/search" aria-current="page">검색</a>',
         'href="/translations"',
         "본문 찾기",
-        "검색 범위</summary>",
+        "범위</summary>",
         "번역",
         'class="filter-panel"',
         'class="filter-panel-fields"',
@@ -415,6 +415,7 @@ def check_search_ui() -> None:
         "result-group-count",
     ]:
         require(noisy_action not in script, f"assets/search.js should not expose redundant search action {noisy_action!r}")
+    require("검색 범위</summary>" not in html, "search.html should keep filter summary compact")
     for needle in [
         ".search-form.is-searching",
         ".spacer",
