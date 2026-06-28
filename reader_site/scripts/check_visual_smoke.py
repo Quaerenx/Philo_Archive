@@ -370,7 +370,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common139",
-            "reader-work.js?v=common182",
+            "reader-work.js?v=common183",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         require("Contents (" not in html, f"{route} should not expose TOC inventory counts")
@@ -847,7 +847,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (runtimeOfflineState.copyButtonHeight !== 0 || runtimeOfflineState.runtimeCommandHeight !== 0) {
         throw new Error(`runtime offline fixture should keep command-copy controls hidden until startup help is expanded: ${JSON.stringify(runtimeOfflineState)}`);
       }
-      for (const noisyText of ['Gemma runtime is not running', '시작 도움말', '복사한 명령을 PowerShell에 붙여넣고 Enter', 'source_text_sha256', 'prompt_sha256']) {
+      for (const noisyText of ['Gemma runtime is not running', '시작 도움말', '복사한 명령을 PowerShell에 붙여넣고 Enter', 'PowerShell에 붙여넣고 Enter', 'source_text_sha256', 'prompt_sha256']) {
         if (runtimeOfflineState.outputText.includes(noisyText)) {
           throw new Error(`runtime offline fixture should hide technical noise ${noisyText}: ${JSON.stringify(runtimeOfflineState)}`);
         }
