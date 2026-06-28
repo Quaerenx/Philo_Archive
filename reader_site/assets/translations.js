@@ -553,7 +553,7 @@ function renderRecord(record, options) {
     </header>
     ${translation ? `<p class="translation-text">${escapeHtml(translation)}</p>` : ""}
     ${commentary ? `<section class="translation-commentary" aria-label="해설"><h3>해설</h3><p>${escapeHtml(commentary)}</p></section>` : ""}
-    ${source && showSourceDetail ? `<details class="translation-source"><summary>원문</summary><blockquote>${escapeHtml(source)}</blockquote></details>` : ""}
+    ${source && showSourceDetail ? `<details class="translation-source"><summary>원문 보기</summary><blockquote>${escapeHtml(source)}</blockquote></details>` : ""}
     ${actions ? `<footer class="translation-record-footer">
       <div class="translation-actions">
         ${actions}

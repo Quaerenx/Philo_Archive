@@ -252,7 +252,7 @@ def check_route_markup(route: str, html: str) -> None:
             "aria-busy=\"false\"",
             "notes.css?v=notes25",
             "translations.css?v=trans33",
-            "translations.js?v=trans75",
+            "translations.js?v=trans76",
             'href="/translations" aria-current="page">번역</a>',
             "번역 찾기",
             "translationsListTools",
@@ -1719,6 +1719,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         const nonTargetFooter = Array.from(document.querySelectorAll('#translationsResults .translation-record-card[data-review-state="generated"]:not(.is-review-target) .translation-record-footer'))
           .find((node) => node.querySelector('.primary-review-action'));
         const source = card?.querySelector('.translation-source');
+        const sourceSummary = source?.querySelector('summary');
         const commentaryHeading = card?.querySelector('.translation-commentary h3');
         const commentaryHeadingBox = commentaryHeading?.getBoundingClientRect();
         return {
@@ -1744,6 +1745,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
           nonTargetFooterDisplay: nonTargetFooter ? window.getComputedStyle(nonTargetFooter).display : '',
           isDesktopLayout: window.innerWidth > 860,
           sourceOpen: Boolean(source?.open),
+          sourceSummaryText: sourceSummary?.textContent.trim() || '',
           sourceText: source?.textContent.trim() || '',
           reviewTargetBackground: cardStyle?.backgroundColor || '',
           reviewTargetBorderLeftColor: cardStyle?.borderLeftColor || '',
@@ -1786,7 +1788,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (reviewTargetState.nonTargetFooterDisplay && reviewTargetState.nonTargetFooterDisplay !== 'none') {
         throw new Error(`review queue should keep inactive review actions visually quiet on desktop: ${JSON.stringify(reviewTargetState)}`);
       }
-      if (reviewTargetState.sourceOpen || !reviewTargetState.sourceText.includes('원문')) {
+      if (reviewTargetState.sourceOpen || reviewTargetState.sourceSummaryText !== '원문 보기' || !reviewTargetState.sourceText.includes('원문 보기')) {
         throw new Error(`review queue should keep original source available but collapsed by default: ${JSON.stringify(reviewTargetState)}`);
       }
       if (reviewTargetState.reviewTargetBackground !== 'rgb(255, 255, 255)') {
