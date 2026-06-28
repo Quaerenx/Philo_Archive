@@ -323,7 +323,7 @@ def check_search_ui() -> None:
         'class="filter-panel-fields"',
         'id="searchSubmit"',
         'id="searchClear"',
-        'placeholder="예: GM, ressentiment, John 3:16"',
+        'placeholder="예: ressentiment, John 3:16, 아침놀"',
         'id="searchActiveFilters"',
         'id="searchReturn"',
         'aria-label="활성 검색 조건"',
@@ -332,6 +332,7 @@ def check_search_ui() -> None:
         'aria-busy="false"',
     ]:
         require_contains(html, needle, "search.html")
+    require('placeholder="예: GM, ressentiment, John 3:16"' not in html, "search.html should avoid internal work-id examples in the primary search prompt")
     for needle in [
         "activeSearchController",
         "activeSearchRequest",

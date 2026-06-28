@@ -310,8 +310,10 @@ def check_route_markup(route: str, html: str) -> None:
             "번역",
             "filter-panel",
             "범위</summary>",
+            'placeholder="예: ressentiment, John 3:16, 아침놀"',
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
+        require('placeholder="예: GM, ressentiment, John 3:16"' not in html, f"{route} should avoid internal work-id examples")
     if route.startswith("/work/"):
         for needle in [
             "reading-desk",
