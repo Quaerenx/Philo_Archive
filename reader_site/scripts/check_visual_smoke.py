@@ -341,7 +341,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common130",
-            "reader-work.js?v=common170",
+            "reader-work.js?v=common171",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         require("Contents (" not in html, f"{route} should not expose TOC inventory counts")
@@ -1572,8 +1572,11 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (!draftState.tags.includes('ai-translation')) {
       throw new Error(`Add note should keep the translation tag: ${JSON.stringify(draftState)}`);
     }
-    if (!/저장할 준비가 되었습니다|이 노트에 추가했습니다/.test(draftState.noteStatus)) {
-      throw new Error(`Add note should tell the reader what to do next: ${JSON.stringify(draftState)}`);
+    if (!/노트 초안을 만들었습니다|노트 초안에 추가했습니다/.test(draftState.noteStatus)) {
+      throw new Error(`Add note should confirm the draft state without noisy instruction text: ${JSON.stringify(draftState)}`);
+    }
+    if (!/노트 초안으로 옮겼습니다|노트 초안에 추가했습니다/.test(draftState.translationStatus)) {
+      throw new Error(`Add note should keep translation status aligned with the note draft state: ${JSON.stringify(draftState)}`);
     }
     if (draftState.activeElementId !== 'noteText') {
       throw new Error(`Add note should focus the note editor: ${JSON.stringify(draftState)}`);

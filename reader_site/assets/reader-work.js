@@ -2316,8 +2316,8 @@ function draftNoteFromTranslation() {
     setTranslationStatus("이미 노트에 있습니다.");
     return;
   }
-  noteStatus.textContent = existingNote ? "이 노트에 추가했습니다. 확인 후 저장하세요." : "저장할 준비가 되었습니다.";
-  setTranslationStatus(existingNote ? "노트에 추가했습니다." : "노트에 저장할 준비가 되었습니다.");
+  noteStatus.textContent = existingNote ? "노트 초안에 추가했습니다." : "노트 초안을 만들었습니다.";
+  setTranslationStatus(existingNote ? "노트 초안에 추가했습니다." : "노트 초안으로 옮겼습니다.");
 }
 
 function translationStudyCardText(record) {

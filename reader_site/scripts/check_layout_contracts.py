@@ -1582,10 +1582,9 @@ def check_work_source_bundle_ui() -> None:
         "이미 노트에 있습니다.",
         "noteForm.scrollIntoView",
         "preventScroll: isMobileStudyLayout()",
-        "저장할 준비가 되었습니다.",
-        "노트에 저장할 준비가 되었습니다.",
-        "이 노트에 추가했습니다. 확인 후 저장하세요.",
-        "노트에 추가했습니다.",
+        "노트 초안을 만들었습니다.",
+        "노트 초안으로 옮겼습니다.",
+        "노트 초안에 추가했습니다.",
         "noteText.setSelectionRange",
         "translationStudyCardText",
         "function translationQuickActions",
@@ -1699,7 +1698,7 @@ def check_work_source_bundle_ui() -> None:
         "요청 취소",
     ]:
         require(noisy_marker not in pending_body, f"renderTranslationPending should keep loading state quiet without {noisy_marker!r}")
-    require_contains(template, "/assets/reader-work.js?v=common170", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common171", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common130", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
