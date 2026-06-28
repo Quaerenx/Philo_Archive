@@ -525,6 +525,7 @@ function renderRecord(record, options) {
   const showReviewActions = options.showReviewActions === true;
   const showContext = options.showContext !== false;
   const showSourceDetail = options.showSourceDetail === true;
+  const openCommentary = options.openCommentary === true;
   const reviewKicker = showReviewBadge
     ? `<div class="translation-record-kicker">
         <span class="review-badge" aria-label="검토 상태: ${escapeHtml(reviewLabel)}">${escapeHtml(reviewLabel)}</span>
@@ -552,7 +553,7 @@ function renderRecord(record, options) {
       ${showContext && context ? `<div class="translation-record-context">${escapeHtml(context)}</div>` : ""}
     </header>
     ${translation ? `<p class="translation-text">${escapeHtml(translation)}</p>` : ""}
-    ${commentary ? `<section class="translation-commentary" aria-label="해설"><h3>해설</h3><p>${escapeHtml(commentary)}</p></section>` : ""}
+    ${commentary ? `<details class="translation-commentary"${openCommentary ? " open" : ""} aria-label="해설"><summary>해설</summary><p>${escapeHtml(commentary)}</p></details>` : ""}
     ${source && showSourceDetail ? `<details class="translation-source"><summary>원문 보기</summary><blockquote>${escapeHtml(source)}</blockquote></details>` : ""}
     ${actions ? `<footer class="translation-record-footer">
       <div class="translation-actions">
@@ -571,7 +572,11 @@ function renderRecordGroups(records, options) {
         <span>${escapeHtml(group.label)}</span>
         ${showGroupActions ? renderGroupActions(group) : ""}
       </div>
-      ${group.records.map((record) => renderRecord(record, { ...options, showContext: false })).join("")}
+      ${group.records.map((record, recordIndex) => renderRecord(record, {
+        ...options,
+        showContext: false,
+        openCommentary: options.openFirstCommentary === true && groupIndex === 0 && recordIndex === 0
+      })).join("")}
     </section>`).join("");
 }
 
@@ -590,7 +595,7 @@ function renderRecords(records) {
   const inReviewQueue = isReviewQueueOnlyView();
   statusEl.textContent = "";
   resultsEl.innerHTML = queryMatched.length
-    ? renderSummary(queryMatched) + (visible.length ? renderRecordGroups(visible, { showReviewBadge: showReviewBadges, showReviewActions, showGroupActions: !inReviewQueue, showSourceDetail: showReviewActions }) : renderEmptyRecords())
+    ? renderSummary(queryMatched) + (visible.length ? renderRecordGroups(visible, { showReviewBadge: showReviewBadges, showReviewActions, showGroupActions: !inReviewQueue, showSourceDetail: showReviewActions, openFirstCommentary: inReviewQueue }) : renderEmptyRecords())
     : renderEmptyRecords();
   if (pendingReviewQueueFocus) {
     const reviewMessage = pendingReviewQueueMessage;

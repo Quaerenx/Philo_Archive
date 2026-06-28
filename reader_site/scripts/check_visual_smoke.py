@@ -251,8 +251,8 @@ def check_route_markup(route: str, html: str) -> None:
             "translationsReviewQueue",
             "aria-busy=\"false\"",
             "notes.css?v=notes26",
-            "translations.css?v=trans33",
-            "translations.js?v=trans77",
+            "translations.css?v=trans34",
+            "translations.js?v=trans78",
             'href="/translations" aria-current="page">번역</a>',
             "번역 찾기",
             "translationsListTools",
@@ -1161,6 +1161,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
           summaryButtons: Array.from(document.querySelectorAll('#translationsResults .translation-record-summary [data-translation-summary-filter]')).map((node) => node.textContent.trim()),
           summaryLabels: Array.from(document.querySelectorAll('#translationsResults .translation-record-summary [data-translation-summary-filter]')).map((node) => node.getAttribute('aria-label') || ''),
           sourceDisclosureCount: document.querySelectorAll('#translationsResults .translation-source').length,
+          commentaryDetailsCount: document.querySelectorAll('#translationsResults .translation-commentary').length,
+          openCommentaryCount: document.querySelectorAll('#translationsResults .translation-commentary[open]').length,
+          commentarySummaryTexts: Array.from(document.querySelectorAll('#translationsResults .translation-commentary summary')).map((node) => node.textContent.trim()),
           groupTitleCount: document.querySelectorAll('#translationsResults .translation-record-group-title').length,
           firstGroupTitle: document.querySelector('#translationsResults .translation-record-group-title')?.textContent.trim() || '',
           reviewQueueBorderColor: window.getComputedStyle(document.querySelector('#translationsReviewQueue')).borderColor,
@@ -1198,6 +1201,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       if (translationsPageState.sourceDisclosureCount !== 0) {
         throw new Error(`default translations list should hide repeated source disclosures: ${JSON.stringify(translationsPageState)}`);
+      }
+      if (translationsPageState.openCommentaryCount !== 0 || translationsPageState.commentarySummaryTexts.some((text) => text !== '해설')) {
+        throw new Error(`default translations list should keep commentary collapsed behind a concise label: ${JSON.stringify(translationsPageState)}`);
       }
       if (translationsPageState.headingText !== '번역 목록' || !translationsPageState.documentTitle.startsWith('번역 목록 /')) {
         throw new Error(`default translations page should read as a list, not a review task: ${JSON.stringify(translationsPageState)}`);
@@ -1760,8 +1766,10 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
           .find((node) => node.querySelector('.primary-review-action'));
         const source = card?.querySelector('.translation-source');
         const sourceSummary = source?.querySelector('summary');
-        const commentaryHeading = card?.querySelector('.translation-commentary h3');
-        const commentaryHeadingBox = commentaryHeading?.getBoundingClientRect();
+        const commentary = card?.querySelector('.translation-commentary');
+        const commentarySummary = commentary?.querySelector('summary');
+        const commentarySummaryBox = commentarySummary?.getBoundingClientRect();
+        const openCommentaries = document.querySelectorAll('#translationsResults .translation-commentary[open]').length;
         return {
           hasReviewTarget: Boolean(card),
           rejectText: reject?.textContent.trim() || '',
@@ -1791,8 +1799,11 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
           reviewTargetBorderLeftColor: cardStyle?.borderLeftColor || '',
           reviewTargetOutlineColor: cardStyle?.outlineColor || '',
           reviewTargetOutlineStyle: cardStyle?.outlineStyle || '',
-          commentaryHeadingWidth: commentaryHeadingBox?.width || 0,
-          commentaryHeadingHeight: commentaryHeadingBox?.height || 0,
+          commentaryOpen: Boolean(commentary?.open),
+          commentarySummaryText: commentarySummary?.textContent.trim() || '',
+          commentarySummaryWidth: commentarySummaryBox?.width || 0,
+          commentarySummaryHeight: commentarySummaryBox?.height || 0,
+          openCommentaries,
           statusText: document.querySelector('#translationsStatus')?.textContent.trim() || ''
         };
       });
@@ -1846,8 +1857,11 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (reviewTargetState.statusText.includes('Next item')) {
         throw new Error(`review queue should avoid redundant next-item status text: ${JSON.stringify(reviewTargetState)}`);
       }
-      if (reviewTargetState.commentaryHeadingWidth > 2 || reviewTargetState.commentaryHeadingHeight > 2) {
-        throw new Error(`review queue should keep repeated commentary headings visually quiet: ${JSON.stringify(reviewTargetState)}`);
+      if (!reviewTargetState.commentaryOpen || reviewTargetState.openCommentaries !== 1 || reviewTargetState.commentarySummaryText !== '해설') {
+        throw new Error(`review queue should open commentary only for the active review target: ${JSON.stringify(reviewTargetState)}`);
+      }
+      if (reviewTargetState.commentarySummaryHeight < 22 || reviewTargetState.commentarySummaryWidth <= 0) {
+        throw new Error(`review queue commentary disclosure should remain touch-readable: ${JSON.stringify(reviewTargetState)}`);
       }
     }
   }
