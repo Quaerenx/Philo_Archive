@@ -1010,7 +1010,7 @@ def check_study_ui() -> None:
     css = read_site_file("assets/study.css")
     for needle in [
         "/assets/study.css?v=study29",
-        "/assets/study.js?v=study47",
+        "/assets/study.js?v=study48",
         'href="/study" aria-current="page">학습</a>',
         "저장한 노트 찾기",
         '<button id="studySubmit" type="submit">적용</button>',
@@ -1078,9 +1078,11 @@ def check_study_ui() -> None:
         "검토할 번역이 있습니다.",
         "저장한 번역이 있습니다.",
         "const hasOverview = noteCount > 0",
+        "검토하기",
         "검토할 번역",
         "검토할 번역 ${generated.toLocaleString()}개로 이동",
         "번역 학습 상태",
+        "번역 보기",
         "저장한 번역",
         "저장한 번역 ${reviewed.toLocaleString()}개 보기",
         "aria-label=\"${escapeHtml(detail)}\"",

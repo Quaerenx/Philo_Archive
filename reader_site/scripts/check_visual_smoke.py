@@ -218,7 +218,7 @@ def check_route_markup(route: str, html: str) -> None:
             "studyStatus",
             "aria-busy=\"false\"",
             "study.css?v=study29",
-            "study.js?v=study47",
+            "study.js?v=study48",
             'href="/study" aria-current="page">학습</a>',
             "filter-panel",
             "조건</summary>",
@@ -1076,8 +1076,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (!studyPageState.hasGroups) {
       if (!studyPageState.formHidden) throw new Error(`empty study page should hide filter form: ${JSON.stringify(studyPageState)}`);
-      const hasReviewAction = studyPageState.primaryAction === '검토할 번역';
-      const hasSavedTranslationAction = studyPageState.emptyActions.some((text) => text.startsWith('저장한 번역'));
+      const hasReviewAction = studyPageState.primaryAction === '검토하기';
+      const hasSavedTranslationAction = studyPageState.primaryAction === '번역 보기';
       const expectedTitle = hasReviewAction
         ? '검토할 번역이 있습니다.'
         : (hasSavedTranslationAction ? '저장한 번역이 있습니다.' : '아직 저장한 노트가 없습니다.');
@@ -1101,6 +1101,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       if (hasReviewAction && !/^검토할 번역 .*개로 이동$/.test(studyPageState.primaryActionLabel)) {
         throw new Error(`empty study page should keep review counts in the accessible label: ${JSON.stringify(studyPageState)}`);
+      }
+      if (hasSavedTranslationAction && !/^저장한 번역 .*개 보기$/.test(studyPageState.primaryActionLabel)) {
+        throw new Error(`empty study page should keep saved translation counts in the accessible label: ${JSON.stringify(studyPageState)}`);
       }
       if (hasReviewAction && studyPageState.primaryActionTitle !== studyPageState.primaryActionLabel) {
         throw new Error(`empty study page should expose the same review count in the title: ${JSON.stringify(studyPageState)}`);

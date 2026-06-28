@@ -203,8 +203,8 @@ function renderEmptyStudy(translationSummary = null) {
     ? '<button type="button" data-empty-action="clear-filters">조건 지우기</button>'
     : "";
   const translationAction = generated > 0
-    ? emptyTranslationAction(studyTranslationHref("generated"), "검토할 번역", `검토할 번역 ${generated.toLocaleString()}개로 이동`)
-    : (reviewed > 0 ? emptyTranslationAction(studyTranslationHref("reviewed"), "저장한 번역", `저장한 번역 ${reviewed.toLocaleString()}개 보기`) : "");
+    ? emptyTranslationAction(studyTranslationHref("generated"), "검토하기", `검토할 번역 ${generated.toLocaleString()}개로 이동`)
+    : (reviewed > 0 ? emptyTranslationAction(studyTranslationHref("reviewed"), "번역 보기", `저장한 번역 ${reviewed.toLocaleString()}개 보기`) : "");
   const bodyMarkup = body ? `<p>${escapeHtml(body)}</p>` : "";
   return `<section class="empty empty-state">
     <h2>${escapeHtml(title)}</h2>
