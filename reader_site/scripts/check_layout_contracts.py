@@ -1712,7 +1712,7 @@ def check_work_source_bundle_ui() -> None:
         "<summary>저장 · 메모</summary>",
         "data-translation-quick-action=\"next-sentence\"",
         "다음 문장을 선택하고 번역",
-        "다음 문장 번역",
+        ">다음 문장</button>",
         "번역 저장",
         "번역으로 메모 추가",
         "translation-quick-actions translation-extra",
@@ -1858,7 +1858,7 @@ def check_work_source_bundle_ui() -> None:
             noisy_marker not in request_translation_body,
             f"requestSentenceTranslation should avoid storage-log status text {noisy_marker!r}",
         )
-    require_contains(template, "/assets/reader-work.js?v=common190", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common191", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common143", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
