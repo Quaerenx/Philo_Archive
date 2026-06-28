@@ -256,7 +256,7 @@ def check_route_markup(route: str, html: str) -> None:
             "study.js?v=study53",
             'href="/study" aria-current="page">학습</a>',
             "studyListTools",
-            "저장한 노트 찾기</summary>",
+            "학습 기록 찾기</summary>",
             "filter-panel",
             "조건</summary>",
             "export-tools",
@@ -1331,7 +1331,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       const hasSavedTranslationAction = studyPageState.primaryAction === '번역 보기';
       const expectedTitle = hasReviewAction
         ? '검토할 번역이 있습니다.'
-        : (hasSavedTranslationAction ? '저장한 번역이 있습니다.' : '아직 저장한 노트가 없습니다.');
+        : (hasSavedTranslationAction ? '저장한 번역이 있습니다.' : '아직 저장한 학습 기록이 없습니다.');
       if (studyPageState.emptyTitle !== expectedTitle || studyPageState.emptyBodyCount !== 0) {
         throw new Error(`empty study page should stay quiet: ${JSON.stringify(studyPageState)}`);
       }
@@ -1372,7 +1372,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (studyPageState.overviewHidden || studyPageState.overviewPrimaryText !== '이어 읽기') {
         throw new Error(`study page should expose a clear continue-reading action above saved notes: ${JSON.stringify(studyPageState)}`);
       }
-      if (studyPageState.listToolsHidden || studyPageState.listToolsOpen || studyPageState.listToolsSummary !== '저장한 노트 찾기') {
+      if (studyPageState.listToolsHidden || studyPageState.listToolsOpen || studyPageState.listToolsSummary !== '학습 기록 찾기') {
         throw new Error(`study page should keep saved-note filters collapsed behind a concise summary when records exist: ${JSON.stringify(studyPageState)}`);
       }
       if (!studyPageState.overviewPrimaryLabel.startsWith('이어 읽기: ')) {

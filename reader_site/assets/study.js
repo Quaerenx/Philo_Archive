@@ -200,11 +200,11 @@ function renderEmptyStudy(translationSummary = null) {
   const generated = Number(counts.generated || 0);
   const reviewed = Number(counts.reviewed || 0);
   const title = filtered
-    ? "조건에 맞는 저장한 노트가 없습니다."
+    ? "조건에 맞는 학습 기록이 없습니다."
     : (generated > 0
       ? "검토할 번역이 있습니다."
-      : (reviewed > 0 ? "저장한 번역이 있습니다." : "아직 저장한 노트가 없습니다."));
-  const body = filtered ? "조건을 지우거나 문서와 태그 범위를 넓혀보세요." : "";
+      : (reviewed > 0 ? "저장한 번역이 있습니다." : "아직 저장한 학습 기록이 없습니다."));
+  const body = filtered ? "조건을 지우거나 범위를 넓혀보세요." : "";
   const clearAction = filtered
     ? '<button type="button" data-empty-action="clear-filters">조건 지우기</button>'
     : "";
@@ -471,7 +471,7 @@ async function loadStudy() {
     const response = await fetch(`/api/study?${currentParams("json")}`, { signal: controller.signal });
     if (requestId !== activeStudyRequest) return;
     if (!response.ok) {
-      statusEl.textContent = "저장한 노트를 불러오지 못했습니다.";
+      statusEl.textContent = "학습 기록을 불러오지 못했습니다.";
       resultsEl.innerHTML = "";
       return;
     }
@@ -492,7 +492,7 @@ async function loadStudy() {
       return;
     }
     if (requestId === activeStudyRequest) {
-      statusEl.textContent = "저장한 노트를 불러오지 못했습니다.";
+      statusEl.textContent = "학습 기록을 불러오지 못했습니다.";
       resultsEl.innerHTML = "";
     }
   } finally {
