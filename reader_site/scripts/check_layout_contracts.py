@@ -1382,18 +1382,18 @@ def check_work_source_bundle_ui() -> None:
         "function translationErrorIsRuntime",
         "text.includes(\"번역기\")",
         "function runtimeRecoveryMarkup",
-        "번역기가 꺼져 있습니다. 시작한 뒤 다시 시도하세요.",
+        "번역기를 시작한 뒤 다시 시도하세요.",
         "translation-runtime-help",
         "translation-runtime-details",
         "명령 보기",
         "translation-runtime-note",
-        "시작 명령을 복사해 PowerShell에서 실행하세요.",
+        "명령을 복사해 PowerShell에 붙여넣으세요.",
         "translation-runtime-command",
         "data-translation-copy-runtime",
         "data-translation-check-runtime",
-        "상태 확인",
-        "시작 명령 복사</button>",
-        "복사했습니다. PowerShell에서 실행하세요.",
+        "번역기 확인",
+        "명령 복사</button>",
+        "명령을 복사했습니다.",
         ".\\\\run_reader_with_gemma.ps1",
         "translation-error-actions",
         "translation-unavailable-copy",
@@ -1673,7 +1673,7 @@ def check_work_source_bundle_ui() -> None:
         require(noisy_marker not in runtime_help_body, f"runtime recovery should keep startup help direct without {noisy_marker!r}")
     render_error_body = js_function_body(script, "renderTranslationError")
     require(
-        "번역 다시 시도" in render_error_body and "상태 확인" in render_error_body,
+        "번역 다시 시도" in render_error_body and "번역기 확인" in render_error_body,
         "renderTranslationError should distinguish retrying translation from checking translator status",
     )
     require(
@@ -1764,7 +1764,7 @@ def check_work_source_bundle_ui() -> None:
             noisy_marker not in request_translation_body,
             f"requestSentenceTranslation should avoid storage-log status text {noisy_marker!r}",
         )
-    require_contains(template, "/assets/reader-work.js?v=common172", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common173", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common132", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',

@@ -1751,7 +1751,7 @@ function translationErrorIsRuntime(message) {
 
 function translationErrorDisplayMessage(message) {
   return translationErrorIsRuntime(message)
-    ? "번역기가 꺼져 있습니다. 시작한 뒤 다시 시도하세요."
+    ? "번역기를 시작한 뒤 다시 시도하세요."
     : cleanText(message || "번역을 사용할 수 없습니다.");
 }
 
@@ -1759,8 +1759,8 @@ function runtimeRecoveryMarkup(message) {
   if (!translationErrorIsRuntime(message)) return "";
   return `
       <div class="translation-runtime-help">
-        <p class="translation-runtime-note">시작 명령을 복사해 PowerShell에서 실행하세요.</p>
-        <button type="button" data-translation-copy-runtime>시작 명령 복사</button>
+        <p class="translation-runtime-note">명령을 복사해 PowerShell에 붙여넣으세요.</p>
+        <button type="button" data-translation-copy-runtime>명령 복사</button>
         <details class="translation-runtime-details">
           <summary>명령 보기</summary>
           <code class="translation-runtime-command">${escapeHtml(GEMMA_RUNTIME_COMMAND)}</code>
@@ -1797,7 +1797,7 @@ function renderTranslationError(message) {
         ${runtimeRecoveryMarkup(cleanMessage)}
         <div class="translation-error-actions">
           <button type="button" data-translation-retry="${escapeHtml(retryMode)}">${escapeHtml(retryLabel)}</button>
-          ${isRuntimeError ? '<button type="button" data-translation-check-runtime>상태 확인</button>' : ""}
+          ${isRuntimeError ? '<button type="button" data-translation-check-runtime>번역기 확인</button>' : ""}
         </div>
       </div>
     </div>`;
@@ -2866,8 +2866,8 @@ translationOutput.addEventListener("click", (event) => {
   const copyRuntime = event.target.closest("[data-translation-copy-runtime]");
   if (copyRuntime) {
     copyText(GEMMA_RUNTIME_COMMAND)
-      .then(() => setTranslationStatus("복사했습니다. PowerShell에서 실행하세요."))
-      .catch(() => setTranslationStatus("시작 명령을 복사하지 못했습니다.", true));
+      .then(() => setTranslationStatus("명령을 복사했습니다."))
+      .catch(() => setTranslationStatus("명령을 복사하지 못했습니다.", true));
     return;
   }
   const checkRuntime = event.target.closest("[data-translation-check-runtime]");
