@@ -1783,10 +1783,10 @@ function runtimeRecoveryMarkup(message) {
   if (!translationErrorIsRuntime(message)) return "";
   return `
       <div class="translation-runtime-help">
-        <p class="translation-runtime-note">시작 명령을 복사해 PowerShell에 붙여넣으세요.</p>
+        <p class="translation-runtime-note">복사한 명령을 PowerShell에 붙여넣고 Enter를 누르세요.</p>
         <button type="button" data-translation-copy-runtime>시작 명령 복사</button>
         <details class="translation-runtime-details">
-          <summary>시작 명령</summary>
+          <summary>명령 보기</summary>
           <code class="translation-runtime-command">${escapeHtml(GEMMA_RUNTIME_COMMAND)}</code>
         </details>
       </div>`;

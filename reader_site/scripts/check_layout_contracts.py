@@ -1445,9 +1445,9 @@ def check_work_source_bundle_ui() -> None:
         "번역기를 시작한 뒤 다시 시도하세요.",
         "translation-runtime-help",
         "translation-runtime-details",
-        "시작 명령",
+        "명령 보기",
         "translation-runtime-note",
-        "시작 명령을 복사해 PowerShell에 붙여넣으세요.",
+        "복사한 명령을 PowerShell에 붙여넣고 Enter를 누르세요.",
         "translation-runtime-command",
         "data-translation-copy-runtime",
         "data-translation-check-runtime",
@@ -1833,7 +1833,7 @@ def check_work_source_bundle_ui() -> None:
             noisy_marker not in request_translation_body,
             f"requestSentenceTranslation should avoid storage-log status text {noisy_marker!r}",
         )
-    require_contains(template, "/assets/reader-work.js?v=common180", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common181", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common137", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
