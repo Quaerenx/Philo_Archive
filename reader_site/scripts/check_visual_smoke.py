@@ -375,7 +375,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common139",
-            "reader-work.js?v=common183",
+            "reader-work.js?v=common184",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         require("Contents (" not in html, f"{route} should not expose TOC inventory counts")
@@ -1607,7 +1607,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (state.cardReviewState && state.cardBoxShadow !== 'none') {
       throw new Error(`reading mode should suppress review-state card decoration: ${JSON.stringify(state)}`);
     }
-    if (!state.readingNextVisible || state.readingNextText !== '다음 문장') {
+    if (!state.readingNextVisible || state.readingNextText !== '다음 문장 번역') {
       throw new Error(`reading mode should expose the next sentence action: ${JSON.stringify(state)}`);
     }
     if (state.readingNextLabel !== '다음 문장을 선택하고 번역') {
@@ -1617,7 +1617,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       throw new Error(`reading mode next action should be visually primary: ${JSON.stringify(state)}`);
     }
     if (state.readingNextWidth <= 0 || state.readingNoteVisible || state.readingSaveVisible) {
-      throw new Error(`reading mode should keep only Next sentence as the immediate visible action: ${JSON.stringify(state)}`);
+      throw new Error(`reading mode should keep only Next sentence translation as the immediate visible action: ${JSON.stringify(state)}`);
     }
     if (state.markerSampleFound && Number.parseFloat(state.quietMarkerOpacity || '1') > 0.4) {
       throw new Error(`translation state markers should stay quiet in the source text: ${JSON.stringify(state)}`);
@@ -1658,8 +1658,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       throw new Error(`reading mode should move note/save actions out of the immediate reading card: ${JSON.stringify(state)}`);
     }
     const firstAction = state.readingActions[0] || '';
-    if (firstAction !== '다음 문장' || state.readingActions.length !== 1) {
-      throw new Error(`reading mode should show only Next sentence as the immediate action: ${JSON.stringify(state)}`);
+    if (firstAction !== '다음 문장 번역' || state.readingActions.length !== 1) {
+      throw new Error(`reading mode should show only Next sentence translation as the immediate action: ${JSON.stringify(state)}`);
     }
     if (state.visibleExtraCount !== 0) throw new Error(`reading mode exposed study-only translation extras: ${JSON.stringify(state)}`);
     if (state.activeTab !== '번역') throw new Error(`selected work route did not keep Translation tab active: ${JSON.stringify(state)}`);
