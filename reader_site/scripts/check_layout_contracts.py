@@ -1698,7 +1698,17 @@ def check_work_source_bundle_ui() -> None:
         "요청 취소",
     ]:
         require(noisy_marker not in pending_body, f"renderTranslationPending should keep loading state quiet without {noisy_marker!r}")
-    require_contains(template, "/assets/reader-work.js?v=common171", "templates/work.html")
+    request_translation_body = js_function_body(script, "requestSentenceTranslation")
+    require(
+        'setTranslationStatus(payload.cached ? "저장된 번역" : "번역 완료");' in request_translation_body,
+        "requestSentenceTranslation should keep successful translation status short",
+    )
+    for noisy_marker in ["저장된 번역을 불러왔습니다.", "번역을 로컬에 저장했습니다."]:
+        require(
+            noisy_marker not in request_translation_body,
+            f"requestSentenceTranslation should avoid storage-log status text {noisy_marker!r}",
+        )
+    require_contains(template, "/assets/reader-work.js?v=common172", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common130", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',

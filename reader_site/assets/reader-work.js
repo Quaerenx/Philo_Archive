@@ -2180,7 +2180,7 @@ async function requestSentenceTranslation(regenerate = false) {
     if (!payload.cached) {
       loadTranslationRecordsSummary();
     }
-    setTranslationStatus(payload.cached ? "저장된 번역을 불러왔습니다." : "번역을 로컬에 저장했습니다.");
+    setTranslationStatus(payload.cached ? "저장된 번역" : "번역 완료");
   } catch (error) {
     if (error && error.name === "AbortError") {
       return;
