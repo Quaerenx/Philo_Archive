@@ -635,8 +635,8 @@ def check_translations_ui() -> None:
     css = read_site_file("assets/translations.css")
     for needle in [
         "/assets/notes.css?v=notes25",
-        "/assets/translations.css?v=trans32",
-        "/assets/translations.js?v=trans74",
+        "/assets/translations.css?v=trans33",
+        "/assets/translations.js?v=trans75",
         "<title>번역 목록 / Personal Archive of Literature</title>",
         '<h1 id="translationsPageTitle">번역 목록</h1>',
         'aria-label="번역 이동"',
@@ -823,7 +823,7 @@ def check_translations_ui() -> None:
         'params.set("q", query)',
         "primary-review-action",
         "translation-more-actions",
-        "<summary>제외</summary>",
+        "<summary>제외 옵션</summary>",
         "제외하기",
         "이 번역 제외하기",
         'title="원문으로 이동"',
@@ -902,6 +902,8 @@ def check_translations_ui() -> None:
         "border-color: #ead0d0",
         ".translation-more-actions summary::after",
         ".translation-more-actions[open] summary::after",
+        "content: \"+\"",
+        "content: \"-\"",
         ".translation-more-actions button",
         "@media (hover: hover) and (pointer: fine)",
         ".translation-record-card:hover .translation-more-actions",

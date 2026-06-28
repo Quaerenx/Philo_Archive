@@ -425,12 +425,13 @@
 }
 
 .translation-more-actions summary::after {
-  margin-left: 0;
-  content: "";
+  margin-left: 5px;
+  color: #999;
+  content: "+";
 }
 
 .translation-more-actions[open] summary::after {
-  content: "";
+  content: "-";
 }
 
 .translation-more-actions button {
