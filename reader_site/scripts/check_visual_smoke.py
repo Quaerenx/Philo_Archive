@@ -341,7 +341,7 @@ def check_route_markup(route: str, html: str) -> None:
             "목차</summary>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common134",
+            "reader-work.css?v=common135",
             "reader-work.js?v=common178",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
@@ -1705,12 +1705,17 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         const panel = document.querySelector('#study-panel-concepts');
         const list = panel?.querySelector('.concept-list');
         const firstItem = list?.querySelector('li');
+        const firstLink = firstItem?.querySelector('.concept-link');
         const firstItemBox = firstItem?.getBoundingClientRect();
         return {
           activeTab: document.querySelector('.study-tab.active')?.textContent.trim() || '',
           heading: panel?.querySelector('h2')?.textContent.trim() || '',
           text: panel?.textContent.trim().replace(/\s+/g, ' ') || '',
           itemCount: panel?.querySelectorAll('.concept-list li').length || 0,
+          linkCount: panel?.querySelectorAll('.concept-link[href^="/search?"]').length || 0,
+          firstLinkText: firstLink?.textContent.trim() || '',
+          firstLinkHref: firstLink?.getAttribute('href') || '',
+          firstLinkLabel: firstLink?.getAttribute('aria-label') || '',
           firstTerm: panel?.querySelector('.concept-term')?.textContent.trim() || '',
           firstItemHeight: firstItemBox?.height || 0,
           listStyle: list ? window.getComputedStyle(list).listStyleType : ''
@@ -1721,6 +1726,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       if (conceptsState.itemCount < 2 || conceptsState.listStyle !== 'none') {
         throw new Error(`concept tab should present a compact scannable concept list: ${JSON.stringify(conceptsState)}`);
+      }
+      if (conceptsState.linkCount !== conceptsState.itemCount || !conceptsState.firstLinkHref.includes('corpus_id=nietzsche') || !conceptsState.firstLinkLabel.startsWith('관련 본문 찾기:')) {
+        throw new Error(`concept tab labels should link to scoped source search: ${JSON.stringify(conceptsState)}`);
       }
       if (!conceptsState.text.includes('계보학') || !conceptsState.text.includes('원한 감정') || !conceptsState.text.includes('도덕 개념')) {
         throw new Error(`concept tab should expose localized Nietzsche concept helpers: ${JSON.stringify(conceptsState)}`);

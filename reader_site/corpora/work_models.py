@@ -107,7 +107,7 @@ def build_nietzsche_work_model(work_id: str) -> dict:
         "source_path": rel_path,
         "source_href": source_href(target),
         "toc": toc_markup(document["toc"]),
-        "concepts": concept_markup(concepts),
+        "concepts": concept_markup(concepts, corpus_id="nietzsche"),
         "variant_tabs": "",
         "heading_count": str(int(document["heading_count"])),
         "segment_count": str(int(document["paragraph_count"])),

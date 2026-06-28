@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
 
 SITE = Path(__file__).resolve().parents[1]
+DATA = SITE / "data"
 sys.path.insert(0, str(SITE))
 
 from services.search import search_payload_from_query, search_records  # noqa: E402
@@ -180,6 +182,23 @@ def check_segment_ranking() -> None:
     require(gud_results[0].get("corpus_id") == "kierkegaard", "Gud ranking should stay inside Kierkegaard filter")
 
 
+def check_nietzsche_concept_search_links() -> None:
+    payload = json.loads((DATA / "nietzsche_concepts.json").read_text(encoding="utf-8"))
+    concepts = payload.get("concepts", [])
+    require(concepts, "Nietzsche concepts should be available for concept tab search links")
+    for concept in concepts:
+        query = str(concept.get("search_query") or "").strip()
+        context = f"Nietzsche concept search {concept.get('id')}"
+        require(query, f"{context} missing search_query")
+        results = search_records(query, corpus_id="nietzsche", limit=3)
+        hits = results.get("results", []) + results.get("work_results", [])
+        require(hits, f"{context} returned no scoped Nietzsche results for {query!r}")
+        require(
+            all(item.get("corpus_id") == "nietzsche" for item in hits),
+            f"{context} leaked outside Nietzsche search scope",
+        )
+
+
 def cleanup_notes() -> None:
     path = note_storage_path(NOTE_CORPUS_ID)
     if path.exists():
@@ -247,6 +266,7 @@ def main() -> None:
     check_query_payload_helper()
     check_work_alias_search()
     check_segment_ranking()
+    check_nietzsche_concept_search_links()
     check_note_search()
     print("search contracts ok")
 

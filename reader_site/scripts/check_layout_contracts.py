@@ -1785,7 +1785,7 @@ def check_work_source_bundle_ui() -> None:
             f"requestSentenceTranslation should avoid storage-log status text {noisy_marker!r}",
         )
     require_contains(template, "/assets/reader-work.js?v=common178", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common134", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common135", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
         'aria-label="읽기 화면 이동"',
@@ -1930,8 +1930,13 @@ def check_work_source_bundle_ui() -> None:
     require_contains(work_markup, '<details id="toc" class="toc"><summary>목차</summary>', "rendering/work_markup.py")
     require_contains(work_markup, 'concept.get("label_ko")', "rendering/work_markup.py")
     require_contains(work_markup, 'concept.get("description_ko")', "rendering/work_markup.py")
+    require_contains(work_markup, 'concept.get("search_query")', "rendering/work_markup.py")
+    require_contains(work_markup, "concept_search_href", "rendering/work_markup.py")
     require_contains(work_markup, 'class="concept-term"', "rendering/work_markup.py")
+    require_contains(work_markup, 'class="concept-link"', "rendering/work_markup.py")
+    require_contains(work_markup, 'aria-label="관련 본문 찾기:', "rendering/work_markup.py")
     require_contains(work_markup, '<h2>개념</h2>', "rendering/work_markup.py")
+    require_contains(read_site_file("corpora/work_models.py"), 'concept_markup(concepts, corpus_id="nietzsche")', "corpora/work_models.py")
     require_contains(work_markup, 'toc_link = \'<a href="#toc">목차</a>\' if model.get("toc") else ""', "rendering/work_markup.py")
     require_contains(work_markup, '"TOC_LINK": toc_link', "rendering/work_markup.py")
     require("Contents (" not in work_markup, "rendering/work_markup.py should keep TOC summary quiet")
@@ -2151,6 +2156,8 @@ def check_work_source_bundle_ui() -> None:
         ".concept-list",
         ".concept-list li",
         ".concept-list li:first-child",
+        ".concept-link",
+        ".concept-link:hover",
         ".concept-term",
         "list-style: none",
         ".translation-empty-state .translation-primary",
