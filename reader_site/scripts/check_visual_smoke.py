@@ -218,7 +218,7 @@ def check_route_markup(route: str, html: str) -> None:
             "studyStatus",
             "aria-busy=\"false\"",
             "study.css?v=study29",
-            "study.js?v=study46",
+            "study.js?v=study47",
             'href="/study" aria-current="page">학습</a>',
             "filter-panel",
             "조건</summary>",
@@ -233,7 +233,7 @@ def check_route_markup(route: str, html: str) -> None:
             "notesStatus",
             "aria-busy=\"false\"",
             "notes.css?v=notes26",
-            "notes.js?v=notes34",
+            "notes.js?v=notes35",
             'href="/notes" aria-current="page">노트</a>',
             "filter-panel",
             "노트 찾기</summary>",
@@ -252,7 +252,7 @@ def check_route_markup(route: str, html: str) -> None:
             "aria-busy=\"false\"",
             "notes.css?v=notes26",
             "translations.css?v=trans33",
-            "translations.js?v=trans76",
+            "translations.js?v=trans77",
             'href="/translations" aria-current="page">번역</a>',
             "번역 찾기",
             "translationsListTools",
@@ -1017,7 +1017,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (notesPageState.emptyBorderLeftColor === 'rgb(176, 0, 0)') {
         throw new Error(`empty notes page should not look like a warning state: ${JSON.stringify(notesPageState)}`);
       }
-      if (notesPageState.emptyActions.length !== 1 || notesPageState.emptyActions[0] !== '읽을 문서 찾기') {
+      if (notesPageState.emptyActions.length !== 1 || notesPageState.emptyActions[0] !== '읽기 시작') {
         throw new Error(`empty notes page should keep only the find action: ${JSON.stringify(notesPageState)}`);
       }
     } else {
@@ -1087,7 +1087,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (studyPageState.emptyActions.includes('노트')) {
         throw new Error(`empty study page should not send users to an empty notes list: ${JSON.stringify(studyPageState)}`);
       }
-      if (!studyPageState.emptyActions.includes('읽을 문서 찾기')) {
+      if (!studyPageState.emptyActions.includes('읽기 시작')) {
         throw new Error(`empty study page should keep a clear find action: ${JSON.stringify(studyPageState)}`);
       }
       if (studyPageState.emptyBorderLeftColor === 'rgb(176, 0, 0)' || studyPageState.findActionColor === 'rgb(176, 0, 0)') {
@@ -1189,7 +1189,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (translationsPageState.emptyTitle !== '아직 번역이 없습니다.' || translationsPageState.emptyBodyCount !== 0) {
         throw new Error(`empty translations page should stay quiet: ${JSON.stringify(translationsPageState)}`);
       }
-      if (translationsPageState.emptyActions.length !== 1 || translationsPageState.emptyActions[0] !== '읽을 문서 찾기') {
+      if (translationsPageState.emptyActions.length !== 1 || translationsPageState.emptyActions[0] !== '읽기 시작') {
         throw new Error(`empty translations page should keep only the find action: ${JSON.stringify(translationsPageState)}`);
       }
     } else {

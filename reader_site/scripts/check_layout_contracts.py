@@ -475,7 +475,7 @@ def check_notes_ui() -> None:
     css = read_site_file("assets/notes.css")
     for needle in [
         "/assets/notes.css?v=notes26",
-        "/assets/notes.js?v=notes34",
+        "/assets/notes.js?v=notes35",
         'href="/notes" aria-current="page">노트</a>',
         "노트 찾기",
         "노트 찾기</summary>",
@@ -552,7 +552,7 @@ def check_notes_ui() -> None:
         "function updateNotesListChrome",
         "form.hidden = !showTools",
         "아직 노트가 없습니다.",
-        "읽을 문서 찾기",
+        "읽기 시작",
         "function clearNotesFilters",
         "queryInput.focus();",
         "function updateNotesClearState",
@@ -667,7 +667,7 @@ def check_translations_ui() -> None:
     for needle in [
         "/assets/notes.css?v=notes26",
         "/assets/translations.css?v=trans33",
-        "/assets/translations.js?v=trans76",
+        "/assets/translations.js?v=trans77",
         "<title>번역 목록 / Personal Archive of Literature</title>",
         '<h1 id="translationsPageTitle">번역 목록</h1>',
         'aria-label="번역 이동"',
@@ -751,7 +751,7 @@ def check_translations_ui() -> None:
         "조건 지우기",
         "조건을 지우거나 문서와 상태 범위를 넓혀보세요.",
         "const bodyMarkup = body ?",
-        "읽을 문서 찾기",
+        "읽기 시작",
         "function clearFilters",
         "queryInput.focus();",
         "function updateFilterSummary",
@@ -1004,7 +1004,7 @@ def check_study_ui() -> None:
     css = read_site_file("assets/study.css")
     for needle in [
         "/assets/study.css?v=study29",
-        "/assets/study.js?v=study46",
+        "/assets/study.js?v=study47",
         'href="/study" aria-current="page">학습</a>',
         "저장한 노트 찾기",
         '<button id="studySubmit" type="submit">적용</button>',
@@ -1097,7 +1097,7 @@ def check_study_ui() -> None:
         "archiveCorpora = payload.corpora || []",
         'statusEl.textContent = "";',
         "노트",
-        "읽을 문서 찾기",
+        "읽기 시작",
         "function clearStudyFilters",
         "queryInput.focus();",
         "function updateStudyClearState",
