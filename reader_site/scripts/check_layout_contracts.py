@@ -1047,7 +1047,7 @@ def check_study_ui() -> None:
     css = read_site_file("assets/study.css")
     for needle in [
         "/assets/study.css?v=study30",
-        "/assets/study.js?v=study50",
+        "/assets/study.js?v=study51",
         'href="/study" aria-current="page">학습</a>',
         "저장한 노트 찾기",
         'id="studyListTools"',
@@ -1147,6 +1147,7 @@ def check_study_ui() -> None:
         "const notesLabel = `노트 보기: ${title}`",
         ">노트 보기</a>",
         "function studyCountLabel",
+        "return `${label} ${count.toLocaleString()}개`",
         "function studyGroupMeta",
         "archiveCorpora = payload.corpora || []",
         'statusEl.textContent = "";',

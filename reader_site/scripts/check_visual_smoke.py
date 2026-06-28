@@ -244,7 +244,7 @@ def check_route_markup(route: str, html: str) -> None:
             "studyStatus",
             "aria-busy=\"false\"",
             "study.css?v=study30",
-            "study.js?v=study50",
+            "study.js?v=study51",
             'href="/study" aria-current="page">학습</a>',
             "studyListTools",
             "저장한 노트 찾기</summary>",
@@ -1143,6 +1143,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         overviewPrimaryBorderColor: overviewPrimary ? window.getComputedStyle(overviewPrimary).borderColor : '',
         overviewLinkTexts: Array.from(document.querySelectorAll('#studyOverview .study-overview-translations a')).map((node) => node.textContent.trim()),
         overviewLinkLabels: Array.from(document.querySelectorAll('#studyOverview .study-overview-translations a')).map((node) => node.getAttribute('aria-label') || ''),
+        firstGroupMeta: document.querySelector('#studyResults .study-group:first-of-type .group-meta')?.textContent.trim() || '',
         firstGroupActions: Array.from(document.querySelectorAll('#studyResults .study-group:first-of-type .group-actions a')).map((node) => node.textContent.trim()),
         firstGroupActionLabels: Array.from(document.querySelectorAll('#studyResults .study-group:first-of-type .group-actions a')).map((node) => node.getAttribute('aria-label') || ''),
         firstNoteActions: Array.from(document.querySelectorAll('#studyResults .study-group:first-of-type .study-note:first-of-type .note-actions a')).map((node) => node.textContent.trim()),
@@ -1198,7 +1199,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if ((hasReviewAction || hasSavedTranslationAction) && !studyPageState.overviewHidden) {
         throw new Error(`empty study page should keep translation status inside the empty card, not a separate overview: ${JSON.stringify(studyPageState)}`);
       }
-      if (studyPageState.overviewText.includes('0개 저장 노트')) {
+      if (studyPageState.overviewText.includes('저장한 노트 0개')) {
         throw new Error(`empty study page overview should not repeat zero notes: ${JSON.stringify(studyPageState)}`);
       }
     } else {
@@ -1216,6 +1217,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       if (!studyPageState.firstGroupActions.includes('이어 읽기')) {
         throw new Error(`study note groups should offer a clear continue-reading action: ${JSON.stringify(studyPageState)}`);
+      }
+      if (/\d+개\s+저장/.test(`${studyPageState.overviewText} ${studyPageState.firstGroupMeta}`) || !`${studyPageState.overviewText} ${studyPageState.firstGroupMeta}`.includes('저장한 노트')) {
+        throw new Error(`study note counts should read naturally in Korean: ${JSON.stringify(studyPageState)}`);
       }
       if (!studyPageState.firstGroupActions.includes('노트 보기') || studyPageState.firstGroupActions.includes('노트')) {
         throw new Error(`study note groups should make note-list navigation explicit: ${JSON.stringify(studyPageState)}`);

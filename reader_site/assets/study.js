@@ -200,7 +200,7 @@ function renderEmptyStudy(translationSummary = null) {
   const generated = Number(counts.generated || 0);
   const reviewed = Number(counts.reviewed || 0);
   const title = filtered
-    ? "조건에 맞는 저장 노트가 없습니다."
+    ? "조건에 맞는 저장한 노트가 없습니다."
     : (generated > 0
       ? "검토할 번역이 있습니다."
       : (reviewed > 0 ? "저장한 번역이 있습니다." : "아직 저장한 노트가 없습니다."));
@@ -328,7 +328,7 @@ function renderNote(note) {
 }
 
 function studyCountLabel(count, label) {
-  return `${count.toLocaleString()}개 ${label}`;
+  return `${label} ${count.toLocaleString()}개`;
 }
 
 function continueStudyLink(payload) {
@@ -361,8 +361,8 @@ function renderStudyOverview(payload, translationSummary) {
   }
   const notesLabel = noteCount > 0
     ? (groupCount > 1
-      ? `${studyCountLabel(noteCount, "저장 노트")} / ${studyCountLabel(groupCount, "문서")}`
-      : studyCountLabel(noteCount, "저장 노트"))
+      ? `${studyCountLabel(noteCount, "저장한 노트")} / ${studyCountLabel(groupCount, "문서")}`
+      : studyCountLabel(noteCount, "저장한 노트"))
     : "";
   const notesMarkup = notesLabel
     ? `<div class="study-overview-notes">${escapeHtml(notesLabel)}</div>`
@@ -380,7 +380,7 @@ function studyGroupMeta(group) {
   const noteCount = Number(group.count || group.notes?.length || 0);
   const targetCount = Number(group.target_count || 0);
   const parts = [
-    noteCount ? studyCountLabel(noteCount, "저장 노트") : "",
+    noteCount ? studyCountLabel(noteCount, "저장한 노트") : "",
     targetCount > 1 ? studyCountLabel(targetCount, "대상") : ""
   ].filter(Boolean);
   return parts.join(" / ");
