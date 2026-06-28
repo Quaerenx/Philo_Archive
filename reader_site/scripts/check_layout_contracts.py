@@ -307,6 +307,7 @@ def check_search_ui() -> None:
         'class="filter-panel-fields"',
         'id="searchSubmit"',
         'id="searchClear"',
+        'placeholder="예: GM, ressentiment, John 3:16"',
         'id="searchActiveFilters"',
         'aria-label="활성 검색 조건"',
         'class="form-actions"',
