@@ -347,6 +347,8 @@ function renderNotes(notes) {
         ? `<a href="${escapeHtml(note.url)}" aria-label="${escapeHtml(sourceLabel)}" title="${escapeHtml(sourceLabel)}">원문 읽기</a>`
         : "";
       const editLabel = `노트 수정: ${cleanText(title || "노트")}`;
+      const editSaveLabel = `노트 저장: ${cleanText(title || "노트")}`;
+      const editCancelLabel = `노트 수정 취소: ${cleanText(title || "노트")}`;
       const isRecent = note.id === recentlyChangedNoteId;
       const recentAttrs = isRecent ? ' tabindex="-1" aria-label="최근 변경된 노트"' : "";
       const meta = [
@@ -379,8 +381,8 @@ function renderNotes(notes) {
           <label>태그<input name="tags" value="${escapeHtml(tags)}" autocomplete="off"></label>
           <label>노트<textarea name="note" required>${escapeHtml(note.note)}</textarea></label>
           <div class="note-edit-actions">
-            <button type="submit">저장</button>
-            <button type="button" data-action="cancel">취소</button>
+            <button type="submit" title="${escapeHtml(editSaveLabel)}" aria-label="${escapeHtml(editSaveLabel)}">저장</button>
+            <button type="button" data-action="cancel" title="${escapeHtml(editCancelLabel)}" aria-label="${escapeHtml(editCancelLabel)}">취소</button>
           </div>
         </form>
       </article>`;

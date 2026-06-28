@@ -1144,6 +1144,10 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         openMoreActions: document.querySelectorAll('#notesResults .note-more-actions[open]').length,
         sourceActionLabels: Array.from(document.querySelectorAll('#notesResults .note-actions a')).map((node) => node.getAttribute('aria-label') || ''),
         editActionLabels: Array.from(document.querySelectorAll('#notesResults .note-actions button[data-action="edit"]')).map((node) => node.getAttribute('aria-label') || ''),
+        editFormSaveText: document.querySelector('#notesResults .note-card:first-of-type .note-edit-form button[type="submit"]')?.textContent.trim() || '',
+        editFormSaveLabel: document.querySelector('#notesResults .note-card:first-of-type .note-edit-form button[type="submit"]')?.getAttribute('aria-label') || '',
+        editFormCancelText: document.querySelector('#notesResults .note-card:first-of-type .note-edit-form button[data-action="cancel"]')?.textContent.trim() || '',
+        editFormCancelLabel: document.querySelector('#notesResults .note-card:first-of-type .note-edit-form button[data-action="cancel"]')?.getAttribute('aria-label') || '',
       };
     });
     if (!notesPageState.exportAfterResults) {
@@ -1217,6 +1221,12 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       if (notesPageState.editActionLabels.some((label) => label && !label.startsWith('노트 수정: '))) {
         throw new Error(`notes edit actions should include their target in accessible labels: ${JSON.stringify(notesPageState)}`);
+      }
+      if (notesPageState.editFormSaveText !== '저장' || !notesPageState.editFormSaveLabel.startsWith('노트 저장: ')) {
+        throw new Error(`notes edit form save action should stay concise while naming its target accessibly: ${JSON.stringify(notesPageState)}`);
+      }
+      if (notesPageState.editFormCancelText !== '취소' || !notesPageState.editFormCancelLabel.startsWith('노트 수정 취소: ')) {
+        throw new Error(`notes edit form cancel action should stay concise while naming its target accessibly: ${JSON.stringify(notesPageState)}`);
       }
       if (notesPageState.summaryButtons.some((text) => text.includes('저장됨') || text === '작성 중')) {
         throw new Error(`notes status summary should use learner-facing labels: ${JSON.stringify(notesPageState)}`);
