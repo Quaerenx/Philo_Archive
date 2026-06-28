@@ -487,7 +487,7 @@ def check_notes_ui() -> None:
     css = read_site_file("assets/notes.css")
     for needle in [
         "/assets/notes.css?v=notes26",
-        "/assets/notes.js?v=notes36",
+        "/assets/notes.js?v=notes37",
         'href="/notes" aria-current="page">노트</a>',
         "노트 찾기",
         "노트 찾기</summary>",
@@ -541,6 +541,9 @@ def check_notes_ui() -> None:
         "function workDisplayName",
         "function noteTitle",
         "function noteContext",
+        "const sourceLabel = `원문 열기: ${cleanText(title || \"노트 대상\")}`",
+        "const sourceAction = note.url",
+        ">원문 열기</a>",
         'statusEl.textContent = "";',
         "function renderNoteFooter",
         "note-footer",

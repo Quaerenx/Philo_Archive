@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 from datetime import datetime
 from pathlib import Path
@@ -14,7 +15,7 @@ from services.sources import work_href
 
 
 SITE = Path(__file__).resolve().parents[1]
-NOTES_DIR = SITE / "data" / "notes"
+NOTES_DIR = Path(os.environ.get("PHILO_NOTES_DIR", str(SITE / "data" / "notes")))
 DEFAULT_CORPUS_IDS = ("nietzsche", "bible", "kierkegaard", "wittgenstein")
 VALID_REVIEW_STATES = {"raw", "reviewed"}
 SEGMENT_NOTE_TARGET_TYPES = {"segment", "paragraph", "verse", "sentence"}

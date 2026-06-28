@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import shutil
 import socket
@@ -23,6 +24,23 @@ from services.sources import CORPUS_ROOTS, relative_source_path  # noqa: E402
 
 DEFAULT_OUTPUT = SITE / "data" / "visual_qa.local"
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
+VISUAL_NOTE_SEED = {
+    "id": "visual-study-note-1",
+    "created_at": "2026-06-17T09:00:00",
+    "updated_at": "2026-06-17T09:05:00",
+    "reviewed_at": "2026-06-17T09:05:00",
+    "corpus_id": "nietzsche",
+    "work_id": "GM",
+    "variant_id": "",
+    "target_id": "p-0023.s001",
+    "target_type": "sentence",
+    "target_label": "Zur Genealogie der Moral §10",
+    "quote": "Der Sklavenaufstand in der Moral beginnt damit...",
+    "note": "원문을 읽으며 저장한 시각 검증용 노트입니다.",
+    "tags": ["시각검증", "계보학"],
+    "review_state": "reviewed",
+    "url": "/work/nietzsche/GM#p-0023.s001",
+}
 ROUTES = [
     ("home", "/", True),
     ("nietzsche-category", "/category/nietzsche", True),
@@ -141,6 +159,12 @@ def playwright_is_available(node: str, node_path: str) -> bool:
     return result.returncode == 0
 
 
+def seed_visual_notes(notes_dir: Path) -> None:
+    notes_dir.mkdir(parents=True, exist_ok=True)
+    path = notes_dir / "nietzsche_notes.jsonl"
+    path.write_text(json.dumps(VISUAL_NOTE_SEED, ensure_ascii=False, sort_keys=True) + "\n", encoding="utf-8")
+
+
 def discover_source_routes() -> list[tuple[str, str, bool]]:
     for root in CORPUS_ROOTS:
         if not root.exists():
@@ -235,7 +259,7 @@ def check_route_markup(route: str, html: str) -> None:
             "notesStatus",
             "aria-busy=\"false\"",
             "notes.css?v=notes26",
-            "notes.js?v=notes36",
+            "notes.js?v=notes37",
             'href="/notes" aria-current="page">노트</a>',
             "filter-panel",
             "노트 찾기</summary>",
@@ -1010,7 +1034,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         reviewOptions: Array.from(document.querySelectorAll('#notesReview option')).map((node) => node.textContent.trim()),
         summaryButtons: Array.from(document.querySelectorAll('#notesResults .notes-summary-filter')).map((node) => node.textContent.trim()),
         summaryLabels: Array.from(document.querySelectorAll('#notesResults .notes-summary-filter')).map((node) => node.getAttribute('aria-label') || ''),
-        actionText: Array.from(document.querySelectorAll('#notesResults .note-actions')).map((node) => node.textContent.trim()).join(' ')
+        actionText: Array.from(document.querySelectorAll('#notesResults .note-actions')).map((node) => node.textContent.trim()).join(' '),
+        sourceActionLabels: Array.from(document.querySelectorAll('#notesResults .note-actions a')).map((node) => node.getAttribute('aria-label') || ''),
       };
     });
     if (!notesPageState.exportAfterResults) {
@@ -1038,6 +1063,12 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     } else {
       if (/Open target|Open work|Manage note|Edit note|다시 열기|저장 완료/.test(notesPageState.actionText)) {
         throw new Error(`notes page actions should stay concise and unambiguous: ${notesPageState.actionText}`);
+      }
+      if (!notesPageState.actionText.includes('원문 열기')) {
+        throw new Error(`notes page should expose a clear source navigation action: ${JSON.stringify(notesPageState)}`);
+      }
+      if (notesPageState.sourceActionLabels.some((label) => label && !label.startsWith('원문 열기: '))) {
+        throw new Error(`notes source links should include their target in accessible labels: ${JSON.stringify(notesPageState)}`);
       }
       if (notesPageState.summaryButtons.some((text) => text.includes('저장됨') || text === '작성 중')) {
         throw new Error(`notes status summary should use learner-facing labels: ${JSON.stringify(notesPageState)}`);
@@ -2055,55 +2086,60 @@ def main() -> None:
             playwright_node_path = node_path
     port = free_port()
     base_url = f"http://127.0.0.1:{port}"
-    server = subprocess.Popen(
-        [sys.executable, str(SITE / "server.py"), "--host", "127.0.0.1", "--port", str(port)],
-        cwd=SITE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
-    try:
-        wait_for_health(base_url, server)
-        routes = [*ROUTES, *discover_source_routes()]
-        html_count = 0
-        screenshot_count = 0
-        screenshot_failures = []
-        for route_label, route, should_capture in routes:
-            url = f"{base_url}{route}"
-            html = fetch_html(url)
-            require("<html" in html.lower(), f"{route} response does not look like a page")
-            require(
-                "Personal Archive of Literature" in html or "아카이브" in html,
-                f"{route} is missing archive identity text",
-            )
-            check_route_markup(route, html)
-            html_count += 1
-            if args.html_only or not should_capture:
-                continue
-            for viewport_label, width, height in VIEWPORTS:
-                output_path = args.output / f"{route_label}-{viewport_label}.png"
-                try:
-                    capture(browser, playwright_node, playwright_node_path, url, output_path, width, height)
-                    screenshot_count += 1
-                except AssertionError as exc:
-                    message = f"{route_label}/{viewport_label}: {exc}"
-                    if not args.allow_screenshot_failures:
-                        raise AssertionError(message) from exc
-                    screenshot_failures.append(message)
-        if args.html_only:
-            print(f"visual smoke html ok ({html_count} routes)")
-        elif screenshot_failures:
-            print(f"visual smoke html ok ({html_count} routes); screenshot failures allowed ({len(screenshot_failures)})")
-            for failure in screenshot_failures:
-                print(f"- {failure}")
-        else:
-            print(f"visual smoke ok ({screenshot_count} screenshots in {args.output})")
-    finally:
-        server.terminate()
+    with tempfile.TemporaryDirectory(prefix="philo_visual_notes_") as notes_temp_dir:
+        server_env = os.environ.copy()
+        server_env["PHILO_NOTES_DIR"] = str(Path(notes_temp_dir))
+        seed_visual_notes(Path(notes_temp_dir))
+        server = subprocess.Popen(
+            [sys.executable, str(SITE / "server.py"), "--host", "127.0.0.1", "--port", str(port)],
+            cwd=SITE,
+            env=server_env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
         try:
-            server.wait(timeout=5)
-        except subprocess.TimeoutExpired:
-            server.kill()
+            wait_for_health(base_url, server)
+            routes = [*ROUTES, *discover_source_routes()]
+            html_count = 0
+            screenshot_count = 0
+            screenshot_failures = []
+            for route_label, route, should_capture in routes:
+                url = f"{base_url}{route}"
+                html = fetch_html(url)
+                require("<html" in html.lower(), f"{route} response does not look like a page")
+                require(
+                    "Personal Archive of Literature" in html or "아카이브" in html,
+                    f"{route} is missing archive identity text",
+                )
+                check_route_markup(route, html)
+                html_count += 1
+                if args.html_only or not should_capture:
+                    continue
+                for viewport_label, width, height in VIEWPORTS:
+                    output_path = args.output / f"{route_label}-{viewport_label}.png"
+                    try:
+                        capture(browser, playwright_node, playwright_node_path, url, output_path, width, height)
+                        screenshot_count += 1
+                    except AssertionError as exc:
+                        message = f"{route_label}/{viewport_label}: {exc}"
+                        if not args.allow_screenshot_failures:
+                            raise AssertionError(message) from exc
+                        screenshot_failures.append(message)
+            if args.html_only:
+                print(f"visual smoke html ok ({html_count} routes)")
+            elif screenshot_failures:
+                print(f"visual smoke html ok ({html_count} routes); screenshot failures allowed ({len(screenshot_failures)})")
+                for failure in screenshot_failures:
+                    print(f"- {failure}")
+            else:
+                print(f"visual smoke ok ({screenshot_count} screenshots in {args.output})")
+        finally:
+            server.terminate()
+            try:
+                server.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                server.kill()
 
 
 if __name__ == "__main__":

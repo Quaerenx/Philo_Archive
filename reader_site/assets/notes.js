@@ -305,12 +305,17 @@ function renderNotes(notes) {
       const reviewActionTitle = reviewState === "reviewed" ? "작성 중인 노트로 옮기기" : "저장한 노트로 표시";
       const quote = note.quote ? `<blockquote class="note-quote">${escapeHtml(cleanText(note.quote))}</blockquote>` : "";
       const href = note.url ? `<a href="${escapeHtml(note.url)}">${escapeHtml(title || "노트 대상 열기")}</a>` : escapeHtml(title || "제목 없는 노트");
+      const sourceLabel = `원문 열기: ${cleanText(title || "노트 대상")}`;
+      const sourceAction = note.url
+        ? `<a href="${escapeHtml(note.url)}" aria-label="${escapeHtml(sourceLabel)}" title="${escapeHtml(sourceLabel)}">원문 열기</a>`
+        : "";
       const isRecent = note.id === recentlyChangedNoteId;
       const recentAttrs = isRecent ? ' tabindex="-1" aria-label="최근 변경된 노트"' : "";
       const meta = [
         tags ? `# ${tags}` : ""
       ].filter(Boolean).join(" / ");
       const actions = `
+          ${sourceAction}
           <button type="button" data-action="${escapeHtml(reviewAction)}" title="${escapeHtml(reviewActionTitle)}" aria-label="${escapeHtml(reviewActionTitle)}">${escapeHtml(reviewActionLabel)}</button>
           <button type="button" data-action="edit">수정</button>
           <details class="note-danger-actions">
