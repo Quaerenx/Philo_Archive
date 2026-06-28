@@ -305,8 +305,12 @@ function renderNote(note) {
     tags ? `# ${tags}` : "",
     missingTarget
   ].filter(Boolean).join(" / ");
+  const sourceLabel = `원문 열기: ${cleanText(target)}`;
+  const sourceAction = note.url
+    ? `<a href="${escapeHtml(note.url)}" aria-label="${escapeHtml(sourceLabel)}" title="${escapeHtml(sourceLabel)}">원문 열기</a>`
+    : "";
   const editLabel = `노트 수정: ${cleanText(target)}`;
-  const actions = `<a href="${escapeHtml(manageHref)}" aria-label="${escapeHtml(editLabel)}" title="${escapeHtml(editLabel)}">노트 수정</a>`;
+  const actions = `${sourceAction}<a href="${escapeHtml(manageHref)}" aria-label="${escapeHtml(editLabel)}" title="${escapeHtml(editLabel)}">노트 수정</a>`;
   return `<article class="study-note">
     <div class="note-title">
       ${targetLink}

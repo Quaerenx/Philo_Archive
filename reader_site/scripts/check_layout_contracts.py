@@ -1025,7 +1025,7 @@ def check_study_ui() -> None:
     css = read_site_file("assets/study.css")
     for needle in [
         "/assets/study.css?v=study29",
-        "/assets/study.js?v=study48",
+        "/assets/study.js?v=study49",
         'href="/study" aria-current="page">학습</a>',
         "저장한 노트 찾기",
         '<button id="studySubmit" type="submit">적용</button>',
@@ -1108,6 +1108,9 @@ def check_study_ui() -> None:
         "function updateStudyListChrome",
         "form.hidden = !showTools",
         "function renderNoteFooter",
+        "const sourceLabel = `원문 열기: ${cleanText(target)}`",
+        "const sourceAction = note.url",
+        ">원문 열기</a>",
         "function archiveCorpusById",
         "function corpusDisplayName",
         "function workDisplayName",

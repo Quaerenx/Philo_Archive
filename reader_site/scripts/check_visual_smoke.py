@@ -220,7 +220,7 @@ def check_route_markup(route: str, html: str) -> None:
             "studyStatus",
             "aria-busy=\"false\"",
             "study.css?v=study29",
-            "study.js?v=study48",
+            "study.js?v=study49",
             'href="/study" aria-current="page">학습</a>',
             "filter-panel",
             "조건</summary>",
@@ -1148,11 +1148,14 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (studyPageState.firstGroupActionLabels.some((label) => label && !/^(이어 읽기|노트 보기):\s+/.test(label))) {
         throw new Error(`study group actions should include readable targets in accessible labels: ${JSON.stringify(studyPageState)}`);
       }
+      if (!studyPageState.firstNoteActions.includes('원문 열기')) {
+        throw new Error(`study note actions should expose a clear source navigation action: ${JSON.stringify(studyPageState)}`);
+      }
       if (!studyPageState.firstNoteActions.includes('노트 수정') || studyPageState.firstNoteActions.includes('수정')) {
         throw new Error(`study note actions should name note editing explicitly: ${JSON.stringify(studyPageState)}`);
       }
-      if (studyPageState.firstNoteActionLabels.some((label) => label && !label.startsWith('노트 수정: '))) {
-        throw new Error(`study note edit links should include their target in accessible labels: ${JSON.stringify(studyPageState)}`);
+      if (studyPageState.firstNoteActionLabels.some((label) => label && !/^(원문 열기|노트 수정):\s+/.test(label))) {
+        throw new Error(`study note links should include their target in accessible labels: ${JSON.stringify(studyPageState)}`);
       }
     }
     if (studyPageState.overviewText.includes('제외')) {
