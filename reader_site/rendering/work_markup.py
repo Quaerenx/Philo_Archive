@@ -29,16 +29,18 @@ def concept_markup(concepts: list[dict]) -> str:
         return ""
     items = []
     for concept in concepts:
-        label = html.escape(concept.get("label", concept.get("id", "")))
-        german = html.escape(concept.get("german", ""))
-        description = html.escape(concept.get("description", ""))
+        label_text = str(concept.get("label_ko") or concept.get("label") or concept.get("id", ""))
+        term_text = str(concept.get("german") or (concept.get("label") if concept.get("label_ko") else "") or "")
+        label = html.escape(label_text)
+        term = html.escape(term_text)
+        description = html.escape(concept.get("description_ko") or concept.get("description", ""))
         text = f"<strong>{label}</strong>"
-        if german:
-            text += f" <span>{german}</span>"
+        if term and term_text != label_text:
+            text += f" <span>{term}</span>"
         if description:
             text += f"<small>{description}</small>"
         items.append(f"<li>{text}</li>")
-    return f'<section class="research-card"><h2>Concepts</h2><ul class="concept-list">{"".join(items)}</ul></section>'
+    return f'<section class="research-card"><h2>개념</h2><ul class="concept-list">{"".join(items)}</ul></section>'
 
 
 def variant_tabs_markup(variants: list[dict] | list[str]) -> str:

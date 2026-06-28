@@ -4,71 +4,91 @@
     {
       "id": "dionysian_apollonian",
       "label": "Dionysian / Apollonian",
+      "label_ko": "디오니소스적 / 아폴론적",
       "german": "dionysisch / apollinisch",
       "description": "Greek tragedy, art, form, intoxication, and life-affirming tension.",
+      "description_ko": "그리스 비극, 예술 형식, 도취, 삶을 긍정하는 긴장을 읽는 축입니다.",
       "works": ["GT", "DW", "GMD", "ST", "SGT"]
     },
     {
       "id": "genealogy",
       "label": "Genealogy",
+      "label_ko": "계보학",
       "german": "Genealogie",
       "description": "Historical diagnosis of moral concepts, values, guilt, and ascetic ideals.",
+      "description_ko": "도덕 개념, 가치, 죄책감, 금욕주의 이상이 어떻게 생겨났는지 역사적으로 추적하는 관점입니다.",
       "works": ["GM", "JGB", "M"]
     },
     {
       "id": "ressentiment",
       "label": "Ressentiment",
+      "label_ko": "원한 감정",
       "german": "Ressentiment",
       "description": "Reactive valuation, moral reversal, and the psychology of revenge.",
+      "description_ko": "반응적 가치평가, 도덕의 전도, 복수 심리를 설명하는 핵심 개념입니다.",
       "works": ["GM", "JGB", "AC"]
     },
     {
       "id": "free_spirit",
       "label": "Free Spirit",
+      "label_ko": "자유정신",
       "german": "freier Geist",
       "description": "Experiment, distance, skepticism, and emancipation from inherited values.",
+      "description_ko": "거리두기, 실험, 회의, 물려받은 가치에서 벗어나는 태도를 가리킵니다.",
       "works": ["MA-I", "MA-II", "M", "FW", "JGB"]
     },
     {
       "id": "eternal_recurrence",
       "label": "Eternal Recurrence",
+      "label_ko": "영원회귀",
       "german": "ewige Wiederkunft",
       "description": "The test of affirming life as repeatable without remainder.",
+      "description_ko": "삶이 남김없이 반복되어도 긍정할 수 있는지를 묻는 사유 실험입니다.",
       "works": ["FW", "Za-I", "Za-II", "Za-III", "Za-IV"]
     },
     {
       "id": "will_to_power",
       "label": "Will to Power",
+      "label_ko": "힘에의 의지",
       "german": "Wille zur Macht",
       "description": "Drive, interpretation, overcoming, and the dynamic grammar of life.",
+      "description_ko": "충동, 해석, 극복, 생명 활동의 동적인 문법을 설명하는 개념입니다.",
       "works": ["JGB", "GM", "Za-I", "Za-II", "Za-III", "Za-IV"]
     },
     {
       "id": "overman",
       "label": "Overman",
+      "label_ko": "초인",
       "german": "Übermensch",
       "description": "A figure of self-overcoming and value creation.",
+      "description_ko": "자기극복과 새로운 가치 창조를 상징하는 형상입니다.",
       "works": ["Za-I", "Za-II", "Za-III", "Za-IV"]
     },
     {
       "id": "nihilism",
       "label": "Nihilism",
+      "label_ko": "허무주의",
       "german": "Nihilismus",
       "description": "The crisis of value after the collapse of inherited metaphysical guarantees.",
+      "description_ko": "전통적 형이상학적 보증이 무너진 뒤 가치가 위기에 처하는 상태를 가리킵니다.",
       "works": ["FW", "Za-I", "Za-II", "Za-III", "Za-IV", "GD", "AC"]
     },
     {
       "id": "critique_of_christianity",
       "label": "Critique of Christianity",
+      "label_ko": "기독교 비판",
       "german": "Christenthum",
       "description": "Diagnosis of Christian morality, ressentiment, pity, and life-denial.",
+      "description_ko": "기독교 도덕, 연민, 원한, 삶의 부정을 진단하는 비판입니다.",
       "works": ["AC", "GM", "GD", "JGB"]
     },
     {
       "id": "wagner",
       "label": "Wagner",
+      "label_ko": "바그너",
       "german": "Wagner",
       "description": "Art, decadence, music, culture, and Nietzsche's break with Wagner.",
+      "description_ko": "예술, 퇴폐, 음악, 문화, 바그너와의 결별을 읽는 축입니다.",
       "works": ["GT", "WB", "WA", "NW"]
     }
   ]

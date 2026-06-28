@@ -1928,9 +1928,13 @@ def check_work_source_bundle_ui() -> None:
     css = read_site_file("assets/reader-work.css")
     work_markup = read_site_file("rendering/work_markup.py")
     require_contains(work_markup, '<details id="toc" class="toc"><summary>목차</summary>', "rendering/work_markup.py")
+    require_contains(work_markup, 'concept.get("label_ko")', "rendering/work_markup.py")
+    require_contains(work_markup, 'concept.get("description_ko")', "rendering/work_markup.py")
+    require_contains(work_markup, '<h2>개념</h2>', "rendering/work_markup.py")
     require_contains(work_markup, 'toc_link = \'<a href="#toc">목차</a>\' if model.get("toc") else ""', "rendering/work_markup.py")
     require_contains(work_markup, '"TOC_LINK": toc_link', "rendering/work_markup.py")
     require("Contents (" not in work_markup, "rendering/work_markup.py should keep TOC summary quiet")
+    require("Concepts</h2>" not in work_markup, "rendering/work_markup.py should keep concept panel localized")
     mobile_css = css.split("@media (max-width: 860px)", maxsplit=1)[1]
     mobile_page_before = css_rule_block(mobile_css, ".page::before", "assets/reader-work.css mobile block")
     for needle in [
