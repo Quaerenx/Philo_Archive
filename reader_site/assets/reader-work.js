@@ -2474,8 +2474,8 @@ async function copyStudyCard() {
 function updateCitationPreview() {
   const preview = citationPreviewText();
   citationPreview.textContent = preview;
-  citationPreview.title = "복사할 때 원문 URL이 함께 포함됩니다.";
-  citationPreview.setAttribute("aria-label", `${preview} 복사할 때 원문 URL이 함께 포함됩니다.`);
+  citationPreview.title = "인용 미리보기";
+  citationPreview.setAttribute("aria-label", preview);
 }
 
 async function copyText(value) {

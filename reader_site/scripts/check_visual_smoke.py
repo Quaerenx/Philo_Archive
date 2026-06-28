@@ -375,7 +375,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common141",
-            "reader-work.js?v=common187",
+            "reader-work.js?v=common188",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         require("Contents (" not in html, f"{route} should not expose TOC inventory counts")
@@ -1956,6 +1956,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         copyLabel: document.querySelector('#copyCitation')?.getAttribute('aria-label') || '',
         copyOptionsText: document.querySelector('.citation-copy-options summary')?.textContent.trim() || '',
         previewText: preview?.textContent || '',
+        previewTitle: preview?.getAttribute('title') || '',
+        previewLabel: preview?.getAttribute('aria-label') || '',
         copiedText: copied,
         copiedLabelText,
         previewHasUrl: /https?:\/\//.test(preview?.textContent || ''),
@@ -1974,6 +1976,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (citationState.previewHasUrl || !citationState.copiedHasUrl) {
       throw new Error(`citation preview should hide URL while copied citation keeps it: ${JSON.stringify(citationState)}`);
+    }
+    if (citationState.previewTitle !== '인용 미리보기' || citationState.previewLabel !== citationState.previewText || /복사할 때/.test(citationState.previewLabel)) {
+      throw new Error(`citation preview should keep tooltip and accessible text concise: ${JSON.stringify(citationState)}`);
     }
     if (/\b(Work|Paragraph|Section|Verse|Quote|Line)\b|p-\d+\.s\d+/i.test(`${citationState.previewText} ${citationState.copiedLabelText}`)) {
       throw new Error(`citation text should use reader-language position labels without internal ids: ${JSON.stringify(citationState)}`);

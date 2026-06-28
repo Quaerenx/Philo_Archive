@@ -1300,8 +1300,8 @@ def check_work_source_bundle_ui() -> None:
         "function sourceBundleUrl",
         "function citationPreviewText",
         "function updateCitationPreview",
-        "citationPreview.title = \"복사할 때 원문 URL이 함께 포함됩니다.\"",
-        "복사할 때 원문 URL이 함께 포함됩니다.",
+        "citationPreview.title = \"인용 미리보기\"",
+        'citationPreview.setAttribute("aria-label", preview)',
         "await copyText(citationText())",
         "function targetSnapshot",
         "function selectedSentenceTargetSnapshot",
@@ -1795,10 +1795,11 @@ def check_work_source_bundle_ui() -> None:
         [
             "citationPreviewText()",
             "citationPreview.textContent = preview",
-            "복사할 때 원문 URL이 함께 포함됩니다.",
+            "인용 미리보기",
         ],
         "updateCitationPreview screen preview stays shorter than copied citation",
     )
+    require("복사할 때 원문 URL이 함께 포함됩니다." not in js_function_body(script, "updateCitationPreview"), "updateCitationPreview should avoid tooltip-style explanatory copy")
     require_ordered_markers(
         js_function_body(script, "renderTranslationEmptyState"),
         [
@@ -1853,7 +1854,7 @@ def check_work_source_bundle_ui() -> None:
             noisy_marker not in request_translation_body,
             f"requestSentenceTranslation should avoid storage-log status text {noisy_marker!r}",
         )
-    require_contains(template, "/assets/reader-work.js?v=common187", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common188", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common141", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
