@@ -258,7 +258,7 @@ function updateFilterSummary() {
     chips.push(renderFilterChip("corpus", "자료", selectedOptionText(corpusSelect)));
   }
   if (workId) chips.push(renderFilterChip("work", "문서", workId));
-  if (reviewSelect.value !== "all" && !isReviewQueueOnlyView()) {
+  if (reviewSelect.value !== "all" && hasSearchFilters()) {
     chips.push(renderFilterChip("review", "상태", selectedOptionText(reviewSelect)));
   }
   activeFiltersEl.hidden = chips.length === 0;
@@ -422,12 +422,15 @@ function renderSummary(records) {
 
 function renderEmptyRecords() {
   const filtered = hasActiveFilters();
-  const title = filtered ? "조건에 맞는 번역이 없습니다." : "아직 번역이 없습니다.";
-  const body = filtered
+  const statusOnly = (reviewSelect.value || "all") !== "all" && !hasSearchFilters();
+  const title = statusOnly
+    ? `${selectedOptionText(reviewSelect)}이 없습니다.`
+    : (filtered ? "조건에 맞는 번역이 없습니다." : "아직 번역이 없습니다.");
+  const body = filtered && !statusOnly
     ? "조건을 지우거나 문서와 상태 범위를 넓혀보세요."
     : "";
   const clearAction = filtered
-    ? '<button type="button" data-empty-action="clear-filters">조건 지우기</button>'
+    ? `<button type="button" data-empty-action="clear-filters">${statusOnly ? "전체 번역" : "조건 지우기"}</button>`
     : "";
   const bodyMarkup = body ? `<p>${escapeHtml(body)}</p>` : "";
   return `<section class="empty empty-state">

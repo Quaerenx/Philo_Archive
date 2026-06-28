@@ -1537,11 +1537,18 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     const savedState = await page.evaluate(() => {
       const firstCard = document.querySelector('#translationsResults .translation-record-card:not(.notes-skeleton)');
       const firstCommentary = firstCard?.querySelector('.translation-commentary');
+      const activeFilters = document.querySelector('#translationsActiveFilters');
+      const empty = document.querySelector('#translationsResults .empty-state');
       return {
         cards: document.querySelectorAll('#translationsResults .translation-record-card:not(.notes-skeleton)').length,
         headingText: document.querySelector('#translationsPageTitle')?.textContent.trim() || '',
         documentTitle: document.title,
         toolsOpen: Boolean(document.querySelector('#translationsListTools')?.open),
+        activeFiltersHidden: Boolean(activeFilters?.hidden),
+        activeFiltersText: activeFilters ? activeFilters.textContent.trim() : '',
+        emptyTitle: empty?.querySelector('h2')?.textContent.trim() || '',
+        emptyBodyCount: empty ? empty.querySelectorAll('p').length : 0,
+        emptyActions: Array.from(empty?.querySelectorAll('.empty-actions button, .empty-actions a') || []).map((node) => node.textContent.trim()),
         firstCommentaryOpen: Boolean(firstCommentary?.open),
         commentarySummaryTexts: Array.from(document.querySelectorAll('#translationsResults .translation-commentary summary')).map((node) => node.textContent.trim()),
         openCommentaryCount: document.querySelectorAll('#translationsResults .translation-commentary[open]').length,
@@ -1554,6 +1561,12 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (savedState.toolsOpen) {
       throw new Error(`saved translations page should keep search tools collapsed until requested: ${JSON.stringify(savedState)}`);
+    }
+    if (!savedState.activeFiltersHidden || savedState.activeFiltersText) {
+      throw new Error(`saved translations page should not repeat the status filter chip: ${JSON.stringify(savedState)}`);
+    }
+    if (savedState.cards === 0 && (savedState.emptyTitle !== '저장한 번역이 없습니다.' || savedState.emptyBodyCount !== 0 || !savedState.emptyActions.includes('전체 번역') || savedState.emptyActions.includes('조건 지우기'))) {
+      throw new Error(`saved translations empty state should read as a saved-translation view, not a failed search: ${JSON.stringify(savedState)}`);
     }
     if (savedState.cards > 0) {
       if (!savedState.firstCommentaryOpen || savedState.openCommentaryCount < 1) {
@@ -2231,9 +2244,13 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     await page.waitForSelector('#translationsResults .translation-record-card, #translationsResults .empty-state', { timeout: 7000 }).catch(() => {});
     const state = await page.evaluate(() => {
       const activeFilters = document.querySelector('#translationsActiveFilters');
+      const empty = document.querySelector('#translationsResults .empty-state');
       const cards = document.querySelectorAll('#translationsResults .translation-record-card:not(.notes-skeleton)').length;
       return {
         cards,
+        emptyTitle: empty?.querySelector('h2')?.textContent.trim() || '',
+        emptyBodyCount: empty ? empty.querySelectorAll('p').length : 0,
+        emptyActions: Array.from(empty?.querySelectorAll('.empty-actions button, .empty-actions a') || []).map((node) => node.textContent.trim()),
         toolsHidden: Boolean(document.querySelector('#translationsListTools')?.hidden),
         toolsOpen: Boolean(document.querySelector('#translationsListTools')?.open),
         activeFiltersHidden: Boolean(activeFilters?.hidden),
@@ -2257,6 +2274,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (state.cards > 0 && (state.headingText !== '검토할 번역' || !state.documentTitle.startsWith('검토할 번역 /'))) {
       throw new Error(`review queue should clearly identify the review task: ${JSON.stringify(state)}`);
+    }
+    if (state.cards === 0 && (state.emptyTitle !== '검토할 번역이 없습니다.' || state.emptyBodyCount !== 0 || !state.emptyActions.includes('전체 번역') || state.emptyActions.includes('조건 지우기'))) {
+      throw new Error(`review queue empty state should read as a review queue, not a failed search: ${JSON.stringify(state)}`);
     }
     if (state.cards > 0) {
       await page.keyboard.press('q');
