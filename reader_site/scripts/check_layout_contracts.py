@@ -693,7 +693,7 @@ def check_translations_ui() -> None:
     for needle in [
         "/assets/notes.css?v=notes28",
         "/assets/translations.css?v=trans35",
-        "/assets/translations.js?v=trans84",
+        "/assets/translations.js?v=trans85",
         "<title>번역 목록 / Personal Archive of Literature</title>",
         '<h1 id="translationsPageTitle">번역 목록</h1>',
         'aria-label="번역 이동"',
@@ -804,7 +804,8 @@ def check_translations_ui() -> None:
         "function groupSavedExportUrl",
         "function renderGroupActions",
         "translation-record-group-actions",
-        ">읽기</a>",
+        "const readLabel = `원문 읽기: ${workTitle}`",
+        ">원문 읽기</a>",
         ">저장본</a>",
         "function renderRecordGroups",
         "const showGroupActions = options.showGroupActions !== false",

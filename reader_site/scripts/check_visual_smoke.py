@@ -286,7 +286,7 @@ def check_route_markup(route: str, html: str) -> None:
             "aria-busy=\"false\"",
             "notes.css?v=notes28",
             "translations.css?v=trans35",
-            "translations.js?v=trans84",
+            "translations.js?v=trans85",
             'href="/translations" aria-current="page">번역</a>',
             "번역 찾기",
             "translationsListTools",
@@ -1375,6 +1375,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
           reviewQueueBackgroundColor: window.getComputedStyle(document.querySelector('#translationsReviewQueue')).backgroundColor,
           firstRecordTitle: document.querySelector('#translationsResults .translation-record-card .translation-record-title')?.textContent.trim() || '',
           firstGroupActions: Array.from(document.querySelectorAll('#translationsResults .translation-record-group:first-of-type .translation-record-group-actions a')).map((node) => node.textContent.trim()),
+          firstGroupActionLabels: Array.from(document.querySelectorAll('#translationsResults .translation-record-group:first-of-type .translation-record-group-actions a')).map((node) => node.getAttribute('aria-label') || ''),
           headingText: document.querySelector('#translationsPageTitle')?.textContent.trim() || '',
           documentTitle: document.title,
           reviewQueueText: document.querySelector('#translationsReviewQueue')?.textContent.trim() || '',
@@ -1452,8 +1453,11 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (/\.[0-9]+\.s[0-9]+/i.test(translationsPageState.firstRecordTitle)) {
         throw new Error(`default translations record title should use readable references, not internal sentence IDs: ${JSON.stringify(translationsPageState)}`);
       }
-      if (!translationsPageState.firstGroupActions.includes('읽기')) {
-        throw new Error(`translation work groups should expose a concise read action: ${JSON.stringify(translationsPageState)}`);
+      if (!translationsPageState.firstGroupActions.includes('원문 읽기')) {
+        throw new Error(`translation work groups should expose a concise source-reading action: ${JSON.stringify(translationsPageState)}`);
+      }
+      if (translationsPageState.firstGroupActionLabels.some((label) => label && !label.startsWith('원문 읽기: '))) {
+        throw new Error(`translation work group source links should name their target accessibly: ${JSON.stringify(translationsPageState)}`);
       }
     }
   }

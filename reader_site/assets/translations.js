@@ -499,8 +499,10 @@ function groupSavedExportUrl(group) {
 function renderGroupActions(group) {
   const workUrl = groupWorkUrl(group);
   const savedExportUrl = groupSavedExportUrl(group);
+  const workTitle = cleanText(group.title || group.workId || "원문");
+  const readLabel = `원문 읽기: ${workTitle}`;
   const actions = [
-    workUrl ? `<a href="${escapeHtml(workUrl)}">읽기</a>` : "",
+    workUrl ? `<a href="${escapeHtml(workUrl)}" aria-label="${escapeHtml(readLabel)}" title="${escapeHtml(readLabel)}">원문 읽기</a>` : "",
     savedExportUrl ? `<a href="${escapeHtml(savedExportUrl)}">저장본</a>` : ""
   ].filter(Boolean).join("");
   return actions ? `<span class="translation-record-group-actions">${actions}</span>` : "";
