@@ -1399,9 +1399,11 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     await page.waitForSelector('#translationsResults .translation-record-card:not(.notes-skeleton), #translationsResults .empty-state', { timeout: 7000 }).catch(() => {});
     const translationsPageState = await page.evaluate(() => {
       const empty = document.querySelector('#translationsResults .empty-state');
+      const queryLabel = document.querySelector('#translationsQuery')?.closest('label');
         return {
           hasRecords: document.querySelectorAll('#translationsResults .translation-record-card:not(.notes-skeleton)').length > 0,
           formHidden: Boolean(document.querySelector('#translationsForm')?.hidden),
+          queryLabelText: Array.from(queryLabel?.childNodes || []).filter((node) => node.nodeType === Node.TEXT_NODE).map((node) => node.textContent.trim()).filter(Boolean).join(' '),
           emptyTitle: empty?.querySelector('h2')?.textContent.trim() || '',
           emptyBodyCount: empty ? empty.querySelectorAll('p').length : 0,
           emptyActions: Array.from(empty?.querySelectorAll('.empty-actions a') || []).map((node) => node.textContent.trim()),
@@ -1436,6 +1438,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (translationsPageState.exportLabels.join(' / ') !== '읽기용 / 데이터') {
       throw new Error(`translations export controls should expose reader-purpose labels: ${JSON.stringify(translationsPageState)}`);
+    }
+    if (translationsPageState.queryLabelText && translationsPageState.queryLabelText !== '본문') {
+      throw new Error(`translations query label should name the searched content, not repeat the panel title: ${JSON.stringify(translationsPageState)}`);
     }
     if (!translationsPageState.hasRecords) {
       if (!translationsPageState.formHidden) throw new Error(`empty translations page should hide filter form: ${JSON.stringify(translationsPageState)}`);

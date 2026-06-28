@@ -749,6 +749,17 @@ def check_translations_ui() -> None:
         'aria-busy="false"',
     ]:
         require_contains(html, needle, "translations.html")
+    require_ordered_markers(
+        html,
+        [
+            '<summary>번역 찾기</summary>',
+            '<label class="query-label">',
+            "본문",
+            '<input id="translationsQuery"',
+            'class="filter-panel-fields translations-filter-fields"',
+        ],
+        "translations.html query label avoids repeating the panel summary",
+    )
     for needle in [
         "activeController",
         "activeRequest",
