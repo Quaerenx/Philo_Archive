@@ -1286,6 +1286,7 @@ def check_work_source_bundle_ui() -> None:
         "translation-records-summary-main",
         "translationRecordsSummary.title = detailLabel",
         "needs-review",
+        'const reviewHint = generated ? "검토 필요" : "";',
         "function updateTranslationExportLinks",
         "translationSentenceStates",
         "TRANSLATION_STATE_LABELS",
@@ -1372,7 +1373,8 @@ def check_work_source_bundle_ui() -> None:
         "function studySessionExportUrl",
         "function loadStudySessionSummary",
         "await loadStudySessionSummary();",
-        "내보낼 수 있습니다.",
+        "기록 준비됨",
+        "저장한 학습 기록:",
         "아직 내보낼 저장 항목이 없습니다.",
         "review_state\", \"all\"",
         "renderTranslationPending",
@@ -1768,7 +1770,7 @@ def check_work_source_bundle_ui() -> None:
             noisy_marker not in request_translation_body,
             f"requestSentenceTranslation should avoid storage-log status text {noisy_marker!r}",
         )
-    require_contains(template, "/assets/reader-work.js?v=common175", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common176", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common132", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',

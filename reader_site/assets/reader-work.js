@@ -426,11 +426,7 @@ function setTranslationRecordsSummary(text, state = "empty", counts = null) {
   const generated = Number(counts.generated || 0);
   const reviewed = Number(counts.reviewed || 0);
   const rejected = Number(counts.rejected || 0);
-  const reviewHint = total
-    ? (generated
-      ? `${generated.toLocaleString()}개 검토할 번역`
-      : `${(reviewed || total).toLocaleString()}개 준비됨`)
-    : "";
+  const reviewHint = generated ? "검토 필요" : "";
   const detailLabel = [
     text,
     total ? `${total.toLocaleString()}개 번역` : "저장된 번역 없음",
@@ -658,10 +654,10 @@ async function loadStudySessionSummary() {
     const translationCount = Number(payload.translation_count || 0);
     const total = noteCount + translationCount;
     const detail = total
-      ? `내보낼 수 있습니다. 노트 ${noteCount.toLocaleString()}개, 번역 ${translationCount.toLocaleString()}개.`
+      ? `저장한 학습 기록: 노트 ${noteCount.toLocaleString()}개, 번역 ${translationCount.toLocaleString()}개.`
       : "아직 내보낼 저장 항목이 없습니다.";
     setStudySessionSummary(
-      total ? "내보내기 가능" : "내보낼 항목 없음",
+      total ? "기록 준비됨" : "내보낼 항목 없음",
       total ? "has-content" : "empty",
       detail
     );
