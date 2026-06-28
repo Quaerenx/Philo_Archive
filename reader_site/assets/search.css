@@ -638,12 +638,13 @@ mark {
 @media (max-width: 860px) {
   .page {
     margin: 0 auto;
+    background-size: auto var(--mobile-header-strip-height, 112px);
     border-right: 0;
     border-left: 0;
   }
 
   .spacer {
-    height: 136px;
+    height: var(--mobile-header-spacer-height, 84px);
   }
 
   .reader {

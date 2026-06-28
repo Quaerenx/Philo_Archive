@@ -432,8 +432,13 @@ img {
 @media (max-width: 860px) {
   .page {
     margin: 0 auto;
+    background-size: auto var(--mobile-header-strip-height, 112px);
     border-right: 0;
     border-left: 0;
+  }
+
+  body.category-nietzsche .page {
+    background-size: auto;
   }
 
   .page::before {
@@ -443,7 +448,11 @@ img {
   }
 
   .header-spacer {
-    height: 100px;
+    height: var(--mobile-header-spacer-height, 84px);
+  }
+
+  body.category-nietzsche .header-spacer {
+    height: var(--mobile-portrait-spacer-height, 112px);
   }
 
   .layout {

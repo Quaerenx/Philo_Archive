@@ -217,7 +217,7 @@ def check_route_markup(route: str, html: str) -> None:
             "저장한 번역</a>",
             "studyStatus",
             "aria-busy=\"false\"",
-            "study.css?v=study28",
+            "study.css?v=study29",
             "study.js?v=study46",
             'href="/study" aria-current="page">학습</a>',
             "filter-panel",
@@ -232,7 +232,7 @@ def check_route_markup(route: str, html: str) -> None:
             "notesActiveFilters",
             "notesStatus",
             "aria-busy=\"false\"",
-            "notes.css?v=notes25",
+            "notes.css?v=notes26",
             "notes.js?v=notes34",
             'href="/notes" aria-current="page">노트</a>',
             "filter-panel",
@@ -250,7 +250,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translationsResults",
             "translationsReviewQueue",
             "aria-busy=\"false\"",
-            "notes.css?v=notes25",
+            "notes.css?v=notes26",
             "translations.css?v=trans33",
             "translations.js?v=trans76",
             'href="/translations" aria-current="page">번역</a>',
@@ -270,7 +270,7 @@ def check_route_markup(route: str, html: str) -> None:
             "searchActiveFilters",
             "searchStatus",
             "aria-busy=\"false\"",
-            "search.css?v=phase29",
+            "search.css?v=phase30",
             "search.js?v=phase40",
             'href="/search" aria-current="page">검색</a>',
             "번역",
@@ -340,7 +340,7 @@ def check_route_markup(route: str, html: str) -> None:
             "목차</summary>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common131",
+            "reader-work.css?v=common132",
             "reader-work.js?v=common172",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
@@ -490,13 +490,16 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       const heading = section?.querySelector('h2');
       const links = Array.from(section?.querySelectorAll('.root-link') || []);
       const grid = section?.querySelector('.root-link-list');
+      const navColumn = document.querySelector('.nav-column');
       const gridStyle = grid ? window.getComputedStyle(grid) : null;
       const firstLinkBox = links[0]?.getBoundingClientRect();
+      const navColumnBox = navColumn?.getBoundingClientRect();
       return {
         heading: heading?.textContent.trim() || '',
         label: section?.getAttribute('aria-label') || '',
         linkCount: links.length,
         gridColumns: (gridStyle?.gridTemplateColumns || '').trim().split(/\s+/).filter(Boolean).length,
+        navColumnTop: navColumnBox?.top || 0,
         firstLinkHeight: firstLinkBox?.height || 0
       };
     });
@@ -508,6 +511,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (Number(widthText) <= 420 && homeState.firstLinkHeight < 40) {
       throw new Error(`mobile home root links should be easy to tap: ${JSON.stringify(homeState)}`);
+    }
+    if (Number(widthText) <= 420 && homeState.navColumnTop > 110) {
+      throw new Error(`mobile home should not spend the first screen on empty masthead space: ${JSON.stringify(homeState)}`);
     }
     if (Number(widthText) > 420 && homeState.gridColumns < 2) {
       throw new Error(`desktop home root links should scan as a compact grid: ${JSON.stringify(homeState)}`);
@@ -939,14 +945,17 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       const section = document.querySelector('#results .search-start');
       const heading = section?.querySelector('h2');
       const grid = document.querySelector('#results .search-start-links');
+      const reader = document.querySelector('.reader');
       const gridStyle = grid ? window.getComputedStyle(grid) : null;
       const firstLinkBox = links[0]?.getBoundingClientRect();
+      const readerBox = reader?.getBoundingClientRect();
       return {
         heading: heading?.textContent.trim() || '',
         label: section?.getAttribute('aria-label') || '',
         linkText: links.map((node) => node.textContent.trim()).join(' / '),
         linkCount: links.length,
         gridColumns: (gridStyle?.gridTemplateColumns || '').trim().split(/\s+/).filter(Boolean).length,
+        readerTop: readerBox?.top || 0,
         firstLinkHeight: firstLinkBox?.height || 0
       };
     });
@@ -961,6 +970,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (Number(widthText) <= 420 && searchStartState.firstLinkHeight < 40) {
       throw new Error(`mobile search start category links should be easy to tap: ${JSON.stringify(searchStartState)}`);
+    }
+    if (Number(widthText) <= 420 && searchStartState.readerTop > 110) {
+      throw new Error(`mobile search should not spend the first screen on empty masthead space: ${JSON.stringify(searchStartState)}`);
     }
   }
   if (parsed.pathname === '/notes' && !parsed.search) {

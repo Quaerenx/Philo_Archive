@@ -82,6 +82,9 @@ def check_tokens() -> None:
         "--reader-column-width": "764px",
         "--reader-background": "#ffffff",
         "--header-portrait-image": "none",
+        "--mobile-header-strip-height": "112px",
+        "--mobile-header-spacer-height": "84px",
+        "--mobile-portrait-spacer-height": "112px",
     }
     for name, value in expected_tokens.items():
         require_contains(tokens, f"{name}: {value};", TOKEN_FILE)
@@ -100,10 +103,10 @@ def check_html_entrypoints() -> None:
         require_contains(html, 'class="page"', relative_path)
         if relative_path == "index.html":
             require_contains(html, "번역", relative_path)
-            require_contains(html, "/styles.css?v=home9", relative_path)
+            require_contains(html, "/styles.css?v=home10", relative_path)
             require_contains(html, "/app.js?v=home15", relative_path)
         if relative_path in {"templates/reading.html", "templates/source.html"}:
-            require_contains(html, "/assets/static-reader.css?v=static2", relative_path)
+            require_contains(html, "/assets/static-reader.css?v=static3", relative_path)
             require_contains(html, "파일 정보</summary>", relative_path)
             require("Path</summary>" not in html, f"{relative_path} should avoid tool-oriented path text")
             require("자료 위치</summary>" not in html, f"{relative_path} should avoid storage-oriented source detail text")
@@ -149,6 +152,16 @@ def check_reader_css(relative_path: str, css: str) -> None:
         require_contains(css, "width: var(--reader-column-width", relative_path)
     if relative_path in {"assets/reader-work.css", "assets/static-reader.css"}:
         mobile_css = css.split("@media (max-width: 860px)", maxsplit=1)[1]
+        require_contains(
+            mobile_css,
+            "background-size: auto var(--mobile-header-strip-height",
+            f"{relative_path} mobile masthead",
+        )
+        require_contains(
+            mobile_css,
+            "height: var(--mobile-header-spacer-height",
+            f"{relative_path} mobile masthead",
+        )
         mobile_anchor = css_rule_block(mobile_css, ".segment-anchor", f"{relative_path} mobile segment anchor")
         for needle in [
             "position: absolute;",
@@ -192,6 +205,9 @@ def check_home_css() -> None:
     responsive = css.split("@media (max-width: 860px)", maxsplit=1)[1]
     for needle in [
         ".nav-column {",
+        "background-size: auto var(--mobile-header-strip-height",
+        "height: var(--mobile-header-spacer-height",
+        "body.category-nietzsche .header-spacer",
         "flex: 0 1 auto;",
         "width: 100%;",
         "padding: 0 10px 24px;",
@@ -296,7 +312,7 @@ def check_search_ui() -> None:
     script = read_site_file("assets/search.js")
     css = read_site_file("assets/search.css")
     for needle in [
-        "/assets/search.css?v=phase29",
+        "/assets/search.css?v=phase30",
         "/assets/search.js?v=phase40",
         'href="/search" aria-current="page">검색</a>',
         'href="/translations"',
@@ -395,7 +411,7 @@ def check_search_ui() -> None:
     for needle in [
         ".search-form.is-searching",
         ".spacer",
-        "height: 136px",
+        "height: var(--mobile-header-spacer-height",
         ".reader-header",
         '.toolbar a[aria-current="page"]',
         ".toolbar a:hover",
@@ -458,7 +474,7 @@ def check_notes_ui() -> None:
     script = read_site_file("assets/notes.js")
     css = read_site_file("assets/notes.css")
     for needle in [
-        "/assets/notes.css?v=notes25",
+        "/assets/notes.css?v=notes26",
         "/assets/notes.js?v=notes34",
         'href="/notes" aria-current="page">노트</a>',
         "노트 찾기",
@@ -577,7 +593,7 @@ def check_notes_ui() -> None:
         ".translations-form[hidden]",
         ".active-filters[hidden]",
         ".spacer",
-        "height: 136px",
+        "height: var(--mobile-header-spacer-height",
         ".reader-header",
         '.toolbar a[aria-current="page"]',
         ".toolbar a:hover",
@@ -649,7 +665,7 @@ def check_translations_ui() -> None:
     base_css = read_site_file("assets/notes.css")
     css = read_site_file("assets/translations.css")
     for needle in [
-        "/assets/notes.css?v=notes25",
+        "/assets/notes.css?v=notes26",
         "/assets/translations.css?v=trans33",
         "/assets/translations.js?v=trans76",
         "<title>번역 목록 / Personal Archive of Literature</title>",
@@ -987,7 +1003,7 @@ def check_study_ui() -> None:
     script = read_site_file("assets/study.js")
     css = read_site_file("assets/study.css")
     for needle in [
-        "/assets/study.css?v=study28",
+        "/assets/study.css?v=study29",
         "/assets/study.js?v=study46",
         'href="/study" aria-current="page">학습</a>',
         "저장한 노트 찾기",
@@ -1119,7 +1135,7 @@ def check_study_ui() -> None:
         ".study-form[hidden]",
         ".active-filters[hidden]",
         ".spacer",
-        "height: 136px",
+        "height: var(--mobile-header-spacer-height",
         ".reader-header",
         "margin-bottom: 16px",
         "padding-bottom: 10px",
@@ -1745,7 +1761,7 @@ def check_work_source_bundle_ui() -> None:
             f"requestSentenceTranslation should avoid storage-log status text {noisy_marker!r}",
         )
     require_contains(template, "/assets/reader-work.js?v=common172", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common131", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common132", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
         'aria-label="읽기 화면 이동"',

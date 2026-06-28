@@ -16,6 +16,9 @@
   --header-portrait-width: 440px;
   --header-portrait-height: 128px;
   --header-spacer-height: 160px;
+  --mobile-header-strip-height: 112px;
+  --mobile-header-spacer-height: 84px;
+  --mobile-portrait-spacer-height: 112px;
 }
 
 body.category-nietzsche,

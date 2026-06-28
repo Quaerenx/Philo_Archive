@@ -221,8 +221,13 @@ pre {
 @media (max-width: 860px) {
   .page {
     margin: 0 auto;
+    background-size: auto var(--mobile-header-strip-height, 112px);
     border-left: 0;
     border-right: 0;
+  }
+
+  .spacer {
+    height: var(--mobile-header-spacer-height, 84px);
   }
 
   .reader {

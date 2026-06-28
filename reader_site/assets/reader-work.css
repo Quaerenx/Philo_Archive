@@ -2677,8 +2677,21 @@ h1 {
 @media (max-width: 860px) {
   .page {
     margin: 0 auto;
+    background-size: auto var(--mobile-header-strip-height, 112px);
     border-right: 0;
     border-left: 0;
+  }
+
+  body.nietzsche-work .page {
+    background-size: auto;
+  }
+
+  .spacer {
+    height: var(--mobile-header-spacer-height, 84px);
+  }
+
+  body.nietzsche-work .spacer {
+    height: var(--mobile-portrait-spacer-height, 112px);
   }
 
   .page::before {
