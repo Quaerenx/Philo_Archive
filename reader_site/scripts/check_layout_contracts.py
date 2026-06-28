@@ -681,7 +681,7 @@ def check_translations_ui() -> None:
     for needle in [
         "/assets/notes.css?v=notes26",
         "/assets/translations.css?v=trans34",
-        "/assets/translations.js?v=trans80",
+        "/assets/translations.js?v=trans81",
         "<title>번역 목록 / Personal Archive of Literature</title>",
         '<h1 id="translationsPageTitle">번역 목록</h1>',
         'aria-label="번역 이동"',
@@ -824,6 +824,9 @@ def check_translations_ui() -> None:
         "aria-label=\"해설\"",
         "<summary>해설</summary>",
         "원문 보기</summary>",
+        "sourceAction",
+        "원문 열기",
+        "aria-label=\"원문 열기:",
         "function generatedRecords",
         "function updateReviewQueueButton",
         "reviewQueueButton.hidden = generatedCount === 0 || isReviewQueueOnlyView()",

@@ -537,10 +537,14 @@ function renderRecord(record, options) {
         <button type="button" data-review-state="rejected" aria-keyshortcuts="X" title="이 번역 제외하기" aria-label="이 번역 제외하기">제외하기</button>
       </details>`
     : "";
+  const sourceAction = targetUrl
+    ? `<a href="${escapeHtml(targetUrl)}" data-open-source aria-keyshortcuts="O" title="원문으로 이동" aria-label="원문 열기: ${escapeHtml(title)}">원문 열기</a>`
+    : "";
   const actions = showReviewActions ? [
     reviewState !== "reviewed"
       ? '<button type="button" class="primary-review-action" data-review-state="reviewed" aria-keyshortcuts="R" title="저장한 번역으로 표시" aria-label="저장한 번역으로 표시">저장</button>'
       : "",
+    sourceAction,
     reviewState !== "generated"
       ? '<button type="button" data-review-state="generated" aria-keyshortcuts="G" title="검토할 번역으로 되돌리기" aria-label="검토할 번역으로 되돌리기">검토로 되돌리기</button>'
       : "",

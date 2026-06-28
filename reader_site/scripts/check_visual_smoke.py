@@ -254,7 +254,7 @@ def check_route_markup(route: str, html: str) -> None:
             "aria-busy=\"false\"",
             "notes.css?v=notes26",
             "translations.css?v=trans34",
-            "translations.js?v=trans80",
+            "translations.js?v=trans81",
             'href="/translations" aria-current="page">번역</a>',
             "번역 찾기",
             "translationsListTools",
@@ -1818,7 +1818,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         const rejectButton = reject?.querySelector('button[data-review-state="rejected"]');
         const rejectSummaryStyle = rejectSummary ? window.getComputedStyle(rejectSummary) : null;
         const save = card?.querySelector('.primary-review-action');
+        const sourceAction = card?.querySelector('.translation-actions [data-open-source]');
         const saveBox = save?.getBoundingClientRect();
+        const sourceActionBox = sourceAction?.getBoundingClientRect();
         const footer = card?.querySelector('.translation-record-footer');
         const footerBox = footer?.getBoundingClientRect();
         const footerStyle = footer ? window.getComputedStyle(footer) : null;
@@ -1845,6 +1847,11 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
           saveBorderColor: save ? window.getComputedStyle(save).borderColor : '',
           saveWidth: saveBox?.width || 0,
           saveHeight: saveBox?.height || 0,
+          sourceActionText: sourceAction?.textContent.trim() || '',
+          sourceActionLabel: sourceAction?.getAttribute('aria-label') || '',
+          sourceActionHref: sourceAction?.getAttribute('href') || '',
+          sourceActionWidth: sourceActionBox?.width || 0,
+          sourceActionHeight: sourceActionBox?.height || 0,
           rejectSummaryWidth: rejectSummaryBox?.width || 0,
           rejectSummaryHeight: rejectSummaryBox?.height || 0,
           footerWidth: footerBox?.width || 0,
@@ -1880,6 +1887,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (reviewTargetState.saveText !== '저장' || reviewTargetState.saveLabel !== '저장한 번역으로 표시' || reviewTargetState.saveBorderColor !== 'rgb(176, 0, 0)') {
         throw new Error(`review queue save should use the same red primary action style: ${JSON.stringify(reviewTargetState)}`);
       }
+      if (reviewTargetState.sourceActionText !== '원문 열기' || !reviewTargetState.sourceActionLabel.startsWith('원문 열기: ') || !reviewTargetState.sourceActionHref.startsWith('/work/')) {
+        throw new Error(`review queue should expose a clear source navigation action on the active review card: ${JSON.stringify(reviewTargetState)}`);
+      }
       if (reviewTargetState.rejectButtonText !== '제외하기' || reviewTargetState.rejectButtonLabel !== '이 번역 제외하기') {
         throw new Error(`review queue discard confirmation should name the result of the action: ${JSON.stringify(reviewTargetState)}`);
       }
@@ -1887,10 +1897,10 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         if (reviewTargetState.reviewFooterDisplay !== 'block') {
           throw new Error(`mobile review queue footer should let actions use the full card width: ${JSON.stringify(reviewTargetState)}`);
         }
-        if (reviewTargetState.saveHeight < 34 || reviewTargetState.rejectSummaryHeight < 34) {
+        if (reviewTargetState.saveHeight < 34 || reviewTargetState.sourceActionHeight < 34 || reviewTargetState.rejectSummaryHeight < 34) {
           throw new Error(`mobile review queue actions should be touch-friendly: ${JSON.stringify(reviewTargetState)}`);
         }
-        if (reviewTargetState.footerWidth > 0 && (reviewTargetState.saveWidth < reviewTargetState.footerWidth * 0.42 || reviewTargetState.rejectSummaryWidth < reviewTargetState.footerWidth * 0.42)) {
+        if (reviewTargetState.footerWidth > 0 && (reviewTargetState.saveWidth < reviewTargetState.footerWidth * 0.42 || reviewTargetState.sourceActionWidth < reviewTargetState.footerWidth * 0.42 || reviewTargetState.rejectSummaryWidth < reviewTargetState.footerWidth * 0.42)) {
           throw new Error(`mobile review queue actions should occupy the card action row: ${JSON.stringify(reviewTargetState)}`);
         }
       }
