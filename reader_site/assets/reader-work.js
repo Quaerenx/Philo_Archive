@@ -420,17 +420,17 @@ async function checkGemmaRuntimeStatus(announce = false) {
       }
       return;
     }
-    const error = cleanText(gemma.error || "번역기를 시작한 뒤 다시 확인하세요.");
-    setGemmaRuntimeIndicator("offline", "번역기 꺼짐", error);
+    const error = cleanText(gemma.error || "번역기를 켜면 이어서 번역할 수 있습니다.");
+    setGemmaRuntimeIndicator("offline", "번역 준비 필요", error);
     if (announce) {
-      setTranslationStatus("번역기가 꺼져 있습니다.", true);
+      setTranslationStatus("번역기를 켜면 이어서 번역할 수 있습니다.", true);
     }
   } catch (error) {
     if (error && error.name === "AbortError" && gemmaRuntimeCheckController !== controller) {
       return;
     }
-    const label = error && error.name === "AbortError" ? "번역기 확인 시간이 초과되었습니다" : "번역기를 사용할 수 없습니다";
-    setGemmaRuntimeIndicator("unavailable", label, "리더 서버와 번역 서비스가 실행 중인지 확인하세요.");
+    const label = error && error.name === "AbortError" ? "번역기 확인 지연" : "번역 상태 확인 필요";
+    setGemmaRuntimeIndicator("unavailable", label, "리더와 번역기가 실행 중인지 확인하세요.");
     if (announce) {
       setTranslationStatus(label, true);
     }
@@ -1781,7 +1781,7 @@ function translationErrorIsRuntime(message) {
 
 function translationErrorDisplayMessage(message) {
   return translationErrorIsRuntime(message)
-    ? "번역기를 시작한 뒤 다시 시도하세요."
+    ? "번역기를 켜면 이 문장을 이어서 번역할 수 있습니다."
     : cleanText(message || "번역을 사용할 수 없습니다.");
 }
 
@@ -1791,7 +1791,7 @@ function runtimeRecoveryMarkup(message) {
       <details class="translation-runtime-help">
         <summary>번역기 시작</summary>
         <div class="translation-runtime-details">
-          <p class="translation-runtime-note">시작 명령을 복사해 PowerShell에서 실행하세요.</p>
+          <p class="translation-runtime-note">아래 명령을 PowerShell에서 실행하세요.</p>
           <button type="button" data-translation-copy-runtime>명령 복사</button>
           <code class="translation-runtime-command">${escapeHtml(GEMMA_RUNTIME_COMMAND)}</code>
         </div>
@@ -1802,7 +1802,7 @@ function renderTranslationError(message) {
   selectedTranslationRecord = null;
   const retryMode = pendingTranslationRegenerate ? "regenerate" : "translate";
   const retryLabel = pendingTranslationRegenerate ? "다시 생성" : "번역 다시 시도";
-  const cleanMessage = cleanText(message || "번역기가 꺼져 있습니다.");
+  const cleanMessage = cleanText(message || "번역 준비가 필요합니다.");
   const isRuntimeError = translationErrorIsRuntime(cleanMessage);
   const displayMessage = translationErrorDisplayMessage(cleanMessage);
   pendingTranslationRegenerate = false;
@@ -1817,7 +1817,7 @@ function renderTranslationError(message) {
     <div class="translation-result translation-error" role="note">
       <section class="translation-section translation-section-primary" data-translation-section="translation">
         <h3>번역</h3>
-        <p class="translation-primary translation-unavailable-copy">번역을 사용할 수 없습니다.</p>
+        <p class="translation-primary translation-unavailable-copy">번역 준비가 필요합니다.</p>
       </section>
       <section class="translation-section translation-commentary" data-translation-section="commentary">
         <h3>해설</h3>
@@ -2195,9 +2195,9 @@ async function requestSentenceTranslation(regenerate = false) {
     const payload = await response.json().catch(() => ({}));
     if (requestId !== activeTranslationRequest) return;
     if (!response.ok || !payload.ok) {
-      const message = cleanText(payload.error || "번역기가 꺼져 있습니다.");
+      const message = cleanText(payload.error || "번역 준비가 필요합니다.");
       if (translationErrorIsRuntime(message)) {
-        setGemmaRuntimeIndicator("offline", "번역기 꺼짐", "번역기를 시작한 뒤 다시 시도하세요.");
+        setGemmaRuntimeIndicator("offline", "번역 준비 필요", "번역기를 켜면 이어서 번역할 수 있습니다.");
       }
       setTranslationStatus(translationErrorDisplayMessage(message), true);
       renderTranslationError(message);
@@ -2216,9 +2216,9 @@ async function requestSentenceTranslation(regenerate = false) {
       return;
     }
     if (requestId === activeTranslationRequest) {
-      const message = cleanText(error && error.message ? error.message : "번역기가 꺼져 있습니다.");
+      const message = cleanText(error && error.message ? error.message : "번역 준비가 필요합니다.");
       if (translationErrorIsRuntime(message)) {
-        setGemmaRuntimeIndicator("offline", "번역기 꺼짐", "번역기를 시작한 뒤 다시 시도하세요.");
+        setGemmaRuntimeIndicator("offline", "번역 준비 필요", "번역기를 켜면 이어서 번역할 수 있습니다.");
       }
       setTranslationStatus(translationErrorDisplayMessage(message), true);
       renderTranslationError(message);

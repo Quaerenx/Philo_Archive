@@ -1333,8 +1333,8 @@ def check_work_source_bundle_ui() -> None:
         "/api/health",
         "setGemmaRuntimeIndicator(\"checking\", \"번역기 확인 중\",",
         "번역기 준비됨",
-        "번역기 꺼짐",
-        "번역기를 사용할 수 없습니다",
+        "번역 준비 필요",
+        "번역 상태 확인 필요",
         "gemmaRuntimeCheckButton.addEventListener",
         "translationRecordsSummary",
         "function setTranslationRecordsSummary",
@@ -1444,12 +1444,12 @@ def check_work_source_bundle_ui() -> None:
         "function translationErrorIsRuntime",
         "text.includes(\"번역기\")",
         "function runtimeRecoveryMarkup",
-        "번역기를 시작한 뒤 다시 시도하세요.",
+        "번역기를 켜면 이 문장을 이어서 번역할 수 있습니다.",
         "translation-runtime-help",
         "translation-runtime-details",
         "번역기 시작</summary>",
         "translation-runtime-note",
-        "시작 명령을 복사해 PowerShell에서 실행하세요.",
+        "아래 명령을 PowerShell에서 실행하세요.",
         "translation-runtime-command",
         "data-translation-copy-runtime",
         "data-translation-check-runtime",
@@ -1759,7 +1759,7 @@ def check_work_source_bundle_ui() -> None:
         ],
         "runtime recovery should keep retry/check actions before startup command help",
     )
-    for noisy_marker in ["시작 도움말", "아래 시작 명령을 복사해 한 번 실행한 뒤 다시 확인하세요.", "복사한 명령을 PowerShell에 붙여넣고 Enter를 누르세요.", "PowerShell에 붙여넣고 Enter", "translation-runtime-command-row"]:
+    for noisy_marker in ["시작 도움말", "아래 시작 명령을 복사해 한 번 실행한 뒤 다시 확인하세요.", "복사한 명령을 PowerShell에 붙여넣고 Enter를 누르세요.", "PowerShell에 붙여넣고 Enter", "translation-runtime-command-row", "번역기를 사용할 수 없습니다", "번역기 꺼짐"]:
         require(noisy_marker not in runtime_help_body, f"runtime recovery should keep startup help direct without {noisy_marker!r}")
     require(
         "번역 다시 시도" in render_error_body and "번역기 확인" in render_error_body,
@@ -1854,7 +1854,7 @@ def check_work_source_bundle_ui() -> None:
             noisy_marker not in request_translation_body,
             f"requestSentenceTranslation should avoid storage-log status text {noisy_marker!r}",
         )
-    require_contains(template, "/assets/reader-work.js?v=common188", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common189", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common143", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',

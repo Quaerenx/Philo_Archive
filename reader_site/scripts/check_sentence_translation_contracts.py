@@ -245,7 +245,7 @@ def check_runtime_error_copy(target: dict) -> None:
             sentence_translation_service.call_llama_server(prompt_bundle)
         except ConnectionError as exc:
             message = str(exc)
-            require("번역기가 꺼져 있습니다." in message, "runtime connection failure should use reader-language copy")
+            require("번역 준비가 필요합니다." in message, "runtime connection failure should use reader-language copy")
             require("Gemma runtime is not running" not in message, "runtime connection failure should not expose English backend copy")
         else:
             require(False, "runtime connection failure should raise ConnectionError")

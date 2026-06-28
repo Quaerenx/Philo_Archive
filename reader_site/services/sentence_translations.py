@@ -228,7 +228,7 @@ def call_llama_server(prompt_bundle: dict[str, Any]) -> dict[str, Any]:
         with urlopen(request, timeout=180) as response:
             payload = json.loads(response.read().decode("utf-8"))
     except (HTTPError, URLError, TimeoutError, OSError) as exc:
-        raise ConnectionError("번역기가 꺼져 있습니다.") from exc
+        raise ConnectionError("번역 준비가 필요합니다.") from exc
     choices = payload.get("choices", [])
     require(isinstance(choices, list) and choices, "model response missing choices")
     message = choices[0].get("message", {}) if isinstance(choices[0], dict) else {}

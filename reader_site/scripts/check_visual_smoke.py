@@ -375,7 +375,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common143",
-            "reader-work.js?v=common188",
+            "reader-work.js?v=common189",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         require("Contents (" not in html, f"{route} should not expose TOC inventory counts")
@@ -834,10 +834,10 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (runtimeOfflineState.translationHeading !== '번역' || runtimeOfflineState.commentaryHeading !== '해설') {
         throw new Error(`runtime offline fixture should keep the reader-facing translation/commentary structure: ${JSON.stringify(runtimeOfflineState)}`);
       }
-      if (runtimeOfflineState.primaryCopy !== '번역을 사용할 수 없습니다.' || runtimeOfflineState.commentaryCopy !== '번역기를 시작한 뒤 다시 시도하세요.') {
+      if (runtimeOfflineState.primaryCopy !== '번역 준비가 필요합니다.' || runtimeOfflineState.commentaryCopy !== '번역기를 켜면 이 문장을 이어서 번역할 수 있습니다.') {
         throw new Error(`runtime offline fixture should explain the recovery in reader language: ${JSON.stringify(runtimeOfflineState)}`);
       }
-      if (!runtimeOfflineState.hasRuntimeHelp || runtimeOfflineState.runtimeNote !== '시작 명령을 복사해 PowerShell에서 실행하세요.') {
+      if (!runtimeOfflineState.hasRuntimeHelp || runtimeOfflineState.runtimeNote !== '아래 명령을 PowerShell에서 실행하세요.') {
         throw new Error(`runtime offline fixture should keep startup instructions available when expanded: ${JSON.stringify(runtimeOfflineState)}`);
       }
       if (runtimeOfflineState.copyButtonText !== '명령 복사' || runtimeOfflineState.runtimeSummaryText !== '번역기 시작' || runtimeOfflineState.runtimeHelpOpen) {
@@ -852,7 +852,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (runtimeOfflineState.copyButtonHeight !== 0 || runtimeOfflineState.runtimeCommandHeight !== 0) {
         throw new Error(`runtime offline fixture should keep command-copy controls hidden until startup help is expanded: ${JSON.stringify(runtimeOfflineState)}`);
       }
-      for (const noisyText of ['Gemma runtime is not running', '시작 도움말', '복사한 명령을 PowerShell에 붙여넣고 Enter', 'PowerShell에 붙여넣고 Enter', 'source_text_sha256', 'prompt_sha256']) {
+      for (const noisyText of ['Gemma runtime is not running', '시작 도움말', '복사한 명령을 PowerShell에 붙여넣고 Enter', 'PowerShell에 붙여넣고 Enter', 'source_text_sha256', 'prompt_sha256', '번역을 사용할 수 없습니다', '번역기 꺼짐']) {
         if (runtimeOfflineState.outputText.includes(noisyText)) {
           throw new Error(`runtime offline fixture should hide technical noise ${noisyText}: ${JSON.stringify(runtimeOfflineState)}`);
         }
