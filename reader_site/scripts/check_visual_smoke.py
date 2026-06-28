@@ -1239,6 +1239,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         documentTitle: document.title,
         emptyTitle: empty?.querySelector('h2')?.textContent.trim() || '',
         emptyBodyCount: empty ? empty.querySelectorAll('p').length : 0,
+        emptyActions: Array.from(empty?.querySelectorAll('.empty-actions button, .empty-actions a') || []).map((node) => node.textContent.trim()),
         activeFiltersHidden: Boolean(activeFilters?.hidden),
         activeFiltersText: activeFilters ? activeFilters.textContent.trim() : '',
         summaryButtons: Array.from(document.querySelectorAll('#notesResults .notes-summary-filter')).map((node) => node.textContent.trim()),
@@ -1253,6 +1254,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (!filteredNotesState.hasNotes && (filteredNotesState.emptyTitle !== expectedEmptyTitle || filteredNotesState.emptyBodyCount !== 0)) {
       throw new Error(`filtered notes empty state should name the note state without search-failure copy: ${JSON.stringify(filteredNotesState)}`);
+    }
+    if (!filteredNotesState.hasNotes && (!filteredNotesState.emptyActions.includes('전체 노트') || filteredNotesState.emptyActions.includes('조건 지우기'))) {
+      throw new Error(`filtered notes empty state should offer a return to all notes, not search-failure wording: ${JSON.stringify(filteredNotesState)}`);
     }
     if (filteredNotesState.hasNotes && !filteredNotesState.summaryButtons.includes(expectedNotesHeading)) {
       throw new Error(`filtered notes page should keep the current note-state summary available: ${JSON.stringify(filteredNotesState)}`);

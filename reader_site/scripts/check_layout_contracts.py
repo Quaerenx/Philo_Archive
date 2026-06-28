@@ -582,6 +582,7 @@ def check_notes_ui() -> None:
         "저장한 노트가 없습니다.",
         "작성 중인 노트가 없습니다.",
         "const statusOnly = reviewSelect.value && !hasNotesSearchFilters()",
+        '${statusOnly ? "전체 노트" : "조건 지우기"}',
         "function updateNotesListChrome",
         "form.hidden = !showTools",
         "아직 노트가 없습니다.",

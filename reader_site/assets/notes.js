@@ -201,7 +201,7 @@ function renderEmptyNotes() {
   const title = emptyNotesTitle();
   const body = filtered && !statusOnly ? "조건을 지우거나 문서, 태그, 상태 범위를 넓혀보세요." : "";
   const clearAction = filtered
-    ? '<button type="button" data-empty-action="clear-filters">조건 지우기</button>'
+    ? `<button type="button" data-empty-action="clear-filters">${statusOnly ? "전체 노트" : "조건 지우기"}</button>`
     : "";
   const bodyMarkup = body ? `<p>${escapeHtml(body)}</p>` : "";
   return `<section class="empty empty-state">
