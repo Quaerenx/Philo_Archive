@@ -6,7 +6,7 @@
   <title>학습 기록 / Personal Archive of Literature</title>
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/design-tokens.css?v=frame3">
-  <link rel="stylesheet" href="/assets/study.css?v=study29">
+  <link rel="stylesheet" href="/assets/study.css?v=study30">
 </head>
 <body>
   <div class="page">
@@ -23,35 +23,38 @@
         </nav>
       </header>
 
-      <form id="studyForm" class="study-form">
-        <label class="query-label">
-          저장한 노트 찾기
-          <input id="studyQuery" name="q" autocomplete="off">
-        </label>
-        <details class="filter-panel">
-          <summary>조건</summary>
-          <div class="filter-panel-fields">
-            <label>
-              자료
-              <select id="studyCorpus" name="corpus_id">
-                <option value="">전체</option>
-              </select>
-            </label>
-            <label>
-              문서
-              <input id="studyWork" name="work_id" autocomplete="off">
-            </label>
-            <label>
-              태그
-              <input id="studyTag" name="tag" autocomplete="off">
-            </label>
+      <details id="studyListTools" class="list-tools">
+        <summary>저장한 노트 찾기</summary>
+        <form id="studyForm" class="study-form">
+          <label class="query-label">
+            저장한 노트 찾기
+            <input id="studyQuery" name="q" autocomplete="off">
+          </label>
+          <details class="filter-panel">
+            <summary>조건</summary>
+            <div class="filter-panel-fields">
+              <label>
+                자료
+                <select id="studyCorpus" name="corpus_id">
+                  <option value="">전체</option>
+                </select>
+              </label>
+              <label>
+                문서
+                <input id="studyWork" name="work_id" autocomplete="off">
+              </label>
+              <label>
+                태그
+                <input id="studyTag" name="tag" autocomplete="off">
+              </label>
+            </div>
+          </details>
+          <div class="form-actions">
+            <button id="studySubmit" type="submit">적용</button>
+            <button id="studyClear" type="button" class="secondary-action" disabled>지우기</button>
           </div>
-        </details>
-        <div class="form-actions">
-          <button id="studySubmit" type="submit">적용</button>
-          <button id="studyClear" type="button" class="secondary-action" disabled>지우기</button>
-        </div>
-      </form>
+        </form>
+      </details>
       <div id="studyActiveFilters" class="active-filters" aria-live="polite" aria-label="활성 학습 조건"></div>
       <div id="studyOverview" class="study-overview" aria-live="polite" aria-label="학습 개요" hidden></div>
 
@@ -67,6 +70,6 @@
       </details>
     </main>
   </div>
-  <script src="/assets/study.js?v=study49"></script>
+  <script src="/assets/study.js?v=study50"></script>
 </body>
 </html>

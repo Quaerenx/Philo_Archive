@@ -1,4 +1,5 @@
 const form = document.getElementById("studyForm");
+const listTools = document.getElementById("studyListTools");
 const queryInput = document.getElementById("studyQuery");
 const corpusSelect = document.getElementById("studyCorpus");
 const workInput = document.getElementById("studyWork");
@@ -171,10 +172,15 @@ function updateStudyClearState(isBusy = form.classList.contains("is-loading")) {
 }
 
 function updateStudyListChrome(count = 0) {
-  const showTools = count > 0 || hasActiveFilters();
+  const activeFilters = hasActiveFilters();
+  const showTools = count > 0 || activeFilters;
+  if (listTools) {
+    listTools.hidden = !showTools;
+    listTools.open = activeFilters;
+  }
   form.hidden = !showTools;
   if (activeFiltersEl) {
-    activeFiltersEl.hidden = !hasActiveFilters();
+    activeFiltersEl.hidden = !activeFilters;
   }
 }
 

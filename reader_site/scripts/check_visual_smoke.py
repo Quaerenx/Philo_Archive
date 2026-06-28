@@ -243,9 +243,11 @@ def check_route_markup(route: str, html: str) -> None:
             "저장한 번역</a>",
             "studyStatus",
             "aria-busy=\"false\"",
-            "study.css?v=study29",
-            "study.js?v=study49",
+            "study.css?v=study30",
+            "study.js?v=study50",
             'href="/study" aria-current="page">학습</a>',
+            "studyListTools",
+            "저장한 노트 찾기</summary>",
             "filter-panel",
             "조건</summary>",
             "export-tools",
@@ -1124,11 +1126,15 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     const studyPageState = await page.evaluate(() => {
       const empty = document.querySelector('#studyResults .empty-state');
       const overviewPrimary = document.querySelector('#studyOverview .study-overview-primary');
+      const listTools = document.querySelector('#studyListTools');
       const results = document.querySelector('#studyResults');
       const exportTools = document.querySelector('#studyExportTools');
       return {
         hasGroups: document.querySelectorAll('#studyResults .study-group:not(.study-skeleton)').length > 0,
         formHidden: Boolean(document.querySelector('#studyForm')?.hidden),
+        listToolsHidden: Boolean(listTools?.hidden),
+        listToolsOpen: Boolean(listTools?.open),
+        listToolsSummary: listTools?.querySelector('summary')?.textContent.trim() || '',
         exportAfterResults: Boolean(results && exportTools && (results.compareDocumentPosition(exportTools) & Node.DOCUMENT_POSITION_FOLLOWING)),
         overviewHidden: Boolean(document.querySelector('#studyOverview')?.hidden),
         overviewText: document.querySelector('#studyOverview')?.textContent.trim() || '',
@@ -1156,6 +1162,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (!studyPageState.hasGroups) {
       if (!studyPageState.formHidden) throw new Error(`empty study page should hide filter form: ${JSON.stringify(studyPageState)}`);
+      if (!studyPageState.listToolsHidden) throw new Error(`empty study page should hide saved-note filter tools: ${JSON.stringify(studyPageState)}`);
       const hasReviewAction = studyPageState.primaryAction === '검토하기';
       const hasSavedTranslationAction = studyPageState.primaryAction === '번역 보기';
       const expectedTitle = hasReviewAction
@@ -1197,6 +1204,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     } else {
       if (studyPageState.overviewHidden || studyPageState.overviewPrimaryText !== '이어 읽기') {
         throw new Error(`study page should expose a clear continue-reading action above saved notes: ${JSON.stringify(studyPageState)}`);
+      }
+      if (studyPageState.listToolsHidden || studyPageState.listToolsOpen || studyPageState.listToolsSummary !== '저장한 노트 찾기') {
+        throw new Error(`study page should keep saved-note filters collapsed behind a concise summary when records exist: ${JSON.stringify(studyPageState)}`);
       }
       if (!studyPageState.overviewPrimaryLabel.startsWith('이어 읽기: ')) {
         throw new Error(`study continue action should keep the target title in its accessible label: ${JSON.stringify(studyPageState)}`);

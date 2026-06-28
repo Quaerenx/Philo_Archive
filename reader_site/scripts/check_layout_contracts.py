@@ -1046,10 +1046,12 @@ def check_study_ui() -> None:
     script = read_site_file("assets/study.js")
     css = read_site_file("assets/study.css")
     for needle in [
-        "/assets/study.css?v=study29",
-        "/assets/study.js?v=study49",
+        "/assets/study.css?v=study30",
+        "/assets/study.js?v=study50",
         'href="/study" aria-current="page">학습</a>',
         "저장한 노트 찾기",
+        'id="studyListTools"',
+        'class="list-tools"',
         '<button id="studySubmit" type="submit">적용</button>',
         'id="studySubmit"',
         'id="studyClear"',
@@ -1128,6 +1130,10 @@ def check_study_ui() -> None:
         "function renderEmptyStudy",
         "renderEmptyStudy(translationSummary)",
         "function updateStudyListChrome",
+        "const listTools = document.getElementById(\"studyListTools\")",
+        "const activeFilters = hasActiveFilters()",
+        "listTools.hidden = !showTools",
+        "listTools.open = activeFilters",
         "form.hidden = !showTools",
         "function renderNoteFooter",
         "const sourceLabel = `원문 열기: ${cleanText(target)}`",
@@ -1180,6 +1186,12 @@ def check_study_ui() -> None:
         require(noisy_action not in script, f"assets/study.js should keep Study actions concise without {noisy_action!r}")
     for needle in [
         ".study-form.is-loading",
+        ".list-tools",
+        ".list-tools[hidden]",
+        ".list-tools summary",
+        ".list-tools summary::after",
+        ".list-tools[open] summary::after",
+        ".list-tools .study-form",
         ".study-form[hidden]",
         ".active-filters[hidden]",
         ".spacer",
