@@ -2792,6 +2792,7 @@ h1 {
     bottom: 8px;
     z-index: 1;
     background: #fff;
+    box-shadow: 0 -8px 14px rgba(255, 255, 255, 0.95);
   }
 }
 
@@ -3115,6 +3116,7 @@ h1 {
     bottom: calc(8px + env(safe-area-inset-bottom, 0px));
     z-index: 2;
     background: #fff;
+    box-shadow: 0 -8px 14px rgba(255, 255, 255, 0.95);
   }
 
   .translation-export-links {

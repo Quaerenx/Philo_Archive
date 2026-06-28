@@ -1846,7 +1846,7 @@ def check_work_source_bundle_ui() -> None:
             f"requestSentenceTranslation should avoid storage-log status text {noisy_marker!r}",
         )
     require_contains(template, "/assets/reader-work.js?v=common184", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common139", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common140", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
         'aria-label="읽기 화면 이동"',
@@ -2237,6 +2237,7 @@ def check_work_source_bundle_ui() -> None:
         "line-height: 1.68",
         ".study-page.is-expanded .translation-output.reading-mode .translation-reading-actions",
         "bottom: calc(8px + env(safe-area-inset-bottom, 0px))",
+        "box-shadow: 0 -8px 14px rgba(255, 255, 255, 0.95)",
         ".translation-loading",
         ".translation-loading-copy",
         ".translation-pending-commentary",
