@@ -393,13 +393,16 @@ h1 {
 }
 
 .note-options {
-  margin-top: 8px;
+  margin-top: 5px;
 }
 
 .note-options summary {
-  color: #555;
+  display: inline-flex;
+  min-height: 22px;
+  align-items: center;
+  color: #777;
   font-family: Verdana, Arial, Helvetica, sans-serif;
-  font-size: 10px;
+  font-size: 9px;
   line-height: 1.35;
   cursor: pointer;
   list-style: none;
@@ -2074,6 +2077,12 @@ h1 {
   border-top: 1px solid #eeeeee;
 }
 
+.note-target-tools {
+  margin-top: 5px;
+  padding-top: 0;
+  border-top: 0;
+}
+
 .note-target-tools summary,
 .notes-filter-tools summary {
   color: #555;
@@ -2082,6 +2091,26 @@ h1 {
   line-height: 1.35;
   cursor: pointer;
   list-style: none;
+}
+
+.note-target-tools summary {
+  display: inline-flex;
+  min-height: 22px;
+  align-items: center;
+  color: #777;
+  font-size: 9px;
+}
+
+.note-options:not([open]),
+.note-target-tools:not([open]) {
+  opacity: 0.78;
+}
+
+.note-options:not([open]):hover,
+.note-options:not([open]):focus-within,
+.note-target-tools:not([open]):hover,
+.note-target-tools:not([open]):focus-within {
+  opacity: 1;
 }
 
 .note-target-tools summary::-webkit-details-marker,

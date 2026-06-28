@@ -1859,7 +1859,7 @@ def check_work_source_bundle_ui() -> None:
             f"requestSentenceTranslation should avoid storage-log status text {noisy_marker!r}",
         )
     require_contains(template, "/assets/reader-work.js?v=common191", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common143", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common144", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
         'aria-label="읽기 화면 이동"',
@@ -2347,14 +2347,18 @@ def check_work_source_bundle_ui() -> None:
         ".citation-copy-actions",
         ".note-options",
         ".note-options summary",
+        ".note-options:not([open])",
         ".note-options summary::-webkit-details-marker",
         ".note-options summary::after",
         ".note-options[open] summary::after",
         ".note-target-tools",
         ".note-target-tools summary",
+        ".note-target-tools:not([open])",
         ".note-target-tools summary::-webkit-details-marker",
         ".note-target-tools summary::after",
         ".note-target-tools[open] summary::after",
+        "opacity: 0.78;",
+        "border-top: 0;",
         ".note-target-body",
         ".note-target-preview",
         ".note-target-preview.is-locked",

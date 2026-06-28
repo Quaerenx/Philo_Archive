@@ -374,7 +374,7 @@ def check_route_markup(route: str, html: str) -> None:
             "목차</summary>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common143",
+            "reader-work.css?v=common144",
             "reader-work.js?v=common191",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
@@ -1899,15 +1899,21 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (draftState.activeElementId !== 'noteText') {
       throw new Error(`Add note should focus the note editor: ${JSON.stringify(draftState)}`);
     }
-    const notesState = await page.evaluate(() => ({
-      notePlaceholder: document.querySelector('#noteText')?.getAttribute('placeholder') || '',
-      noteLabelHidden: Boolean(document.querySelector('#noteText')?.closest('label')?.querySelector('.visually-hidden')),
-      saveText: document.querySelector('#noteForm button[type="submit"]')?.textContent.trim() || '',
-      saveLabel: document.querySelector('#noteForm button[type="submit"]')?.getAttribute('aria-label') || '',
-      tagsSummary: document.querySelector('.note-options summary')?.textContent.trim() || '',
-      savedSummary: document.querySelector('.notes-filter-tools summary')?.textContent.trim() || '',
-      savedToolsHidden: Boolean(document.querySelector('.notes-filter-tools')?.hidden),
-      noteListSummary: document.querySelector('#noteListSummary')?.textContent.trim() || '',
+      const notesState = await page.evaluate(() => ({
+        notePlaceholder: document.querySelector('#noteText')?.getAttribute('placeholder') || '',
+        noteLabelHidden: Boolean(document.querySelector('#noteText')?.closest('label')?.querySelector('.visually-hidden')),
+        saveText: document.querySelector('#noteForm button[type="submit"]')?.textContent.trim() || '',
+        saveLabel: document.querySelector('#noteForm button[type="submit"]')?.getAttribute('aria-label') || '',
+        tagsSummary: document.querySelector('.note-options summary')?.textContent.trim() || '',
+        tagsSummaryFontSize: window.getComputedStyle(document.querySelector('.note-options summary')).fontSize,
+        tagsClosedOpacity: window.getComputedStyle(document.querySelector('.note-options')).opacity,
+        targetSummary: document.querySelector('.note-target-tools summary')?.textContent.trim() || '',
+        targetSummaryFontSize: window.getComputedStyle(document.querySelector('.note-target-tools summary')).fontSize,
+        targetClosedOpacity: window.getComputedStyle(document.querySelector('.note-target-tools')).opacity,
+        targetToolsBorderTopWidth: window.getComputedStyle(document.querySelector('.note-target-tools')).borderTopWidth,
+        savedSummary: document.querySelector('.notes-filter-tools summary')?.textContent.trim() || '',
+        savedToolsHidden: Boolean(document.querySelector('.notes-filter-tools')?.hidden),
+        noteListSummary: document.querySelector('#noteListSummary')?.textContent.trim() || '',
       notesEmptyText: document.querySelector('#notesList .notes-empty')?.textContent.trim() || '',
       noteItemActions: Array.from(document.querySelectorAll('#notesList .note-item:first-of-type .note-actions a, #notesList .note-item:first-of-type .note-actions button, #notesList .note-item:first-of-type .note-actions summary')).map((node) => node.textContent.trim()),
       noteItemActionLabels: Array.from(document.querySelectorAll('#notesList .note-item:first-of-type .note-actions a')).map((node) => node.getAttribute('aria-label') || ''),
@@ -1926,6 +1932,15 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (notesState.tagsSummary !== '태그') {
       throw new Error(`notes tab details labels should stay concise: ${JSON.stringify(notesState)}`);
+    }
+    if (parseFloat(notesState.tagsSummaryFontSize || '99') > 9 || parseFloat(notesState.targetSummaryFontSize || '99') > 9) {
+      throw new Error(`notes tab secondary controls should stay smaller than the editor: ${JSON.stringify(notesState)}`);
+    }
+    if (Number.parseFloat(notesState.tagsClosedOpacity || '1') > 0.82 || Number.parseFloat(notesState.targetClosedOpacity || '1') > 0.82) {
+      throw new Error(`notes tab secondary controls should stay visually quiet while collapsed: ${JSON.stringify(notesState)}`);
+    }
+    if (notesState.targetSummary !== '대상' || notesState.targetToolsBorderTopWidth !== '0px') {
+      throw new Error(`notes target control should stay compact without adding a divider: ${JSON.stringify(notesState)}`);
     }
     if (notesState.notesEmptyText === '아직 노트가 없습니다.' && !notesState.savedToolsHidden) {
       throw new Error(`notes tab should hide saved filters when there are no notes: ${JSON.stringify(notesState)}`);
