@@ -487,7 +487,7 @@ def check_notes_ui() -> None:
     css = read_site_file("assets/notes.css")
     for needle in [
         "/assets/notes.css?v=notes28",
-        "/assets/notes.js?v=notes39",
+        "/assets/notes.js?v=notes40",
         'href="/notes" aria-current="page">노트</a>',
         "노트 찾기",
         "노트 찾기</summary>",
@@ -541,9 +541,9 @@ def check_notes_ui() -> None:
         "function workDisplayName",
         "function noteTitle",
         "function noteContext",
-        "const sourceLabel = `원문 열기: ${cleanText(title || \"노트 대상\")}`",
+        "const sourceLabel = `원문 읽기: ${cleanText(title || \"노트 대상\")}`",
         "const sourceAction = note.url",
-        ">원문 열기</a>",
+        ">원문 읽기</a>",
         'statusEl.textContent = "";',
         "function renderNoteFooter",
         "note-footer",
@@ -1048,7 +1048,7 @@ def check_study_ui() -> None:
     css = read_site_file("assets/study.css")
     for needle in [
         "/assets/study.css?v=study30",
-        "/assets/study.js?v=study52",
+        "/assets/study.js?v=study53",
         'href="/study" aria-current="page">학습</a>',
         "저장한 노트 찾기",
         'id="studyListTools"',
@@ -1137,9 +1137,9 @@ def check_study_ui() -> None:
         "listTools.open = activeFilters",
         "form.hidden = !showTools",
         "function renderNoteFooter",
-        "const sourceLabel = `원문 열기: ${cleanText(target)}`",
+        "const sourceLabel = `원문 읽기: ${cleanText(target)}`",
         "const sourceAction = note.url",
-        ">원문 열기</a>",
+        ">원문 읽기</a>",
         "function archiveCorpusById",
         "function corpusDisplayName",
         "function workDisplayName",

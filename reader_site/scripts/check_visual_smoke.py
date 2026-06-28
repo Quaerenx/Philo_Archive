@@ -250,7 +250,7 @@ def check_route_markup(route: str, html: str) -> None:
             "studyStatus",
             "aria-busy=\"false\"",
             "study.css?v=study30",
-            "study.js?v=study52",
+            "study.js?v=study53",
             'href="/study" aria-current="page">학습</a>',
             "studyListTools",
             "저장한 노트 찾기</summary>",
@@ -267,7 +267,7 @@ def check_route_markup(route: str, html: str) -> None:
             "notesStatus",
             "aria-busy=\"false\"",
             "notes.css?v=notes28",
-            "notes.js?v=notes39",
+            "notes.js?v=notes40",
             'href="/notes" aria-current="page">노트</a>',
             "filter-panel",
             "노트 찾기</summary>",
@@ -1168,10 +1168,10 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (/Open target|Open work|Manage note|Edit note|다시 열기|저장 완료/.test(notesPageState.actionText)) {
         throw new Error(`notes page actions should stay concise and unambiguous: ${notesPageState.actionText}`);
       }
-      if (!notesPageState.actionText.includes('원문 열기')) {
+      if (!notesPageState.actionText.includes('원문 읽기')) {
         throw new Error(`notes page should expose a clear source navigation action: ${JSON.stringify(notesPageState)}`);
       }
-      if (!notesPageState.immediateActionText.includes('원문 열기') || !notesPageState.immediateActionText.includes('수정') || !notesPageState.immediateActionText.includes('더보기')) {
+      if (!notesPageState.immediateActionText.includes('원문 읽기') || !notesPageState.immediateActionText.includes('수정') || !notesPageState.immediateActionText.includes('더보기')) {
         throw new Error(`notes page should keep source, edit, and more as the immediate actions: ${JSON.stringify(notesPageState)}`);
       }
       if (/작성 중으로|삭제|삭제 확인|저장($|\s)/.test(notesPageState.immediateActionText)) {
@@ -1202,7 +1202,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (!/^(저장|작성 중으로)$/.test(notesMoreState.reviewActionText) || notesMoreState.dangerSummaryText !== '삭제' || notesMoreState.deleteActionText !== '삭제 확인') {
         throw new Error(`notes page More disclosure should contain review state and deletion actions: ${JSON.stringify(notesMoreState)}`);
       }
-      if (notesPageState.sourceActionLabels.some((label) => label && !label.startsWith('원문 열기: '))) {
+      if (notesPageState.sourceActionLabels.some((label) => label && !label.startsWith('원문 읽기: '))) {
         throw new Error(`notes source links should include their target in accessible labels: ${JSON.stringify(notesPageState)}`);
       }
       if (notesPageState.summaryButtons.some((text) => text.includes('저장됨') || text === '작성 중')) {
@@ -1330,13 +1330,13 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (studyPageState.firstGroupActionLabels.some((label) => label && !/^(이어 읽기|노트 보기):\s+/.test(label))) {
         throw new Error(`study group actions should include readable targets in accessible labels: ${JSON.stringify(studyPageState)}`);
       }
-      if (!studyPageState.firstNoteActions.includes('원문 열기')) {
+      if (!studyPageState.firstNoteActions.includes('원문 읽기')) {
         throw new Error(`study note actions should expose a clear source navigation action: ${JSON.stringify(studyPageState)}`);
       }
       if (!studyPageState.firstNoteActions.includes('노트 수정') || studyPageState.firstNoteActions.includes('수정')) {
         throw new Error(`study note actions should name note editing explicitly: ${JSON.stringify(studyPageState)}`);
       }
-      if (studyPageState.firstNoteActionLabels.some((label) => label && !/^(원문 열기|노트 수정):\s+/.test(label))) {
+      if (studyPageState.firstNoteActionLabels.some((label) => label && !/^(원문 읽기|노트 수정):\s+/.test(label))) {
         throw new Error(`study note links should include their target in accessible labels: ${JSON.stringify(studyPageState)}`);
       }
     }

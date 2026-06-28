@@ -311,9 +311,9 @@ function renderNote(note) {
     tags ? `# ${tags}` : "",
     missingTarget
   ].filter(Boolean).join(" / ");
-  const sourceLabel = `원문 열기: ${cleanText(target)}`;
+  const sourceLabel = `원문 읽기: ${cleanText(target)}`;
   const sourceAction = note.url
-    ? `<a href="${escapeHtml(note.url)}" aria-label="${escapeHtml(sourceLabel)}" title="${escapeHtml(sourceLabel)}">원문 열기</a>`
+    ? `<a href="${escapeHtml(note.url)}" aria-label="${escapeHtml(sourceLabel)}" title="${escapeHtml(sourceLabel)}">원문 읽기</a>`
     : "";
   const editLabel = `노트 수정: ${cleanText(target)}`;
   const actions = `${sourceAction}<a href="${escapeHtml(manageHref)}" aria-label="${escapeHtml(editLabel)}" title="${escapeHtml(editLabel)}">노트 수정</a>`;
