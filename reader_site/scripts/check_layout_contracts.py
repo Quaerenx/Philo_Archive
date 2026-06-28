@@ -667,7 +667,7 @@ def check_translations_ui() -> None:
     for needle in [
         "/assets/notes.css?v=notes26",
         "/assets/translations.css?v=trans34",
-        "/assets/translations.js?v=trans78",
+        "/assets/translations.js?v=trans79",
         "<title>번역 목록 / Personal Archive of Literature</title>",
         '<h1 id="translationsPageTitle">번역 목록</h1>',
         'aria-label="번역 이동"',
@@ -835,7 +835,7 @@ def check_translations_ui() -> None:
         "검토로 되돌리기",
         "검토할 번역으로 되돌리기",
         "검토할 번역이 없습니다.",
-        "저장 완료",
+        "저장",
         "저장한 번역으로 표시",
         "저장한 번역으로 표시했습니다.",
         "모든 번역을 검토했습니다.",

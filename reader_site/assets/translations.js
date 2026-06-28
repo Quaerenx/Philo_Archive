@@ -539,7 +539,7 @@ function renderRecord(record, options) {
     : "";
   const actions = showReviewActions ? [
     reviewState !== "reviewed"
-      ? '<button type="button" class="primary-review-action" data-review-state="reviewed" aria-keyshortcuts="R" title="저장한 번역으로 표시" aria-label="저장한 번역으로 표시">저장 완료</button>'
+      ? '<button type="button" class="primary-review-action" data-review-state="reviewed" aria-keyshortcuts="R" title="저장한 번역으로 표시" aria-label="저장한 번역으로 표시">저장</button>'
       : "",
     reviewState !== "generated"
       ? '<button type="button" data-review-state="generated" aria-keyshortcuts="G" title="검토할 번역으로 되돌리기" aria-label="검토할 번역으로 되돌리기">검토로 되돌리기</button>'
