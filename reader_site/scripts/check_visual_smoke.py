@@ -366,7 +366,7 @@ def check_route_markup(route: str, html: str) -> None:
             "목차</summary>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common135",
+            "reader-work.css?v=common136",
             "reader-work.js?v=common180",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
@@ -1500,7 +1500,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       throw new Error(`secondary study tabs should stay visually quieter than translation and notes: ${JSON.stringify(state)}`);
     }
     if (state.studyToolsOpen) throw new Error(`study tools should stay collapsed in default reading mode: ${JSON.stringify(state)}`);
-    if (state.studyToolsSummary !== '도구') throw new Error(`study tools summary should stay concise and clear: ${JSON.stringify(state)}`);
+    if (state.studyToolsSummary !== '옵션') throw new Error(`study tools summary should stay concise and clear: ${JSON.stringify(state)}`);
     if (state.studyToolsSummaryHeight > 24 || state.studyToolsSummaryWidth > 84 || parseFloat(state.studyToolsSummaryFontSize || '99') > 10) {
       throw new Error(`reading mode study tools summary should stay visually secondary: ${JSON.stringify(state)}`);
     }

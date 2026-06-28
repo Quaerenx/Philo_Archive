@@ -514,6 +514,15 @@ h1 {
   border-top-color: transparent;
 }
 
+.translation-card.reading-mode .translation-utility:not([open]) {
+  opacity: 0.86;
+}
+
+.translation-card.reading-mode .translation-utility:not([open]):focus-within,
+.translation-card.reading-mode .translation-utility:not([open]):hover {
+  opacity: 1;
+}
+
 .translation-card.reading-mode .translation-utility summary {
   width: max-content;
   min-height: 22px;

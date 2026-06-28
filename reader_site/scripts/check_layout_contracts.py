@@ -1803,7 +1803,7 @@ def check_work_source_bundle_ui() -> None:
             f"requestSentenceTranslation should avoid storage-log status text {noisy_marker!r}",
         )
     require_contains(template, "/assets/reader-work.js?v=common180", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common135", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common136", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
         'aria-label="읽기 화면 이동"',
@@ -1914,7 +1914,7 @@ def check_work_source_bundle_ui() -> None:
         "문장 이동",
         "학습 흐름",
         "저장 · 내보내기</summary>",
-        "<span>도구</span>",
+        "<span>옵션</span>",
         "study-tabs",
         "previousSentence",
         "nextUnstudiedSentence",
@@ -2023,6 +2023,8 @@ def check_work_source_bundle_ui() -> None:
         ".translation-utility[open] summary::after",
         ".translation-card.reading-mode .translation-utility",
         "border-top-color: transparent;",
+        ".translation-card.reading-mode .translation-utility:not([open])",
+        ".translation-card.reading-mode .translation-utility:not([open]):focus-within",
         ".translation-card.reading-mode .translation-utility summary",
         "width: max-content;",
         ".translation-card.reading-mode .translation-utility summary span",
