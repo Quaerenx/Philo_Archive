@@ -1360,7 +1360,7 @@ def check_work_source_bundle_ui() -> None:
         "data-translation-check-runtime",
         "다시 확인",
         "시작 명령 복사</button>",
-        "시작 명령을 복사했습니다.",
+        "복사했습니다. PowerShell에서 실행하세요.",
         ".\\\\run_reader_with_gemma.ps1",
         "translation-error-actions",
         "translation-unavailable-copy",

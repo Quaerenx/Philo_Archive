@@ -2866,7 +2866,7 @@ translationOutput.addEventListener("click", (event) => {
   const copyRuntime = event.target.closest("[data-translation-copy-runtime]");
   if (copyRuntime) {
     copyText(GEMMA_RUNTIME_COMMAND)
-      .then(() => setTranslationStatus("시작 명령을 복사했습니다."))
+      .then(() => setTranslationStatus("복사했습니다. PowerShell에서 실행하세요."))
       .catch(() => setTranslationStatus("시작 명령을 복사하지 못했습니다.", true));
     return;
   }
