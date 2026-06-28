@@ -270,7 +270,7 @@ def check_route_markup(route: str, html: str) -> None:
             "searchActiveFilters",
             "searchStatus",
             "aria-busy=\"false\"",
-            "search.css?v=phase27",
+            "search.css?v=phase28",
             "search.js?v=phase39",
             'href="/search" aria-current="page">검색</a>',
             "번역",
@@ -823,6 +823,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         activeFilterLabel: document.querySelector('#searchActiveFilters')?.getAttribute('aria-label') || '',
         summaryLinkTexts: Array.from(document.querySelectorAll('#results .result-summary-link')).map((node) => node.textContent.trim()),
         summaryLinkLabels: Array.from(document.querySelectorAll('#results .result-summary-link')).map((node) => node.getAttribute('aria-label') || ''),
+        markBackgroundColor: document.querySelector('#results mark') ? window.getComputedStyle(document.querySelector('#results mark')).backgroundColor : '',
+        markBoxShadow: document.querySelector('#results mark') ? window.getComputedStyle(document.querySelector('#results mark')).boxShadow : '',
         resultMetaText: Array.from(document.querySelectorAll('#results .result-meta')).map((node) => node.textContent.trim()).join(' '),
         moreActionCount: document.querySelectorAll('#results .result-more-actions').length,
         inlineActionCount: document.querySelectorAll('#results .result-actions-inline').length,
@@ -875,6 +877,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (searchPageState.hasResults && searchPageState.readableTitleCount > 0 && searchPageState.readableSnippetCount === 0) {
       throw new Error(`work and segment snippets should carry the same reading destination label as titles: ${JSON.stringify(searchPageState)}`);
+    }
+    if (searchPageState.hasResults && (searchPageState.markBackgroundColor === 'rgb(255, 243, 163)' || !searchPageState.markBoxShadow.includes('rgb(216, 197, 109)'))) {
+      throw new Error(`search highlights should stay visible without feeling like heavy highlighter blocks: ${JSON.stringify(searchPageState)}`);
     }
     if (searchPageState.hasResults && /노트/.test(searchPageState.actionText)) {
       throw new Error(`search result actions should keep repeated Notes links out of the result list: ${JSON.stringify(searchPageState)}`);
