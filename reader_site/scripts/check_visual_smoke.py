@@ -374,7 +374,7 @@ def check_route_markup(route: str, html: str) -> None:
             "목차</summary>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common142",
+            "reader-work.css?v=common143",
             "reader-work.js?v=common188",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
@@ -1688,8 +1688,11 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
     }
     if (state.studyToolsOpen) throw new Error(`study tools should stay collapsed in default reading mode: ${JSON.stringify(state)}`);
-    if (state.studyToolsSummary !== '저장 · 노트 · 이동') throw new Error(`study tools summary should name the hidden save, note, and navigation tools: ${JSON.stringify(state)}`);
-    if (state.studyToolsSummaryHeight > 24 || state.studyToolsSummaryWidth > 112 || parseFloat(state.studyToolsSummaryFontSize || '99') > 10) {
+    if (state.studyToolsSummary !== '도구') throw new Error(`study tools summary should stay compact in the reading flow: ${JSON.stringify(state)}`);
+    if (/저장|노트|이동/.test(state.studyToolsSummary)) {
+      throw new Error(`study tools summary should not enumerate hidden management actions in reading mode: ${JSON.stringify(state)}`);
+    }
+    if (state.studyToolsSummaryHeight > 24 || state.studyToolsSummaryWidth > 64 || parseFloat(state.studyToolsSummaryFontSize || '99') > 10) {
       throw new Error(`reading mode study tools summary should stay visually secondary: ${JSON.stringify(state)}`);
     }
     if (!['rgba(0, 0, 0, 0)', 'transparent'].includes(state.studyToolsBorderTopColor)) {

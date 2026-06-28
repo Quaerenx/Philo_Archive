@@ -520,7 +520,7 @@ h1 {
 }
 
 .translation-card.reading-mode .translation-utility:not([open]) {
-  opacity: 0.86;
+  opacity: 0.68;
 }
 
 .translation-card.reading-mode .translation-utility:not([open]):focus-within,
@@ -533,12 +533,12 @@ h1 {
   min-height: 22px;
   margin-right: auto;
   margin-left: auto;
-  padding: 1px 6px;
-  color: #777;
+  padding: 1px 7px;
+  color: #888;
 }
 
 .translation-card.reading-mode .translation-utility summary span {
-  color: #777;
+  color: #888;
   font-size: 9px;
 }
 
