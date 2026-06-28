@@ -312,7 +312,7 @@ def check_search_ui() -> None:
     script = read_site_file("assets/search.js")
     css = read_site_file("assets/search.css")
     for needle in [
-        "/assets/search.css?v=phase30",
+        "/assets/search.css?v=phase31",
         "/assets/search.js?v=phase41",
         'href="/search" aria-current="page">검색</a>',
         'href="/translations"',
@@ -442,6 +442,8 @@ def check_search_ui() -> None:
         ".result-actions-inline",
         ".result-action-read",
         ".snippet-link",
+        ".snippet-link::after",
+        ".snippet-link:hover::after",
         "mark",
         "box-shadow: inset 0 -1px 0 #d8c56d",
         "grid-template-columns: minmax(0, 1fr) auto",

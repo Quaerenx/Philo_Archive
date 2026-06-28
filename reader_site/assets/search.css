@@ -555,9 +555,24 @@ h1 {
 }
 
 .snippet-link {
+  position: relative;
   display: block;
+  padding-right: 18px;
   color: #111;
   text-decoration: none;
+}
+
+.snippet-link::after {
+  position: absolute;
+  top: 0.52em;
+  right: 2px;
+  width: 6px;
+  height: 6px;
+  border-top: 1px solid #b00000;
+  border-right: 1px solid #b00000;
+  content: "";
+  opacity: 0.55;
+  transform: rotate(45deg);
 }
 
 .snippet-link:hover,
@@ -567,6 +582,11 @@ h1 {
   background: #fffdf2;
   outline: 1px solid #d8d1a8;
   outline-offset: 2px;
+}
+
+.snippet-link:hover::after,
+.snippet-link:focus-visible::after {
+  opacity: 1;
 }
 
 .tag-row {
