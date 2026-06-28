@@ -1282,6 +1282,7 @@ def check_work_source_bundle_ui() -> None:
         "gemmaRuntimeCheckButton.addEventListener",
         "translationRecordsSummary",
         "function setTranslationRecordsSummary",
+        'translationRecordsSummary.hidden = state === "empty"',
         "translation-records-summary-main",
         "translationRecordsSummary.title = detailLabel",
         "needs-review",
@@ -1367,6 +1368,7 @@ def check_work_source_bundle_ui() -> None:
         "translation_review_state",
         "studySessionSummary",
         "function setStudySessionSummary",
+        'studySessionSummary.hidden = state === "empty"',
         "function studySessionExportUrl",
         "function loadStudySessionSummary",
         "await loadStudySessionSummary();",
@@ -1766,7 +1768,7 @@ def check_work_source_bundle_ui() -> None:
             noisy_marker not in request_translation_body,
             f"requestSentenceTranslation should avoid storage-log status text {noisy_marker!r}",
         )
-    require_contains(template, "/assets/reader-work.js?v=common173", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common174", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common132", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
@@ -1800,7 +1802,7 @@ def check_work_source_bundle_ui() -> None:
         "진행 확인 중",
         "continueStudy",
         "이어 읽기",
-        "저장된 번역 없음</div>",
+        'id="translationRecordsSummary" class="translation-records-summary" data-records-state="empty" role="status" aria-live="polite" aria-atomic="true" hidden></div>',
         "translation-review-tools",
         "translation-review-tools-body",
         "translation-export-tools",
@@ -1813,7 +1815,7 @@ def check_work_source_bundle_ui() -> None:
         "exportStudySession",
         "학습 기록",
         "studySessionSummary",
-        "내보낼 항목 없음</div>",
+        'id="studySessionSummary" class="study-session-summary" data-session-state="empty" role="status" aria-live="polite" aria-atomic="true" hidden></div>',
         "aria-label=\"학습 열기. 문장 선택\"",
         'aria-controls="studyCompanionPanel"',
         'aria-labelledby="translationCardTitle"',

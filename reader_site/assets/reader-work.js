@@ -414,6 +414,7 @@ async function checkGemmaRuntimeStatus(announce = false) {
 function setTranslationRecordsSummary(text, state = "empty", counts = null) {
   if (!translationRecordsSummary) return;
   translationRecordsSummary.dataset.recordsState = state;
+  translationRecordsSummary.hidden = state === "empty";
   if (!counts) {
     translationRecordsSummary.textContent = text;
     translationRecordsSummary.removeAttribute("aria-label");
@@ -614,6 +615,7 @@ function setStudySessionSummary(text, state = "empty", detail = "") {
   if (!studySessionSummary) return;
   studySessionSummary.textContent = text;
   studySessionSummary.dataset.sessionState = state;
+  studySessionSummary.hidden = state === "empty";
   if (detail) {
     studySessionSummary.setAttribute("aria-label", detail);
     studySessionSummary.title = detail;

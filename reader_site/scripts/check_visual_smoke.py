@@ -322,7 +322,7 @@ def check_route_markup(route: str, html: str) -> None:
             "번역기 상태",
             "문장을 선택하세요.",
             "translationRecordsSummary",
-            "저장된 번역 없음</div>",
+            'id="translationRecordsSummary" class="translation-records-summary" data-records-state="empty" role="status" aria-live="polite" aria-atomic="true" hidden></div>',
             "studyProgress",
             "진행 확인 중",
             "이어 읽기",
@@ -335,13 +335,13 @@ def check_route_markup(route: str, html: str) -> None:
             "exportStudySession",
             "학습 기록",
             "studySessionSummary",
-            "내보낼 항목 없음</div>",
+            'id="studySessionSummary" class="study-session-summary" data-session-state="empty" role="status" aria-live="polite" aria-atomic="true" hidden></div>',
             'id="toc"',
             "목차</summary>",
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common132",
-            "reader-work.js?v=common173",
+            "reader-work.js?v=common174",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         require("Contents (" not in html, f"{route} should not expose TOC inventory counts")

@@ -103,7 +103,7 @@
                           <button type="button" id="copyStudyCard" title="학습 노트 복사" aria-label="학습 노트 복사" disabled>노트 복사</button>
                           <button type="button" id="draftTranslationNote" title="번역으로 메모 추가" aria-label="번역으로 메모 추가" disabled>메모 추가</button>
                         </div>
-                        <div id="translationRecordsSummary" class="translation-records-summary" role="status" aria-live="polite" aria-atomic="true">저장된 번역 없음</div>
+                        <div id="translationRecordsSummary" class="translation-records-summary" data-records-state="empty" role="status" aria-live="polite" aria-atomic="true" hidden></div>
                         <details class="translation-export-tools" aria-label="학습 자료 내보내기">
                           <summary>내보내기</summary>
                           <div class="translation-export-links" aria-label="다운로드 링크">
@@ -111,7 +111,7 @@
                             <a id="exportAllTranslations" class="translation-export-link" href="/api/sentence-translations/export?format=markdown&review_state=all">전체 번역</a>
                             <a id="exportStudySession" class="translation-export-link" href="/api/study-session/export?format=markdown">학습 기록</a>
                           </div>
-                          <div id="studySessionSummary" class="study-session-summary" role="status" aria-live="polite" aria-atomic="true">내보낼 항목 없음</div>
+                          <div id="studySessionSummary" class="study-session-summary" data-session-state="empty" role="status" aria-live="polite" aria-atomic="true" hidden></div>
                         </details>
                       </div>
                     </details>
@@ -176,6 +176,6 @@
     </main>
   </div>
   <script id="researchData" type="application/json">{{RESEARCH_JSON}}</script>
-  <script src="/assets/reader-work.js?v=common173"></script>
+  <script src="/assets/reader-work.js?v=common174"></script>
 </body>
 </html>
