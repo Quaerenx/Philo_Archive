@@ -227,10 +227,13 @@ def check_sentence_translation_export() -> None:
         {"corpus_id": ["nietzsche"], "work_id": ["GM"], "format": ["markdown"]}
     )
     require(markdown["kind"] == "text", "sentence translations markdown export should be text")
-    require("Sentence Translations" in markdown["body"], "sentence translations markdown export heading missing")
+    require("번역 목록" in markdown["body"], "sentence translations markdown export heading missing")
+    require("번역 " in markdown["body"], "sentence translations markdown export count summary missing")
     require("Reviewed Gemma" not in markdown["body"], "sentence translations export should hide runtime-oriented title")
     require("Review:" not in markdown["body"], "sentence translations export should hide review-state metadata")
     require("Reviewed:" not in markdown["body"], "sentence translations export should hide reviewed timestamps")
+    for noisy_text in ["Sentence Translations", " translations", "Translation", "Commentary", "Original", "Source:"]:
+        require(noisy_text not in markdown["body"], f"sentence translations export should avoid English label {noisy_text!r}")
     payload = sentence_translations_export_from_query(
         {"corpus_id": ["nietzsche"], "work_id": ["GM"], "format": ["json"], "review_state": ["all"]}
     )

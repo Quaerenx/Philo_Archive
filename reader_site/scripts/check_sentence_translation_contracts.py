@@ -93,10 +93,13 @@ def check_prompt_and_record(target: dict) -> None:
     require("literal_gloss" not in public_record, "public sentence translation record should hide literal_gloss")
     require("key_terms" not in public_record, "public sentence translation record should hide key_terms")
     markdown = export_sentence_translations_markdown([public_record])
-    require("Sentence Translations" in markdown, "sentence translation markdown export heading missing")
+    require("번역 목록" in markdown, "sentence translation markdown export heading missing")
+    require("번역" in markdown and "해설" in markdown, "sentence translation markdown export should use reader-language section labels")
     require("Reviewed Gemma" not in markdown, "sentence translation markdown export should hide runtime-oriented title")
     require("Review:" not in markdown, "sentence translation markdown export should hide review-state metadata")
     require("Reviewed:" not in markdown, "sentence translation markdown export should hide reviewed timestamps")
+    for noisy_text in ["Sentence Translations", " translations", "Translation", "Commentary", "Original", "Source:"]:
+        require(noisy_text not in markdown, f"sentence translation markdown export should avoid English label {noisy_text!r}")
     require(target["sentence_id"] in markdown, "sentence translation markdown export missing sentence id")
     with tempfile.TemporaryDirectory() as temp_dir:
         path = Path(temp_dir) / "ai_sentence_translation.jsonl"

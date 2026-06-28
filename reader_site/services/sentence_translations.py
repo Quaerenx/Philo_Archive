@@ -491,7 +491,7 @@ def sentence_translations_summary_from_query(query: dict[str, list[str]]) -> dic
 
 
 def export_sentence_translations_markdown(records: list[dict[str, Any]]) -> str:
-    lines = ["# Sentence Translations", "", f"{len(records)} translations", ""]
+    lines = ["# 번역 목록", "", f"번역 {len(records)}개", ""]
     for record in records:
         label = " / ".join(
             item
@@ -502,15 +502,15 @@ def export_sentence_translations_markdown(records: list[dict[str, Any]]) -> str:
             ]
             if item
         )
-        lines.extend([f"## {label or 'Sentence translation'}", ""])
+        lines.extend([f"## {label or '문장 번역'}", ""])
         if record.get("translation"):
-            lines.extend(["Translation", "", str(record["translation"]), ""])
+            lines.extend(["번역", "", str(record["translation"]), ""])
         if record.get("commentary"):
-            lines.extend(["Commentary", "", str(record["commentary"]), ""])
+            lines.extend(["해설", "", str(record["commentary"]), ""])
         if record.get("source_text_excerpt"):
-            lines.extend(["Original", "", "> " + str(record["source_text_excerpt"]).replace("\n", "\n> "), ""])
+            lines.extend(["원문", "", "> " + str(record["source_text_excerpt"]).replace("\n", "\n> "), ""])
         if record.get("target_url"):
-            lines.append(f"Source: {record['target_url']}")
+            lines.append(f"출처: {record['target_url']}")
         lines.append("")
     return "\n".join(lines).rstrip() + "\n"
 
