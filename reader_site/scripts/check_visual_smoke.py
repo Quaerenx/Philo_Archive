@@ -375,7 +375,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common143",
-            "reader-work.js?v=common189",
+            "reader-work.js?v=common190",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         require("Contents (" not in html, f"{route} should not expose TOC inventory counts")
@@ -1797,6 +1797,33 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       if (collapsedStudyState.toggleAction !== '해설 보기') {
         throw new Error(`collapsed mobile study handle should name the active study panel: ${JSON.stringify(collapsedStudyState)}`);
+      }
+      await page.click('#studyPanelToggle');
+      await page.waitForFunction(() => document.querySelector('.study-page')?.classList.contains('is-expanded'), null, { timeout: 3000 });
+      await page.click('#studyPanelScrim');
+      await page.waitForFunction(() => !document.querySelector('.study-page')?.classList.contains('is-expanded'), null, { timeout: 3000 });
+      await page.waitForTimeout(350);
+      const scrimCollapsedStudyState = await page.evaluate(() => {
+        const studyPage = document.querySelector('.study-page');
+        const scrim = document.querySelector('#studyPanelScrim');
+        const selected = document.querySelector('.reader-sentence.selected');
+        const toggle = document.querySelector('#studyPanelToggle');
+        const studyPageBox = studyPage?.getBoundingClientRect();
+        const selectedBox = selected?.getBoundingClientRect();
+        return {
+          expanded: Boolean(studyPage?.classList.contains('is-expanded')),
+          scrimHidden: Boolean(scrim?.hidden),
+          selectedVisible: Boolean(selectedBox && selectedBox.bottom > 0 && selectedBox.top < (studyPageBox?.top || window.innerHeight) - 8),
+          selectedBottom: selectedBox?.bottom || 0,
+          panelTop: studyPageBox?.top || 0,
+          toggleAction: toggle?.querySelector('.study-panel-toggle-action')?.textContent.trim() || ''
+        };
+      });
+      if (scrimCollapsedStudyState.expanded || !scrimCollapsedStudyState.scrimHidden || !scrimCollapsedStudyState.selectedVisible) {
+        throw new Error(`mobile scrim should collapse the study panel and return to the selected source: ${JSON.stringify(scrimCollapsedStudyState)}`);
+      }
+      if (scrimCollapsedStudyState.toggleAction !== '해설 보기') {
+        throw new Error(`mobile scrim collapse should leave a clear study handle: ${JSON.stringify(scrimCollapsedStudyState)}`);
       }
       await page.click('#studyPanelToggle');
       await page.waitForFunction(() => document.querySelector('.study-page')?.classList.contains('is-expanded'), null, { timeout: 3000 });
