@@ -374,7 +374,7 @@ def check_route_markup(route: str, html: str) -> None:
             "목차</summary>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common141",
+            "reader-work.css?v=common142",
             "reader-work.js?v=common188",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
@@ -2005,6 +2005,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
           firstLinkHref: firstLink?.getAttribute('href') || '',
           firstLinkLabel: firstLink?.getAttribute('aria-label') || '',
           firstTerm: panel?.querySelector('.concept-term')?.textContent.trim() || '',
+          visibleDescriptionCount: panel?.querySelectorAll('.concept-list small').length || 0,
           firstItemHeight: firstItemBox?.height || 0,
           listStyle: list ? window.getComputedStyle(list).listStyleType : ''
         };
@@ -2018,13 +2019,13 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (conceptsState.linkCount !== conceptsState.itemCount || !conceptsState.firstLinkHref.includes('corpus_id=nietzsche') || !conceptsState.firstLinkHref.includes('from=') || !conceptsState.firstLinkLabel.startsWith('관련 본문 찾기:')) {
         throw new Error(`concept tab labels should link to scoped source search: ${JSON.stringify(conceptsState)}`);
       }
-      if (!conceptsState.text.includes('계보학') || !conceptsState.text.includes('원한 감정') || !conceptsState.text.includes('도덕 개념')) {
+      if (!conceptsState.text.includes('계보학') || !conceptsState.text.includes('원한 감정') || !conceptsState.text.includes('힘에의 의지')) {
         throw new Error(`concept tab should expose localized Nietzsche concept helpers: ${JSON.stringify(conceptsState)}`);
       }
-      if (/Concepts|Historical diagnosis|Reactive valuation/.test(conceptsState.text)) {
-        throw new Error(`concept tab should not expose English helper copy in the Korean reader UI: ${JSON.stringify(conceptsState)}`);
+      if (conceptsState.visibleDescriptionCount !== 0 || /도덕 개념|반응적 가치평가|Concepts|Historical diagnosis|Reactive valuation/.test(conceptsState.text)) {
+        throw new Error(`concept tab should behave as a compact search entry point, not a visible glossary: ${JSON.stringify(conceptsState)}`);
       }
-      if (conceptsState.firstItemHeight > 95) {
+      if (conceptsState.firstItemHeight > 62) {
         throw new Error(`concept tab entries should remain compact enough to scan: ${JSON.stringify(conceptsState)}`);
       }
     } else {

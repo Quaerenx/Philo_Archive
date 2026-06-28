@@ -41,7 +41,6 @@ def concept_markup(concepts: list[dict], corpus_id: str = "") -> str:
         search_query = str(concept.get("search_query") or term_text or label_text).strip()
         label = html.escape(label_text)
         term = html.escape(term_text)
-        description = html.escape(concept.get("description_ko") or concept.get("description", ""))
         if search_query:
             href = html.escape(concept_search_href(search_query, corpus_id), quote=True)
             text = f'<strong><a class="concept-link" href="{href}" aria-label="관련 본문 찾기: {label}">{label}</a></strong>'
@@ -49,8 +48,6 @@ def concept_markup(concepts: list[dict], corpus_id: str = "") -> str:
             text = f"<strong>{label}</strong>"
         if term and term_text != label_text:
             text += f'<span class="concept-term">{term}</span>'
-        if description:
-            text += f"<small>{description}</small>"
         items.append(f"<li>{text}</li>")
     return f'<section class="research-card"><h2>개념</h2><ul class="concept-list">{"".join(items)}</ul></section>'
 
