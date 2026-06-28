@@ -245,7 +245,7 @@ def check_route_markup(route: str, html: str) -> None:
             "studyStatus",
             "aria-busy=\"false\"",
             "study.css?v=study30",
-            "study.js?v=study51",
+            "study.js?v=study52",
             'href="/study" aria-current="page">학습</a>',
             "studyListTools",
             "저장한 노트 찾기</summary>",
@@ -262,7 +262,7 @@ def check_route_markup(route: str, html: str) -> None:
             "notesStatus",
             "aria-busy=\"false\"",
             "notes.css?v=notes28",
-            "notes.js?v=notes38",
+            "notes.js?v=notes39",
             'href="/notes" aria-current="page">노트</a>',
             "filter-panel",
             "노트 찾기</summary>",
@@ -281,7 +281,7 @@ def check_route_markup(route: str, html: str) -> None:
             "aria-busy=\"false\"",
             "notes.css?v=notes28",
             "translations.css?v=trans35",
-            "translations.js?v=trans83",
+            "translations.js?v=trans84",
             'href="/translations" aria-current="page">번역</a>',
             "번역 찾기",
             "translationsListTools",
@@ -941,6 +941,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         emptyBodyCount: empty ? empty.querySelectorAll('p').length : 0,
         emptyBodyText: Array.from(empty?.querySelectorAll('p') || []).map((node) => node.textContent.trim()).join(' '),
         emptyActions: Array.from(empty?.querySelectorAll('.empty-actions a') || []).map((node) => node.textContent.trim()),
+        emptyActionHrefs: Array.from(empty?.querySelectorAll('.empty-actions a') || []).map((node) => node.getAttribute('href') || ''),
         emptyButtonActions: Array.from(empty?.querySelectorAll('.empty-actions button') || []).map((node) => node.textContent.trim()),
         emptyBorderLeftColor: empty ? window.getComputedStyle(empty).borderLeftColor : '',
         emptyArchiveLinkColor: empty?.querySelector('.empty-actions a') ? window.getComputedStyle(empty.querySelector('.empty-actions a')).color : '',
@@ -998,6 +999,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (!searchPageState.hasResults && (searchPageState.emptyActions.length !== 1 || searchPageState.emptyActions[0] !== '읽기 시작')) {
       throw new Error(`empty search should keep only the reading-start recovery action: ${JSON.stringify(searchPageState)}`);
+    }
+    if (!searchPageState.hasResults && searchPageState.emptyActionHrefs[0] !== '/') {
+      throw new Error(`empty search reading-start action should return to the archive home: ${JSON.stringify(searchPageState)}`);
     }
     if (!searchPageState.hasResults && !searchPageState.emptyButtonActions.includes('검색 지우기')) {
       throw new Error(`empty search should keep the clear action available: ${JSON.stringify(searchPageState)}`);
@@ -1106,6 +1110,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         emptyBodyCount: empty ? empty.querySelectorAll('p').length : 0,
         emptyBorderLeftColor: emptyStyle?.borderLeftColor || '',
         emptyActions: Array.from(empty?.querySelectorAll('.empty-actions a') || []).map((node) => node.textContent.trim()),
+        emptyActionHrefs: Array.from(empty?.querySelectorAll('.empty-actions a') || []).map((node) => node.getAttribute('href') || ''),
         exportLabels: Array.from(document.querySelectorAll('#notesExportTools .export-row a:not([hidden])')).map((node) => node.textContent.trim()),
         jsonlHidden: Boolean(document.querySelector('#exportJsonl')?.hidden),
         reviewOptions: Array.from(document.querySelectorAll('#notesReview option')).map((node) => node.textContent.trim()),
@@ -1139,6 +1144,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       if (notesPageState.emptyActions.length !== 1 || notesPageState.emptyActions[0] !== '읽기 시작') {
         throw new Error(`empty notes page should keep only the find action: ${JSON.stringify(notesPageState)}`);
+      }
+      if (notesPageState.emptyActionHrefs[0] !== '/') {
+        throw new Error(`empty notes page reading-start action should return to the archive home: ${JSON.stringify(notesPageState)}`);
       }
     } else {
       if (/Open target|Open work|Manage note|Edit note|다시 열기|저장 완료/.test(notesPageState.actionText)) {
@@ -1226,6 +1234,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         emptyTitle: empty?.querySelector('h2')?.textContent.trim() || '',
         emptyBodyCount: empty ? empty.querySelectorAll('p').length : 0,
         emptyActions: Array.from(empty?.querySelectorAll('.empty-actions a') || []).map((node) => node.textContent.trim()),
+        emptyActionHrefs: Array.from(empty?.querySelectorAll('.empty-actions a') || []).map((node) => node.getAttribute('href') || ''),
         primaryAction: empty?.querySelector('.empty-primary-action')?.textContent.trim() || '',
         primaryActionLabel: empty?.querySelector('.empty-primary-action')?.getAttribute('aria-label') || '',
         primaryActionTitle: empty?.querySelector('.empty-primary-action')?.getAttribute('title') || '',
@@ -1252,6 +1261,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       if (!studyPageState.emptyActions.includes('읽기 시작')) {
         throw new Error(`empty study page should keep a clear find action: ${JSON.stringify(studyPageState)}`);
+      }
+      if (!studyPageState.emptyActionHrefs.includes('/')) {
+        throw new Error(`empty study page reading-start action should return to the archive home: ${JSON.stringify(studyPageState)}`);
       }
       if (studyPageState.emptyBorderLeftColor === 'rgb(176, 0, 0)' || studyPageState.findActionColor === 'rgb(176, 0, 0)') {
         throw new Error(`empty study page should keep secondary empty-state cues visually quiet: ${JSON.stringify(studyPageState)}`);
@@ -1332,6 +1344,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
           emptyTitle: empty?.querySelector('h2')?.textContent.trim() || '',
           emptyBodyCount: empty ? empty.querySelectorAll('p').length : 0,
           emptyActions: Array.from(empty?.querySelectorAll('.empty-actions a') || []).map((node) => node.textContent.trim()),
+          emptyActionHrefs: Array.from(empty?.querySelectorAll('.empty-actions a') || []).map((node) => node.getAttribute('href') || ''),
           reviewBadgeCount: document.querySelectorAll('#translationsResults .review-badge').length,
           summaryButtons: Array.from(document.querySelectorAll('#translationsResults .translation-record-summary [data-translation-summary-filter]')).map((node) => node.textContent.trim()),
           summaryLabels: Array.from(document.querySelectorAll('#translationsResults .translation-record-summary [data-translation-summary-filter]')).map((node) => node.getAttribute('aria-label') || ''),
@@ -1369,6 +1382,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       if (translationsPageState.emptyActions.length !== 1 || translationsPageState.emptyActions[0] !== '읽기 시작') {
         throw new Error(`empty translations page should keep only the find action: ${JSON.stringify(translationsPageState)}`);
+      }
+      if (translationsPageState.emptyActionHrefs[0] !== '/') {
+        throw new Error(`empty translations page reading-start action should return to the archive home: ${JSON.stringify(translationsPageState)}`);
       }
     } else {
       if (translationsPageState.reviewBadgeCount !== 0) {

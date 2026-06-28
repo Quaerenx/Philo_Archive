@@ -218,7 +218,7 @@ function renderEmptyStudy(translationSummary = null) {
     <div class="empty-actions">
       ${clearAction}
       ${translationAction}
-      <a href="/search">읽기 시작</a>
+      <a href="/">읽기 시작</a>
     </div>
   </section>`;
 }
