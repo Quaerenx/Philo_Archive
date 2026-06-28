@@ -118,6 +118,22 @@ function currentWorkHref() {
   return `${location.pathname}${location.search}${location.hash || ""}`;
 }
 
+function syncConceptReturnLinks() {
+  const returnHref = currentWorkHref();
+  const returnLabel = cleanText(researchData.title || document.title || researchData.work_id || "읽던 문서");
+  document.querySelectorAll(".concept-link").forEach((link) => {
+    try {
+      const url = new URL(link.getAttribute("href") || "", location.origin);
+      if (url.pathname !== "/search") return;
+      url.searchParams.set("from", returnHref);
+      url.searchParams.set("from_label", returnLabel);
+      link.setAttribute("href", `${url.pathname}${url.search}`);
+    } catch (error) {
+      return;
+    }
+  });
+}
+
 function rememberRecentWork() {
   try {
     const storage = window.localStorage;
@@ -3121,6 +3137,7 @@ window.addEventListener("hashchange", () => {
   selectSentenceFromHash();
   syncTargetDependentViews();
   updateSentenceControls();
+  syncConceptReturnLinks();
 });
 
 function initializeStudyCompanion() {
@@ -3130,6 +3147,7 @@ function initializeStudyCompanion() {
   setStudyPanelExpanded(storedStudyPanelExpanded());
   setStudyPanel("translation");
   renderTranslationEmptyState();
+  syncConceptReturnLinks();
   const exportParams = new URLSearchParams({
     corpus_id: researchData.corpus_id || researchData.author_id || "",
     work_id: researchData.work_id || "",

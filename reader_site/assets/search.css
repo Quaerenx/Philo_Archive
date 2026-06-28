@@ -224,6 +224,34 @@ h1 {
   margin-right: 2px;
 }
 
+.search-return {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: baseline;
+  margin: -4px 0 14px;
+  padding-top: 8px;
+  border-top: 1px solid #eeeeee;
+  color: #777;
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.search-return[hidden] {
+  display: none;
+}
+
+.search-return a {
+  color: #9a0000;
+}
+
+.search-return span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .filter-chip {
   display: inline-flex;
   align-items: center;

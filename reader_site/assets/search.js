@@ -6,8 +6,10 @@ const variantSelect = document.getElementById("variantSelect");
 const searchSubmit = document.getElementById("searchSubmit");
 const searchClear = document.getElementById("searchClear");
 const activeFiltersEl = document.getElementById("searchActiveFilters");
+const searchReturnEl = document.getElementById("searchReturn");
 const statusEl = document.getElementById("searchStatus");
 const resultsEl = document.getElementById("results");
+const initialParams = new URLSearchParams(location.search);
 const metadataCache = {};
 let activeSearchController = null;
 let activeSearchRequest = 0;
@@ -45,6 +47,15 @@ function highlight(value, query) {
 function cleanText(value) {
   return String(value ?? "").replace(/\s+/g, " ").trim();
 }
+
+function safeReturnHref(value) {
+  const text = cleanText(value);
+  if (!text || !text.startsWith("/") || text.startsWith("//")) return "";
+  return text;
+}
+
+const searchReturnHref = safeReturnHref(initialParams.get("from") || "");
+const searchReturnLabel = cleanText(initialParams.get("from_label") || "읽던 문서");
 
 function corpusLabel(value) {
   const corpusId = String(value || "");
@@ -90,7 +101,21 @@ function updateUrl(query, corpusId, workId, variantId) {
   if (corpusId) params.set("corpus_id", corpusId);
   if (workId) params.set("work_id", workId);
   if (variantId) params.set("variant_id", variantId);
+  if (searchReturnHref) params.set("from", searchReturnHref);
+  if (searchReturnHref && searchReturnLabel) params.set("from_label", searchReturnLabel);
   history.replaceState(null, "", params.toString() ? `/search?${params}` : "/search");
+}
+
+function renderSearchReturn() {
+  if (!searchReturnEl) return;
+  if (!searchReturnHref) {
+    searchReturnEl.hidden = true;
+    searchReturnEl.innerHTML = "";
+    return;
+  }
+  searchReturnEl.hidden = false;
+  searchReturnEl.innerHTML = `<a href="${escapeHtml(searchReturnHref)}" aria-label="${escapeHtml(`읽던 문서로 돌아가기: ${searchReturnLabel}`)}">읽던 문서로 돌아가기</a>
+    <span>${escapeHtml(searchReturnLabel)}</span>`;
 }
 
 function selectedOptionText(select) {
@@ -526,11 +551,11 @@ workSelect.addEventListener("change", runSearch);
 variantSelect.addEventListener("change", runSearch);
 queryInput.addEventListener("input", updateSearchClearState);
 
-const initialParams = new URLSearchParams(location.search);
 queryInput.value = initialParams.get("q") || "";
 corpusSelect.value = initialParams.get("corpus_id") || "";
 const initialWorkId = initialParams.get("work_id") || "";
 const initialVariantId = initialParams.get("variant_id") || "";
+renderSearchReturn();
 populateFilters(initialWorkId, initialVariantId).then(() => {
   updateSearchClearState();
   if (queryInput.value) {

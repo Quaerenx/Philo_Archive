@@ -34,6 +34,7 @@ ROUTES = [
     ("concept-tab", "/work/nietzsche/GM#p-0023.s001", True),
     ("search", "/search", True),
     ("search-results", "/search?q=ressentiment&corpus_id=nietzsche", True),
+    ("concept-search", "/search?q=Genealogie&corpus_id=nietzsche&from=/work/nietzsche/GM%23p-0023.s001&from_label=Zur%20Genealogie%20der%20Moral", True),
     ("search-empty", "/search?q=unlikelyarchivequery0000", True),
     ("notes", "/notes", True),
     ("study", "/study", True),
@@ -271,8 +272,8 @@ def check_route_markup(route: str, html: str) -> None:
             "searchActiveFilters",
             "searchStatus",
             "aria-busy=\"false\"",
-            "search.css?v=phase31",
-            "search.js?v=phase41",
+            "search.css?v=phase32",
+            "search.js?v=phase42",
             'href="/search" aria-current="page">검색</a>',
             "번역",
             "filter-panel",
@@ -342,7 +343,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common135",
-            "reader-work.js?v=common178",
+            "reader-work.js?v=common179",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         require("Contents (" not in html, f"{route} should not expose TOC inventory counts")
@@ -830,6 +831,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     const searchPageState = await page.evaluate(() => {
       const empty = document.querySelector('#results .empty-state');
       const firstNoteSourceRead = document.querySelector('#results .note-result .result-action-read');
+      const searchReturn = document.querySelector('#searchReturn');
+      const searchReturnLink = searchReturn?.querySelector('a');
       return {
         statusText: document.querySelector('#searchStatus')?.textContent.trim() || '',
         hasResults: document.querySelectorAll('#results .result:not(.search-skeleton)').length > 0,
@@ -843,6 +846,10 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         actionText: Array.from(document.querySelectorAll('#results .result-actions')).map((node) => node.textContent.trim()).join(' '),
         activeFilterText: document.querySelector('#searchActiveFilters')?.textContent.trim() || '',
         activeFilterLabel: document.querySelector('#searchActiveFilters')?.getAttribute('aria-label') || '',
+        returnHidden: Boolean(searchReturn?.hidden),
+        returnText: searchReturn?.textContent.trim().replace(/\s+/g, ' ') || '',
+        returnHref: searchReturnLink?.getAttribute('href') || '',
+        returnLabel: searchReturnLink?.getAttribute('aria-label') || '',
         filterChipHeights: Array.from(document.querySelectorAll('#searchActiveFilters .filter-chip')).map((node) => Math.round(node.getBoundingClientRect().height)),
         filterChipCloseText: Array.from(document.querySelectorAll('#searchActiveFilters .filter-chip span[aria-hidden="true"]')).map((node) => node.textContent.trim()).join(''),
         summaryLinkTexts: Array.from(document.querySelectorAll('#results .result-summary-link')).map((node) => node.textContent.trim()),
@@ -874,6 +881,13 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (searchPageState.activeFilterText && (searchPageState.filterChipHeights.some((height) => height < 28) || !searchPageState.filterChipCloseText.includes('×'))) {
       throw new Error(`search filter chips should be easy to remove on touch screens: ${JSON.stringify(searchPageState)}`);
+    }
+    if (outputPath.includes('concept-search')) {
+      if (searchPageState.returnHidden || searchPageState.returnHref !== '/work/nietzsche/GM#p-0023.s001' || !searchPageState.returnText.includes('읽던 문서로 돌아가기') || !searchPageState.returnLabel.startsWith('읽던 문서로 돌아가기:')) {
+        throw new Error(`concept search should offer a quiet return to the source text: ${JSON.stringify(searchPageState)}`);
+      }
+    } else if (!searchPageState.returnHidden || searchPageState.returnText) {
+      throw new Error(`ordinary search should not show a return-to-source link: ${JSON.stringify(searchPageState)}`);
     }
     if (!searchPageState.hasResults && searchPageState.emptyTitle !== '검색 결과가 없습니다.') {
       throw new Error(`empty search should use a concise title: ${JSON.stringify(searchPageState)}`);
@@ -1727,7 +1741,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (conceptsState.itemCount < 2 || conceptsState.listStyle !== 'none') {
         throw new Error(`concept tab should present a compact scannable concept list: ${JSON.stringify(conceptsState)}`);
       }
-      if (conceptsState.linkCount !== conceptsState.itemCount || !conceptsState.firstLinkHref.includes('corpus_id=nietzsche') || !conceptsState.firstLinkLabel.startsWith('관련 본문 찾기:')) {
+      if (conceptsState.linkCount !== conceptsState.itemCount || !conceptsState.firstLinkHref.includes('corpus_id=nietzsche') || !conceptsState.firstLinkHref.includes('from=') || !conceptsState.firstLinkLabel.startsWith('관련 본문 찾기:')) {
         throw new Error(`concept tab labels should link to scoped source search: ${JSON.stringify(conceptsState)}`);
       }
       if (!conceptsState.text.includes('계보학') || !conceptsState.text.includes('원한 감정') || !conceptsState.text.includes('도덕 개념')) {

@@ -312,8 +312,8 @@ def check_search_ui() -> None:
     script = read_site_file("assets/search.js")
     css = read_site_file("assets/search.css")
     for needle in [
-        "/assets/search.css?v=phase31",
-        "/assets/search.js?v=phase41",
+        "/assets/search.css?v=phase32",
+        "/assets/search.js?v=phase42",
         'href="/search" aria-current="page">검색</a>',
         'href="/translations"',
         "본문 찾기",
@@ -325,6 +325,7 @@ def check_search_ui() -> None:
         'id="searchClear"',
         'placeholder="예: GM, ressentiment, John 3:16"',
         'id="searchActiveFilters"',
+        'id="searchReturn"',
         'aria-label="활성 검색 조건"',
         'class="form-actions"',
         'role="status"',
@@ -349,6 +350,10 @@ def check_search_ui() -> None:
         "function clearSearchFilters",
         "function updateSearchClearState",
         "function updateSearchFilterSummary",
+        "function safeReturnHref",
+        "function renderSearchReturn",
+        "searchReturnHref",
+        "읽던 문서로 돌아가기",
         "active-filters-label\">조건</span>",
         "조건 제거",
         "function removeSearchFilter",
@@ -428,6 +433,9 @@ def check_search_ui() -> None:
         ".filter-panel-fields",
         ".active-filters",
         ".active-filters.has-filters",
+        ".search-return",
+        ".search-return[hidden]",
+        ".search-return a",
         ".filter-chip",
         "min-height: 28px",
         ".result-summary-nav",
@@ -1461,6 +1469,7 @@ def check_work_source_bundle_ui() -> None:
         "recentlyChangedNoteId",
         "노트를 저장하고 표시했습니다.",
         "setStudyPanelExpanded",
+        "syncConceptReturnLinks",
         "updateStudyPanelScrim",
         "studyPanelScrim",
         "beginStudyPanelDrag",
@@ -1784,7 +1793,7 @@ def check_work_source_bundle_ui() -> None:
             noisy_marker not in request_translation_body,
             f"requestSentenceTranslation should avoid storage-log status text {noisy_marker!r}",
         )
-    require_contains(template, "/assets/reader-work.js?v=common178", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common179", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common135", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
