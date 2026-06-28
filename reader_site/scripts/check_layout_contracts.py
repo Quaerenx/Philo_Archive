@@ -1358,7 +1358,7 @@ def check_work_source_bundle_ui() -> None:
         "translation-runtime-command",
         "data-translation-copy-runtime",
         "data-translation-check-runtime",
-        "다시 확인",
+        "상태 확인",
         "시작 명령 복사</button>",
         "복사했습니다. PowerShell에서 실행하세요.",
         ".\\\\run_reader_with_gemma.ps1",
@@ -1372,6 +1372,7 @@ def check_work_source_bundle_ui() -> None:
         "data-translation-retry",
         "data-translation-retry=\"${escapeHtml(retryMode)}\"",
         "다시 생성",
+        "번역 다시 시도",
         "retry.dataset.translationRetry === \"regenerate\"",
         "번역 요청을 취소했습니다.",
         "번역을 저장하지 않았습니다.",
@@ -1637,6 +1638,15 @@ def check_work_source_bundle_ui() -> None:
     )
     for noisy_marker in ["시작 도움말", "아래 시작 명령을 복사해 한 번 실행한 뒤 다시 확인하세요.", "translation-runtime-command-row"]:
         require(noisy_marker not in runtime_help_body, f"runtime recovery should keep startup help direct without {noisy_marker!r}")
+    render_error_body = js_function_body(script, "renderTranslationError")
+    require(
+        "번역 다시 시도" in render_error_body and "상태 확인" in render_error_body,
+        "renderTranslationError should distinguish retrying translation from checking translator status",
+    )
+    require(
+        ">다시 확인</button>" not in render_error_body,
+        "renderTranslationError should avoid ambiguous status-check label",
+    )
     require(("Show " + "source") not in script, "assets/reader-work.js should keep source-jump UI in reader language")
     require(
         '<span class="reading-position-current">Selected</span>' not in script,

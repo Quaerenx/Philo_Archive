@@ -1771,7 +1771,7 @@ function runtimeRecoveryMarkup(message) {
 function renderTranslationError(message) {
   selectedTranslationRecord = null;
   const retryMode = pendingTranslationRegenerate ? "regenerate" : "translate";
-  const retryLabel = pendingTranslationRegenerate ? "다시 생성" : "다시 시도";
+  const retryLabel = pendingTranslationRegenerate ? "다시 생성" : "번역 다시 시도";
   const cleanMessage = cleanText(message || "번역기가 꺼져 있습니다.");
   const isRuntimeError = translationErrorIsRuntime(cleanMessage);
   const displayMessage = translationErrorDisplayMessage(cleanMessage);
@@ -1797,7 +1797,7 @@ function renderTranslationError(message) {
         ${runtimeRecoveryMarkup(cleanMessage)}
         <div class="translation-error-actions">
           <button type="button" data-translation-retry="${escapeHtml(retryMode)}">${escapeHtml(retryLabel)}</button>
-          ${isRuntimeError ? '<button type="button" data-translation-check-runtime>다시 확인</button>' : ""}
+          ${isRuntimeError ? '<button type="button" data-translation-check-runtime>상태 확인</button>' : ""}
         </div>
       </div>
     </div>`;
