@@ -1588,7 +1588,7 @@ def check_work_source_bundle_ui() -> None:
         "translation-reading-actions",
         "translation-secondary-actions",
         "translation-secondary-actions-body",
-        "<summary>저장/메모</summary>",
+        "<summary>저장 · 메모</summary>",
         "data-translation-quick-action=\"next-sentence\"",
         "다음 문장을 선택하고 번역",
         "번역 저장",
@@ -1693,8 +1693,8 @@ def check_work_source_bundle_ui() -> None:
         "요청 취소",
     ]:
         require(noisy_marker not in pending_body, f"renderTranslationPending should keep loading state quiet without {noisy_marker!r}")
-    require_contains(template, "/assets/reader-work.js?v=common169", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common129", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common170", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common130", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
         'aria-label="읽기 화면 이동"',

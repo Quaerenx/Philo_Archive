@@ -1696,7 +1696,7 @@ h1 {
 
 .translation-secondary-actions summary {
   display: flex;
-  min-height: 22px;
+  min-height: 28px;
   align-items: center;
   justify-content: center;
   gap: 6px;

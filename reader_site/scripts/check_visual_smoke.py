@@ -340,8 +340,8 @@ def check_route_markup(route: str, html: str) -> None:
             "목차</summary>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common129",
-            "reader-work.js?v=common169",
+            "reader-work.css?v=common130",
+            "reader-work.js?v=common170",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         require("Contents (" not in html, f"{route} should not expose TOC inventory counts")
@@ -1383,18 +1383,18 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (!['번역 저장', '저장된 번역'].includes(state.readingSaveLabel) || state.readingNoteLabel !== '번역으로 메모 추가') {
       throw new Error(`reading mode quick actions should keep clear accessible labels: ${JSON.stringify(state)}`);
     }
-    if (state.secondaryActionsOpen || state.secondaryActionsSummary !== '저장/메모') {
+    if (state.secondaryActionsOpen || state.secondaryActionsSummary !== '저장 · 메모') {
       throw new Error(`reading mode should collapse secondary note/save actions behind a clear label: ${JSON.stringify(state)}`);
     }
     if (state.secondaryActionsJustifySelf !== 'center' || !['rgba(0, 0, 0, 0)', 'transparent'].includes(state.secondarySummaryBackground) || !['rgba(0, 0, 0, 0)', 'transparent'].includes(state.secondarySummaryBorderColor)) {
       throw new Error(`reading mode secondary note/save action should stay visually quiet until opened: ${JSON.stringify(state)}`);
     }
-    if (state.secondarySummaryHeight > 26) {
-      throw new Error(`reading mode secondary note/save action should not read as a full-width button: ${JSON.stringify(state)}`);
+    if (state.secondarySummaryHeight < 28 || state.secondarySummaryHeight > 34) {
+      throw new Error(`reading mode secondary note/save action should stay touchable without becoming a primary button: ${JSON.stringify(state)}`);
     }
     const firstAction = state.readingActions[0] || '';
     const secondAction = state.readingActions[1] || '';
-    if (firstAction !== '다음 문장' || secondAction !== '저장/메모' || state.readingActions.length !== 2) {
+    if (firstAction !== '다음 문장' || secondAction !== '저장 · 메모' || state.readingActions.length !== 2) {
       throw new Error(`reading mode should show only Next sentence and the collapsed secondary action label: ${JSON.stringify(state)}`);
     }
     if (state.visibleExtraCount !== 0) throw new Error(`reading mode exposed study-only translation extras: ${JSON.stringify(state)}`);
