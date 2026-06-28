@@ -36,6 +36,14 @@ cd .\reader_site
 .\run_reader_with_gemma.ps1
 ```
 
+The script prints the address to open on this PC and, when available, same-LAN addresses for another device:
+
+```text
+Open Philo Archive:
+  This PC: http://127.0.0.1:8793/
+  Same LAN: http://<machine-ip>:8793/
+```
+
 ## Health Checks
 
 ```powershell

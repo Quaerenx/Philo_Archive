@@ -61,6 +61,45 @@ function Get-PortOwnerHint {
     }
 }
 
+function Get-ReaderOpenUrlLines {
+    param(
+        [string]$HostName,
+        [int]$Port
+    )
+    $lines = New-Object System.Collections.Generic.List[string]
+    if ($HostName -eq "0.0.0.0" -or !$HostName) {
+        $lines.Add("This PC: http://127.0.0.1:${Port}/")
+        try {
+            $addresses = Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue |
+                Where-Object {
+                    $_.IPAddress -and
+                    $_.IPAddress -notmatch "^127\." -and
+                    $_.IPAddress -notmatch "^169\.254\."
+                } |
+                Select-Object -ExpandProperty IPAddress -Unique
+            foreach ($address in $addresses) {
+                $lines.Add("Same LAN: http://${address}:${Port}/")
+            }
+        } catch {
+            return $lines
+        }
+        return $lines
+    }
+    $lines.Add("Open: http://${HostName}:${Port}/")
+    return $lines
+}
+
+function Write-ReaderOpenUrls {
+    param(
+        [string]$HostName,
+        [int]$Port
+    )
+    Write-Host "Open Philo Archive:"
+    foreach ($line in Get-ReaderOpenUrlLines -HostName $HostName -Port $Port) {
+        Write-Host "  ${line}"
+    }
+}
+
 function Test-ReaderReady {
     param([string]$BaseUrl)
     try {
@@ -176,7 +215,7 @@ try {
     Push-Location $Site
     $PushedSiteLocation = $true
     if ($ReaderAlreadyRunning) {
-        Write-Host "Open: ${ReaderBaseUrl}"
+        Write-ReaderOpenUrls -HostName $ReaderHost -Port $ReaderPort
         Write-Host "Health check: python .\scripts\check_local_runtime.py --plain"
         if ($StartedGemma) {
             Write-Host "Gemma runtime started for the existing reader. Keep this window open; press Ctrl+C to stop it."
@@ -188,8 +227,8 @@ try {
         return
     }
 
-    Write-Host "Starting Philo Archive reader at http://${ReaderHost}:${ReaderPort}"
-    Write-Host "Open: ${ReaderBaseUrl}"
+    Write-Host "Starting Philo Archive reader on ${ReaderHost}:${ReaderPort}"
+    Write-ReaderOpenUrls -HostName $ReaderHost -Port $ReaderPort
     Write-Host "Health check: python .\scripts\check_local_runtime.py --plain"
     python .\server.py --host $ReaderHost --port $ReaderPort
 } finally {

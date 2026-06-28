@@ -329,6 +329,10 @@ def check_runner_script_contracts(repo: Path = REPO) -> None:
         "Checking Gemma runtime for the existing reader",
         "Gemma runtime started for the existing reader",
         "Reader and Gemma runtime are ready.",
+        "Open Philo Archive:",
+        "This PC: http://127.0.0.1:${Port}/",
+        "Same LAN: http://${address}:${Port}/",
+        "Starting Philo Archive reader on ${ReaderHost}:${ReaderPort}",
     ]:
         require(snippet in text, f"run_reader_with_gemma.ps1 missing startup recovery snippet {snippet!r}")
 

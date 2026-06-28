@@ -17,6 +17,14 @@ Open:
 http://127.0.0.1:8793/
 ```
 
+The start script also prints browser-ready links:
+
+```text
+Open Philo Archive:
+  This PC: http://127.0.0.1:8793/
+  Same LAN: http://<machine-ip>:8793/
+```
+
 What starts:
 
 - Reader site: `0.0.0.0:8793`, also reachable as `http://127.0.0.1:8793/` on the same machine.
