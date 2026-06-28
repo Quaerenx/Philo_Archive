@@ -2141,6 +2141,12 @@ def capture(browser: str, playwright_node: str, playwright_node_path: str, url: 
     capture_with_native_browser(browser, url, output_path, width, height)
 
 
+def clear_previous_screenshots(output_dir: Path) -> None:
+    output_dir.mkdir(parents=True, exist_ok=True)
+    for path in output_dir.glob("*.png"):
+        path.unlink()
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Capture local browser screenshots for reader-site visual smoke QA.", allow_abbrev=False)
     parser.add_argument("--browser", default="", help="Path to Edge/Chrome/Chromium. Defaults to common local installs.")
@@ -2159,6 +2165,7 @@ def main() -> None:
         if playwright_is_available(node, node_path):
             playwright_node = node
             playwright_node_path = node_path
+        clear_previous_screenshots(args.output)
     port = free_port()
     base_url = f"http://127.0.0.1:{port}"
     with tempfile.TemporaryDirectory(prefix="philo_visual_notes_") as notes_temp_dir:
