@@ -56,18 +56,18 @@ def study_session_payload_from_query(query: dict[str, list[str]]) -> dict[str, A
 
 def export_study_session_markdown(payload: dict[str, Any]) -> str:
     lines = [
-        "# Study Bundle",
+        "# 학습 기록",
         "",
-        f"{payload.get('note_count', 0)} notes / {payload.get('translation_count', 0)} translations",
+        f"노트 {payload.get('note_count', 0)}개 / 번역 {payload.get('translation_count', 0)}개",
         "",
-        "## Notes",
+        "## 노트",
         "",
     ]
     notes = payload.get("notes") if isinstance(payload.get("notes"), list) else []
     if not notes:
-        lines.extend(["No matching notes.", ""])
+        lines.extend(["일치하는 노트가 없습니다.", ""])
     for note in notes:
-        target_label = note.get("target_label") or note.get("target_id") or "Target"
+        target_label = note.get("target_label") or note.get("target_id") or "대상"
         lines.extend([f"### {target_label}", ""])
         if note.get("note"):
             lines.extend([str(note["note"]), ""])
@@ -75,18 +75,18 @@ def export_study_session_markdown(payload: dict[str, Any]) -> str:
             lines.extend(["> " + markdown_quote(note["quote"]), ""])
         note_meta = []
         if note.get("url"):
-            note_meta.append(f"Source: {note['url']}")
+            note_meta.append(f"출처: {note['url']}")
         tags = ", ".join(str(tag) for tag in note.get("tags", []))
         if tags:
-            note_meta.append(f"Tags: {tags}")
+            note_meta.append(f"태그: {tags}")
         if note_meta:
             lines.extend(note_meta)
         lines.append("")
 
-    lines.extend(["## Translations And Commentary", ""])
+    lines.extend(["## 번역과 해설", ""])
     translations = payload.get("translations") if isinstance(payload.get("translations"), list) else []
     if not translations:
-        lines.extend(["No matching translations.", ""])
+        lines.extend(["일치하는 번역이 없습니다.", ""])
     for record in translations:
         title = " / ".join(
             item
@@ -96,15 +96,15 @@ def export_study_session_markdown(payload: dict[str, Any]) -> str:
             ]
             if item
         )
-        lines.extend([f"### {title or 'Sentence translation'}", ""])
+        lines.extend([f"### {title or '문장 번역'}", ""])
         if record.get("translation"):
-            lines.extend(["Translation", "", str(record["translation"]), ""])
+            lines.extend(["번역", "", str(record["translation"]), ""])
         if record.get("commentary"):
-            lines.extend(["Commentary", "", str(record["commentary"]), ""])
+            lines.extend(["해설", "", str(record["commentary"]), ""])
         if record.get("source_text_excerpt"):
-            lines.extend(["Original", "", "> " + markdown_quote(record["source_text_excerpt"]), ""])
+            lines.extend(["원문", "", "> " + markdown_quote(record["source_text_excerpt"]), ""])
         if record.get("target_url"):
-            lines.append(f"Source: {record['target_url']}")
+            lines.append(f"출처: {record['target_url']}")
         lines.append("")
     return "\n".join(lines).rstrip() + "\n"
 

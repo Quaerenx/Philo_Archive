@@ -20,6 +20,12 @@ METADATA_FILES = {
     "kierkegaard": DATA / "kierkegaard_metadata.json",
     "wittgenstein": DATA / "wittgenstein_metadata.json",
 }
+CORPUS_TITLES = {
+    "nietzsche": "니체",
+    "bible": "성경",
+    "kierkegaard": "키르케고르",
+    "wittgenstein": "비트겐슈타인",
+}
 BIBLE_ALIAS_CACHE: dict[str, list[dict]] | None = None
 WORK_METADATA_CACHE: dict[str, dict] | None = None
 BIBLE_KO_ABBREVIATIONS = {
@@ -285,6 +291,30 @@ def load_work_metadata() -> dict[str, dict]:
     return WORK_METADATA_CACHE
 
 
+def work_display_title(work: dict, fallback: str = "") -> str:
+    return str(
+        work.get("display_title")
+        or work.get("title")
+        or work.get("korean_title")
+        or work.get("book_name_ko")
+        or work.get("book_name_en")
+        or fallback
+        or ""
+    ).strip()
+
+
+def note_context_title(corpus_id: str, work_id: str) -> str:
+    corpus_id = str(corpus_id or "").strip()
+    work_id = str(work_id or "").strip()
+    if work_id:
+        work = load_work_metadata().get(corpus_id, {}).get(work_id)
+        if isinstance(work, dict):
+            title = work_display_title(work)
+            if title:
+                return title
+    return CORPUS_TITLES.get(corpus_id, "노트")
+
+
 def work_alias_values(corpus_id: str, work: dict) -> list[str]:
     values = [
         corpus_id,
@@ -450,8 +480,8 @@ def search_note_records(query: str, corpus_id: str, work_id: str, limit: int) ->
         haystack = note_haystack(note)
         if not all(term in haystack for term in terms):
             continue
-        title = " / ".join(str(item) for item in [note.get("corpus_id", ""), note.get("work_id", "")] if item)
-        label = str(note.get("target_label") or note.get("target_id") or "Note")
+        title = note_context_title(str(note.get("corpus_id", "")), str(note.get("work_id", "")))
+        label = str(note.get("target_label") or note.get("target_id") or "노트")
         text = " ".join(
             str(item)
             for item in [note.get("quote", ""), note.get("note", ""), " ".join(str(tag) for tag in note.get("tags", []))]
@@ -466,7 +496,7 @@ def search_note_records(query: str, corpus_id: str, work_id: str, limit: int) ->
             "variant_id": note.get("variant_id", ""),
             "target_id": note.get("target_id", ""),
             "target_label": label,
-            "title": title or "Research note",
+            "title": title,
             "label": label,
             "url": note.get("url", ""),
             "manage_url": note_manage_url(note),

@@ -213,6 +213,30 @@ def check_note_search() -> None:
         note_results = payload.get("note_results", [])
         require(note_results and note_results[0].get("id") == "search-note-1", "note search result failed")
         require(note_results[0].get("manage_url", "").startswith("/notes?"), "note search manage url failed")
+        append_note(
+            NOTE_CORPUS_ID,
+            {
+                "id": "search-note-fallback",
+                "created_at": "2026-06-05T12:10:00",
+                "corpus_id": NOTE_CORPUS_ID,
+                "work_id": "",
+                "variant_id": "",
+                "target_id": "",
+                "target_type": "",
+                "target_label": "",
+                "quote": "",
+                "note": "fallback label unique note phrase",
+                "tags": [],
+                "review_state": "reviewed",
+                "reviewed_at": "2026-06-05T12:11:00",
+                "url": "",
+            },
+        )
+        fallback_payload = search_records("fallback label unique", corpus_id=NOTE_CORPUS_ID, limit=5)
+        fallback_results = fallback_payload.get("note_results", [])
+        require(fallback_results and fallback_results[0].get("id") == "search-note-fallback", "note fallback search result failed")
+        require(fallback_results[0].get("label") == "노트", "empty note target fallback should stay in reader language")
+        require(fallback_results[0].get("title") == "노트", "empty note title fallback should stay in reader language")
     finally:
         cleanup_notes()
 

@@ -259,9 +259,11 @@ def check_study_session_export() -> None:
         {"corpus_id": ["nietzsche"], "work_id": ["GM"], "format": ["markdown"]}
     )
     require(markdown["kind"] == "text", "study session markdown export should be text")
-    require("Study Bundle" in markdown["body"], "study session export heading missing")
-    require(" notes / " in markdown["body"], "study session export count summary should use an ASCII separator")
-    require("Translations And Commentary" in markdown["body"], "study session export translation section missing")
+    require("학습 기록" in markdown["body"], "study session export heading missing")
+    require("노트 " in markdown["body"] and " / 번역 " in markdown["body"], "study session export count summary should be reader-language")
+    require("번역과 해설" in markdown["body"], "study session export translation section missing")
+    for noisy_text in ["Study Bundle", " notes / ", "Translations And Commentary", "No matching notes.", "No matching translations."]:
+        require(noisy_text not in markdown["body"], f"study session export should avoid English fallback text {noisy_text!r}")
     require("Review:" not in markdown["body"], "study session export should hide review-state metadata")
     require("AI output below" not in markdown["body"], "study session export should avoid log-like AI disclaimers")
     payload = study_session_export_from_query(
