@@ -1957,7 +1957,7 @@ def check_work_source_bundle_ui() -> None:
         "문장 이동",
         "학습 흐름",
         "저장 · 내보내기</summary>",
-        "<span>저장 · 이동</span>",
+        "<span>저장 · 노트 · 이동</span>",
         "study-tabs",
         "previousSentence",
         "nextUnstudiedSentence",
