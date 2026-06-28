@@ -1446,14 +1446,14 @@ def check_work_source_bundle_ui() -> None:
         "번역기를 시작한 뒤 다시 시도하세요.",
         "translation-runtime-help",
         "translation-runtime-details",
-        "명령 보기",
+        "번역기 시작</summary>",
         "translation-runtime-note",
-        "복사한 명령을 PowerShell에 붙여넣고 Enter를 누르세요.",
+        "시작 명령을 복사해 PowerShell에서 실행하세요.",
         "translation-runtime-command",
         "data-translation-copy-runtime",
         "data-translation-check-runtime",
         "번역기 확인",
-        "시작 명령 복사</button>",
+        "명령 복사</button>",
         "시작 명령을 복사했습니다. PowerShell에 붙여넣고 Enter를 누르세요.",
         ".\\\\run_reader_with_gemma.ps1",
         "translation-error-actions",
@@ -1732,16 +1732,27 @@ def check_work_source_bundle_ui() -> None:
     require_ordered_markers(
         runtime_help_body,
         [
+            "번역기 시작</summary>",
+            "translation-runtime-details",
             "translation-runtime-note",
             "data-translation-copy-runtime",
-            "translation-runtime-details",
             "translation-runtime-command",
         ],
-        "runtime recovery should expose copy action before long command",
+        "runtime recovery should keep startup instructions collapsed behind a concise label",
     )
-    for noisy_marker in ["시작 도움말", "아래 시작 명령을 복사해 한 번 실행한 뒤 다시 확인하세요.", "translation-runtime-command-row"]:
-        require(noisy_marker not in runtime_help_body, f"runtime recovery should keep startup help direct without {noisy_marker!r}")
     render_error_body = js_function_body(script, "renderTranslationError")
+    require_ordered_markers(
+        render_error_body,
+        [
+            "translation-error-actions",
+            "data-translation-retry",
+            "data-translation-check-runtime",
+            "runtimeRecoveryMarkup(cleanMessage)",
+        ],
+        "runtime recovery should keep retry/check actions before startup command help",
+    )
+    for noisy_marker in ["시작 도움말", "아래 시작 명령을 복사해 한 번 실행한 뒤 다시 확인하세요.", "복사한 명령을 PowerShell에 붙여넣고 Enter를 누르세요.", "translation-runtime-command-row"]:
+        require(noisy_marker not in runtime_help_body, f"runtime recovery should keep startup help direct without {noisy_marker!r}")
     require(
         "번역 다시 시도" in render_error_body and "번역기 확인" in render_error_body,
         "renderTranslationError should distinguish retrying translation from checking translator status",
@@ -1834,8 +1845,8 @@ def check_work_source_bundle_ui() -> None:
             noisy_marker not in request_translation_body,
             f"requestSentenceTranslation should avoid storage-log status text {noisy_marker!r}",
         )
-    require_contains(template, "/assets/reader-work.js?v=common181", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common138", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common182", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common139", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
         'aria-label="읽기 화면 이동"',
@@ -2251,11 +2262,16 @@ def check_work_source_bundle_ui() -> None:
         ".translation-recovery-panel",
         ".translation-result.translation-cancelled button",
         ".translation-runtime-help",
-        ".translation-runtime-help > button",
+        ".translation-runtime-help > summary",
+        ".translation-runtime-help > summary::-webkit-details-marker",
+        ".translation-runtime-help > summary::after",
+        ".translation-runtime-help[open] > summary",
+        ".translation-runtime-help[open] > summary::after",
+        ".translation-runtime-help button",
         ".translation-error-actions button",
         "min-height: 32px",
         ".translation-runtime-details",
-        ".translation-runtime-details summary",
+        ".translation-runtime-help:not([open]) .translation-runtime-details",
         ".translation-runtime-note",
         ".translation-runtime-command",
         ".translation-error-actions",

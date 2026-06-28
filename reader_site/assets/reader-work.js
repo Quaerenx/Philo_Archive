@@ -1782,14 +1782,14 @@ function translationErrorDisplayMessage(message) {
 function runtimeRecoveryMarkup(message) {
   if (!translationErrorIsRuntime(message)) return "";
   return `
-      <div class="translation-runtime-help">
-        <p class="translation-runtime-note">복사한 명령을 PowerShell에 붙여넣고 Enter를 누르세요.</p>
-        <button type="button" data-translation-copy-runtime>시작 명령 복사</button>
-        <details class="translation-runtime-details">
-          <summary>명령 보기</summary>
+      <details class="translation-runtime-help">
+        <summary>번역기 시작</summary>
+        <div class="translation-runtime-details">
+          <p class="translation-runtime-note">시작 명령을 복사해 PowerShell에서 실행하세요.</p>
+          <button type="button" data-translation-copy-runtime>명령 복사</button>
           <code class="translation-runtime-command">${escapeHtml(GEMMA_RUNTIME_COMMAND)}</code>
-        </details>
-      </div>`;
+        </div>
+      </details>`;
 }
 
 function renderTranslationError(message) {
@@ -1818,11 +1818,11 @@ function renderTranslationError(message) {
         <p class="translation-unavailable-copy">${escapeHtml(displayMessage)}</p>
       </section>
       <div class="translation-recovery-panel">
-        ${runtimeRecoveryMarkup(cleanMessage)}
         <div class="translation-error-actions">
           <button type="button" data-translation-retry="${escapeHtml(retryMode)}">${escapeHtml(retryLabel)}</button>
           ${isRuntimeError ? '<button type="button" data-translation-check-runtime>번역기 확인</button>' : ""}
         </div>
+        ${runtimeRecoveryMarkup(cleanMessage)}
       </div>
     </div>`;
   updateStudyPanelToggleLabel();

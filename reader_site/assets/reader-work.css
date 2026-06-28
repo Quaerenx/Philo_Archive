@@ -1896,32 +1896,58 @@ h1 {
 }
 
 .translation-runtime-help {
-  display: grid;
-  gap: 6px;
-  justify-items: start;
-  margin: 0 0 8px;
+  margin: 0;
+  color: #555;
 }
 
-.translation-runtime-help > button {
+.translation-runtime-help > summary {
+  display: inline-flex;
+  min-height: 26px;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 7px;
+  color: #555;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  line-height: 1.3;
+  cursor: pointer;
+  list-style: none;
+  background: transparent;
+  border: 1px solid transparent;
+}
+
+.translation-runtime-help > summary::-webkit-details-marker {
+  display: none;
+}
+
+.translation-runtime-help > summary::after {
+  color: #999;
+  content: "+";
+}
+
+.translation-runtime-help[open] > summary {
+  margin-bottom: 7px;
+  color: #333;
+}
+
+.translation-runtime-help[open] > summary::after {
+  content: "-";
+}
+
+.translation-runtime-help button {
   min-height: 32px;
   margin: 0;
 }
 
 .translation-runtime-details {
+  display: grid;
+  gap: 7px;
+  justify-items: start;
   margin: 0;
 }
 
-.translation-runtime-details summary {
-  display: inline-flex;
-  min-height: 24px;
-  align-items: center;
-  padding: 2px 7px;
-  color: #333;
-  font-family: Verdana, Arial, Helvetica, sans-serif;
-  font-size: 10px;
-  background: #fff;
-  border: 1px solid #d4d4d4;
-  cursor: pointer;
+.translation-runtime-help:not([open]) .translation-runtime-details {
+  display: none;
 }
 
 .translation-runtime-note {

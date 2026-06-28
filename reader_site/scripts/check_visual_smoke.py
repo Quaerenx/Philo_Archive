@@ -369,8 +369,8 @@ def check_route_markup(route: str, html: str) -> None:
             "목차</summary>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common138",
-            "reader-work.js?v=common181",
+            "reader-work.css?v=common139",
+            "reader-work.js?v=common182",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         require("Contents (" not in html, f"{route} should not expose TOC inventory counts")
@@ -788,14 +788,17 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         }
         const output = document.querySelector('#translationOutput');
         const help = output?.querySelector('.translation-runtime-help');
-        const runtimeDetails = output?.querySelector('.translation-runtime-details');
-        const runtimeSummary = runtimeDetails?.querySelector('summary');
+        const runtimeDetails = help?.querySelector('.translation-runtime-details');
+        const runtimeSummary = help?.querySelector(':scope > summary');
+        const runtimeCommand = runtimeDetails?.querySelector('.translation-runtime-command');
         const copyButton = output?.querySelector('[data-translation-copy-runtime]');
         const retryButton = output?.querySelector('[data-translation-retry]');
         const checkButton = output?.querySelector('[data-translation-check-runtime]');
         const copyButtonBox = copyButton?.getBoundingClientRect();
+        const runtimeCommandBox = runtimeCommand?.getBoundingClientRect();
         const retryButtonBox = retryButton?.getBoundingClientRect();
         const checkButtonBox = checkButton?.getBoundingClientRect();
+        const recoveryActions = Array.from(output?.querySelectorAll('.translation-recovery-panel > *') || []).map((node) => node.className || node.tagName.toLowerCase());
         return {
           selectedSentence: Boolean(document.querySelector('.reader-sentence.selected')),
           outputHidden: Boolean(output?.hidden),
@@ -808,12 +811,14 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
           runtimeNote: help?.querySelector('.translation-runtime-note')?.textContent.trim() || '',
           copyButtonText: copyButton?.textContent.trim() || '',
           runtimeSummaryText: runtimeSummary?.textContent.trim() || '',
-          runtimeDetailsOpen: Boolean(runtimeDetails?.open),
-          runtimeCommandText: runtimeDetails?.querySelector('.translation-runtime-command')?.textContent.trim() || '',
+          runtimeHelpOpen: Boolean(help?.open),
+          runtimeCommandText: runtimeCommand?.textContent.trim() || '',
           retryText: retryButton?.textContent.trim() || '',
           retryMode: retryButton?.dataset.translationRetry || '',
           checkText: checkButton?.textContent.trim() || '',
+          recoveryActions,
           copyButtonHeight: copyButtonBox?.height || 0,
+          runtimeCommandHeight: runtimeCommandBox?.height || 0,
           retryButtonHeight: retryButtonBox?.height || 0,
           checkButtonHeight: checkButtonBox?.height || 0
         };
@@ -827,21 +832,27 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (runtimeOfflineState.primaryCopy !== '번역을 사용할 수 없습니다.' || runtimeOfflineState.commentaryCopy !== '번역기를 시작한 뒤 다시 시도하세요.') {
         throw new Error(`runtime offline fixture should explain the recovery in reader language: ${JSON.stringify(runtimeOfflineState)}`);
       }
-      if (!runtimeOfflineState.hasRuntimeHelp || runtimeOfflineState.runtimeNote !== '복사한 명령을 PowerShell에 붙여넣고 Enter를 누르세요.') {
-        throw new Error(`runtime offline fixture should give direct startup instructions: ${JSON.stringify(runtimeOfflineState)}`);
+      if (!runtimeOfflineState.hasRuntimeHelp || runtimeOfflineState.runtimeNote !== '시작 명령을 복사해 PowerShell에서 실행하세요.') {
+        throw new Error(`runtime offline fixture should keep startup instructions available when expanded: ${JSON.stringify(runtimeOfflineState)}`);
       }
-      if (runtimeOfflineState.copyButtonText !== '시작 명령 복사' || runtimeOfflineState.runtimeSummaryText !== '명령 보기' || runtimeOfflineState.runtimeDetailsOpen) {
-        throw new Error(`runtime offline fixture should keep the long command collapsed behind a clear label: ${JSON.stringify(runtimeOfflineState)}`);
+      if (runtimeOfflineState.copyButtonText !== '명령 복사' || runtimeOfflineState.runtimeSummaryText !== '번역기 시작' || runtimeOfflineState.runtimeHelpOpen) {
+        throw new Error(`runtime offline fixture should keep startup commands collapsed behind a concise label: ${JSON.stringify(runtimeOfflineState)}`);
       }
       if (!runtimeOfflineState.runtimeCommandText.includes('run_reader_with_gemma.ps1') || runtimeOfflineState.retryText !== '번역 다시 시도' || runtimeOfflineState.retryMode !== 'translate' || runtimeOfflineState.checkText !== '번역기 확인') {
         throw new Error(`runtime offline fixture should keep copy, retry, and status-check actions available: ${JSON.stringify(runtimeOfflineState)}`);
       }
-      for (const noisyText of ['Gemma runtime is not running', '시작 도움말', 'source_text_sha256', 'prompt_sha256']) {
+      if (runtimeOfflineState.recoveryActions[0] !== 'translation-error-actions' || runtimeOfflineState.recoveryActions[1] !== 'translation-runtime-help') {
+        throw new Error(`runtime offline fixture should prioritize retry and status-check before startup command help: ${JSON.stringify(runtimeOfflineState)}`);
+      }
+      if (runtimeOfflineState.copyButtonHeight !== 0 || runtimeOfflineState.runtimeCommandHeight !== 0) {
+        throw new Error(`runtime offline fixture should keep command-copy controls hidden until startup help is expanded: ${JSON.stringify(runtimeOfflineState)}`);
+      }
+      for (const noisyText of ['Gemma runtime is not running', '시작 도움말', '복사한 명령을 PowerShell에 붙여넣고 Enter', 'source_text_sha256', 'prompt_sha256']) {
         if (runtimeOfflineState.outputText.includes(noisyText)) {
           throw new Error(`runtime offline fixture should hide technical noise ${noisyText}: ${JSON.stringify(runtimeOfflineState)}`);
         }
       }
-      if (Number(widthText) <= 420 && [runtimeOfflineState.copyButtonHeight, runtimeOfflineState.retryButtonHeight, runtimeOfflineState.checkButtonHeight].some((height) => height < 30)) {
+      if (Number(widthText) <= 420 && [runtimeOfflineState.retryButtonHeight, runtimeOfflineState.checkButtonHeight].some((height) => height < 30)) {
         throw new Error(`runtime offline fixture should keep recovery actions touch-friendly: ${JSON.stringify(runtimeOfflineState)}`);
       }
     }
