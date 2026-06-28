@@ -1903,7 +1903,7 @@ h1 {
 }
 
 .translation-runtime-help > button {
-  min-height: 26px;
+  min-height: 32px;
   margin: 0;
 }
 
@@ -1953,7 +1953,7 @@ h1 {
 }
 
 .translation-error-actions button {
-  min-height: 25px;
+  min-height: 32px;
   margin: 0;
   padding: 3px 8px;
 }

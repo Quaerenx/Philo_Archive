@@ -1835,7 +1835,7 @@ def check_work_source_bundle_ui() -> None:
             f"requestSentenceTranslation should avoid storage-log status text {noisy_marker!r}",
         )
     require_contains(template, "/assets/reader-work.js?v=common181", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common137", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common138", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
         'aria-label="읽기 화면 이동"',
@@ -2252,6 +2252,8 @@ def check_work_source_bundle_ui() -> None:
         ".translation-result.translation-cancelled button",
         ".translation-runtime-help",
         ".translation-runtime-help > button",
+        ".translation-error-actions button",
+        "min-height: 32px",
         ".translation-runtime-details",
         ".translation-runtime-details summary",
         ".translation-runtime-note",

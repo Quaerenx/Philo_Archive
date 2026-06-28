@@ -48,6 +48,7 @@ ROUTES = [
     ("kierkegaard-category", "/category/kierkegaard", True),
     ("wittgenstein-category", "/category/wittgenstein", True),
     ("nietzsche-work", "/work/nietzsche/GM", True),
+    ("runtime-offline", "/work/nietzsche/GM", True),
     ("nietzsche-work-selected", "/work/nietzsche/GM#p-0023.s001", True),
     ("concept-tab", "/work/nietzsche/GM#p-0023.s001", True),
     ("search", "/search", True),
@@ -368,7 +369,7 @@ def check_route_markup(route: str, html: str) -> None:
             "목차</summary>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common137",
+            "reader-work.css?v=common138",
             "reader-work.js?v=common181",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
@@ -768,6 +769,80 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       if (!emptyTranslationState.utilityHidden || emptyTranslationState.utilityDisplay !== 'none') {
         throw new Error(`empty translation panel should hide advanced options until a sentence is selected: ${JSON.stringify(emptyTranslationState)}`);
+      }
+    }
+    if (outputPath.includes('runtime-offline')) {
+      const runtimeOfflineState = await page.evaluate(() => {
+        const firstSentence = document.querySelector('.reader-sentence');
+        if (typeof window.selectSentence === 'function' && firstSentence) {
+          window.selectSentence(firstSentence, false);
+        }
+        if (typeof window.setStudyPanel === 'function') {
+          window.setStudyPanel('translation');
+        }
+        if (typeof window.setStudyPanelExpanded === 'function') {
+          window.setStudyPanelExpanded(true);
+        }
+        if (typeof window.renderTranslationError === 'function') {
+          window.renderTranslationError('Gemma runtime is not running');
+        }
+        const output = document.querySelector('#translationOutput');
+        const help = output?.querySelector('.translation-runtime-help');
+        const runtimeDetails = output?.querySelector('.translation-runtime-details');
+        const runtimeSummary = runtimeDetails?.querySelector('summary');
+        const copyButton = output?.querySelector('[data-translation-copy-runtime]');
+        const retryButton = output?.querySelector('[data-translation-retry]');
+        const checkButton = output?.querySelector('[data-translation-check-runtime]');
+        const copyButtonBox = copyButton?.getBoundingClientRect();
+        const retryButtonBox = retryButton?.getBoundingClientRect();
+        const checkButtonBox = checkButton?.getBoundingClientRect();
+        return {
+          selectedSentence: Boolean(document.querySelector('.reader-sentence.selected')),
+          outputHidden: Boolean(output?.hidden),
+          outputText: output?.innerText || '',
+          translationHeading: output?.querySelector('.translation-section-primary h3')?.textContent.trim() || '',
+          commentaryHeading: output?.querySelector('.translation-commentary h3')?.textContent.trim() || '',
+          primaryCopy: output?.querySelector('.translation-section-primary p')?.textContent.trim() || '',
+          commentaryCopy: output?.querySelector('.translation-commentary p')?.textContent.trim() || '',
+          hasRuntimeHelp: Boolean(help),
+          runtimeNote: help?.querySelector('.translation-runtime-note')?.textContent.trim() || '',
+          copyButtonText: copyButton?.textContent.trim() || '',
+          runtimeSummaryText: runtimeSummary?.textContent.trim() || '',
+          runtimeDetailsOpen: Boolean(runtimeDetails?.open),
+          runtimeCommandText: runtimeDetails?.querySelector('.translation-runtime-command')?.textContent.trim() || '',
+          retryText: retryButton?.textContent.trim() || '',
+          retryMode: retryButton?.dataset.translationRetry || '',
+          checkText: checkButton?.textContent.trim() || '',
+          copyButtonHeight: copyButtonBox?.height || 0,
+          retryButtonHeight: retryButtonBox?.height || 0,
+          checkButtonHeight: checkButtonBox?.height || 0
+        };
+      });
+      if (!runtimeOfflineState.selectedSentence || runtimeOfflineState.outputHidden) {
+        throw new Error(`runtime offline fixture should keep a selected source and visible translation panel: ${JSON.stringify(runtimeOfflineState)}`);
+      }
+      if (runtimeOfflineState.translationHeading !== '번역' || runtimeOfflineState.commentaryHeading !== '해설') {
+        throw new Error(`runtime offline fixture should keep the reader-facing translation/commentary structure: ${JSON.stringify(runtimeOfflineState)}`);
+      }
+      if (runtimeOfflineState.primaryCopy !== '번역을 사용할 수 없습니다.' || runtimeOfflineState.commentaryCopy !== '번역기를 시작한 뒤 다시 시도하세요.') {
+        throw new Error(`runtime offline fixture should explain the recovery in reader language: ${JSON.stringify(runtimeOfflineState)}`);
+      }
+      if (!runtimeOfflineState.hasRuntimeHelp || runtimeOfflineState.runtimeNote !== '복사한 명령을 PowerShell에 붙여넣고 Enter를 누르세요.') {
+        throw new Error(`runtime offline fixture should give direct startup instructions: ${JSON.stringify(runtimeOfflineState)}`);
+      }
+      if (runtimeOfflineState.copyButtonText !== '시작 명령 복사' || runtimeOfflineState.runtimeSummaryText !== '명령 보기' || runtimeOfflineState.runtimeDetailsOpen) {
+        throw new Error(`runtime offline fixture should keep the long command collapsed behind a clear label: ${JSON.stringify(runtimeOfflineState)}`);
+      }
+      if (!runtimeOfflineState.runtimeCommandText.includes('run_reader_with_gemma.ps1') || runtimeOfflineState.retryText !== '번역 다시 시도' || runtimeOfflineState.retryMode !== 'translate' || runtimeOfflineState.checkText !== '번역기 확인') {
+        throw new Error(`runtime offline fixture should keep copy, retry, and status-check actions available: ${JSON.stringify(runtimeOfflineState)}`);
+      }
+      for (const noisyText of ['Gemma runtime is not running', '시작 도움말', 'source_text_sha256', 'prompt_sha256']) {
+        if (runtimeOfflineState.outputText.includes(noisyText)) {
+          throw new Error(`runtime offline fixture should hide technical noise ${noisyText}: ${JSON.stringify(runtimeOfflineState)}`);
+        }
+      }
+      if (Number(widthText) <= 420 && [runtimeOfflineState.copyButtonHeight, runtimeOfflineState.retryButtonHeight, runtimeOfflineState.checkButtonHeight].some((height) => height < 30)) {
+        throw new Error(`runtime offline fixture should keep recovery actions touch-friendly: ${JSON.stringify(runtimeOfflineState)}`);
       }
     }
   }
