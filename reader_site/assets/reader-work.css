@@ -1568,6 +1568,45 @@ h1 {
   line-height: 1.35;
 }
 
+.translation-cautions summary {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  width: max-content;
+  max-width: 100%;
+  color: #666;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  line-height: 1.35;
+  cursor: pointer;
+  list-style: none;
+}
+
+.translation-cautions summary::-webkit-details-marker {
+  display: none;
+}
+
+.translation-cautions summary::after {
+  color: #999;
+  content: "+";
+}
+
+.translation-cautions[open] summary {
+  margin-bottom: 7px;
+}
+
+.translation-cautions[open] summary::after {
+  content: "-";
+}
+
+.translation-cautions ul {
+  margin: 0;
+  padding-left: 18px;
+  color: #444;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
 .translation-section-primary {
   padding-left: 10px;
   border-left: 3px solid #b00000;

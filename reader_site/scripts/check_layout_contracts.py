@@ -1429,6 +1429,9 @@ def check_work_source_bundle_ui() -> None:
         "노트를 저장하지 못했습니다.",
         "renderCommentary",
         "<h3>해설</h3>",
+        "optionalCautions",
+        "translation-cautions translation-extra",
+        "<summary>주의</summary>",
         "renderTranslationEmptyState",
         "translation-empty-state",
         "translation-empty-copy",
@@ -1779,8 +1782,8 @@ def check_work_source_bundle_ui() -> None:
             noisy_marker not in request_translation_body,
             f"requestSentenceTranslation should avoid storage-log status text {noisy_marker!r}",
         )
-    require_contains(template, "/assets/reader-work.js?v=common177", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common132", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common178", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common133", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
         'aria-label="읽기 화면 이동"',
@@ -2128,6 +2131,11 @@ def check_work_source_bundle_ui() -> None:
         ".translation-section",
         ".translation-result > .translation-section:first-child",
         ".translation-section h3",
+        ".translation-cautions summary",
+        ".translation-cautions summary::-webkit-details-marker",
+        ".translation-cautions summary::after",
+        ".translation-cautions[open] summary::after",
+        ".translation-cautions ul",
         ".translation-card > .translation-output",
         ".translation-section-primary",
         ".translation-section-primary h3",

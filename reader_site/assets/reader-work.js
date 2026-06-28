@@ -1527,10 +1527,10 @@ function renderList(values) {
 function optionalCautions(record) {
   const cautions = renderList(record.cautions);
   if (!cautions) return "";
-  return `<section class="translation-section translation-extra" data-translation-section="cautions">
-      <h3>주의</h3>
+  return `<details class="translation-section translation-cautions translation-extra" data-translation-section="cautions">
+      <summary>주의</summary>
       ${cautions}
-    </section>`;
+    </details>`;
 }
 
 function renderCommentary(commentary) {
