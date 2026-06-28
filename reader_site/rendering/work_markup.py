@@ -36,7 +36,7 @@ def concept_markup(concepts: list[dict]) -> str:
         description = html.escape(concept.get("description_ko") or concept.get("description", ""))
         text = f"<strong>{label}</strong>"
         if term and term_text != label_text:
-            text += f" <span>{term}</span>"
+            text += f'<span class="concept-term">{term}</span>'
         if description:
             text += f"<small>{description}</small>"
         items.append(f"<li>{text}</li>")

@@ -31,6 +31,7 @@ ROUTES = [
     ("wittgenstein-category", "/category/wittgenstein", True),
     ("nietzsche-work", "/work/nietzsche/GM", True),
     ("nietzsche-work-selected", "/work/nietzsche/GM#p-0023.s001", True),
+    ("concept-tab", "/work/nietzsche/GM#p-0023.s001", True),
     ("search", "/search", True),
     ("search-results", "/search?q=ressentiment&corpus_id=nietzsche", True),
     ("search-empty", "/search?q=unlikelyarchivequery0000", True),
@@ -340,7 +341,7 @@ def check_route_markup(route: str, html: str) -> None:
             "목차</summary>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common133",
+            "reader-work.css?v=common134",
             "reader-work.js?v=common178",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
@@ -1697,25 +1698,60 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (citationState.urlText !== 'URL' || citationState.urlLabel !== 'URL 복사' || citationState.bundleText !== '원문 묶음' || citationState.bundleLabel !== '원문 묶음 복사') {
       throw new Error(`citation secondary copy controls should stay concise: ${JSON.stringify(citationState)}`);
     }
-    await page.click('#study-tab-translation');
-    await page.waitForSelector('#study-panel-translation:not([hidden])', { timeout: 5000 });
-    const restoredReadingState = await page.evaluate(() => {
-      const utility = document.querySelector('.translation-utility');
-      const manage = document.querySelector('.translation-review-tools');
-      const secondaryActions = document.querySelector('.translation-secondary-actions');
-      if (utility) utility.open = false;
-      if (manage) manage.open = false;
-      if (secondaryActions) secondaryActions.open = false;
-      const outputText = document.querySelector('#translationOutput')?.innerText || '';
-      return {
-        utilityOpen: Boolean(utility?.open),
-        manageOpen: Boolean(manage?.open),
-        secondaryActionsOpen: Boolean(secondaryActions?.open),
-        outputText
-      };
-    });
-    if (restoredReadingState.utilityOpen || restoredReadingState.manageOpen || restoredReadingState.secondaryActionsOpen || /메모 추가/.test(restoredReadingState.outputText) || /(^|\n)(저장|저장됨)(\n|$)/.test(restoredReadingState.outputText)) {
-      throw new Error(`selected work screenshot should return to the quiet reading action state: ${JSON.stringify(restoredReadingState)}`);
+    if (outputPath.includes('concept-tab')) {
+      await page.click('#study-tab-concepts');
+      await page.waitForSelector('#study-panel-concepts:not([hidden])', { timeout: 5000 });
+      const conceptsState = await page.evaluate(() => {
+        const panel = document.querySelector('#study-panel-concepts');
+        const list = panel?.querySelector('.concept-list');
+        const firstItem = list?.querySelector('li');
+        const firstItemBox = firstItem?.getBoundingClientRect();
+        return {
+          activeTab: document.querySelector('.study-tab.active')?.textContent.trim() || '',
+          heading: panel?.querySelector('h2')?.textContent.trim() || '',
+          text: panel?.textContent.trim().replace(/\s+/g, ' ') || '',
+          itemCount: panel?.querySelectorAll('.concept-list li').length || 0,
+          firstTerm: panel?.querySelector('.concept-term')?.textContent.trim() || '',
+          firstItemHeight: firstItemBox?.height || 0,
+          listStyle: list ? window.getComputedStyle(list).listStyleType : ''
+        };
+      });
+      if (conceptsState.activeTab !== '개념' || conceptsState.heading !== '개념') {
+        throw new Error(`concept tab should use Korean reader-facing labels: ${JSON.stringify(conceptsState)}`);
+      }
+      if (conceptsState.itemCount < 2 || conceptsState.listStyle !== 'none') {
+        throw new Error(`concept tab should present a compact scannable concept list: ${JSON.stringify(conceptsState)}`);
+      }
+      if (!conceptsState.text.includes('계보학') || !conceptsState.text.includes('원한 감정') || !conceptsState.text.includes('도덕 개념')) {
+        throw new Error(`concept tab should expose localized Nietzsche concept helpers: ${JSON.stringify(conceptsState)}`);
+      }
+      if (/Concepts|Historical diagnosis|Reactive valuation/.test(conceptsState.text)) {
+        throw new Error(`concept tab should not expose English helper copy in the Korean reader UI: ${JSON.stringify(conceptsState)}`);
+      }
+      if (conceptsState.firstItemHeight > 95) {
+        throw new Error(`concept tab entries should remain compact enough to scan: ${JSON.stringify(conceptsState)}`);
+      }
+    } else {
+      await page.click('#study-tab-translation');
+      await page.waitForSelector('#study-panel-translation:not([hidden])', { timeout: 5000 });
+      const restoredReadingState = await page.evaluate(() => {
+        const utility = document.querySelector('.translation-utility');
+        const manage = document.querySelector('.translation-review-tools');
+        const secondaryActions = document.querySelector('.translation-secondary-actions');
+        if (utility) utility.open = false;
+        if (manage) manage.open = false;
+        if (secondaryActions) secondaryActions.open = false;
+        const outputText = document.querySelector('#translationOutput')?.innerText || '';
+        return {
+          utilityOpen: Boolean(utility?.open),
+          manageOpen: Boolean(manage?.open),
+          secondaryActionsOpen: Boolean(secondaryActions?.open),
+          outputText
+        };
+      });
+      if (restoredReadingState.utilityOpen || restoredReadingState.manageOpen || restoredReadingState.secondaryActionsOpen || /메모 추가/.test(restoredReadingState.outputText) || /(^|\n)(저장|저장됨)(\n|$)/.test(restoredReadingState.outputText)) {
+        throw new Error(`selected work screenshot should return to the quiet reading action state: ${JSON.stringify(restoredReadingState)}`);
+      }
     }
   }
   if (parsed.pathname === '/translations' && parsed.searchParams.get('review_state') === 'generated') {

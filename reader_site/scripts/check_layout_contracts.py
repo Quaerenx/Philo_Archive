@@ -1785,7 +1785,7 @@ def check_work_source_bundle_ui() -> None:
             f"requestSentenceTranslation should avoid storage-log status text {noisy_marker!r}",
         )
     require_contains(template, "/assets/reader-work.js?v=common178", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common133", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common134", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
         'aria-label="읽기 화면 이동"',
@@ -1930,6 +1930,7 @@ def check_work_source_bundle_ui() -> None:
     require_contains(work_markup, '<details id="toc" class="toc"><summary>목차</summary>', "rendering/work_markup.py")
     require_contains(work_markup, 'concept.get("label_ko")', "rendering/work_markup.py")
     require_contains(work_markup, 'concept.get("description_ko")', "rendering/work_markup.py")
+    require_contains(work_markup, 'class="concept-term"', "rendering/work_markup.py")
     require_contains(work_markup, '<h2>개념</h2>', "rendering/work_markup.py")
     require_contains(work_markup, 'toc_link = \'<a href="#toc">목차</a>\' if model.get("toc") else ""', "rendering/work_markup.py")
     require_contains(work_markup, '"TOC_LINK": toc_link', "rendering/work_markup.py")
@@ -2147,6 +2148,11 @@ def check_work_source_bundle_ui() -> None:
         ".translation-section-primary h3",
         ".translation-output.reading-mode .translation-section-primary h3",
         ".translation-source-detail p",
+        ".concept-list",
+        ".concept-list li",
+        ".concept-list li:first-child",
+        ".concept-term",
+        "list-style: none",
         ".translation-empty-state .translation-primary",
         "border-left: 3px solid #b00000",
         "max-height: clamp(220px, 42vh, 520px)",
