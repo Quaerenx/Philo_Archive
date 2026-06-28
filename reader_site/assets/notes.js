@@ -346,6 +346,7 @@ function renderNotes(notes) {
       const sourceAction = note.url
         ? `<a href="${escapeHtml(note.url)}" aria-label="${escapeHtml(sourceLabel)}" title="${escapeHtml(sourceLabel)}">원문 읽기</a>`
         : "";
+      const editLabel = `노트 수정: ${cleanText(title || "노트")}`;
       const isRecent = note.id === recentlyChangedNoteId;
       const recentAttrs = isRecent ? ' tabindex="-1" aria-label="최근 변경된 노트"' : "";
       const meta = [
@@ -364,7 +365,7 @@ function renderNotes(notes) {
           </details>`;
       const actions = `
           ${sourceAction}
-          <button type="button" data-action="edit">수정</button>
+          <button type="button" data-action="edit" title="${escapeHtml(editLabel)}" aria-label="${escapeHtml(editLabel)}">노트 수정</button>
           ${moreActions}`;
       return `<article class="note-card${isRecent ? " is-recent" : ""}" data-note-id="${escapeHtml(note.id)}" data-corpus-id="${escapeHtml(note.corpus_id)}" data-review-state="${escapeHtml(reviewState)}"${recentAttrs}>
         <div class="note-title">
