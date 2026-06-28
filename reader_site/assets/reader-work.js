@@ -2622,15 +2622,17 @@ function renderNotesList(notes) {
     const recentAttrs = isRecent ? ' tabindex="-1" aria-label="최근 변경된 노트"' : "";
     const targetHref = noteTargetHref(note);
     const reviewState = normalizedNoteReviewState(note);
+    const targetLabel = cleanText(note.target_label || "노트 대상");
+    const sourceLinkLabel = `원문 열기: ${targetLabel}`;
     return `<div class="note-item${recentClass}" data-note-id="${escapeHtml(note.id)}" data-note-tags="${escapeHtml(tags)}" data-review-state="${escapeHtml(reviewState)}"${recentAttrs}>
       <div class="note-item-title">
-        <strong>${escapeHtml(cleanText(note.target_label))}</strong>
+        <strong>${escapeHtml(targetLabel)}</strong>
         <span class="review-badge ${escapeHtml(reviewState)}">${escapeHtml(noteReviewLabel(reviewState))}</span>
       </div>
       <div class="note-text">${escapeHtml(cleanText(note.note))}</div>
       <small>${escapeHtml(cleanText(tags))}${escapeHtml(updated)}</small>
       <div class="note-actions">
-        <a class="note-target-link" href="${escapeHtml(targetHref)}">원문</a>
+        <a class="note-target-link" href="${escapeHtml(targetHref)}" aria-label="${escapeHtml(sourceLinkLabel)}" title="${escapeHtml(sourceLinkLabel)}">원문 열기</a>
         <button type="button" data-action="${escapeHtml(noteReviewAction(reviewState))}" data-note-id="${escapeHtml(note.id)}">${escapeHtml(noteReviewActionLabel(reviewState))}</button>
         <button type="button" data-action="edit-note" data-note-id="${escapeHtml(note.id)}">수정</button>
         <details class="note-danger-actions">
@@ -3106,7 +3108,7 @@ notesList.addEventListener("click", async (event) => {
   if (button.dataset.action === "edit-note") {
     const nextNote = window.prompt("노트 수정", currentText);
     if (nextNote === null) return;
-    const nextTags = window.prompt("Tags", currentTags) || "";
+    const nextTags = window.prompt("태그 수정", currentTags) || "";
     setActionButtonBusy(button, true);
     const updatedNote = await updateNote(noteId, nextNote.trim(), nextTags.split(",").map((value) => value.trim()).filter(Boolean));
     noteStatus.textContent = updatedNote ? "노트를 수정하고 표시했습니다." : "노트를 업데이트하지 못했습니다.";
