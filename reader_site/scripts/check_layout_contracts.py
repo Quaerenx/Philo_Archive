@@ -313,7 +313,7 @@ def check_search_ui() -> None:
     css = read_site_file("assets/search.css")
     for needle in [
         "/assets/search.css?v=phase30",
-        "/assets/search.js?v=phase40",
+        "/assets/search.js?v=phase41",
         'href="/search" aria-current="page">검색</a>',
         'href="/translations"',
         "본문 찾기",
@@ -371,6 +371,8 @@ def check_search_ui() -> None:
         "function resultFooter",
         "result-actions-inline",
         "result-action-read",
+        "const snippetHref = result.url || result.manage_url || notesHref(result)",
+        "const snippetLabel = result.url ? sourceLabel : noteLabel",
         "segment-result",
         "원문 읽기",
         "저장한 노트",

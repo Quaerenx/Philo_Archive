@@ -320,13 +320,15 @@ function renderResults(payload, query) {
         result.target_label,
         reviewStateLabel(result.review_state)
       ]);
+      const snippetHref = result.url || result.manage_url || notesHref(result);
+      const snippetLabel = result.url ? sourceLabel : noteLabel;
       const tags = (result.tags || []).map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join("");
       const actions = result.url ? `<a class="result-action-read" href="${escapeHtml(result.url)}" aria-label="${escapeHtml(sourceLabel)}" title="${escapeHtml(sourceLabel)}">원문 읽기</a>` : "";
       return `<article class="result note-result">
         <div class="result-title">
           <a href="${escapeHtml(result.manage_url || notesHref(result))}" aria-label="${escapeHtml(noteLabel)}" title="${escapeHtml(noteLabel)}">${escapeHtml(title)}</a>
         </div>
-        ${resultSnippet(result.manage_url || notesHref(result), result.snippet || "", query, noteLabel)}
+        ${resultSnippet(snippetHref, result.snippet || "", query, snippetLabel)}
         ${tags ? `<div class="tag-row">${tags}</div>` : ""}
         ${resultFooter(meta, actions)}
       </article>`;

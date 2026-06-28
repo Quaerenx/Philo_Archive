@@ -271,7 +271,7 @@ def check_route_markup(route: str, html: str) -> None:
             "searchStatus",
             "aria-busy=\"false\"",
             "search.css?v=phase30",
-            "search.js?v=phase40",
+            "search.js?v=phase41",
             'href="/search" aria-current="page">검색</a>',
             "번역",
             "filter-panel",
