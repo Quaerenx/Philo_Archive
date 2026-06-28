@@ -375,7 +375,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common140",
-            "reader-work.js?v=common184",
+            "reader-work.js?v=common185",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         require("Contents (" not in html, f"{route} should not expose TOC inventory counts")
@@ -1863,6 +1863,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       savedToolsHidden: Boolean(document.querySelector('.notes-filter-tools')?.hidden),
       noteListSummary: document.querySelector('#noteListSummary')?.textContent.trim() || '',
       notesEmptyText: document.querySelector('#notesList .notes-empty')?.textContent.trim() || '',
+      noteItemActions: Array.from(document.querySelectorAll('#notesList .note-item:first-of-type .note-actions a, #notesList .note-item:first-of-type .note-actions button, #notesList .note-item:first-of-type .note-actions summary')).map((node) => node.textContent.trim()),
+      noteItemActionLabels: Array.from(document.querySelectorAll('#notesList .note-item:first-of-type .note-actions a')).map((node) => node.getAttribute('aria-label') || ''),
       noteTargetText: document.querySelector('#noteTargetPreview')?.textContent.trim() || '',
       noteTargetLabel: document.querySelector('#noteTargetPreview')?.getAttribute('aria-label') || '',
       lockTargetText: document.querySelector('#lockNoteTarget')?.textContent.trim() || ''
@@ -1887,6 +1889,14 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (/\b(Work|Paragraph|Section|Verse|Quote|Line)\b|p-\d+\.s\d+/i.test(`${notesState.noteTargetText} ${notesState.noteTargetLabel}`)) {
       throw new Error(`notes target preview should use reader-language labels without internal ids: ${JSON.stringify(notesState)}`);
+    }
+    if (notesState.noteItemActions.length > 0) {
+      if (!notesState.noteItemActions.includes('원문 읽기') || !notesState.noteItemActions.includes('노트 수정') || notesState.noteItemActions.includes('원문 열기') || notesState.noteItemActions.includes('수정')) {
+        throw new Error(`notes tab saved-note actions should use explicit reader-language labels: ${JSON.stringify(notesState)}`);
+      }
+      if (notesState.noteItemActionLabels.some((label) => label && !label.startsWith('원문 읽기: '))) {
+        throw new Error(`notes tab source action should name the source target accessibly: ${JSON.stringify(notesState)}`);
+      }
     }
     if (!['대상 고정', '고정 해제'].includes(notesState.lockTargetText)) {
       throw new Error(`notes target lock control should stay reader-language concise: ${JSON.stringify(notesState)}`);

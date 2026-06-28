@@ -1663,7 +1663,8 @@ def check_work_source_bundle_ui() -> None:
         "이 필터에 맞는 노트가 없습니다.",
         "data-notes-empty-action=\"clear-filter\"",
         "function noteTargetHref",
-        ">원문 열기</a>",
+        ">원문 읽기</a>",
+        ">노트 수정</button>",
         "note-danger-actions",
         "<summary>삭제</summary>",
         "delete-note",
@@ -1846,7 +1847,7 @@ def check_work_source_bundle_ui() -> None:
             noisy_marker not in request_translation_body,
             f"requestSentenceTranslation should avoid storage-log status text {noisy_marker!r}",
         )
-    require_contains(template, "/assets/reader-work.js?v=common184", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common185", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common140", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
@@ -2380,14 +2381,15 @@ def check_work_source_bundle_ui() -> None:
     require("archive-note-highlight" not in css, "assets/reader-work.css should not animate recent note items")
     for needle in [
         "const targetLabel = cleanText(note.target_label || \"노트 대상\")",
-        "const sourceLinkLabel = `원문 열기: ${targetLabel}`",
+        "const sourceLinkLabel = `원문 읽기: ${targetLabel}`",
         "aria-label=\"${escapeHtml(sourceLinkLabel)}\"",
         "title=\"${escapeHtml(sourceLinkLabel)}\"",
-        ">원문 열기</a>",
+        ">원문 읽기</a>",
+        ">노트 수정</button>",
         "window.prompt(\"태그 수정\", currentTags)",
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    for noisy_marker in ['>원문</a>', 'window.prompt("Tags"']:
+    for noisy_marker in ['>원문</a>', '>원문 열기</a>', '>수정</button>', 'window.prompt("Tags"']:
         require(noisy_marker not in script, f"assets/reader-work.js should avoid ambiguous note UI text {noisy_marker!r}")
 
 

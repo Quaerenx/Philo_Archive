@@ -2623,7 +2623,7 @@ function renderNotesList(notes) {
     const targetHref = noteTargetHref(note);
     const reviewState = normalizedNoteReviewState(note);
     const targetLabel = cleanText(note.target_label || "노트 대상");
-    const sourceLinkLabel = `원문 열기: ${targetLabel}`;
+    const sourceLinkLabel = `원문 읽기: ${targetLabel}`;
     return `<div class="note-item${recentClass}" data-note-id="${escapeHtml(note.id)}" data-note-tags="${escapeHtml(tags)}" data-review-state="${escapeHtml(reviewState)}"${recentAttrs}>
       <div class="note-item-title">
         <strong>${escapeHtml(targetLabel)}</strong>
@@ -2632,9 +2632,9 @@ function renderNotesList(notes) {
       <div class="note-text">${escapeHtml(cleanText(note.note))}</div>
       <small>${escapeHtml(cleanText(tags))}${escapeHtml(updated)}</small>
       <div class="note-actions">
-        <a class="note-target-link" href="${escapeHtml(targetHref)}" aria-label="${escapeHtml(sourceLinkLabel)}" title="${escapeHtml(sourceLinkLabel)}">원문 열기</a>
+        <a class="note-target-link" href="${escapeHtml(targetHref)}" aria-label="${escapeHtml(sourceLinkLabel)}" title="${escapeHtml(sourceLinkLabel)}">원문 읽기</a>
         <button type="button" data-action="${escapeHtml(noteReviewAction(reviewState))}" data-note-id="${escapeHtml(note.id)}">${escapeHtml(noteReviewActionLabel(reviewState))}</button>
-        <button type="button" data-action="edit-note" data-note-id="${escapeHtml(note.id)}">수정</button>
+        <button type="button" data-action="edit-note" data-note-id="${escapeHtml(note.id)}">노트 수정</button>
         <details class="note-danger-actions">
           <summary>삭제</summary>
           <button type="button" data-action="delete-note" data-note-id="${escapeHtml(note.id)}">삭제</button>
