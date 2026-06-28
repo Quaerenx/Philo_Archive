@@ -533,7 +533,7 @@ function renderRecord(record, options) {
     : "";
   const rejectAction = reviewState !== "rejected"
     ? `<details class="translation-more-actions">
-        <summary>제외 옵션</summary>
+        <summary>제외</summary>
         <button type="button" data-review-state="rejected" aria-keyshortcuts="X" title="이 번역 제외하기" aria-label="이 번역 제외하기">제외하기</button>
       </details>`
     : "";

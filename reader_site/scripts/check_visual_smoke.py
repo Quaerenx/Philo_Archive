@@ -252,7 +252,7 @@ def check_route_markup(route: str, html: str) -> None:
             "aria-busy=\"false\"",
             "notes.css?v=notes26",
             "translations.css?v=trans34",
-            "translations.js?v=trans79",
+            "translations.js?v=trans80",
             'href="/translations" aria-current="page">번역</a>',
             "번역 찾기",
             "translationsListTools",
@@ -1813,8 +1813,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (reviewTargetState.rejectSummaryBorderColor !== 'rgba(0, 0, 0, 0)' || reviewTargetState.rejectSummaryBackground !== 'rgba(0, 0, 0, 0)') {
         throw new Error(`review queue discard action should stay visually secondary: ${JSON.stringify(reviewTargetState)}`);
       }
-      if (reviewTargetState.rejectSummaryText !== '제외 옵션') {
-        throw new Error(`review queue discard action should read as a secondary option before confirmation: ${JSON.stringify(reviewTargetState)}`);
+      if (reviewTargetState.rejectSummaryText !== '제외') {
+        throw new Error(`review queue discard action should stay concise before confirmation: ${JSON.stringify(reviewTargetState)}`);
       }
       if (reviewTargetState.saveText !== '저장' || reviewTargetState.saveLabel !== '저장한 번역으로 표시' || reviewTargetState.saveBorderColor !== 'rgb(176, 0, 0)') {
         throw new Error(`review queue save should use the same red primary action style: ${JSON.stringify(reviewTargetState)}`);

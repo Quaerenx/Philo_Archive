@@ -669,7 +669,7 @@ def check_translations_ui() -> None:
     for needle in [
         "/assets/notes.css?v=notes26",
         "/assets/translations.css?v=trans34",
-        "/assets/translations.js?v=trans79",
+        "/assets/translations.js?v=trans80",
         "<title>번역 목록 / Personal Archive of Literature</title>",
         '<h1 id="translationsPageTitle">번역 목록</h1>',
         'aria-label="번역 이동"',
@@ -858,7 +858,7 @@ def check_translations_ui() -> None:
         'params.set("q", query)',
         "primary-review-action",
         "translation-more-actions",
-        "<summary>제외 옵션</summary>",
+        "<summary>제외</summary>",
         "제외하기",
         "이 번역 제외하기",
         'title="원문으로 이동"',
