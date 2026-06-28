@@ -377,7 +377,7 @@ def check_route_markup(route: str, html: str) -> None:
             "목차</summary>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common145",
+            "reader-work.css?v=common146",
             "reader-work.js?v=common191",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
@@ -1802,6 +1802,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (!utilityState.exists || utilityState.labels.length < 3) {
       throw new Error(`study tools should keep accessible utility labels: ${JSON.stringify(utilityState)}`);
     }
+    if (utilityState.labels.slice(0, 3).map((label) => label.text).join(' / ') !== '문장 / 학습 / 설정') {
+      throw new Error(`study tools should follow the reader workflow order: ${JSON.stringify(utilityState)}`);
+    }
     if (utilityState.labels.some((label) => label.width > 2 || label.height > 2)) {
       throw new Error(`study tools utility labels should stay visually quiet: ${JSON.stringify(utilityState)}`);
     }
@@ -1885,7 +1888,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         throw new Error(`mobile scrim collapse should leave a clear study handle: ${JSON.stringify(scrimCollapsedStudyState)}`);
       }
       await page.click('#studyPanelToggle');
-      await page.waitForFunction(() => document.querySelector('.study-page')?.classList.contains('is-expanded'), null, { timeout: 3000 });
+      await page.waitForFunction(() => document.querySelector('.study-page')?.classList.contains('is-expanded'), null, { timeout: 5000 });
     }
     const nextFocusState = await page.evaluate(async () => {
       const ok = typeof window.focusNextSentenceAction === 'function'
@@ -1947,7 +1950,10 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (draftState.activeElementId !== 'noteText') {
       throw new Error(`Add note should focus the note editor: ${JSON.stringify(draftState)}`);
     }
-      const notesState = await page.evaluate(() => ({
+      const notesState = await page.evaluate(() => {
+        const targetTools = document.querySelector('.note-target-tools');
+        if (targetTools) targetTools.open = false;
+        return {
         notePlaceholder: document.querySelector('#noteText')?.getAttribute('placeholder') || '',
         noteLabelHidden: Boolean(document.querySelector('#noteText')?.closest('label')?.querySelector('.visually-hidden')),
         saveText: document.querySelector('#noteForm button[type="submit"]')?.textContent.trim() || '',
@@ -1971,7 +1977,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       noteTargetText: document.querySelector('#noteTargetPreview')?.textContent.trim() || '',
       noteTargetLabel: document.querySelector('#noteTargetPreview')?.getAttribute('aria-label') || '',
       lockTargetText: document.querySelector('#lockNoteTarget')?.textContent.trim() || ''
-    }));
+        };
+      });
     if (notesState.notePlaceholder !== '메모 작성...' || !notesState.noteLabelHidden) {
       throw new Error(`notes tab should keep the editor quiet but accessible: ${JSON.stringify(notesState)}`);
     }

@@ -1865,7 +1865,7 @@ def check_work_source_bundle_ui() -> None:
             f"requestSentenceTranslation should avoid storage-log status text {noisy_marker!r}",
         )
     require_contains(template, "/assets/reader-work.js?v=common191", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common145", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common146", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
         'aria-label="읽기 화면 이동"',
@@ -1970,8 +1970,8 @@ def check_work_source_bundle_ui() -> None:
         "translation-utility-group",
         "translation-utility-group-label",
         'class="translation-utility-group-label visually-hidden"',
-        "보기 설정",
-        "보기",
+        "보기와 번역기",
+        "설정",
         "번역 표시 방식",
         "문장 이동",
         "학습 흐름",
@@ -2002,6 +2002,21 @@ def check_work_source_bundle_ui() -> None:
             'href="/translations?corpus_id={{CORPUS_ID}}&work_id={{WORK_ID}}">번역</a>',
         ],
         "templates/work.html reader tools order",
+    )
+    require_ordered_markers(
+        template,
+        [
+            'aria-label="문장 이동"',
+            'id="translationTarget"',
+            'class="sentence-controls"',
+            'aria-label="학습 흐름"',
+            'id="studyProgress"',
+            'class="translation-review-tools"',
+            'aria-label="보기와 번역기"',
+            'id="readingMode"',
+            'id="gemmaRuntimeStatus"',
+        ],
+        "templates/work.html reading settings order",
     )
     require("작업</summary>" not in template, "templates/work.html should use reader-facing tool wording")
 
@@ -2365,6 +2380,7 @@ def check_work_source_bundle_ui() -> None:
         ".note-target-tools",
         ".note-target-tools summary",
         ".note-target-tools:not([open])",
+        ".note-target-tools:not([open]):hover",
         ".note-target-tools summary::-webkit-details-marker",
         ".note-target-tools summary::after",
         ".note-target-tools[open] summary::after",

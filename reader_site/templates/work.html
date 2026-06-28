@@ -6,7 +6,7 @@
   <title>{{TITLE}} / {{CORPUS_TITLE}}</title>
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/design-tokens.css?v=frame3">
-  <link rel="stylesheet" href="/assets/reader-work.css?v=common145">
+  <link rel="stylesheet" href="/assets/reader-work.css?v=common146">
 </head>
 <body class="{{BODY_CLASS}}">
   <div class="page">
@@ -54,20 +54,8 @@
                   <span>설정</span>
                 </summary>
                 <div class="translation-utility-body">
-                  <section class="translation-utility-group" aria-label="보기 설정">
-                    <div class="translation-utility-group-label visually-hidden">보기</div>
-                    <div class="mode-toggle" role="group" aria-label="번역 표시 방식">
-                      <button type="button" id="readingMode" class="active">읽기</button>
-                      <button type="button" id="studyMode">학습</button>
-                    </div>
-                  </section>
                   <section class="translation-utility-group" aria-label="문장 이동">
                     <div class="translation-utility-group-label visually-hidden">문장</div>
-                    <div id="gemmaRuntimeStatus" class="runtime-status" data-runtime-state="checking" title="번역기 상태">
-                      <span class="runtime-status-dot" aria-hidden="true"></span>
-                      <span id="gemmaRuntimeStatusText" class="runtime-status-text" role="status" aria-live="polite" aria-atomic="true">번역기 확인 중</span>
-                      <button type="button" id="gemmaRuntimeCheck" title="번역기 확인">확인</button>
-                    </div>
                     <div id="translationTarget" class="translation-target">문장을 선택하세요.</div>
                     <div id="readingPosition" class="reading-position" aria-label="현재 읽는 위치" hidden></div>
                     <details class="sentence-context-tools" aria-label="주변 문장" hidden>
@@ -115,6 +103,18 @@
                         </details>
                       </div>
                     </details>
+                  </section>
+                  <section class="translation-utility-group" aria-label="보기와 번역기">
+                    <div class="translation-utility-group-label visually-hidden">설정</div>
+                    <div class="mode-toggle" role="group" aria-label="번역 표시 방식">
+                      <button type="button" id="readingMode" class="active">읽기</button>
+                      <button type="button" id="studyMode">학습</button>
+                    </div>
+                    <div id="gemmaRuntimeStatus" class="runtime-status" data-runtime-state="checking" title="번역기 상태">
+                      <span class="runtime-status-dot" aria-hidden="true"></span>
+                      <span id="gemmaRuntimeStatusText" class="runtime-status-text" role="status" aria-live="polite" aria-atomic="true">번역기 확인 중</span>
+                      <button type="button" id="gemmaRuntimeCheck" title="번역기 확인">확인</button>
+                    </div>
                   </section>
                 </div>
               </details>

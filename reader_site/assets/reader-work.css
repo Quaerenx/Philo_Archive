@@ -2123,6 +2123,11 @@ h1 {
   opacity: 1;
 }
 
+.note-target-tools:not([open]):hover,
+.note-target-tools:not([open]):focus-within {
+  opacity: 0.78;
+}
+
 .note-target-tools summary::-webkit-details-marker,
 .notes-filter-tools summary::-webkit-details-marker {
   display: none;
