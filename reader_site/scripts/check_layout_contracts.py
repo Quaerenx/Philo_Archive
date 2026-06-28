@@ -313,7 +313,7 @@ def check_search_ui() -> None:
     css = read_site_file("assets/search.css")
     for needle in [
         "/assets/search.css?v=phase32",
-        "/assets/search.js?v=phase42",
+        "/assets/search.js?v=phase43",
         'href="/search" aria-current="page">검색</a>',
         'href="/translations"',
         "본문 찾기",

@@ -300,7 +300,7 @@ def check_route_markup(route: str, html: str) -> None:
             "searchStatus",
             "aria-busy=\"false\"",
             "search.css?v=phase32",
-            "search.js?v=phase42",
+            "search.js?v=phase43",
             'href="/search" aria-current="page">검색</a>',
             "번역",
             "filter-panel",
@@ -996,8 +996,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (!searchPageState.hasResults && /notes|saved notes/i.test(searchPageState.emptyBodyText)) {
       throw new Error(`empty search should not send users to a duplicate notes search: ${JSON.stringify(searchPageState)}`);
     }
-    if (!searchPageState.hasResults && (searchPageState.emptyActions.length !== 1 || searchPageState.emptyActions[0] !== '아카이브 보기')) {
-      throw new Error(`empty search should keep only the archive browse action: ${JSON.stringify(searchPageState)}`);
+    if (!searchPageState.hasResults && (searchPageState.emptyActions.length !== 1 || searchPageState.emptyActions[0] !== '읽기 시작')) {
+      throw new Error(`empty search should keep only the reading-start recovery action: ${JSON.stringify(searchPageState)}`);
     }
     if (!searchPageState.hasResults && !searchPageState.emptyButtonActions.includes('검색 지우기')) {
       throw new Error(`empty search should keep the clear action available: ${JSON.stringify(searchPageState)}`);
