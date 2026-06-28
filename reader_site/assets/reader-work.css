@@ -760,10 +760,6 @@ h1 {
   margin: 0;
 }
 
-.translation-review-actions .translation-review-duplicate-action {
-  display: none;
-}
-
 #regenerateSentence {
   grid-column: 1 / -1;
 }
@@ -1582,14 +1578,8 @@ h1 {
 }
 
 .translation-output.reading-mode .translation-section-primary h3 {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+  margin-bottom: 6px;
+  color: #6f1111;
 }
 
 .translation-source-detail p {
@@ -1692,6 +1682,10 @@ h1 {
 .translation-secondary-actions {
   min-width: 0;
   justify-self: center;
+}
+
+.translation-output.reading-mode .translation-secondary-actions {
+  display: none;
 }
 
 .translation-secondary-actions summary {

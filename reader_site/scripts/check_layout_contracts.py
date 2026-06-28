@@ -1744,7 +1744,7 @@ def check_work_source_bundle_ui() -> None:
             f"requestSentenceTranslation should avoid storage-log status text {noisy_marker!r}",
         )
     require_contains(template, "/assets/reader-work.js?v=common172", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common130", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common131", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
         'aria-label="읽기 화면 이동"',
@@ -1855,7 +1855,6 @@ def check_work_source_bundle_ui() -> None:
         "문장 이동",
         "학습 흐름",
         "저장 · 내보내기</summary>",
-        "translation-review-duplicate-action",
         "<span>도구</span>",
         "study-tabs",
         "previousSentence",
@@ -2023,7 +2022,6 @@ def check_work_source_bundle_ui() -> None:
         ".study-session-summary[data-session-state=\"has-content\"]",
         ".sentence-controls button.needs-confirm",
         ".translation-review-actions button.needs-confirm",
-        ".translation-review-actions .translation-review-duplicate-action",
         "min-height: 38px",
         "grid-template-columns: minmax(104px, 1.35fr) minmax(80px, 1fr) repeat(2, minmax(68px, 0.78fr))",
         "overscroll-behavior-x: contain",
@@ -2058,6 +2056,8 @@ def check_work_source_bundle_ui() -> None:
         ".translation-reading-actions button[data-translation-quick-action=\"next-sentence\"]:not(:disabled)",
         ".translation-reading-actions .translation-quick-state",
         ".translation-secondary-actions",
+        ".translation-output.reading-mode .translation-secondary-actions",
+        "display: none",
         ".translation-secondary-actions summary",
         "justify-self: center;",
         "border: 1px solid transparent;",

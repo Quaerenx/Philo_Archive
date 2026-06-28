@@ -340,7 +340,7 @@ def check_route_markup(route: str, html: str) -> None:
             "목차</summary>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common130",
+            "reader-work.css?v=common131",
             "reader-work.js?v=common172",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
@@ -1263,6 +1263,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       const readingActionsStyle = readingActionsNode ? window.getComputedStyle(readingActionsNode) : null;
       const secondaryActions = document.querySelector('.translation-secondary-actions');
       const secondaryActionsStyle = secondaryActions ? window.getComputedStyle(secondaryActions) : null;
+      const secondaryActionsBox = secondaryActions?.getBoundingClientRect();
       const secondarySummary = secondaryActions?.querySelector('summary');
       const secondarySummaryStyle = secondarySummary ? window.getComputedStyle(secondarySummary) : null;
       const secondarySummaryBox = secondarySummary?.getBoundingClientRect();
@@ -1274,7 +1275,11 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       const commentaryBody = document.querySelector('#translationOutput .translation-commentary p');
       const commentaryBodyStyle = commentaryBody ? window.getComputedStyle(commentaryBody) : null;
       const readingActions = Array.from(document.querySelectorAll('.translation-reading-actions > button, .translation-reading-actions > details > summary'))
-        .filter((node) => window.getComputedStyle(node).display !== 'none')
+        .filter((node) => {
+          const box = node.getBoundingClientRect();
+          const style = window.getComputedStyle(node);
+          return style.display !== 'none' && style.visibility !== 'hidden' && box.width > 0 && box.height > 0;
+        })
         .map((node) => node.textContent.trim());
       const readingNextBox = readingNext?.getBoundingClientRect();
       const readingNoteBox = readingNote?.getBoundingClientRect();
@@ -1313,6 +1318,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         readingNoteVisible: /메모 추가/.test(outputVisibleText),
         readingSaveVisible: /(^|\n)(저장|저장됨)(\n|$)/.test(outputVisibleText),
         secondaryActionsOpen: Boolean(secondaryActions?.open),
+        secondaryActionsDisplay: secondaryActionsStyle?.display || '',
+        secondaryActionsWidth: secondaryActionsBox?.width || 0,
+        secondaryActionsHeight: secondaryActionsBox?.height || 0,
         secondaryActionsSummary: secondarySummary?.textContent.trim() || '',
         secondaryActionsJustifySelf: secondaryActionsStyle?.justifySelf || '',
         secondarySummaryBackground: secondarySummaryStyle?.backgroundColor || '',
@@ -1322,6 +1330,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         readingActionsBottom: readingActionsStyle?.bottom || '',
         translationHeadingWidth: translationHeadingBox?.width || 0,
         translationHeadingHeight: translationHeadingBox?.height || 0,
+        translationHeadingText: translationHeading?.textContent.trim() || '',
         commentaryHeadingWidth: commentaryHeadingBox?.width || 0,
         commentaryHeadingHeight: commentaryHeadingBox?.height || 0,
         commentaryHeadingText: commentaryHeading?.textContent.trim() || '',
@@ -1385,8 +1394,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (state.readingActionsPosition !== 'sticky' || state.readingActionsBottom !== '8px') {
       throw new Error(`reading mode should keep study actions reachable during long commentary: ${JSON.stringify(state)}`);
     }
-    if (state.translationHeadingWidth > 2 || state.translationHeadingHeight > 2) {
-      throw new Error(`reading mode should hide the redundant Translation heading: ${JSON.stringify(state)}`);
+    if (state.translationHeadingWidth <= 2 || state.translationHeadingHeight <= 2 || state.translationHeadingText !== '번역') {
+      throw new Error(`reading mode should keep the translation heading visible before commentary: ${JSON.stringify(state)}`);
     }
     if (state.commentaryHeadingWidth <= 2 || state.commentaryHeadingHeight <= 2) {
       throw new Error(`reading mode should keep the commentary heading visible: ${JSON.stringify(state)}`);
@@ -1408,19 +1417,12 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (!['번역 저장', '저장된 번역'].includes(state.readingSaveLabel) || state.readingNoteLabel !== '번역으로 메모 추가') {
       throw new Error(`reading mode quick actions should keep clear accessible labels: ${JSON.stringify(state)}`);
     }
-    if (state.secondaryActionsOpen || state.secondaryActionsSummary !== '저장 · 메모') {
-      throw new Error(`reading mode should collapse secondary note/save actions behind a clear label: ${JSON.stringify(state)}`);
-    }
-    if (state.secondaryActionsJustifySelf !== 'center' || !['rgba(0, 0, 0, 0)', 'transparent'].includes(state.secondarySummaryBackground) || !['rgba(0, 0, 0, 0)', 'transparent'].includes(state.secondarySummaryBorderColor)) {
-      throw new Error(`reading mode secondary note/save action should stay visually quiet until opened: ${JSON.stringify(state)}`);
-    }
-    if (state.secondarySummaryHeight < 28 || state.secondarySummaryHeight > 34) {
-      throw new Error(`reading mode secondary note/save action should stay touchable without becoming a primary button: ${JSON.stringify(state)}`);
+    if (state.secondaryActionsDisplay !== 'none' || state.secondaryActionsWidth > 0 || state.secondaryActionsHeight > 0) {
+      throw new Error(`reading mode should move note/save actions out of the immediate reading card: ${JSON.stringify(state)}`);
     }
     const firstAction = state.readingActions[0] || '';
-    const secondAction = state.readingActions[1] || '';
-    if (firstAction !== '다음 문장' || secondAction !== '저장 · 메모' || state.readingActions.length !== 2) {
-      throw new Error(`reading mode should show only Next sentence and the collapsed secondary action label: ${JSON.stringify(state)}`);
+    if (firstAction !== '다음 문장' || state.readingActions.length !== 1) {
+      throw new Error(`reading mode should show only Next sentence as the immediate action: ${JSON.stringify(state)}`);
     }
     if (state.visibleExtraCount !== 0) throw new Error(`reading mode exposed study-only translation extras: ${JSON.stringify(state)}`);
     if (state.activeTab !== '번역') throw new Error(`selected work route did not keep Translation tab active: ${JSON.stringify(state)}`);
@@ -1500,16 +1502,13 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (!['원문이 화면에 있음', '원문이 화면 밖에 있음'].includes(utilityState.sourceStatusText) || utilityState.sourceStatusText !== utilityState.sourceStatusLabel) {
       throw new Error(`selected source visibility status should avoid visible shorthand labels: ${JSON.stringify(utilityState)}`);
     }
-    const hiddenDuplicates = utilityState.reviewActions
-      .filter((action) => ['markTranslationReviewed', 'draftTranslationNote'].includes(action.id));
-    if (hiddenDuplicates.length !== 2 || hiddenDuplicates.some((action) => action.display !== 'none')) {
-      throw new Error(`study action tools should hide actions already exposed in the reading card: ${JSON.stringify(utilityState)}`);
-    }
     const visibleManagementActions = utilityState.reviewActions
       .filter((action) => action.display !== 'none')
       .map((action) => action.text);
-    if (!visibleManagementActions.includes('제외') || !visibleManagementActions.includes('노트 복사')) {
-      throw new Error(`study action tools should keep secondary actions available: ${JSON.stringify(utilityState)}`);
+    for (const expectedAction of ['저장', '제외', '노트 복사', '메모 추가']) {
+      if (!visibleManagementActions.includes(expectedAction)) {
+        throw new Error(`study action tools should keep ${expectedAction} available behind the tools menu: ${JSON.stringify(utilityState)}`);
+      }
     }
     if (state.isMobile) {
       await page.click('#studyPanelToggle');
@@ -1556,8 +1555,13 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (!nextFocusState.ok || nextFocusState.activeAction !== 'next-sentence') {
       throw new Error(`saved review flow should focus the next sentence action: ${JSON.stringify(nextFocusState)}`);
     }
-    await page.click('.translation-secondary-actions summary');
-    await page.click('[data-translation-quick-action="draft-note"]');
+    await page.evaluate(() => {
+      const utility = document.querySelector('.translation-utility');
+      const manage = document.querySelector('.translation-review-tools');
+      if (utility) utility.open = true;
+      if (manage) manage.open = true;
+    });
+    await page.click('#draftTranslationNote');
     await page.waitForSelector('#study-panel-notes:not([hidden])', { timeout: 5000 });
     await page.waitForFunction(() => document.activeElement?.id === 'noteText', null, { timeout: 3000 }).catch(() => {});
     const draftState = await page.evaluate(() => {
@@ -1675,15 +1679,21 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     await page.click('#study-tab-translation');
     await page.waitForSelector('#study-panel-translation:not([hidden])', { timeout: 5000 });
     const restoredReadingState = await page.evaluate(() => {
+      const utility = document.querySelector('.translation-utility');
+      const manage = document.querySelector('.translation-review-tools');
       const secondaryActions = document.querySelector('.translation-secondary-actions');
+      if (utility) utility.open = false;
+      if (manage) manage.open = false;
       if (secondaryActions) secondaryActions.open = false;
       const outputText = document.querySelector('#translationOutput')?.innerText || '';
       return {
+        utilityOpen: Boolean(utility?.open),
+        manageOpen: Boolean(manage?.open),
         secondaryActionsOpen: Boolean(secondaryActions?.open),
         outputText
       };
     });
-    if (restoredReadingState.secondaryActionsOpen || /메모 추가/.test(restoredReadingState.outputText) || /(^|\n)(저장|저장됨)(\n|$)/.test(restoredReadingState.outputText)) {
+    if (restoredReadingState.utilityOpen || restoredReadingState.manageOpen || restoredReadingState.secondaryActionsOpen || /메모 추가/.test(restoredReadingState.outputText) || /(^|\n)(저장|저장됨)(\n|$)/.test(restoredReadingState.outputText)) {
       throw new Error(`selected work screenshot should return to the quiet reading action state: ${JSON.stringify(restoredReadingState)}`);
     }
   }
