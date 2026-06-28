@@ -1582,6 +1582,8 @@ def check_work_source_bundle_ui() -> None:
         "adjustSentenceAboveStudyPanel",
         "keepSentenceAboveStudyPanel",
         "returnToSelectedSourceAfterPanelCollapse",
+        "function returnToReadingAfterNoteChange",
+        "returnToReadingAfterNoteChange();",
         "const wasExpanded = studyPage.classList.contains(\"is-expanded\")",
         "function handleViewportLayoutChange",
         "window.visualViewport.addEventListener",
@@ -1851,7 +1853,7 @@ def check_work_source_bundle_ui() -> None:
             noisy_marker not in request_translation_body,
             f"requestSentenceTranslation should avoid storage-log status text {noisy_marker!r}",
         )
-    require_contains(template, "/assets/reader-work.js?v=common186", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common187", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common140", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',

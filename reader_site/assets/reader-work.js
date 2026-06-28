@@ -288,6 +288,12 @@ function returnToSelectedSourceAfterPanelCollapse() {
   });
 }
 
+function returnToReadingAfterNoteChange() {
+  if (!isMobileStudyLayout() || !selectedSentenceNode()) return;
+  setStudyPanelExpanded(false, true);
+  returnToSelectedSourceAfterPanelCollapse();
+}
+
 function updateStudyPanelScrim() {
   if (!studyPanelScrim || !studyPage) return;
   const visible = isMobileStudyLayout() && studyPage.classList.contains("is-expanded");
@@ -3047,6 +3053,7 @@ noteForm.addEventListener("submit", async (event) => {
       noteStatus.textContent = "노트를 저장하고 표시했습니다.";
       await loadNotes();
       await loadStudySessionSummary();
+      returnToReadingAfterNoteChange();
     } else {
       noteStatus.textContent = "노트를 저장하지 못했습니다.";
     }
@@ -3106,6 +3113,7 @@ notesList.addEventListener("click", async (event) => {
       recentlyChangedNoteId = updatedNote.id || noteId;
       await loadNotes();
       await loadStudySessionSummary();
+      returnToReadingAfterNoteChange();
     }
     setActionButtonBusy(button, false);
     return;

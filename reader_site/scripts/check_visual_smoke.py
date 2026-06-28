@@ -375,7 +375,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common140",
-            "reader-work.js?v=common186",
+            "reader-work.js?v=common187",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         require("Contents (" not in html, f"{route} should not expose TOC inventory counts")
@@ -1909,6 +1909,34 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (!['대상 고정', '고정 해제'].includes(notesState.lockTargetText)) {
       throw new Error(`notes target lock control should stay reader-language concise: ${JSON.stringify(notesState)}`);
+    }
+    if (state.isMobile) {
+      const noteReturnState = await page.evaluate(async () => {
+        if (typeof window.setStudyPanelExpanded === 'function') {
+          window.setStudyPanelExpanded(true);
+        }
+        if (typeof window.returnToReadingAfterNoteChange === 'function') {
+          window.returnToReadingAfterNoteChange();
+        }
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+        const studyPage = document.querySelector('.study-page');
+        const selected = document.querySelector('.reader-sentence.selected');
+        const toggle = document.querySelector('#studyPanelToggle');
+        const selectedBox = selected?.getBoundingClientRect();
+        const studyPageBox = studyPage?.getBoundingClientRect();
+        return {
+          hasReturnHelper: typeof window.returnToReadingAfterNoteChange === 'function',
+          expanded: Boolean(studyPage?.classList.contains('is-expanded')),
+          selectedVisible: Boolean(selectedBox && selectedBox.bottom > 0 && selectedBox.top < (studyPageBox?.top || window.innerHeight) - 8),
+          toggleAction: toggle?.querySelector('.study-panel-toggle-action')?.textContent.trim() || ''
+        };
+      });
+      if (!noteReturnState.hasReturnHelper || noteReturnState.expanded || !noteReturnState.selectedVisible || noteReturnState.toggleAction !== '노트 보기') {
+        throw new Error(`mobile note save flow should return to the selected source after a successful note change: ${JSON.stringify(noteReturnState)}`);
+      }
+      await page.click('#studyPanelToggle');
+      await page.waitForFunction(() => document.querySelector('.study-page')?.classList.contains('is-expanded'), null, { timeout: 3000 });
     }
     await page.click('#study-tab-citation');
     await page.waitForSelector('#study-panel-citation:not([hidden])', { timeout: 5000 });
