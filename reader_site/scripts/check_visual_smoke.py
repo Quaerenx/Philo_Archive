@@ -1643,7 +1643,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
     }
     if (state.studyToolsOpen) throw new Error(`study tools should stay collapsed in default reading mode: ${JSON.stringify(state)}`);
-    if (state.studyToolsSummary !== '옵션') throw new Error(`study tools summary should stay concise and clear: ${JSON.stringify(state)}`);
+    if (state.studyToolsSummary !== '저장 · 이동') throw new Error(`study tools summary should name the hidden save and navigation tools: ${JSON.stringify(state)}`);
     if (state.studyToolsSummaryHeight > 24 || state.studyToolsSummaryWidth > 84 || parseFloat(state.studyToolsSummaryFontSize || '99') > 10) {
       throw new Error(`reading mode study tools summary should stay visually secondary: ${JSON.stringify(state)}`);
     }
