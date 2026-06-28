@@ -374,7 +374,7 @@ def check_route_markup(route: str, html: str) -> None:
             "목차</summary>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common140",
+            "reader-work.css?v=common141",
             "reader-work.js?v=common187",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
@@ -1492,6 +1492,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
           text: node.textContent.trim(),
           background: style.backgroundColor,
           border: style.borderTopColor,
+          fontSize: style.fontSize,
+          justifySelf: style.justifySelf,
           width: box.width,
           height: box.height
         };
@@ -1674,11 +1676,14 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (state.inactiveSecondaryTabs.length !== 2 || state.inactiveSecondaryTabs.some((tab) => tab.background !== 'rgba(0, 0, 0, 0)' || tab.border !== 'rgba(0, 0, 0, 0)')) {
       throw new Error(`secondary study tabs should stay visually quieter than translation and notes: ${JSON.stringify(state)}`);
     }
+    if (state.inactiveSecondaryTabs.some((tab) => tab.fontSize !== '9px' || tab.justifySelf !== 'end')) {
+      throw new Error(`secondary study tabs should read as compact right-aligned utility links: ${JSON.stringify(state)}`);
+    }
     if (state.isMobile) {
       const primaryMinWidth = Math.min(...state.primaryStudyTabs.map((tab) => tab.width).filter(Boolean));
       const secondaryMaxWidth = Math.max(...state.inactiveSecondaryTabs.map((tab) => tab.width).filter(Boolean));
       const secondaryMaxHeight = Math.max(...state.inactiveSecondaryTabs.map((tab) => tab.height).filter(Boolean));
-      if (!primaryMinWidth || !secondaryMaxWidth || secondaryMaxWidth >= primaryMinWidth * 0.72 || secondaryMaxHeight > 34) {
+      if (!primaryMinWidth || !secondaryMaxWidth || secondaryMaxWidth >= primaryMinWidth * 0.58 || secondaryMaxHeight > 30) {
         throw new Error(`mobile secondary study tabs should stay compact beside primary reading tabs: ${JSON.stringify(state)}`);
       }
     }

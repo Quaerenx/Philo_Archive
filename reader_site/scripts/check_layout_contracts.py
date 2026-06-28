@@ -1854,7 +1854,7 @@ def check_work_source_bundle_ui() -> None:
             f"requestSentenceTranslation should avoid storage-log status text {noisy_marker!r}",
         )
     require_contains(template, "/assets/reader-work.js?v=common187", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common140", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common141", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
         'aria-label="읽기 화면 이동"',
@@ -2112,10 +2112,13 @@ def check_work_source_bundle_ui() -> None:
         "#nextUnstudiedSentence",
         "#nextReviewSentence",
         ".study-tabs",
-        "grid-template-columns: minmax(0, 1.45fr) minmax(0, 1.05fr) repeat(2, minmax(44px, 0.5fr))",
+        "grid-template-columns: minmax(0, 1.55fr) minmax(0, 1.1fr) repeat(2, minmax(34px, max-content))",
+        "align-items: center",
         ".study-tab:focus-visible",
         ".study-tab.active::after",
         ".study-tab-secondary",
+        "justify-self: end",
+        "font-size: 9px",
         "border-color: transparent;",
         ".study-tab-secondary:hover",
         ".study-tab-secondary.active",
@@ -2145,9 +2148,9 @@ def check_work_source_bundle_ui() -> None:
         ".sentence-controls button.needs-confirm",
         ".translation-review-actions button.needs-confirm",
         "min-height: 38px",
-        "grid-template-columns: minmax(112px, 1.45fr) minmax(88px, 1.1fr) repeat(2, minmax(48px, 0.48fr))",
+        "grid-template-columns: minmax(112px, 1.55fr) minmax(88px, 1.15fr) repeat(2, minmax(38px, max-content))",
         ".study-tab-secondary:not(.active)",
-        "min-height: 30px",
+        "min-height: 28px",
         "overscroll-behavior-x: contain",
         "scrollbar-width: thin",
         "@keyframes archive-panel-in",
