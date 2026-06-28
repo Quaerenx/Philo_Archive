@@ -1481,7 +1481,12 @@ def check_work_source_bundle_ui() -> None:
         "번역 중",
         "다시 시도 필요",
         "번역 완료",
-        "const action = expanded ? \"본문 보기\" : \"학습 열기\"",
+        "function collapsedStudyPanelAction",
+        "노트 보기",
+        "인용 보기",
+        "개념 보기",
+        "해설 보기",
+        "const action = expanded ? \"본문 보기\" : collapsedStudyPanelAction()",
         "prefersReducedMotion",
         "sentenceScrollBlock",
         "activeTranslationController",
@@ -1770,7 +1775,7 @@ def check_work_source_bundle_ui() -> None:
             noisy_marker not in request_translation_body,
             f"requestSentenceTranslation should avoid storage-log status text {noisy_marker!r}",
         )
-    require_contains(template, "/assets/reader-work.js?v=common176", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common177", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common132", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
@@ -1818,7 +1823,7 @@ def check_work_source_bundle_ui() -> None:
         "학습 기록",
         "studySessionSummary",
         'id="studySessionSummary" class="study-session-summary" data-session-state="empty" role="status" aria-live="polite" aria-atomic="true" hidden></div>',
-        "aria-label=\"학습 열기. 문장 선택\"",
+        "aria-label=\"해설 보기. 문장 선택\"",
         'aria-controls="studyCompanionPanel"',
         'aria-labelledby="translationCardTitle"',
         'id="translationCardTitle"',

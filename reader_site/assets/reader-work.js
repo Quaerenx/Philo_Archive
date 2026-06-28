@@ -167,6 +167,7 @@ function setStudyPanel(name, focusTab = false) {
     panel.hidden = !active;
   });
   ensureActiveStudyTabVisible(activeTab);
+  updateStudyPanelToggleLabel();
 }
 
 function visibleStudyTabs() {
@@ -228,10 +229,19 @@ function studyPanelToggleSummary() {
   return "선택한 문장";
 }
 
+function collapsedStudyPanelAction() {
+  const activeTab = studyTabs.find((tab) => tab.classList.contains("active") && !tab.hidden);
+  const name = activeTab?.dataset.studyTab || "translation";
+  if (name === "notes") return "노트 보기";
+  if (name === "citation") return "인용 보기";
+  if (name === "concepts") return "개념 보기";
+  return "해설 보기";
+}
+
 function updateStudyPanelToggleLabel() {
   if (!studyPage || !studyPanelToggle) return;
   const expanded = studyPage.classList.contains("is-expanded");
-  const action = expanded ? "본문 보기" : "학습 열기";
+  const action = expanded ? "본문 보기" : collapsedStudyPanelAction();
   const summary = studyPanelToggleSummary();
   studyPanelToggle.innerHTML = `
     <span class="study-panel-toggle-action">${escapeHtml(action)}</span>

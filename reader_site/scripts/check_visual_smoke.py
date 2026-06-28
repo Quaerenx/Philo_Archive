@@ -341,7 +341,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common132",
-            "reader-work.js?v=common176",
+            "reader-work.js?v=common177",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         require("Contents (" not in html, f"{route} should not expose TOC inventory counts")
@@ -1552,8 +1552,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (collapsedStudyState.expanded || !collapsedStudyState.scrimHidden || !collapsedStudyState.selectedVisible) {
         throw new Error(`mobile body toggle should collapse the study panel and return to the selected source: ${JSON.stringify(collapsedStudyState)}`);
       }
-      if (collapsedStudyState.toggleAction !== '학습 열기') {
-        throw new Error(`collapsed mobile study handle should return to the compact study action: ${JSON.stringify(collapsedStudyState)}`);
+      if (collapsedStudyState.toggleAction !== '해설 보기') {
+        throw new Error(`collapsed mobile study handle should name the active study panel: ${JSON.stringify(collapsedStudyState)}`);
       }
       await page.click('#studyPanelToggle');
       await page.waitForFunction(() => document.querySelector('.study-page')?.classList.contains('is-expanded'), null, { timeout: 3000 });
