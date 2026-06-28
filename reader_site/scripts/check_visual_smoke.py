@@ -59,6 +59,7 @@ ROUTES = [
     ("study", "/study", True),
     ("translations", "/translations", True),
     ("translations-review", "/translations?review_state=generated", True),
+    ("translations-saved", "/translations?review_state=reviewed", True),
 ]
 EMPTY_STATE_ROUTES = [
     ("notes-empty", "/notes", True),
@@ -286,7 +287,7 @@ def check_route_markup(route: str, html: str) -> None:
             "aria-busy=\"false\"",
             "notes.css?v=notes28",
             "translations.css?v=trans35",
-            "translations.js?v=trans87",
+            "translations.js?v=trans88",
             'href="/translations" aria-current="page">번역</a>',
             "번역 찾기",
             "translationsListTools",
@@ -1463,6 +1464,43 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       if (translationsPageState.firstGroupActionLabels.some((label) => label && !label.startsWith('원문 읽기: '))) {
         throw new Error(`translation work group source links should name their target accessibly: ${JSON.stringify(translationsPageState)}`);
+      }
+    }
+  }
+  if (parsed.pathname === '/translations' && parsed.searchParams.get('review_state') === 'reviewed') {
+    await page.waitForSelector('#translationsResults .translation-record-card, #translationsResults .empty-state', { timeout: 7000 }).catch(() => {});
+    const savedState = await page.evaluate(() => {
+      const firstCard = document.querySelector('#translationsResults .translation-record-card:not(.notes-skeleton)');
+      const firstCommentary = firstCard?.querySelector('.translation-commentary');
+      return {
+        cards: document.querySelectorAll('#translationsResults .translation-record-card:not(.notes-skeleton)').length,
+        headingText: document.querySelector('#translationsPageTitle')?.textContent.trim() || '',
+        documentTitle: document.title,
+        toolsOpen: Boolean(document.querySelector('#translationsListTools')?.open),
+        firstCommentaryOpen: Boolean(firstCommentary?.open),
+        commentarySummaryTexts: Array.from(document.querySelectorAll('#translationsResults .translation-commentary summary')).map((node) => node.textContent.trim()),
+        openCommentaryCount: document.querySelectorAll('#translationsResults .translation-commentary[open]').length,
+        sourceDisclosureCount: document.querySelectorAll('#translationsResults .translation-source').length,
+        outputText: document.querySelector('#translationsResults')?.textContent || ''
+      };
+    });
+    if (savedState.headingText !== '저장한 번역' || !savedState.documentTitle.startsWith('저장한 번역 /')) {
+      throw new Error(`saved translations page should identify the reading review view: ${JSON.stringify(savedState)}`);
+    }
+    if (savedState.toolsOpen) {
+      throw new Error(`saved translations page should keep search tools collapsed until requested: ${JSON.stringify(savedState)}`);
+    }
+    if (savedState.cards > 0) {
+      if (!savedState.firstCommentaryOpen || savedState.openCommentaryCount < 1) {
+        throw new Error(`saved translations page should open the first commentary for reading review: ${JSON.stringify(savedState)}`);
+      }
+      if (savedState.commentarySummaryTexts.some((text) => text !== '해설')) {
+        throw new Error(`saved translations commentary labels should stay concise: ${JSON.stringify(savedState)}`);
+      }
+      for (const noisyText of ['Literal gloss', 'Key terms', 'source_text_sha256', 'prompt_sha256']) {
+        if (savedState.outputText.includes(noisyText)) {
+          throw new Error(`saved translations page should hide implementation metadata from reading review: ${JSON.stringify(savedState)}`);
+        }
       }
     }
   }

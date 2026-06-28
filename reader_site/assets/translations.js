@@ -236,6 +236,11 @@ function isReviewQueueOnlyView() {
     generatedRecords(lastRecords).length > 0;
 }
 
+function isReviewedOnlyView() {
+  return (reviewSelect.value || "all") === "reviewed" &&
+    !hasSearchFilters();
+}
+
 function renderFilterChip(filterName, label, value) {
   return `<button type="button" class="filter-chip" data-filter="${escapeHtml(filterName)}" aria-label="${escapeHtml(label)} 조건 제거">
     <span>${escapeHtml(label)}: ${escapeHtml(value)}</span>
@@ -608,9 +613,10 @@ function renderRecords(records) {
   const showReviewBadges = reviewActionsVisible() && visibleReviewStates(visible).size > 1;
   const showReviewActions = reviewActionsVisible();
   const inReviewQueue = isReviewQueueOnlyView();
+  const inSavedReading = isReviewedOnlyView();
   statusEl.textContent = "";
   resultsEl.innerHTML = queryMatched.length
-    ? renderSummary(queryMatched) + (visible.length ? renderRecordGroups(visible, { showReviewBadge: showReviewBadges, showReviewActions, showGroupActions: !inReviewQueue, showSourceDetail: showReviewActions, openFirstCommentary: inReviewQueue }) : renderEmptyRecords())
+    ? renderSummary(queryMatched) + (visible.length ? renderRecordGroups(visible, { showReviewBadge: showReviewBadges, showReviewActions, showGroupActions: !inReviewQueue, showSourceDetail: showReviewActions, openFirstCommentary: inReviewQueue || inSavedReading }) : renderEmptyRecords())
     : renderEmptyRecords();
   if (pendingReviewQueueFocus) {
     const reviewMessage = pendingReviewQueueMessage;
