@@ -301,7 +301,8 @@ function renderNotes(notes) {
       const tags = (note.tags || []).join(", ");
       const reviewState = note.review_state || "raw";
       const reviewAction = reviewState === "reviewed" ? "mark-raw" : "mark-reviewed";
-      const reviewActionLabel = reviewState === "reviewed" ? "작성 중으로" : "저장 완료";
+      const reviewActionLabel = reviewState === "reviewed" ? "작성 중으로" : "저장";
+      const reviewActionTitle = reviewState === "reviewed" ? "작성 중인 노트로 옮기기" : "저장한 노트로 표시";
       const quote = note.quote ? `<blockquote class="note-quote">${escapeHtml(cleanText(note.quote))}</blockquote>` : "";
       const href = note.url ? `<a href="${escapeHtml(note.url)}">${escapeHtml(title || "노트 대상 열기")}</a>` : escapeHtml(title || "제목 없는 노트");
       const isRecent = note.id === recentlyChangedNoteId;
@@ -310,7 +311,7 @@ function renderNotes(notes) {
         tags ? `# ${tags}` : ""
       ].filter(Boolean).join(" / ");
       const actions = `
-          <button type="button" data-action="${escapeHtml(reviewAction)}">${escapeHtml(reviewActionLabel)}</button>
+          <button type="button" data-action="${escapeHtml(reviewAction)}" title="${escapeHtml(reviewActionTitle)}" aria-label="${escapeHtml(reviewActionTitle)}">${escapeHtml(reviewActionLabel)}</button>
           <button type="button" data-action="edit">수정</button>
           <details class="note-danger-actions">
             <summary>삭제</summary>

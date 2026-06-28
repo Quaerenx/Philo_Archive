@@ -233,7 +233,7 @@ def check_route_markup(route: str, html: str) -> None:
             "notesStatus",
             "aria-busy=\"false\"",
             "notes.css?v=notes26",
-            "notes.js?v=notes35",
+            "notes.js?v=notes36",
             'href="/notes" aria-current="page">노트</a>',
             "filter-panel",
             "노트 찾기</summary>",
@@ -1021,7 +1021,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         throw new Error(`empty notes page should keep only the find action: ${JSON.stringify(notesPageState)}`);
       }
     } else {
-      if (/Open target|Open work|Manage note|Edit note|다시 열기/.test(notesPageState.actionText)) {
+      if (/Open target|Open work|Manage note|Edit note|다시 열기|저장 완료/.test(notesPageState.actionText)) {
         throw new Error(`notes page actions should stay concise and unambiguous: ${notesPageState.actionText}`);
       }
       if (notesPageState.summaryButtons.some((text) => text.includes('저장됨') || text === '작성 중')) {

@@ -475,7 +475,7 @@ def check_notes_ui() -> None:
     css = read_site_file("assets/notes.css")
     for needle in [
         "/assets/notes.css?v=notes26",
-        "/assets/notes.js?v=notes35",
+        "/assets/notes.js?v=notes36",
         'href="/notes" aria-current="page">노트</a>',
         "노트 찾기",
         "노트 찾기</summary>",
@@ -569,7 +569,9 @@ def check_notes_ui() -> None:
         "data-empty-action=\"clear-filters\"",
         "작성 중인 노트",
         "저장한 노트",
-        "저장 완료",
+        "저장",
+        "저장한 노트로 표시",
+        "작성 중인 노트로 옮기기",
         "작성 중으로",
         "노트로 저장했습니다.",
         "작성 중으로 옮겼습니다.",
