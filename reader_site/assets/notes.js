@@ -188,10 +188,18 @@ function updateNotesListChrome(count = lastNotes.length) {
   }
 }
 
+function emptyNotesTitle() {
+  const statusOnly = reviewSelect.value && !hasNotesSearchFilters();
+  if (statusOnly && reviewSelect.value === "reviewed") return "저장한 노트가 없습니다.";
+  if (statusOnly && reviewSelect.value === "raw") return "작성 중인 노트가 없습니다.";
+  return hasActiveFilters() ? "조건에 맞는 노트가 없습니다." : "아직 노트가 없습니다.";
+}
+
 function renderEmptyNotes() {
   const filtered = hasActiveFilters();
-  const title = filtered ? "조건에 맞는 노트가 없습니다." : "아직 노트가 없습니다.";
-  const body = filtered ? "조건을 지우거나 문서, 태그, 상태 범위를 넓혀보세요." : "";
+  const statusOnly = reviewSelect.value && !hasNotesSearchFilters();
+  const title = emptyNotesTitle();
+  const body = filtered && !statusOnly ? "조건을 지우거나 문서, 태그, 상태 범위를 넓혀보세요." : "";
   const clearAction = filtered
     ? '<button type="button" data-empty-action="clear-filters">조건 지우기</button>'
     : "";

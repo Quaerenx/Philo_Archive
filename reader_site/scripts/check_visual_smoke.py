@@ -57,6 +57,7 @@ ROUTES = [
     ("search-empty", "/search?q=unlikelyarchivequery0000", True),
     ("notes", "/notes", True),
     ("notes-saved", "/notes?review_state=reviewed", True),
+    ("notes-draft", "/notes?review_state=raw", True),
     ("study", "/study", True),
     ("translations", "/translations", True),
     ("translations-review", "/translations?review_state=generated", True),
@@ -1224,31 +1225,40 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
     }
   }
-  if (parsed.pathname === '/notes' && parsed.searchParams.get('review_state') === 'reviewed') {
+  if (parsed.pathname === '/notes' && ['raw', 'reviewed'].includes(parsed.searchParams.get('review_state') || '')) {
+    const noteReviewState = parsed.searchParams.get('review_state') || '';
+    const expectedNotesHeading = noteReviewState === 'raw' ? '작성 중인 노트' : '저장한 노트';
+    const expectedEmptyTitle = noteReviewState === 'raw' ? '작성 중인 노트가 없습니다.' : '저장한 노트가 없습니다.';
     await page.waitForSelector('#notesResults .note-card:not(.notes-skeleton), #notesResults .empty-state', { timeout: 7000 }).catch(() => {});
-    const savedNotesState = await page.evaluate(() => {
+    const filteredNotesState = await page.evaluate(() => {
       const activeFilters = document.querySelector('#notesActiveFilters');
+      const empty = document.querySelector('#notesResults .empty-state');
       return {
         hasNotes: document.querySelectorAll('#notesResults .note-card:not(.notes-skeleton)').length > 0,
         headingText: document.querySelector('#notesPageTitle')?.textContent.trim() || '',
         documentTitle: document.title,
+        emptyTitle: empty?.querySelector('h2')?.textContent.trim() || '',
+        emptyBodyCount: empty ? empty.querySelectorAll('p').length : 0,
         activeFiltersHidden: Boolean(activeFilters?.hidden),
         activeFiltersText: activeFilters ? activeFilters.textContent.trim() : '',
         summaryButtons: Array.from(document.querySelectorAll('#notesResults .notes-summary-filter')).map((node) => node.textContent.trim()),
         summaryLabels: Array.from(document.querySelectorAll('#notesResults .notes-summary-filter')).map((node) => node.getAttribute('aria-label') || '')
       };
     });
-    if (savedNotesState.headingText !== '저장한 노트' || !savedNotesState.documentTitle.startsWith('저장한 노트 /')) {
-      throw new Error(`saved notes page should identify the saved-note reading view: ${JSON.stringify(savedNotesState)}`);
+    if (filteredNotesState.headingText !== expectedNotesHeading || !filteredNotesState.documentTitle.startsWith(`${expectedNotesHeading} /`)) {
+      throw new Error(`filtered notes page should identify the current note state: ${JSON.stringify(filteredNotesState)}`);
     }
-    if (!savedNotesState.activeFiltersHidden || savedNotesState.activeFiltersText) {
-      throw new Error(`saved notes page should not repeat the status filter chip: ${JSON.stringify(savedNotesState)}`);
+    if (!filteredNotesState.activeFiltersHidden || filteredNotesState.activeFiltersText) {
+      throw new Error(`filtered notes page should not repeat the status filter chip: ${JSON.stringify(filteredNotesState)}`);
     }
-    if (savedNotesState.hasNotes && !savedNotesState.summaryButtons.includes('저장한 노트')) {
-      throw new Error(`saved notes page should keep the saved-note summary available: ${JSON.stringify(savedNotesState)}`);
+    if (!filteredNotesState.hasNotes && (filteredNotesState.emptyTitle !== expectedEmptyTitle || filteredNotesState.emptyBodyCount !== 0)) {
+      throw new Error(`filtered notes empty state should name the note state without search-failure copy: ${JSON.stringify(filteredNotesState)}`);
     }
-    if (savedNotesState.summaryButtons.some((text) => /\d/.test(text)) || savedNotesState.summaryLabels.some((label) => label && !/\d/.test(label))) {
-      throw new Error(`saved notes summary should keep visible text quiet while preserving accessible counts: ${JSON.stringify(savedNotesState)}`);
+    if (filteredNotesState.hasNotes && !filteredNotesState.summaryButtons.includes(expectedNotesHeading)) {
+      throw new Error(`filtered notes page should keep the current note-state summary available: ${JSON.stringify(filteredNotesState)}`);
+    }
+    if (filteredNotesState.summaryButtons.some((text) => /\d/.test(text)) || filteredNotesState.summaryLabels.some((label) => label && !/\d/.test(label))) {
+      throw new Error(`filtered notes summary should keep visible text quiet while preserving accessible counts: ${JSON.stringify(filteredNotesState)}`);
     }
   }
   if (parsed.pathname === '/study' && !parsed.search) {
