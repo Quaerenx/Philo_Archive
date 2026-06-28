@@ -486,8 +486,8 @@ def check_notes_ui() -> None:
     script = read_site_file("assets/notes.js")
     css = read_site_file("assets/notes.css")
     for needle in [
-        "/assets/notes.css?v=notes26",
-        "/assets/notes.js?v=notes37",
+        "/assets/notes.css?v=notes27",
+        "/assets/notes.js?v=notes38",
         'href="/notes" aria-current="page">노트</a>',
         "노트 찾기",
         "노트 찾기</summary>",
@@ -547,6 +547,9 @@ def check_notes_ui() -> None:
         'statusEl.textContent = "";',
         "function renderNoteFooter",
         "note-footer",
+        "note-more-actions",
+        "더보기</summary>",
+        "note-more-actions-body",
         "note-danger-actions",
         "삭제</summary>",
         "삭제 확인</button>",
@@ -640,6 +643,12 @@ def check_notes_ui() -> None:
         ".note-footer",
         ".note-footer .note-meta",
         ".note-actions a",
+        ".note-actions summary",
+        ".note-more-actions",
+        ".note-more-actions summary",
+        ".note-more-actions summary::after",
+        ".note-more-actions[open] summary::after",
+        ".note-more-actions-body",
         ".note-danger-actions",
         ".note-danger-actions summary",
         ".note-danger-actions summary::after",
@@ -682,7 +691,7 @@ def check_translations_ui() -> None:
     base_css = read_site_file("assets/notes.css")
     css = read_site_file("assets/translations.css")
     for needle in [
-        "/assets/notes.css?v=notes26",
+        "/assets/notes.css?v=notes27",
         "/assets/translations.css?v=trans34",
         "/assets/translations.js?v=trans81",
         "<title>번역 목록 / Personal Archive of Literature</title>",

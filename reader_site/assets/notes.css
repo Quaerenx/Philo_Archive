@@ -145,6 +145,7 @@ h1 {
 .note-edit-form textarea,
 .note-actions a,
 .note-actions button,
+.note-actions summary,
 .note-edit-actions button {
   min-height: 28px;
   color: #000;
@@ -165,6 +166,7 @@ h1 {
 .notes-form button,
 .note-actions a,
 .note-actions button,
+.note-actions summary,
 .note-edit-actions button {
   position: relative;
   padding: 4px 12px;
@@ -559,11 +561,13 @@ h1 {
   color: #000;
 }
 
+.note-more-actions,
 .note-danger-actions {
   position: relative;
   margin: 0;
 }
 
+.note-more-actions summary,
 .note-danger-actions summary {
   display: inline-flex;
   min-height: 28px;
@@ -578,18 +582,29 @@ h1 {
   list-style: none;
 }
 
+.note-more-actions summary::-webkit-details-marker,
 .note-danger-actions summary::-webkit-details-marker {
   display: none;
 }
 
+.note-more-actions summary::after,
 .note-danger-actions summary::after {
   margin-left: 5px;
   color: #777;
   content: "+";
 }
 
+.note-more-actions[open] summary::after,
 .note-danger-actions[open] summary::after {
   content: "-";
+}
+
+.note-more-actions-body {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+  margin-top: 6px;
 }
 
 .note-danger-actions button {

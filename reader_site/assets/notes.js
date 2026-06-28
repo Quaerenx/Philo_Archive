@@ -314,14 +314,21 @@ function renderNotes(notes) {
       const meta = [
         tags ? `# ${tags}` : ""
       ].filter(Boolean).join(" / ");
+      const moreActions = `
+          <details class="note-more-actions">
+            <summary>더보기</summary>
+            <div class="note-more-actions-body">
+              <button type="button" data-action="${escapeHtml(reviewAction)}" title="${escapeHtml(reviewActionTitle)}" aria-label="${escapeHtml(reviewActionTitle)}">${escapeHtml(reviewActionLabel)}</button>
+              <details class="note-danger-actions">
+                <summary>삭제</summary>
+                <button type="button" data-action="delete">삭제 확인</button>
+              </details>
+            </div>
+          </details>`;
       const actions = `
           ${sourceAction}
-          <button type="button" data-action="${escapeHtml(reviewAction)}" title="${escapeHtml(reviewActionTitle)}" aria-label="${escapeHtml(reviewActionTitle)}">${escapeHtml(reviewActionLabel)}</button>
           <button type="button" data-action="edit">수정</button>
-          <details class="note-danger-actions">
-            <summary>삭제</summary>
-            <button type="button" data-action="delete">삭제 확인</button>
-          </details>`;
+          ${moreActions}`;
       return `<article class="note-card${isRecent ? " is-recent" : ""}" data-note-id="${escapeHtml(note.id)}" data-corpus-id="${escapeHtml(note.corpus_id)}" data-review-state="${escapeHtml(reviewState)}"${recentAttrs}>
         <div class="note-title">
           ${href}

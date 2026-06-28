@@ -258,8 +258,8 @@ def check_route_markup(route: str, html: str) -> None:
             "notesActiveFilters",
             "notesStatus",
             "aria-busy=\"false\"",
-            "notes.css?v=notes26",
-            "notes.js?v=notes37",
+            "notes.css?v=notes27",
+            "notes.js?v=notes38",
             'href="/notes" aria-current="page">노트</a>',
             "filter-panel",
             "노트 찾기</summary>",
@@ -276,7 +276,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translationsResults",
             "translationsReviewQueue",
             "aria-busy=\"false\"",
-            "notes.css?v=notes26",
+            "notes.css?v=notes27",
             "translations.css?v=trans34",
             "translations.js?v=trans81",
             'href="/translations" aria-current="page">번역</a>',
@@ -1035,6 +1035,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         summaryButtons: Array.from(document.querySelectorAll('#notesResults .notes-summary-filter')).map((node) => node.textContent.trim()),
         summaryLabels: Array.from(document.querySelectorAll('#notesResults .notes-summary-filter')).map((node) => node.getAttribute('aria-label') || ''),
         actionText: Array.from(document.querySelectorAll('#notesResults .note-actions')).map((node) => node.textContent.trim()).join(' '),
+        immediateActionText: Array.from(document.querySelectorAll('#notesResults .note-actions > a, #notesResults .note-actions > button, #notesResults .note-actions > details > summary')).map((node) => node.textContent.trim()).join(' '),
+        moreActionSummaries: Array.from(document.querySelectorAll('#notesResults .note-more-actions > summary')).map((node) => node.textContent.trim()),
+        openMoreActions: document.querySelectorAll('#notesResults .note-more-actions[open]').length,
         sourceActionLabels: Array.from(document.querySelectorAll('#notesResults .note-actions a')).map((node) => node.getAttribute('aria-label') || ''),
       };
     });
@@ -1066,6 +1069,37 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       if (!notesPageState.actionText.includes('원문 열기')) {
         throw new Error(`notes page should expose a clear source navigation action: ${JSON.stringify(notesPageState)}`);
+      }
+      if (!notesPageState.immediateActionText.includes('원문 열기') || !notesPageState.immediateActionText.includes('수정') || !notesPageState.immediateActionText.includes('더보기')) {
+        throw new Error(`notes page should keep source, edit, and more as the immediate actions: ${JSON.stringify(notesPageState)}`);
+      }
+      if (/작성 중으로|삭제|삭제 확인|저장($|\s)/.test(notesPageState.immediateActionText)) {
+        throw new Error(`notes page should move state changes and deletion behind More: ${JSON.stringify(notesPageState)}`);
+      }
+      if (notesPageState.openMoreActions !== 0 || notesPageState.moreActionSummaries.some((text) => text !== '더보기')) {
+        throw new Error(`notes page should keep low-frequency actions collapsed behind 더보기: ${JSON.stringify(notesPageState)}`);
+      }
+      const notesMoreState = await page.evaluate(() => {
+        const details = document.querySelector('#notesResults .note-more-actions');
+        const summary = details?.querySelector(':scope > summary');
+        if (!details || !summary) return { exists: false };
+        summary.click();
+        const state = {
+          exists: true,
+          open: Boolean(details.open),
+          summaryText: summary.textContent.trim(),
+          reviewActionText: details.querySelector('button[data-action="mark-raw"], button[data-action="mark-reviewed"]')?.textContent.trim() || '',
+          dangerSummaryText: details.querySelector('.note-danger-actions > summary')?.textContent.trim() || '',
+          deleteActionText: details.querySelector('button[data-action="delete"]')?.textContent.trim() || '',
+        };
+        details.open = false;
+        return state;
+      });
+      if (!notesMoreState.exists || !notesMoreState.open || notesMoreState.summaryText !== '더보기') {
+        throw new Error(`notes page should open low-frequency note actions from 더보기: ${JSON.stringify(notesMoreState)}`);
+      }
+      if (!/^(저장|작성 중으로)$/.test(notesMoreState.reviewActionText) || notesMoreState.dangerSummaryText !== '삭제' || notesMoreState.deleteActionText !== '삭제 확인') {
+        throw new Error(`notes page More disclosure should contain review state and deletion actions: ${JSON.stringify(notesMoreState)}`);
       }
       if (notesPageState.sourceActionLabels.some((label) => label && !label.startsWith('원문 열기: '))) {
         throw new Error(`notes source links should include their target in accessible labels: ${JSON.stringify(notesPageState)}`);
