@@ -280,7 +280,7 @@ def check_route_markup(route: str, html: str) -> None:
             "aria-busy=\"false\"",
             "notes.css?v=notes28",
             "translations.css?v=trans35",
-            "translations.js?v=trans82",
+            "translations.js?v=trans83",
             'href="/translations" aria-current="page">번역</a>',
             "번역 찾기",
             "translationsListTools",
@@ -2019,7 +2019,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (reviewTargetState.nonTargetFooterDisplay && reviewTargetState.nonTargetFooterDisplay !== 'none') {
         throw new Error(`review queue should keep inactive review actions visually quiet on desktop: ${JSON.stringify(reviewTargetState)}`);
       }
-      if (reviewTargetState.sourceOpen || reviewTargetState.sourceSummaryText !== '원문 보기' || !reviewTargetState.sourceText.includes('원문 보기')) {
+      if (reviewTargetState.sourceOpen || reviewTargetState.sourceSummaryText !== '선택 문장' || !reviewTargetState.sourceText.includes('선택 문장')) {
         throw new Error(`review queue should keep original source available but collapsed by default: ${JSON.stringify(reviewTargetState)}`);
       }
       if (reviewTargetState.reviewTargetBackground !== 'rgb(255, 255, 255)') {
