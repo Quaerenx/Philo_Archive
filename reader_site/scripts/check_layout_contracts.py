@@ -1350,12 +1350,12 @@ def check_work_source_bundle_ui() -> None:
         "text.includes(\"번역기\")",
         "function runtimeRecoveryMarkup",
         "번역기가 꺼져 있습니다. 시작한 뒤 다시 시도하세요.",
+        "translation-runtime-help",
         "translation-runtime-details",
-        "시작 도움말",
+        "명령 보기",
         "translation-runtime-note",
-        "아래 시작 명령을 복사해 한 번 실행한 뒤 다시 확인하세요.",
+        "시작 명령을 복사해 PowerShell에서 실행하세요.",
         "translation-runtime-command",
-        "translation-runtime-command-row",
         "data-translation-copy-runtime",
         "data-translation-check-runtime",
         "다시 확인",
@@ -1624,6 +1624,19 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Home"',
     ]:
         require_contains(script, needle, "assets/reader-work.js")
+    runtime_help_body = js_function_body(script, "runtimeRecoveryMarkup")
+    require_ordered_markers(
+        runtime_help_body,
+        [
+            "translation-runtime-note",
+            "data-translation-copy-runtime",
+            "translation-runtime-details",
+            "translation-runtime-command",
+        ],
+        "runtime recovery should expose copy action before long command",
+    )
+    for noisy_marker in ["시작 도움말", "아래 시작 명령을 복사해 한 번 실행한 뒤 다시 확인하세요.", "translation-runtime-command-row"]:
+        require(noisy_marker not in runtime_help_body, f"runtime recovery should keep startup help direct without {noisy_marker!r}")
     require(("Show " + "source") not in script, "assets/reader-work.js should keep source-jump UI in reader language")
     require(
         '<span class="reading-position-current">Selected</span>' not in script,
@@ -2098,13 +2111,12 @@ def check_work_source_bundle_ui() -> None:
         ".translation-unavailable-copy",
         ".translation-recovery-panel",
         ".translation-result.translation-cancelled button",
+        ".translation-runtime-help",
+        ".translation-runtime-help > button",
         ".translation-runtime-details",
         ".translation-runtime-details summary",
-        ".translation-runtime-details[open] summary",
         ".translation-runtime-note",
         ".translation-runtime-command",
-        ".translation-runtime-command-row",
-        ".translation-runtime-command-row button",
         ".translation-error-actions",
         ".research-card button.is-working",
         ".note-item.is-recent",

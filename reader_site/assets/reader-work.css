@@ -1853,8 +1853,20 @@ h1 {
   border-top: 1px solid #eeeeee;
 }
 
-.translation-runtime-details {
+.translation-runtime-help {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
   margin: 0 0 8px;
+}
+
+.translation-runtime-help > button {
+  min-height: 26px;
+  margin: 0;
+}
+
+.translation-runtime-details {
+  margin: 0;
 }
 
 .translation-runtime-details summary {
@@ -1870,12 +1882,8 @@ h1 {
   cursor: pointer;
 }
 
-.translation-runtime-details[open] summary {
-  margin-bottom: 6px;
-}
-
 .translation-runtime-note {
-  margin: 0 0 6px;
+  margin: 0;
   color: #686868;
   font-size: 10px;
   line-height: 1.45;
@@ -1885,27 +1893,13 @@ h1 {
   display: block;
   max-width: 100%;
   padding: 5px 6px;
-  margin: 0;
+  margin: 6px 0 0;
   overflow-x: auto;
   color: #3a1717;
   background: #fff;
   border: 1px solid #e7cccc;
   font-family: Consolas, "Courier New", monospace;
   font-size: 10px;
-  white-space: nowrap;
-}
-
-.translation-runtime-command-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 6px;
-  align-items: stretch;
-  margin: 0 0 8px;
-}
-
-.translation-runtime-command-row button {
-  min-height: 26px;
-  margin: 0;
   white-space: nowrap;
 }
 

@@ -1758,14 +1758,14 @@ function translationErrorDisplayMessage(message) {
 function runtimeRecoveryMarkup(message) {
   if (!translationErrorIsRuntime(message)) return "";
   return `
-      <details class="translation-runtime-details">
-        <summary>시작 도움말</summary>
-        <p class="translation-runtime-note">아래 시작 명령을 복사해 한 번 실행한 뒤 다시 확인하세요.</p>
-        <div class="translation-runtime-command-row">
+      <div class="translation-runtime-help">
+        <p class="translation-runtime-note">시작 명령을 복사해 PowerShell에서 실행하세요.</p>
+        <button type="button" data-translation-copy-runtime>시작 명령 복사</button>
+        <details class="translation-runtime-details">
+          <summary>명령 보기</summary>
           <code class="translation-runtime-command">${escapeHtml(GEMMA_RUNTIME_COMMAND)}</code>
-          <button type="button" data-translation-copy-runtime>시작 명령 복사</button>
-        </div>
-      </details>`;
+        </details>
+      </div>`;
 }
 
 function renderTranslationError(message) {
