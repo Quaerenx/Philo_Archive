@@ -528,10 +528,12 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       const title = recent?.querySelector('.recent-work-title');
       const meta = recent?.querySelector('.recent-work-meta');
       const box = recent?.getBoundingClientRect();
+      const linkStyle = link ? window.getComputedStyle(link) : null;
       return {
         exists: Boolean(recent),
         text: recent?.textContent.trim().replace(/\s+/g, ' ') || '',
         linkLabel: link?.getAttribute('aria-label') || '',
+        linkColor: linkStyle?.color || '',
         labelText: label?.textContent.trim() || '',
         titleText: title?.textContent.trim() || '',
         metaText: meta?.textContent.trim() || '',
@@ -548,6 +550,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (recentWorkState.linkLabel !== '이어 읽기: Morgenröthe / 아침놀') {
       throw new Error(`home recent work should have a clear accessible label: ${JSON.stringify(recentWorkState)}`);
+    }
+    if (recentWorkState.linkColor === 'rgb(255, 0, 0)' || recentWorkState.linkColor === 'rgb(176, 0, 0)') {
+      throw new Error(`home recent work should stay visually secondary to the reading-start choices: ${JSON.stringify(recentWorkState)}`);
     }
   }
   if (parsed.pathname.startsWith('/category/')) {

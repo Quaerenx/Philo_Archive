@@ -146,6 +146,14 @@ img {
   min-width: 0;
   gap: 8px;
   align-items: baseline;
+  color: #111;
+}
+
+.recent-work-link:visited,
+.recent-work-link:active,
+.recent-work-link:hover,
+.recent-work-link:focus-visible {
+  color: #111;
 }
 
 .recent-work-label {
