@@ -2544,7 +2544,11 @@ function noteReviewAction(reviewState) {
 }
 
 function noteReviewActionLabel(reviewState) {
-  return reviewState === "reviewed" ? "다시 열기" : "저장";
+  return reviewState === "reviewed" ? "작성 중으로" : "저장";
+}
+
+function noteReviewActionTitle(reviewState) {
+  return reviewState === "reviewed" ? "작성 중인 노트로 옮기기" : "저장한 노트로 표시";
 }
 
 function noteTargetHref(note) {
@@ -2624,6 +2628,7 @@ function renderNotesList(notes) {
     const reviewState = normalizedNoteReviewState(note);
     const targetLabel = cleanText(note.target_label || "노트 대상");
     const sourceLinkLabel = `원문 읽기: ${targetLabel}`;
+    const reviewActionTitle = noteReviewActionTitle(reviewState);
     return `<div class="note-item${recentClass}" data-note-id="${escapeHtml(note.id)}" data-note-tags="${escapeHtml(tags)}" data-review-state="${escapeHtml(reviewState)}"${recentAttrs}>
       <div class="note-item-title">
         <strong>${escapeHtml(targetLabel)}</strong>
@@ -2633,7 +2638,7 @@ function renderNotesList(notes) {
       <small>${escapeHtml(cleanText(tags))}${escapeHtml(updated)}</small>
       <div class="note-actions">
         <a class="note-target-link" href="${escapeHtml(targetHref)}" aria-label="${escapeHtml(sourceLinkLabel)}" title="${escapeHtml(sourceLinkLabel)}">원문 읽기</a>
-        <button type="button" data-action="${escapeHtml(noteReviewAction(reviewState))}" data-note-id="${escapeHtml(note.id)}">${escapeHtml(noteReviewActionLabel(reviewState))}</button>
+        <button type="button" data-action="${escapeHtml(noteReviewAction(reviewState))}" data-note-id="${escapeHtml(note.id)}" title="${escapeHtml(reviewActionTitle)}" aria-label="${escapeHtml(reviewActionTitle)}">${escapeHtml(noteReviewActionLabel(reviewState))}</button>
         <button type="button" data-action="edit-note" data-note-id="${escapeHtml(note.id)}">노트 수정</button>
         <details class="note-danger-actions">
           <summary>삭제</summary>
@@ -3095,7 +3100,7 @@ notesList.addEventListener("click", async (event) => {
     setActionButtonBusy(button, true);
     const updatedNote = await updateNoteReview(noteId, nextState);
     noteStatus.textContent = updatedNote
-      ? (nextState === "reviewed" ? "노트를 저장했습니다." : "노트를 다시 열었습니다.")
+      ? (nextState === "reviewed" ? "노트를 저장했습니다." : "작성 중으로 옮겼습니다.")
       : "노트를 업데이트하지 못했습니다.";
     if (updatedNote) {
       recentlyChangedNoteId = updatedNote.id || noteId;

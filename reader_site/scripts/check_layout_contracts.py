@@ -1647,6 +1647,7 @@ def check_work_source_bundle_ui() -> None:
         "function noteReviewLabel",
         "function noteReviewAction",
         "function noteReviewActionLabel",
+        "function noteReviewActionTitle",
         "noteListSummary",
         "function sortedNotes",
         "function renderNotesPending",
@@ -1669,9 +1670,12 @@ def check_work_source_bundle_ui() -> None:
         "<summary>삭제</summary>",
         "delete-note",
         "저장",
-        "다시 열기",
+        "작성 중으로",
+        "저장한 노트로 표시",
+        "작성 중인 노트로 옮기기",
         "mark-reviewed-note",
         "mark-raw-note",
+        "작성 중으로 옮겼습니다.",
         "notes-list-skeleton",
         "아직 노트가 없습니다.",
         "노트를 사용할 수 없습니다.",
@@ -1847,7 +1851,7 @@ def check_work_source_bundle_ui() -> None:
             noisy_marker not in request_translation_body,
             f"requestSentenceTranslation should avoid storage-log status text {noisy_marker!r}",
         )
-    require_contains(template, "/assets/reader-work.js?v=common185", "templates/work.html")
+    require_contains(template, "/assets/reader-work.js?v=common186", "templates/work.html")
     require_contains(template, "/assets/reader-work.css?v=common140", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
@@ -2382,14 +2386,17 @@ def check_work_source_bundle_ui() -> None:
     for needle in [
         "const targetLabel = cleanText(note.target_label || \"노트 대상\")",
         "const sourceLinkLabel = `원문 읽기: ${targetLabel}`",
+        "const reviewActionTitle = noteReviewActionTitle(reviewState)",
         "aria-label=\"${escapeHtml(sourceLinkLabel)}\"",
         "title=\"${escapeHtml(sourceLinkLabel)}\"",
         ">원문 읽기</a>",
+        "title=\"${escapeHtml(reviewActionTitle)}\"",
+        "aria-label=\"${escapeHtml(reviewActionTitle)}\"",
         ">노트 수정</button>",
         "window.prompt(\"태그 수정\", currentTags)",
     ]:
         require_contains(script, needle, "assets/reader-work.js")
-    for noisy_marker in ['>원문</a>', '>원문 열기</a>', '>수정</button>', 'window.prompt("Tags"']:
+    for noisy_marker in ['>원문</a>', '>원문 열기</a>', '>수정</button>', '>다시 열기</button>', '노트를 다시 열었습니다.', 'window.prompt("Tags"']:
         require(noisy_marker not in script, f"assets/reader-work.js should avoid ambiguous note UI text {noisy_marker!r}")
 
 

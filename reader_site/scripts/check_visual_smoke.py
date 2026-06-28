@@ -375,7 +375,7 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common140",
-            "reader-work.js?v=common185",
+            "reader-work.js?v=common186",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         require("Contents (" not in html, f"{route} should not expose TOC inventory counts")
@@ -1865,6 +1865,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       notesEmptyText: document.querySelector('#notesList .notes-empty')?.textContent.trim() || '',
       noteItemActions: Array.from(document.querySelectorAll('#notesList .note-item:first-of-type .note-actions a, #notesList .note-item:first-of-type .note-actions button, #notesList .note-item:first-of-type .note-actions summary')).map((node) => node.textContent.trim()),
       noteItemActionLabels: Array.from(document.querySelectorAll('#notesList .note-item:first-of-type .note-actions a')).map((node) => node.getAttribute('aria-label') || ''),
+      noteItemReviewAction: document.querySelector('#notesList .note-item:first-of-type .note-actions button[data-action="mark-reviewed-note"], #notesList .note-item:first-of-type .note-actions button[data-action="mark-raw-note"]')?.textContent.trim() || '',
+      noteItemReviewActionLabel: document.querySelector('#notesList .note-item:first-of-type .note-actions button[data-action="mark-reviewed-note"], #notesList .note-item:first-of-type .note-actions button[data-action="mark-raw-note"]')?.getAttribute('aria-label') || '',
+      noteItemReviewActionTitle: document.querySelector('#notesList .note-item:first-of-type .note-actions button[data-action="mark-reviewed-note"], #notesList .note-item:first-of-type .note-actions button[data-action="mark-raw-note"]')?.getAttribute('title') || '',
       noteTargetText: document.querySelector('#noteTargetPreview')?.textContent.trim() || '',
       noteTargetLabel: document.querySelector('#noteTargetPreview')?.getAttribute('aria-label') || '',
       lockTargetText: document.querySelector('#lockNoteTarget')?.textContent.trim() || ''
@@ -1891,11 +1894,17 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       throw new Error(`notes target preview should use reader-language labels without internal ids: ${JSON.stringify(notesState)}`);
     }
     if (notesState.noteItemActions.length > 0) {
-      if (!notesState.noteItemActions.includes('원문 읽기') || !notesState.noteItemActions.includes('노트 수정') || notesState.noteItemActions.includes('원문 열기') || notesState.noteItemActions.includes('수정')) {
+      if (!notesState.noteItemActions.includes('원문 읽기') || !notesState.noteItemActions.includes('노트 수정') || notesState.noteItemActions.includes('원문 열기') || notesState.noteItemActions.includes('수정') || notesState.noteItemActions.includes('다시 열기')) {
         throw new Error(`notes tab saved-note actions should use explicit reader-language labels: ${JSON.stringify(notesState)}`);
       }
       if (notesState.noteItemActionLabels.some((label) => label && !label.startsWith('원문 읽기: '))) {
         throw new Error(`notes tab source action should name the source target accessibly: ${JSON.stringify(notesState)}`);
+      }
+      if (!['저장', '작성 중으로'].includes(notesState.noteItemReviewAction)) {
+        throw new Error(`notes tab review action should name the destination state clearly: ${JSON.stringify(notesState)}`);
+      }
+      if (!['저장한 노트로 표시', '작성 중인 노트로 옮기기'].includes(notesState.noteItemReviewActionLabel) || notesState.noteItemReviewActionTitle !== notesState.noteItemReviewActionLabel) {
+        throw new Error(`notes tab review action should expose the destination in labels and titles: ${JSON.stringify(notesState)}`);
       }
     }
     if (!['대상 고정', '고정 해제'].includes(notesState.lockTargetText)) {
