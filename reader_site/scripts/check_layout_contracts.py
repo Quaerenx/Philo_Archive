@@ -1865,7 +1865,7 @@ def check_work_source_bundle_ui() -> None:
             f"requestSentenceTranslation should avoid storage-log status text {noisy_marker!r}",
         )
     require_contains(template, "/assets/reader-work.js?v=common191", "templates/work.html")
-    require_contains(template, "/assets/reader-work.css?v=common144", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common145", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
         'aria-label="읽기 화면 이동"',
@@ -2189,8 +2189,13 @@ def check_work_source_bundle_ui() -> None:
         ".translation-empty-state .translation-section h3",
         ".translation-output .translation-empty-copy",
         ".translation-reading-actions",
+        ".translation-output.reading-mode .translation-reading-actions",
+        "justify-items: center",
+        "border-top: 0",
         ".translation-reading-actions button",
         ".translation-reading-actions button[data-translation-quick-action=\"next-sentence\"]",
+        ".translation-output.reading-mode .translation-reading-actions button[data-translation-quick-action=\"next-sentence\"]",
+        "width: min(100%, 156px)",
         ".translation-reading-actions button[data-translation-quick-action=\"next-sentence\"]:not(:disabled)",
         ".translation-reading-actions .translation-quick-state",
         ".translation-secondary-actions",
@@ -2259,7 +2264,7 @@ def check_work_source_bundle_ui() -> None:
         "line-height: 1.68",
         ".study-page.is-expanded .translation-output.reading-mode .translation-reading-actions",
         "bottom: calc(8px + env(safe-area-inset-bottom, 0px))",
-        "box-shadow: 0 -8px 14px rgba(255, 255, 255, 0.95)",
+        "box-shadow: 0 -6px 10px rgba(255, 255, 255, 0.95)",
         ".translation-loading",
         ".translation-loading-copy",
         ".translation-pending-commentary",

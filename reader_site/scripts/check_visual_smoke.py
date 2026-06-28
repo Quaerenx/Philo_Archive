@@ -377,7 +377,7 @@ def check_route_markup(route: str, html: str) -> None:
             "목차</summary>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common144",
+            "reader-work.css?v=common145",
             "reader-work.js?v=common191",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
@@ -1614,6 +1614,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         readingActionsPosition: readingActionsStyle?.position || '',
         readingActionsBottom: readingActionsStyle?.bottom || '',
         readingActionsBoxShadow: readingActionsStyle?.boxShadow || '',
+        readingActionsBorderTopWidth: readingActionsStyle?.borderTopWidth || '',
+        readingActionsJustifyItems: readingActionsStyle?.justifyItems || '',
         translationHeadingWidth: translationHeadingBox?.width || 0,
         translationHeadingHeight: translationHeadingBox?.height || 0,
         translationHeadingText: translationHeading?.textContent.trim() || '',
@@ -1683,6 +1685,12 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (state.readingActionsBoxShadow === 'none') {
       throw new Error(`reading mode should visually separate the sticky next action from long commentary: ${JSON.stringify(state)}`);
+    }
+    if (state.readingActionsBorderTopWidth !== '0px' || state.readingActionsJustifyItems !== 'center') {
+      throw new Error(`reading mode should keep the sticky next action quiet and centered: ${JSON.stringify(state)}`);
+    }
+    if (state.readingNextWidth < 112 || state.readingNextWidth > 180) {
+      throw new Error(`reading mode next action should stay compact without losing touch target size: ${JSON.stringify(state)}`);
     }
     if (state.translationHeadingWidth <= 2 || state.translationHeadingHeight <= 2 || state.translationHeadingText !== '번역') {
       throw new Error(`reading mode should keep the translation heading visible before commentary: ${JSON.stringify(state)}`);
