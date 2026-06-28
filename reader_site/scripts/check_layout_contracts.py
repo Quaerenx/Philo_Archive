@@ -489,7 +489,8 @@ def check_notes_ui() -> None:
     css = read_site_file("assets/notes.css")
     for needle in [
         "/assets/notes.css?v=notes28",
-        "/assets/notes.js?v=notes40",
+        "/assets/notes.js?v=notes41",
+        '<h1 id="notesPageTitle">노트</h1>',
         'href="/notes" aria-current="page">노트</a>',
         "노트 찾기",
         "노트 찾기</summary>",
@@ -528,6 +529,14 @@ def check_notes_ui() -> None:
     for needle in [
         "activeNotesController",
         "activeNotesRequest",
+        "notesPageTitle",
+        "PAGE_TITLE_SUFFIX",
+        "function currentNotesPageHeading",
+        'return "저장한 노트"',
+        'return "작성 중인 노트"',
+        'return "노트 찾기"',
+        "function updateNotesPageHeading",
+        "function hasNotesSearchFilters",
         "setNotesBusy",
         "notesExportTools",
         "exportTools.hidden = notes.length === 0",
@@ -577,6 +586,7 @@ def check_notes_ui() -> None:
         "queryInput.focus();",
         "function updateNotesClearState",
         "function updateNotesFilterSummary",
+        "if (reviewSelect.value && hasNotesSearchFilters())",
         "active-filters-label\">조건</span>",
         "activeFiltersEl.hidden = chips.length === 0",
         "조건 제거",

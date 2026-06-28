@@ -56,6 +56,7 @@ ROUTES = [
     ("concept-search", "/search?q=Genealogie&corpus_id=nietzsche&from=/work/nietzsche/GM%23p-0023.s001&from_label=Zur%20Genealogie%20der%20Moral", True),
     ("search-empty", "/search?q=unlikelyarchivequery0000", True),
     ("notes", "/notes", True),
+    ("notes-saved", "/notes?review_state=reviewed", True),
     ("study", "/study", True),
     ("translations", "/translations", True),
     ("translations-review", "/translations?review_state=generated", True),
@@ -268,7 +269,7 @@ def check_route_markup(route: str, html: str) -> None:
             "notesStatus",
             "aria-busy=\"false\"",
             "notes.css?v=notes28",
-            "notes.js?v=notes40",
+            "notes.js?v=notes41",
             'href="/notes" aria-current="page">노트</a>',
             "filter-panel",
             "노트 찾기</summary>",
@@ -1221,6 +1222,33 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (notesDangerText.includes('More')) {
         throw new Error(`notes danger action should be explicit, not hidden behind More: ${notesDangerText}`);
       }
+    }
+  }
+  if (parsed.pathname === '/notes' && parsed.searchParams.get('review_state') === 'reviewed') {
+    await page.waitForSelector('#notesResults .note-card:not(.notes-skeleton), #notesResults .empty-state', { timeout: 7000 }).catch(() => {});
+    const savedNotesState = await page.evaluate(() => {
+      const activeFilters = document.querySelector('#notesActiveFilters');
+      return {
+        hasNotes: document.querySelectorAll('#notesResults .note-card:not(.notes-skeleton)').length > 0,
+        headingText: document.querySelector('#notesPageTitle')?.textContent.trim() || '',
+        documentTitle: document.title,
+        activeFiltersHidden: Boolean(activeFilters?.hidden),
+        activeFiltersText: activeFilters ? activeFilters.textContent.trim() : '',
+        summaryButtons: Array.from(document.querySelectorAll('#notesResults .notes-summary-filter')).map((node) => node.textContent.trim()),
+        summaryLabels: Array.from(document.querySelectorAll('#notesResults .notes-summary-filter')).map((node) => node.getAttribute('aria-label') || '')
+      };
+    });
+    if (savedNotesState.headingText !== '저장한 노트' || !savedNotesState.documentTitle.startsWith('저장한 노트 /')) {
+      throw new Error(`saved notes page should identify the saved-note reading view: ${JSON.stringify(savedNotesState)}`);
+    }
+    if (!savedNotesState.activeFiltersHidden || savedNotesState.activeFiltersText) {
+      throw new Error(`saved notes page should not repeat the status filter chip: ${JSON.stringify(savedNotesState)}`);
+    }
+    if (savedNotesState.hasNotes && !savedNotesState.summaryButtons.includes('저장한 노트')) {
+      throw new Error(`saved notes page should keep the saved-note summary available: ${JSON.stringify(savedNotesState)}`);
+    }
+    if (savedNotesState.summaryButtons.some((text) => /\d/.test(text)) || savedNotesState.summaryLabels.some((label) => label && !/\d/.test(label))) {
+      throw new Error(`saved notes summary should keep visible text quiet while preserving accessible counts: ${JSON.stringify(savedNotesState)}`);
     }
   }
   if (parsed.pathname === '/study' && !parsed.search) {

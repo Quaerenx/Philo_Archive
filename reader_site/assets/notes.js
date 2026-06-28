@@ -13,6 +13,7 @@ const exportTools = document.getElementById("notesExportTools");
 const exportJson = document.getElementById("exportJson");
 const exportJsonl = document.getElementById("exportJsonl");
 const exportMarkdown = document.getElementById("exportMarkdown");
+const pageTitleEl = document.getElementById("notesPageTitle");
 let lastNotes = [];
 let requestedCorpusId = "";
 let requestedTargetId = "";
@@ -20,6 +21,8 @@ let activeNotesController = null;
 let activeNotesRequest = 0;
 let recentlyChangedNoteId = "";
 let archiveCorpora = [];
+
+const PAGE_TITLE_SUFFIX = "Personal Archive of Literature";
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -100,6 +103,7 @@ function updateUrl() {
   const params = currentParams("json");
   params.delete("format");
   history.replaceState(null, "", params.toString() ? `/notes?${params}` : "/notes");
+  updateNotesPageHeading();
   updateNotesClearState();
 }
 
@@ -119,6 +123,31 @@ function hasActiveFilters() {
   );
 }
 
+function hasNotesSearchFilters() {
+  return Boolean(
+    queryInput.value.trim() ||
+    corpusSelect.value ||
+    workInput.value.trim() ||
+    tagInput.value.trim() ||
+    requestedTargetId
+  );
+}
+
+function currentNotesPageHeading() {
+  if (reviewSelect.value === "reviewed" && !hasNotesSearchFilters()) return "저장한 노트";
+  if (reviewSelect.value === "raw" && !hasNotesSearchFilters()) return "작성 중인 노트";
+  if (hasActiveFilters()) return "노트 찾기";
+  return "노트";
+}
+
+function updateNotesPageHeading() {
+  const heading = currentNotesPageHeading();
+  if (pageTitleEl) {
+    pageTitleEl.textContent = heading;
+  }
+  document.title = `${heading} / ${PAGE_TITLE_SUFFIX}`;
+}
+
 function renderFilterChip(filterName, label, value) {
   return `<button type="button" class="filter-chip" data-filter="${escapeHtml(filterName)}" aria-label="${escapeHtml(label)} 조건 제거">
     <span>${escapeHtml(label)}: ${escapeHtml(value)}</span>
@@ -136,7 +165,7 @@ function updateNotesFilterSummary() {
   if (corpusSelect.value) chips.push(renderFilterChip("corpus", "자료", selectedOptionText(corpusSelect)));
   if (workId) chips.push(renderFilterChip("work", "문서", workId));
   if (tag) chips.push(renderFilterChip("tag", "태그", tag));
-  if (reviewSelect.value) chips.push(renderFilterChip("review", "상태", selectedOptionText(reviewSelect)));
+  if (reviewSelect.value && hasNotesSearchFilters()) chips.push(renderFilterChip("review", "상태", selectedOptionText(reviewSelect)));
   if (requestedTargetId) chips.push(renderFilterChip("target", "대상", requestedTargetId));
   activeFiltersEl.hidden = chips.length === 0;
   activeFiltersEl.classList.toggle("has-filters", chips.length > 0);
@@ -155,7 +184,7 @@ function updateNotesListChrome(count = lastNotes.length) {
   const showTools = count > 0 || hasActiveFilters();
   form.hidden = !showTools;
   if (activeFiltersEl) {
-    activeFiltersEl.hidden = !hasActiveFilters();
+    updateNotesFilterSummary();
   }
 }
 
