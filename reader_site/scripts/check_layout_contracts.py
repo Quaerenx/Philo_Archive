@@ -493,7 +493,7 @@ def check_notes_ui() -> None:
         '<h1 id="notesPageTitle">노트</h1>',
         'href="/notes" aria-current="page">노트</a>',
         "노트 찾기",
-        "노트 찾기</summary>",
+        "범위</summary>",
         '<button id="notesSubmit" type="submit">적용</button>',
         'id="notesSubmit"',
         'id="notesClear"',
@@ -516,6 +516,7 @@ def check_notes_ui() -> None:
         'aria-busy="false"',
     ]:
         require_contains(html, needle, "notes.html")
+    require("노트 찾기</summary>" not in html, "notes.html should avoid repeating the query label as the filter summary")
     require_ordered_markers(
         html,
         [

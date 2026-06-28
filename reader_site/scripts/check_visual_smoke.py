@@ -273,7 +273,7 @@ def check_route_markup(route: str, html: str) -> None:
             "notes.js?v=notes41",
             'href="/notes" aria-current="page">노트</a>',
             "filter-panel",
-            "노트 찾기</summary>",
+            "범위</summary>",
             "export-tools",
             "내보내기</summary>",
         ]:
