@@ -368,7 +368,7 @@ def check_route_markup(route: str, html: str) -> None:
             "목차</summary>",
             "translation-output",
             "reader-sentence",
-            "reader-work.css?v=common136",
+            "reader-work.css?v=common137",
             "reader-work.js?v=common180",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
@@ -1362,12 +1362,23 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       const studyToolsSummaryStyle = studyToolsSummaryNode ? window.getComputedStyle(studyToolsSummaryNode) : null;
       const studyToolsSummaryBox = studyToolsSummaryNode?.getBoundingClientRect();
       const activeTab = document.querySelector('.study-tab.active');
+      const primaryStudyTabs = Array.from(document.querySelectorAll('#study-tab-translation, #study-tab-notes')).map((node) => {
+        const box = node.getBoundingClientRect();
+        return {
+          text: node.textContent.trim(),
+          width: box.width,
+          height: box.height
+        };
+      });
       const inactiveSecondaryTabs = Array.from(document.querySelectorAll('.study-tab-secondary:not(.active)')).map((node) => {
         const style = window.getComputedStyle(node);
+        const box = node.getBoundingClientRect();
         return {
           text: node.textContent.trim(),
           background: style.backgroundColor,
-          border: style.borderTopColor
+          border: style.borderTopColor,
+          width: box.width,
+          height: box.height
         };
       });
       const readingNext = document.querySelector('[data-translation-quick-action="next-sentence"]');
@@ -1456,6 +1467,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         visibleOutputText: outputVisibleText,
         visibleExtraCount: visibleExtras.length,
         activeTab: activeTab ? activeTab.textContent.trim() : '',
+        primaryStudyTabs,
         inactiveSecondaryTabs,
         studyToolsOpen: Boolean(studyTools?.open),
         studyToolsBorderTopColor: studyToolsStyle?.borderTopColor || '',
@@ -1542,6 +1554,14 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (state.activeTab !== '번역') throw new Error(`selected work route did not keep Translation tab active: ${JSON.stringify(state)}`);
     if (state.inactiveSecondaryTabs.length !== 2 || state.inactiveSecondaryTabs.some((tab) => tab.background !== 'rgba(0, 0, 0, 0)' || tab.border !== 'rgba(0, 0, 0, 0)')) {
       throw new Error(`secondary study tabs should stay visually quieter than translation and notes: ${JSON.stringify(state)}`);
+    }
+    if (state.isMobile) {
+      const primaryMinWidth = Math.min(...state.primaryStudyTabs.map((tab) => tab.width).filter(Boolean));
+      const secondaryMaxWidth = Math.max(...state.inactiveSecondaryTabs.map((tab) => tab.width).filter(Boolean));
+      const secondaryMaxHeight = Math.max(...state.inactiveSecondaryTabs.map((tab) => tab.height).filter(Boolean));
+      if (!primaryMinWidth || !secondaryMaxWidth || secondaryMaxWidth >= primaryMinWidth * 0.72 || secondaryMaxHeight > 34) {
+        throw new Error(`mobile secondary study tabs should stay compact beside primary reading tabs: ${JSON.stringify(state)}`);
+      }
     }
     if (state.studyToolsOpen) throw new Error(`study tools should stay collapsed in default reading mode: ${JSON.stringify(state)}`);
     if (state.studyToolsSummary !== '옵션') throw new Error(`study tools summary should stay concise and clear: ${JSON.stringify(state)}`);

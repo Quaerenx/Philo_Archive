@@ -231,7 +231,7 @@ h1 {
 
 .study-tabs {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) repeat(2, minmax(58px, 0.78fr));
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1.05fr) repeat(2, minmax(44px, 0.5fr));
   gap: 4px;
   margin-bottom: 8px;
 }
@@ -2981,7 +2981,7 @@ h1 {
     position: sticky;
     top: 46px;
     z-index: 2;
-    grid-template-columns: minmax(104px, 1.35fr) minmax(80px, 1fr) repeat(2, minmax(68px, 0.78fr));
+    grid-template-columns: minmax(112px, 1.45fr) minmax(88px, 1.1fr) repeat(2, minmax(48px, 0.48fr));
     gap: 6px;
     margin: 0 -2px 10px;
     padding: 0 2px 10px;
@@ -2999,6 +2999,12 @@ h1 {
   .study-tab {
     min-height: 38px;
     padding: 5px 4px 6px;
+  }
+
+  .study-tab-secondary:not(.active) {
+    min-height: 30px;
+    align-self: center;
+    padding: 3px 2px;
   }
 
   .study-tab.active {
