@@ -693,7 +693,7 @@ def check_translations_ui() -> None:
     for needle in [
         "/assets/notes.css?v=notes28",
         "/assets/translations.css?v=trans35",
-        "/assets/translations.js?v=trans86",
+        "/assets/translations.js?v=trans87",
         "<title>번역 목록 / Personal Archive of Literature</title>",
         '<h1 id="translationsPageTitle">번역 목록</h1>',
         'aria-label="번역 이동"',
@@ -790,6 +790,7 @@ def check_translations_ui() -> None:
         "const detail = `${label} ${Number(count || 0).toLocaleString()}개`",
         'aria-label="${escapeHtml(detail)}"',
         "번역 상태 요약",
+        'summaryButton("generated", "검토 대기", counts.generated)',
         "검토할 번역",
         "저장한 번역",
         "제외한 번역",

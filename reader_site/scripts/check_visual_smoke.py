@@ -286,7 +286,7 @@ def check_route_markup(route: str, html: str) -> None:
             "aria-busy=\"false\"",
             "notes.css?v=notes28",
             "translations.css?v=trans35",
-            "translations.js?v=trans86",
+            "translations.js?v=trans87",
             'href="/translations" aria-current="page">번역</a>',
             "번역 찾기",
             "translationsListTools",
@@ -1441,6 +1441,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (translationsPageState.summaryButtons.some((text) => /\d/.test(text))) {
         throw new Error(`translations status summary should hide visible counts from the reading flow: ${JSON.stringify(translationsPageState)}`);
       }
+      if (translationsPageState.summaryButtons.includes('검토할 번역')) {
+        throw new Error(`default translations summary should use compact review wording: ${JSON.stringify(translationsPageState)}`);
+      }
       if (translationsPageState.summaryLabels.some((label) => label && !/\d/.test(label))) {
         throw new Error(`translations status summary should keep counts in accessible labels: ${JSON.stringify(translationsPageState)}`);
       }
@@ -1800,7 +1803,15 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       await page.click('#studyPanelToggle');
       await page.waitForFunction(() => document.querySelector('.study-page')?.classList.contains('is-expanded'), null, { timeout: 3000 });
-      await page.click('#studyPanelScrim');
+      const scrimClickPoint = await page.evaluate(() => {
+        const studyPage = document.querySelector('.study-page');
+        const studyPageBox = studyPage?.getBoundingClientRect();
+        return {
+          x: Math.max(8, Math.floor(window.innerWidth / 2)),
+          y: Math.max(8, Math.min((studyPageBox?.top || window.innerHeight) - 18, window.innerHeight - 8))
+        };
+      });
+      await page.mouse.click(scrimClickPoint.x, scrimClickPoint.y);
       await page.waitForFunction(() => !document.querySelector('.study-page')?.classList.contains('is-expanded'), null, { timeout: 3000 });
       await page.waitForTimeout(350);
       const scrimCollapsedStudyState = await page.evaluate(() => {

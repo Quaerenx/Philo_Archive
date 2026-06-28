@@ -406,7 +406,7 @@ function renderSummary(records) {
   if (visibleSummaryStates(counts).length <= 1) return "";
   const buttons = [
     summaryButton("all", "전체", counts.total),
-    counts.generated ? summaryButton("generated", "검토할 번역", counts.generated) : "",
+    counts.generated ? summaryButton("generated", "검토 대기", counts.generated) : "",
     counts.reviewed ? summaryButton("reviewed", "저장한 번역", counts.reviewed) : "",
     counts.rejected ? summaryButton("rejected", "제외한 번역", counts.rejected) : ""
   ].filter(Boolean).join("");
