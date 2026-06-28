@@ -11,9 +11,15 @@
   --archive-link-color: #ff0000;
   --archive-muted-color: #555555;
   --archive-font: Verdana, Arial, Helvetica, sans-serif;
-  --header-strip-image: url("/assets/header-strip.svg?v=nietzsche-portrait");
-  --header-portrait-image: url("/assets/nietzsche-header-left.png?v=1882");
+  --header-strip-image: url("/assets/header-strip.svg?v=archive");
+  --header-portrait-image: none;
   --header-portrait-width: 440px;
   --header-portrait-height: 128px;
   --header-spacer-height: 160px;
+}
+
+body.category-nietzsche,
+body.nietzsche-work {
+  --header-strip-image: url("/assets/header-strip.svg?v=nietzsche-portrait");
+  --header-portrait-image: url("/assets/nietzsche-header-left.png?v=1882");
 }

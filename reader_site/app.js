@@ -50,6 +50,8 @@ const CATEGORY_SUBTITLES = {
   wittgenstein: "노트, 단상, 철학적 탐구",
 };
 
+const CATEGORY_BODY_CLASSES = Object.keys(ROOT_LINK_LABELS).map((id) => `category-${id}`);
+
 const el = {
   archiveLinks: document.querySelector("#archiveLinks"),
   pageSubtitle: document.querySelector("#pageSubtitle"),
@@ -109,6 +111,13 @@ function recentWorkMarkup() {
 function currentCategoryId() {
   const match = window.location.pathname.match(/^\/category\/([^/]+)\/?$/);
   return match ? decodeURIComponent(match[1]) : "";
+}
+
+function syncCategoryBodyClass(categoryId = "") {
+  document.body.classList.remove(...CATEGORY_BODY_CLASSES);
+  if (CATEGORY_BODY_CLASSES.includes(`category-${categoryId}`)) {
+    document.body.classList.add(`category-${categoryId}`);
+  }
 }
 
 function filteredSections(corpus) {
@@ -210,6 +219,7 @@ function renderArchive() {
     return;
   }
 
+  syncCategoryBodyClass("");
   renderShell("Personal Archive of Literature", "원전 / 저자 / 전통");
   const visibleCorpora = state.archive.corpora;
 
@@ -232,6 +242,7 @@ function renderArchive() {
 }
 
 function renderCategory(categoryId) {
+  syncCategoryBodyClass(categoryId);
   const corpus = state.archive.corpora.find((item) => item.id === categoryId);
   if (!corpus) {
     renderShell("찾을 수 없음", "알 수 없는 카테고리");

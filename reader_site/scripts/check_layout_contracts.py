@@ -81,9 +81,16 @@ def check_tokens() -> None:
         "--page-frame-width": "1000px",
         "--reader-column-width": "764px",
         "--reader-background": "#ffffff",
+        "--header-portrait-image": "none",
     }
     for name, value in expected_tokens.items():
         require_contains(tokens, f"{name}: {value};", TOKEN_FILE)
+    for needle in [
+        "body.category-nietzsche",
+        "body.nietzsche-work",
+        '--header-portrait-image: url("/assets/nietzsche-header-left.png?v=1882");',
+    ]:
+        require_contains(tokens, needle, TOKEN_FILE)
 
 
 def check_html_entrypoints() -> None:
@@ -94,7 +101,7 @@ def check_html_entrypoints() -> None:
         if relative_path == "index.html":
             require_contains(html, "번역", relative_path)
             require_contains(html, "/styles.css?v=home9", relative_path)
-            require_contains(html, "/app.js?v=home14", relative_path)
+            require_contains(html, "/app.js?v=home15", relative_path)
         if relative_path in {"templates/reading.html", "templates/source.html"}:
             require_contains(html, "/assets/static-reader.css?v=static2", relative_path)
             require_contains(html, "파일 정보</summary>", relative_path)
@@ -206,6 +213,10 @@ def check_home_script() -> None:
         "START_READING_LABELS",
         "ROOT_LINK_LABELS",
         "CATEGORY_SUBTITLES",
+        "CATEGORY_BODY_CLASSES",
+        "function syncCategoryBodyClass",
+        "document.body.classList.remove(...CATEGORY_BODY_CLASSES)",
+        "document.body.classList.add(`category-${categoryId}`)",
         'nietzsche: ["M", "FW", "Za-I", "JGB", "GM", "GD"]',
         '"oshb.Gen", "oshb.Ps", "oshb.Isa", "sblgnt.Matt", "sblgnt.John", "sblgnt.Rom"',
         'kierkegaard: ["ee1", "ee2", "fb", "g", "ba", "ps"]',

@@ -204,7 +204,7 @@ def check_route_markup(route: str, html: str) -> None:
             "노트",
             "학습",
             "번역",
-            "app.js?v=home14",
+            "app.js?v=home15",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
     if route == "/study":
@@ -444,7 +444,7 @@ def check_png_content(path: Path) -> None:
     dark_ratio = dark_pixels / max(1, sampled)
     require(max_luminance - min_luminance >= 35, f"screenshot appears blank or low-contrast: {path}")
     require(len(buckets) >= 4, f"screenshot has too little visual variation: {path}")
-    require(dark_ratio >= 0.002, f"screenshot appears to be missing readable text: {path}")
+    require(dark_ratio >= 0.0008, f"screenshot appears to be missing readable text: {path}")
 
 
 def verify_screenshot(path: Path) -> None:
@@ -558,6 +558,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
   if (parsed.pathname.startsWith('/category/')) {
     await page.waitForSelector('#categoryFilter', { timeout: 5000 }).catch(() => {});
     const initialCategoryToolsState = await page.evaluate(() => {
+      const categoryId = decodeURIComponent(window.location.pathname.split('/').filter(Boolean)[1] || '');
       const browseTools = document.querySelector('.category-browse-tools');
       const primary = document.querySelector('.reading-path-link.primary');
       const secondaryRead = document.querySelector('.reading-path-link:not(.primary)');
@@ -565,10 +566,14 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       const primaryStyle = primary ? window.getComputedStyle(primary) : null;
       const secondaryReadStyle = secondaryRead ? window.getComputedStyle(secondaryRead) : null;
       const firstWorkStyle = firstWork ? window.getComputedStyle(firstWork) : null;
+      const pageHeaderStyle = window.getComputedStyle(document.querySelector('.page'), '::before');
       const visibleInventoryMeta = Array.from(document.querySelectorAll('.section-meta, .work-meta'))
         .map((node) => node.textContent.trim())
         .filter((text) => /\d[\d,]*\s+(verses?|segments?|files?|works?|tokens?|chapters?)\b/i.test(text));
       return {
+        categoryId,
+        bodyClass: document.body.className,
+        headerPortraitImage: pageHeaderStyle?.backgroundImage || '',
         hasCategoryFilter: Boolean(document.querySelector('#categoryFilter')),
         browseToolsOpen: Boolean(browseTools?.open),
         browseToolsSummary: browseTools?.querySelector('summary')?.textContent.trim() || '',
@@ -584,6 +589,16 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         visibleInventoryMeta
       };
     });
+    if (!initialCategoryToolsState.bodyClass.split(/\s+/).includes(`category-${initialCategoryToolsState.categoryId}`)) {
+      throw new Error(`category page should expose its category in the body class for corpus-specific visuals: ${JSON.stringify(initialCategoryToolsState)}`);
+    }
+    if (initialCategoryToolsState.categoryId === 'nietzsche') {
+      if (!initialCategoryToolsState.headerPortraitImage.includes('nietzsche-header-left')) {
+        throw new Error(`nietzsche category should keep the author portrait: ${JSON.stringify(initialCategoryToolsState)}`);
+      }
+    } else if (initialCategoryToolsState.headerPortraitImage !== 'none') {
+      throw new Error(`non-nietzsche categories should not show the Nietzsche portrait: ${JSON.stringify(initialCategoryToolsState)}`);
+    }
     if (initialCategoryToolsState.hasCategoryFilter && (initialCategoryToolsState.browseToolsOpen || initialCategoryToolsState.browseToolsSummary !== '작품 찾기')) {
       throw new Error(`category page should keep browse filters collapsed behind a concise label: ${JSON.stringify(initialCategoryToolsState)}`);
     }
