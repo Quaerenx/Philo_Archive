@@ -531,10 +531,22 @@ function renderRecord(record, options) {
         <span class="review-badge" aria-label="검토 상태: ${escapeHtml(reviewLabel)}">${escapeHtml(reviewLabel)}</span>
       </div>`
     : "";
+  const resetAction = reviewState !== "generated"
+    ? '<button type="button" data-review-state="generated" aria-keyshortcuts="G" title="검토할 번역으로 되돌리기" aria-label="검토할 번역으로 되돌리기">검토로 되돌리기</button>'
+    : "";
   const rejectAction = reviewState !== "rejected"
-    ? `<details class="translation-more-actions">
+    ? `<details class="translation-danger-actions">
         <summary>제외</summary>
         <button type="button" data-review-state="rejected" aria-keyshortcuts="X" title="이 번역 제외하기" aria-label="이 번역 제외하기">제외하기</button>
+      </details>`
+    : "";
+  const moreActions = [resetAction, rejectAction].filter(Boolean).join("");
+  const moreAction = moreActions
+    ? `<details class="translation-more-actions">
+        <summary>더보기</summary>
+        <div class="translation-more-actions-body">
+          ${moreActions}
+        </div>
       </details>`
     : "";
   const sourceAction = targetUrl
@@ -545,10 +557,7 @@ function renderRecord(record, options) {
       ? '<button type="button" class="primary-review-action" data-review-state="reviewed" aria-keyshortcuts="R" title="저장한 번역으로 표시" aria-label="저장한 번역으로 표시">저장</button>'
       : "",
     sourceAction,
-    reviewState !== "generated"
-      ? '<button type="button" data-review-state="generated" aria-keyshortcuts="G" title="검토할 번역으로 되돌리기" aria-label="검토할 번역으로 되돌리기">검토로 되돌리기</button>'
-      : "",
-    rejectAction
+    moreAction
   ].filter(Boolean).join("") : "";
   return `<article class="translation-record-card${isRecent ? " is-recent" : ""}" tabindex="-1" data-record-id="${escapeHtml(record.id)}" data-corpus-id="${escapeHtml(record.corpus_id)}" data-review-state="${escapeHtml(reviewState)}">
     <header class="translation-record-heading">

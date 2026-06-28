@@ -567,8 +567,8 @@ h1 {
   margin: 0;
 }
 
-.note-more-actions summary,
-.note-danger-actions summary {
+.note-more-actions > summary,
+.note-danger-actions > summary {
   display: inline-flex;
   min-height: 28px;
   align-items: center;
@@ -582,20 +582,20 @@ h1 {
   list-style: none;
 }
 
-.note-more-actions summary::-webkit-details-marker,
-.note-danger-actions summary::-webkit-details-marker {
+.note-more-actions > summary::-webkit-details-marker,
+.note-danger-actions > summary::-webkit-details-marker {
   display: none;
 }
 
-.note-more-actions summary::after,
-.note-danger-actions summary::after {
+.note-more-actions > summary::after,
+.note-danger-actions > summary::after {
   margin-left: 5px;
   color: #777;
   content: "+";
 }
 
-.note-more-actions[open] summary::after,
-.note-danger-actions[open] summary::after {
+.note-more-actions[open] > summary::after,
+.note-danger-actions[open] > summary::after {
   content: "-";
 }
 

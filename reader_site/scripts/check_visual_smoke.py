@@ -258,7 +258,7 @@ def check_route_markup(route: str, html: str) -> None:
             "notesActiveFilters",
             "notesStatus",
             "aria-busy=\"false\"",
-            "notes.css?v=notes27",
+            "notes.css?v=notes28",
             "notes.js?v=notes38",
             'href="/notes" aria-current="page">노트</a>',
             "filter-panel",
@@ -276,9 +276,9 @@ def check_route_markup(route: str, html: str) -> None:
             "translationsResults",
             "translationsReviewQueue",
             "aria-busy=\"false\"",
-            "notes.css?v=notes27",
-            "translations.css?v=trans34",
-            "translations.js?v=trans81",
+            "notes.css?v=notes28",
+            "translations.css?v=trans35",
+            "translations.js?v=trans82",
             'href="/translations" aria-current="page">번역</a>',
             "번역 찾기",
             "translationsListTools",
@@ -1881,8 +1881,15 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       const reviewTargetState = await page.evaluate(() => {
         const card = document.querySelector('#translationsResults .translation-record-card.is-review-target');
         const cardStyle = card ? window.getComputedStyle(card) : null;
-        const reject = card?.querySelector('.translation-more-actions');
-        const rejectSummary = reject?.querySelector('summary');
+        const more = card?.querySelector('.translation-more-actions');
+        const moreSummary = more?.querySelector(':scope > summary');
+        const moreSummaryStyle = moreSummary ? window.getComputedStyle(moreSummary) : null;
+        const moreSummaryBox = moreSummary?.getBoundingClientRect();
+        const wasMoreOpen = Boolean(more?.open);
+        if (more) more.open = true;
+        const reject = more?.querySelector('.translation-danger-actions');
+        const wasRejectOpen = Boolean(reject?.open);
+        const rejectSummary = reject?.querySelector(':scope > summary');
         const rejectButton = reject?.querySelector('button[data-review-state="rejected"]');
         const rejectSummaryStyle = rejectSummary ? window.getComputedStyle(rejectSummary) : null;
         const save = card?.querySelector('.primary-review-action');
@@ -1893,6 +1900,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         const footerBox = footer?.getBoundingClientRect();
         const footerStyle = footer ? window.getComputedStyle(footer) : null;
         const rejectSummaryBox = rejectSummary?.getBoundingClientRect();
+        const immediateActionText = Array.from(card?.querySelectorAll('.translation-actions > button, .translation-actions > a, .translation-actions > details > summary') || [])
+          .map((node) => node.textContent.trim())
+          .join(' ');
         const nonTargetFooter = Array.from(document.querySelectorAll('#translationsResults .translation-record-card[data-review-state="generated"]:not(.is-review-target) .translation-record-footer'))
           .find((node) => node.querySelector('.primary-review-action'));
         const source = card?.querySelector('.translation-source');
@@ -1901,8 +1911,17 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         const commentarySummary = commentary?.querySelector('summary');
         const commentarySummaryBox = commentarySummary?.getBoundingClientRect();
         const openCommentaries = document.querySelectorAll('#translationsResults .translation-commentary[open]').length;
-        return {
+        const state = {
           hasReviewTarget: Boolean(card),
+          immediateActionText,
+          moreText: more?.textContent.trim() || '',
+          moreSummaryText: moreSummary?.textContent.trim() || '',
+          moreDisplay: more ? window.getComputedStyle(more).display : '',
+          moreOpen: Boolean(more?.open),
+          moreSummaryBorderColor: moreSummaryStyle?.borderColor || '',
+          moreSummaryBackground: moreSummaryStyle?.backgroundColor || '',
+          moreSummaryWidth: moreSummaryBox?.width || 0,
+          moreSummaryHeight: moreSummaryBox?.height || 0,
           rejectText: reject?.textContent.trim() || '',
           rejectSummaryText: rejectSummary?.textContent.trim() || '',
           rejectButtonText: rejectButton?.textContent.trim() || '',
@@ -1942,15 +1961,27 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
           openCommentaries,
           statusText: document.querySelector('#translationsStatus')?.textContent.trim() || ''
         };
+        if (reject) reject.open = wasRejectOpen;
+        if (more) more.open = wasMoreOpen;
+        return state;
       });
-      if (!reviewTargetState.hasReviewTarget || !reviewTargetState.rejectText.includes('제외') || reviewTargetState.rejectDisplay === 'none') {
-        throw new Error(`review queue should expose the discard action on the active review card: ${JSON.stringify(reviewTargetState)}`);
+      if (!reviewTargetState.hasReviewTarget || !reviewTargetState.immediateActionText.includes('저장') || !reviewTargetState.immediateActionText.includes('원문 열기') || !reviewTargetState.immediateActionText.includes('더보기')) {
+        throw new Error(`review queue should expose save, source, and more as immediate actions: ${JSON.stringify(reviewTargetState)}`);
       }
-      if (reviewTargetState.rejectSummaryBorderColor !== 'rgba(0, 0, 0, 0)' || reviewTargetState.rejectSummaryBackground !== 'rgba(0, 0, 0, 0)') {
-        throw new Error(`review queue discard action should stay visually secondary: ${JSON.stringify(reviewTargetState)}`);
+      if (/제외하기|삭제|검토로 되돌리기/.test(reviewTargetState.immediateActionText)) {
+        throw new Error(`review queue should keep secondary review actions behind 더보기: ${JSON.stringify(reviewTargetState)}`);
+      }
+      if (!reviewTargetState.moreOpen || reviewTargetState.moreSummaryText !== '더보기' || reviewTargetState.moreDisplay === 'none') {
+        throw new Error(`review queue should open secondary actions from 더보기 on the active card: ${JSON.stringify(reviewTargetState)}`);
+      }
+      if (reviewTargetState.moreSummaryBorderColor !== 'rgba(0, 0, 0, 0)' || reviewTargetState.moreSummaryBackground !== 'rgba(0, 0, 0, 0)') {
+        throw new Error(`review queue More action should stay visually secondary: ${JSON.stringify(reviewTargetState)}`);
+      }
+      if (!reviewTargetState.rejectText.includes('제외') || reviewTargetState.rejectDisplay === 'none') {
+        throw new Error(`review queue should expose the discard action inside More on the active review card: ${JSON.stringify(reviewTargetState)}`);
       }
       if (reviewTargetState.rejectSummaryText !== '제외') {
-        throw new Error(`review queue discard action should stay concise before confirmation: ${JSON.stringify(reviewTargetState)}`);
+        throw new Error(`review queue discard action should stay concise inside More: ${JSON.stringify(reviewTargetState)}`);
       }
       if (reviewTargetState.saveText !== '저장' || reviewTargetState.saveLabel !== '저장한 번역으로 표시' || reviewTargetState.saveBorderColor !== 'rgb(176, 0, 0)') {
         throw new Error(`review queue save should use the same red primary action style: ${JSON.stringify(reviewTargetState)}`);
@@ -1965,10 +1996,10 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         if (reviewTargetState.reviewFooterDisplay !== 'block') {
           throw new Error(`mobile review queue footer should let actions use the full card width: ${JSON.stringify(reviewTargetState)}`);
         }
-        if (reviewTargetState.saveHeight < 34 || reviewTargetState.sourceActionHeight < 34 || reviewTargetState.rejectSummaryHeight < 34) {
+        if (reviewTargetState.saveHeight < 34 || reviewTargetState.sourceActionHeight < 34 || reviewTargetState.moreSummaryHeight < 34 || reviewTargetState.rejectSummaryHeight < 34) {
           throw new Error(`mobile review queue actions should be touch-friendly: ${JSON.stringify(reviewTargetState)}`);
         }
-        if (reviewTargetState.footerWidth > 0 && (reviewTargetState.saveWidth < reviewTargetState.footerWidth * 0.42 || reviewTargetState.sourceActionWidth < reviewTargetState.footerWidth * 0.42 || reviewTargetState.rejectSummaryWidth < reviewTargetState.footerWidth * 0.42)) {
+        if (reviewTargetState.footerWidth > 0 && (reviewTargetState.saveWidth < reviewTargetState.footerWidth * 0.42 || reviewTargetState.sourceActionWidth < reviewTargetState.footerWidth * 0.42 || reviewTargetState.moreSummaryWidth < reviewTargetState.footerWidth * 0.42 || reviewTargetState.rejectSummaryWidth < reviewTargetState.footerWidth * 0.42)) {
           throw new Error(`mobile review queue actions should occupy the card action row: ${JSON.stringify(reviewTargetState)}`);
         }
       }

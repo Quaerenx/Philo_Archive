@@ -410,11 +410,13 @@
   animation: archive-spin 850ms linear infinite;
 }
 
-.translation-more-actions {
+.translation-more-actions,
+.translation-danger-actions {
   margin: 0;
 }
 
-.translation-more-actions summary {
+.translation-more-actions > summary,
+.translation-danger-actions > summary {
   display: inline-flex;
   min-height: 26px;
   align-items: center;
@@ -428,28 +430,45 @@
   list-style: none;
 }
 
-.translation-more-actions summary:hover,
-.translation-more-actions summary:focus-visible {
+.translation-more-actions > summary:hover,
+.translation-more-actions > summary:focus-visible,
+.translation-danger-actions > summary:hover,
+.translation-danger-actions > summary:focus-visible {
   color: #7b2f2f;
   background: #fffafa;
   border-color: #ead0d0;
 }
 
-.translation-more-actions summary::-webkit-details-marker {
+.translation-more-actions > summary::-webkit-details-marker,
+.translation-danger-actions > summary::-webkit-details-marker {
   display: none;
 }
 
-.translation-more-actions summary::after {
+.translation-more-actions > summary::after,
+.translation-danger-actions > summary::after {
   margin-left: 5px;
   color: #999;
   content: "+";
 }
 
-.translation-more-actions[open] summary::after {
+.translation-more-actions[open] > summary::after,
+.translation-danger-actions[open] > summary::after {
   content: "-";
 }
 
+.translation-more-actions-body {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+
 .translation-more-actions button {
+  color: #333;
+}
+
+.translation-danger-actions button {
   color: #7b2f2f;
   border-color: #d7a0a0;
 }
@@ -545,6 +564,8 @@
   .translation-actions button,
   .translation-more-actions,
   .translation-more-actions summary,
+  .translation-danger-actions,
+  .translation-danger-actions summary,
   .translation-review-queue {
     width: 100%;
     min-height: 34px;
