@@ -10,6 +10,13 @@ from pathlib import Path
 SITE = Path(__file__).resolve().parents[1]
 JSONL = SITE / "data" / "search_index.jsonl"
 OUTPUT = SITE / "data" / "search_index.sqlite"
+SEARCH_AUX_INDEXES = {
+    "idx_search_corpus",
+    "idx_search_work",
+    "idx_search_variant",
+    "idx_search_corpus_work_segment",
+    "idx_search_corpus_work_variant_segment",
+}
 
 
 def normalize_search_text(value: str) -> str:
@@ -111,6 +118,13 @@ def build_database() -> int:
         connection.execute("CREATE INDEX idx_search_corpus ON search_segments(corpus_id)")
         connection.execute("CREATE INDEX idx_search_work ON search_segments(corpus_id, work_id)")
         connection.execute("CREATE INDEX idx_search_variant ON search_segments(corpus_id, work_id, variant_id)")
+        connection.execute("CREATE INDEX idx_search_corpus_work_segment ON search_segments(corpus_id, work_id, segment_id)")
+        connection.execute(
+            """
+            CREATE INDEX idx_search_corpus_work_variant_segment
+            ON search_segments(corpus_id, work_id, variant_id, segment_id)
+            """
+        )
         connection.execute(
             """
             INSERT INTO search_segments_fts(rowid, title, label, search_text)
@@ -138,9 +152,18 @@ def main() -> None:
                     "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'search_segments_fts'"
                 ).fetchone()
             )
+            indexes = {
+                str(row[0])
+                for row in connection.execute(
+                    "SELECT name FROM sqlite_master WHERE type = 'index' AND tbl_name = 'search_segments'"
+                )
+            }
         finally:
             connection.close()
-        print(f"search sqlite db exists ({count} records, fts5={has_fts})")
+        missing_indexes = sorted(SEARCH_AUX_INDEXES - indexes)
+        if missing_indexes:
+            raise SystemExit("search sqlite db missing indexes: " + ", ".join(missing_indexes))
+        print(f"search sqlite db exists ({count} records, fts5={has_fts}, indexes={len(indexes)})")
         return
     count = build_database()
     print(f"wrote {OUTPUT} ({count} records)")

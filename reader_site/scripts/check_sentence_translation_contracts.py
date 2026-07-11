@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import tempfile
+import threading
 from pathlib import Path
 
 
@@ -13,6 +15,14 @@ sys.path.insert(0, str(SITE))
 from sentence_units import render_sentence_spans, sentence_units  # noqa: E402
 from services.sentence_targets import sentence_target_bundle  # noqa: E402
 from services import sentence_translations as sentence_translation_service  # noqa: E402
+from services.gemma_response_cache import (  # noqa: E402
+    CACHE_DB_ENV,
+    CACHE_SCHEMA_VERSION as GEMMA_CACHE_SCHEMA_VERSION,
+    build_cache_key,
+    cache_db_path,
+)
+from services import gemma_runtime as gemma_runtime_service  # noqa: E402
+from services.gemma_runtime import GemmaRuntimeBusy, GemmaRuntimeTimeout  # noqa: E402
 from services.sentence_translations import (  # noqa: E402
     PROMPT_TEMPLATE_ID,
     build_record,
@@ -22,6 +32,8 @@ from services.sentence_translations import (  # noqa: E402
     normalized_model_output,
     public_record_id,
     public_translation_record,
+    sentence_gemma_cache_identity,
+    sentence_translation_from_payload,
     sentence_translations_for_export,
     sentence_translations_summary_from_query,
     update_sentence_translation_review,
@@ -95,6 +107,8 @@ def check_prompt_and_record(target: dict) -> None:
     )
     record = build_record(target, prompt_bundle, output)
     require(record["schema_version"] == 2, "new sentence translation records should use schema v2")
+    require(record["gemma_response_cache_schema_version"] == GEMMA_CACHE_SCHEMA_VERSION, "record cache schema missing")
+    require(len(record["gemma_response_cache_key"]) == 64, "record cache key must be a SHA-256 hex digest")
     public_record = public_translation_record(record)
     require("literal_gloss" not in public_record, "public sentence translation record should hide literal_gloss")
     require("key_terms" not in public_record, "public sentence translation record should hide key_terms")
@@ -225,11 +239,151 @@ def check_cache_and_review_compatibility(target: dict) -> None:
             sentence_translation_service.AI_DIR = original_ai_dir
 
 
+def check_gemma_response_cache_contract(target: dict) -> None:
+    prompt_bundle = build_sentence_prompt_bundle(target)
+    identity = sentence_gemma_cache_identity(prompt_bundle)
+    same_key = build_cache_key(
+        namespace=identity["namespace"],
+        prompt_version=identity["prompt_version"],
+        model_name=identity["model_name"],
+        input_sha256=identity["input_sha256"],
+        options=dict(reversed(list(identity["options"].items()))),
+    )
+    require(identity["cache_key"] == same_key, "Gemma response cache key should be stable across option order")
+    require(identity["schema_version"] == GEMMA_CACHE_SCHEMA_VERSION, "Gemma response cache schema version mismatch")
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_root = Path(temp_dir)
+        original_ai_dir = sentence_translation_service.AI_DIR
+        original_target_builder = sentence_translation_service.sentence_target_bundle
+        original_llama = sentence_translation_service.call_llama_server
+        original_cache_db = os.environ.get(CACHE_DB_ENV)
+        call_count = {"count": 0}
+
+        def fake_sentence_target_bundle(*_args):
+            return dict(target)
+
+        def fake_llama(_prompt_bundle: dict, request_id: str | None = None) -> dict:
+            call_count["count"] += 1
+            require(bool(request_id), "runtime cache miss should assign a Gemma request id")
+            return {
+                "translation": f"cached translation {call_count['count']}",
+                "commentary": "cached commentary",
+                "cautions": [],
+            }
+
+        sentence_translation_service.AI_DIR = temp_root / "ai"
+        sentence_translation_service.sentence_target_bundle = fake_sentence_target_bundle
+        sentence_translation_service.call_llama_server = fake_llama
+        os.environ[CACHE_DB_ENV] = str(temp_root / "runtime.local" / "gemma_response_cache.sqlite")
+        try:
+            payload = {
+                "corpus_id": target["corpus_id"],
+                "work_id": target["work_id"],
+                "variant_id": target.get("variant_id", ""),
+                "segment_id": target["segment_id"],
+                "sentence_id": target["sentence_id"],
+            }
+            first = sentence_translation_from_payload(payload)
+            require(first["cached"] is False, "first sentence translation should be a cache miss")
+            require(first["metadata"]["cache"]["hit"] is False, "first response cache metadata should mark miss")
+            require(first["metadata"]["cache"]["source"] == "gemma_runtime", "first response should come from runtime")
+            require(first["metadata"]["gemma_request"]["request_id"].startswith("gemma-"), "runtime miss should return request id metadata")
+            require(first["metadata"]["gemma_request"]["status"] == "completed", "runtime miss should mark request completed")
+            require(call_count["count"] == 1, "first request should call Gemma once")
+
+            ai_path = sentence_translation_service.ai_record_path(target["corpus_id"])
+            ai_path.unlink()
+            second = sentence_translation_from_payload(payload)
+            require(second["cached"] is True, "second request should be served from Gemma response cache")
+            require(second["metadata"]["cache"]["hit"] is True, "second response cache metadata should mark hit")
+            require(
+                second["metadata"]["cache"]["source"] == "gemma_response_cache",
+                "second response should come from Gemma response cache",
+            )
+            require(call_count["count"] == 1, "Gemma response cache hit should not call Gemma again")
+            require(second["record"]["translation"] == "cached translation 1", "cached response payload mismatch")
+
+            ai_path.unlink()
+            cache_path = cache_db_path()
+            cache_path.write_bytes(b"not a sqlite database")
+            third = sentence_translation_from_payload(payload)
+            require(third["cached"] is False, "corrupt cache should fall back to runtime miss")
+            require(call_count["count"] == 2, "corrupt cache should not prevent runtime regeneration")
+        finally:
+            sentence_translation_service.AI_DIR = original_ai_dir
+            sentence_translation_service.sentence_target_bundle = original_target_builder
+            sentence_translation_service.call_llama_server = original_llama
+            if original_cache_db is None:
+                os.environ.pop(CACHE_DB_ENV, None)
+            else:
+                os.environ[CACHE_DB_ENV] = original_cache_db
+
+
+def check_gemma_runtime_limits_contract() -> None:
+    original_queue_timeout = os.environ.get(gemma_runtime_service.QUEUE_TIMEOUT_SECONDS_ENV)
+    original_request_timeout = os.environ.get(gemma_runtime_service.REQUEST_TIMEOUT_SECONDS_ENV)
+    started = threading.Event()
+    release = threading.Event()
+    results: list[str] = []
+    errors: list[Exception] = []
+
+    def long_operation(_timeout_seconds: float) -> str:
+        started.set()
+        release.wait(2.0)
+        return "held"
+
+    def run_holder() -> None:
+        try:
+            results.append(gemma_runtime_service.run_gemma_operation(long_operation, request_id="gemma-test-holder"))
+        except Exception as exc:
+            errors.append(exc)
+
+    os.environ[gemma_runtime_service.QUEUE_TIMEOUT_SECONDS_ENV] = "0.05"
+    os.environ[gemma_runtime_service.REQUEST_TIMEOUT_SECONDS_ENV] = "1"
+    gemma_runtime_service.reset_gemma_runtime_for_tests(max_concurrency=1)
+    thread = threading.Thread(target=run_holder)
+    thread.start()
+    try:
+        require(started.wait(1.0), "Gemma runtime limit test holder did not start")
+        try:
+            gemma_runtime_service.run_gemma_operation(lambda _timeout_seconds: "late", request_id="gemma-test-busy")
+        except GemmaRuntimeBusy as exc:
+            metadata = exc.response_metadata()["gemma_request"]
+            require(exc.status_code == 429, "busy Gemma request should map to HTTP 429")
+            require(metadata["request_id"] == "gemma-test-busy", "busy response should preserve request id")
+            require(metadata["status"] == "busy", "busy response should expose request status")
+        else:
+            require(False, "concurrent Gemma request should fail fast when the runtime queue is full")
+
+        release.set()
+        thread.join(2.0)
+        require(not thread.is_alive(), "Gemma runtime limit test holder did not finish")
+        require(not errors, f"Gemma runtime holder failed: {errors!r}")
+        require(results == ["held"], "Gemma runtime holder result mismatch")
+        status = gemma_runtime_service.gemma_runtime_status()
+        require(status["busy_count"] == 1, "Gemma runtime status should count busy requests")
+        require(status["completed_count"] == 1, "Gemma runtime status should count completed requests")
+    finally:
+        release.set()
+        thread.join(2.0)
+        if original_queue_timeout is None:
+            os.environ.pop(gemma_runtime_service.QUEUE_TIMEOUT_SECONDS_ENV, None)
+        else:
+            os.environ[gemma_runtime_service.QUEUE_TIMEOUT_SECONDS_ENV] = original_queue_timeout
+        if original_request_timeout is None:
+            os.environ.pop(gemma_runtime_service.REQUEST_TIMEOUT_SECONDS_ENV, None)
+        else:
+            os.environ[gemma_runtime_service.REQUEST_TIMEOUT_SECONDS_ENV] = original_request_timeout
+        gemma_runtime_service.reset_gemma_runtime_for_tests()
+
+
 def check_restored_source_target() -> None:
     target = sentence_target_bundle("nietzsche", "GM", "p-0023", "p-0023.s001", "")
     require(target["sentence_id"] == "p-0023.s001", "restored sentence target id mismatch")
     check_prompt_and_record(target)
     check_cache_and_review_compatibility(target)
+    check_gemma_response_cache_contract(target)
 
 
 def check_runtime_error_copy(target: dict) -> None:
@@ -247,8 +401,26 @@ def check_runtime_error_copy(target: dict) -> None:
             message = str(exc)
             require("번역 준비가 필요합니다." in message, "runtime connection failure should use reader-language copy")
             require("Gemma runtime is not running" not in message, "runtime connection failure should not expose English backend copy")
+            require("connection refused" not in message, "runtime connection failure should not expose socket details")
+            metadata = exc.response_metadata()["gemma_request"] if hasattr(exc, "response_metadata") else {}
+            require(metadata.get("request_id", "").startswith("gemma-"), "runtime failure should include request id metadata")
+            require(metadata.get("status") == "unavailable", "runtime failure should expose unavailable status")
         else:
             require(False, "runtime connection failure should raise ConnectionError")
+
+        def timeout_urlopen(*_args, **_kwargs):
+            raise TimeoutError("timed out")
+
+        sentence_translation_service.urlopen = timeout_urlopen
+        try:
+            sentence_translation_service.call_llama_server(prompt_bundle)
+        except GemmaRuntimeTimeout as exc:
+            metadata = exc.response_metadata()["gemma_request"]
+            require(exc.status_code == 504, "Gemma timeout should map to HTTP 504")
+            require(metadata["status"] == "timeout", "Gemma timeout should expose timeout status")
+            require("시간이 초과" in str(exc), "Gemma timeout should use clear reader-language copy")
+        else:
+            require(False, "Gemma timeout should raise GemmaRuntimeTimeout")
     finally:
         sentence_translation_service.urlopen = original_urlopen
 
@@ -263,6 +435,8 @@ def main() -> None:
     synthetic_target = synthetic_sentence_target()
     check_prompt_and_record(synthetic_target)
     check_cache_and_review_compatibility(synthetic_target)
+    check_gemma_response_cache_contract(synthetic_target)
+    check_gemma_runtime_limits_contract()
     check_runtime_error_copy(synthetic_target)
     if args.with_source_targets:
         check_restored_source_target()

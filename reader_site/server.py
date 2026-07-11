@@ -296,7 +296,11 @@ class Handler(BaseHTTPRequestHandler):
             self.send_json({"ok": False, "error": str(exc)}, status=404)
             return
         except ConnectionError as exc:
-            self.send_json({"ok": False, "error": str(exc)}, status=503)
+            error_payload = {"ok": False, "error": str(exc)}
+            metadata_builder = getattr(exc, "response_metadata", None)
+            if callable(metadata_builder):
+                error_payload["metadata"] = metadata_builder()
+            self.send_json(error_payload, status=getattr(exc, "status_code", 503))
             return
         self.send_json(result)
 
@@ -420,7 +424,7 @@ class Handler(BaseHTTPRequestHandler):
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--host", default="127.0.0.1")
-    parser.add_argument("--port", type=int, default=8793)
+    parser.add_argument("--port", type=int, default=18170)
     args = parser.parse_args()
     server = ThreadingHTTPServer((args.host, args.port), Handler)
     display_host = "127.0.0.1" if args.host in {"0.0.0.0", ""} else args.host

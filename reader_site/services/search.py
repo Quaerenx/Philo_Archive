@@ -2,32 +2,67 @@ from __future__ import annotations
 
 import heapq
 import json
+import os
 import re
 import sqlite3
+import threading
+import time
 from pathlib import Path
 from urllib.parse import quote
 
+from services.bounded_cache import TTLBoundedCache
 from services.notes import read_all_notes
+from services.runtime_metrics import elapsed_ms, record_search_request
 
 SITE = Path(__file__).resolve().parents[1]
 DATA = SITE / "data"
 SEARCH_INDEX = DATA / "search_index.jsonl"
 SEARCH_DB = DATA / "search_index.sqlite"
 BIBLE_METADATA = DATA / "bible_metadata.json"
+DEFAULT_SEARCH_LIMIT = 30
+MAX_SEARCH_LIMIT = 50
+MAX_SEARCH_OFFSET = 500
+MAX_SEARCH_QUERY_CHARS = 240
+MAX_SEARCH_TERMS = 8
+MAX_SEARCH_TERM_CHARS = 64
+WORK_METADATA_CACHE_MAX_ENTRIES = 8
+WORK_METADATA_CACHE_TTL_SECONDS = 300
+BIBLE_ALIAS_CACHE_MAX_ENTRIES = 2
+BIBLE_ALIAS_CACHE_TTL_SECONDS = 300
+FTS_SCAN_MULTIPLIER = 4
+FTS_MIN_SCAN_LIMIT = 60
+FTS_MAX_SCAN_LIMIT = 600
+SEARCH_DEBUG_ENV = "PHILO_SEARCH_DEBUG"
 METADATA_FILES = {
     "nietzsche": DATA / "nietzsche_metadata.json",
     "bible": DATA / "bible_metadata.json",
     "kierkegaard": DATA / "kierkegaard_metadata.json",
     "wittgenstein": DATA / "wittgenstein_metadata.json",
 }
+BASIC_CORPUS_IDS = set(METADATA_FILES)
+SEARCH_AUX_INDEX_SQL = [
+    "CREATE INDEX IF NOT EXISTS idx_search_corpus_work_segment ON search_segments(corpus_id, work_id, segment_id)",
+    (
+        "CREATE INDEX IF NOT EXISTS idx_search_corpus_work_variant_segment "
+        "ON search_segments(corpus_id, work_id, variant_id, segment_id)"
+    ),
+]
 CORPUS_TITLES = {
     "nietzsche": "니체",
     "bible": "성경",
     "kierkegaard": "키르케고르",
     "wittgenstein": "비트겐슈타인",
 }
-BIBLE_ALIAS_CACHE: dict[str, list[dict]] | None = None
-WORK_METADATA_CACHE: dict[str, dict] | None = None
+BIBLE_ALIAS_CACHE: TTLBoundedCache[tuple[str, int, int], dict[str, list[dict]]] = TTLBoundedCache(
+    max_entries=BIBLE_ALIAS_CACHE_MAX_ENTRIES,
+    ttl_seconds=BIBLE_ALIAS_CACHE_TTL_SECONDS,
+)
+WORK_METADATA_CACHE: TTLBoundedCache[tuple[str, int, int], dict[str, dict]] = TTLBoundedCache(
+    max_entries=WORK_METADATA_CACHE_MAX_ENTRIES,
+    ttl_seconds=WORK_METADATA_CACHE_TTL_SECONDS,
+)
+SEARCH_AUX_INDEXES_READY = False
+SEARCH_AUX_INDEX_LOCK = threading.RLock()
 BIBLE_KO_ABBREVIATIONS = {
     "창": "Gen",
     "출": "Exod",
@@ -132,6 +167,100 @@ def normalize_search_text(value: str) -> str:
     return re.sub(r"\s+", " ", value).strip().lower()
 
 
+def file_signature(path: Path) -> tuple[int, int]:
+    stat = path.stat()
+    return (int(stat.st_mtime_ns), int(stat.st_size))
+
+
+def bounded_int(value: str | int, default: int, minimum: int, maximum: int) -> int:
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        parsed = default
+    if parsed < minimum:
+        return minimum
+    if parsed > maximum:
+        return maximum
+    return parsed
+
+
+def search_debug_enabled(value: str = "") -> bool:
+    raw = str(value or os.environ.get(SEARCH_DEBUG_ENV, "")).strip().lower()
+    return raw in {"1", "true", "yes", "on", "debug"}
+
+
+def query_flag_enabled(value: str = "") -> bool:
+    raw = str(value or "").strip().lower()
+    return raw in {"1", "true", "yes", "on", "debug"}
+
+
+def search_terms(query: str) -> list[str]:
+    normalized = normalize_search_text(query)[:MAX_SEARCH_QUERY_CHARS]
+    terms: list[str] = []
+    for term in normalized.split(" "):
+        term = term.strip()
+        if not term:
+            continue
+        terms.append(term[:MAX_SEARCH_TERM_CHARS])
+        if len(terms) >= MAX_SEARCH_TERMS:
+            break
+    return terms
+
+
+def search_profile(enabled: bool, query: str, corpus_id: str, work_id: str, variant_id: str, limit: int, offset: int) -> dict | None:
+    if not enabled:
+        return None
+    return {
+        "filters": {
+            "corpus_id": corpus_id,
+            "work_id": work_id,
+            "variant_id": variant_id,
+        },
+        "limits": {
+            "limit": limit,
+            "offset": offset,
+            "query_chars": len(query),
+        },
+        "timings_ms": {},
+        "rows": {},
+        "notes": [],
+        "_started_at": time.perf_counter(),
+    }
+
+
+def profile_add_ms(profile: dict | None, key: str, started_at: float) -> None:
+    if profile is None:
+        return
+    timings = profile.setdefault("timings_ms", {})
+    timings[key] = round(float(timings.get(key, 0.0)) + ((time.perf_counter() - started_at) * 1000), 3)
+
+
+def profile_set_row_count(profile: dict | None, key: str, value: int) -> None:
+    if profile is not None:
+        profile.setdefault("rows", {})[key] = int(value)
+
+
+def profile_note(profile: dict | None, message: str) -> None:
+    if profile is not None:
+        profile.setdefault("notes", []).append(message)
+
+
+def attach_search_metadata(payload: dict, profile: dict | None) -> dict:
+    if profile is None:
+        return payload
+    profile_add_ms(profile, "total", profile["_started_at"])
+    metadata = dict(payload.get("metadata") or {})
+    metadata["search_debug"] = {
+        "filters": profile.get("filters", {}),
+        "limits": profile.get("limits", {}),
+        "timings_ms": profile.get("timings_ms", {}),
+        "rows": profile.get("rows", {}),
+        "notes": profile.get("notes", []),
+    }
+    payload["metadata"] = metadata
+    return payload
+
+
 def compact_alias_key(value: str) -> str:
     return re.sub(r"[\W_]+", "", normalize_search_text(value), flags=re.UNICODE)
 
@@ -152,47 +281,50 @@ def bible_source_priority(work: dict, preferred_source: str = "") -> tuple[int, 
 
 
 def load_bible_alias_index() -> dict[str, list[dict]]:
-    global BIBLE_ALIAS_CACHE
-    if BIBLE_ALIAS_CACHE is not None:
-        return BIBLE_ALIAS_CACHE
     if not BIBLE_METADATA.exists():
-        BIBLE_ALIAS_CACHE = {}
-        return BIBLE_ALIAS_CACHE
+        return {}
+    signature = file_signature(BIBLE_METADATA)
 
-    payload = json.loads(BIBLE_METADATA.read_text(encoding="utf-8"))
-    aliases: dict[str, list[dict]] = {}
-    works_by_book_id: dict[str, list[dict]] = {}
-    for work in payload.get("works", {}).values():
-        if work.get("book_id"):
-            works_by_book_id.setdefault(str(work["book_id"]), []).append(work)
-        values = {
-            work.get("book_id", ""),
-            work.get("title", ""),
-            work.get("book_name_en", ""),
-            work.get("book_name_ko", ""),
-            work.get("display_title", ""),
-            work.get("work_id", ""),
-        }
-        values.update(BIBLE_ALTERNATE_BOOK_ALIASES.get(str(work.get("book_id", "")), []))
-        display_title = str(work.get("display_title", ""))
-        if "/" in display_title:
-            values.update(part.strip() for part in display_title.split("/"))
-        for value in values:
-            key = compact_alias_key(str(value))
-            if not key:
-                continue
-            aliases.setdefault(key, []).append(work)
+    def build_alias_index() -> dict[str, list[dict]]:
+        try:
+            with BIBLE_METADATA.open("r", encoding="utf-8") as handle:
+                payload = json.load(handle)
+        except (OSError, json.JSONDecodeError):
+            return {}
+        aliases: dict[str, list[dict]] = {}
+        works_by_book_id: dict[str, list[dict]] = {}
+        for work in payload.get("works", {}).values():
+            if work.get("book_id"):
+                works_by_book_id.setdefault(str(work["book_id"]), []).append(work)
+            values = {
+                work.get("book_id", ""),
+                work.get("title", ""),
+                work.get("book_name_en", ""),
+                work.get("book_name_ko", ""),
+                work.get("display_title", ""),
+                work.get("work_id", ""),
+            }
+            values.update(BIBLE_ALTERNATE_BOOK_ALIASES.get(str(work.get("book_id", "")), []))
+            display_title = str(work.get("display_title", ""))
+            if "/" in display_title:
+                values.update(part.strip() for part in display_title.split("/"))
+            for value in values:
+                key = compact_alias_key(str(value))
+                if not key:
+                    continue
+                aliases.setdefault(key, []).append(work)
 
-    for abbreviation, book_id in BIBLE_KO_ABBREVIATIONS.items():
-        key = compact_alias_key(abbreviation)
-        if key and book_id in works_by_book_id:
-            aliases.setdefault(key, []).extend(works_by_book_id[book_id])
+        for abbreviation, book_id in BIBLE_KO_ABBREVIATIONS.items():
+            key = compact_alias_key(abbreviation)
+            if key and book_id in works_by_book_id:
+                aliases.setdefault(key, []).extend(works_by_book_id[book_id])
 
-    for key, works in aliases.items():
-        deduped = {work.get("work_id"): work for work in works if work.get("work_id")}
-        aliases[key] = sorted(deduped.values(), key=bible_source_priority)
-    BIBLE_ALIAS_CACHE = aliases
-    return BIBLE_ALIAS_CACHE
+        for key, works in aliases.items():
+            deduped = {work.get("work_id"): work for work in works if work.get("work_id")}
+            aliases[key] = sorted(deduped.values(), key=bible_source_priority)
+        return aliases
+
+    return BIBLE_ALIAS_CACHE.get_or_set(("bible", signature[0], signature[1]), build_alias_index)
 
 
 def parse_bible_reference(query: str) -> dict | None:
@@ -275,20 +407,26 @@ def segment_type_boost(segment_type: str, title: str, label: str, terms: list[st
     return 0
 
 
-def load_work_metadata() -> dict[str, dict]:
-    global WORK_METADATA_CACHE
-    if WORK_METADATA_CACHE is not None:
-        return WORK_METADATA_CACHE
-    metadata: dict[str, dict] = {}
-    for corpus_id, path in METADATA_FILES.items():
-        if not path.exists():
-            metadata[corpus_id] = {}
-            continue
-        payload = json.loads(path.read_text(encoding="utf-8"))
+def load_work_metadata_for_corpus(corpus_id: str) -> dict[str, dict]:
+    path = METADATA_FILES.get(corpus_id)
+    if path is None or not path.exists():
+        return {}
+    signature = file_signature(path)
+
+    def load_works() -> dict[str, dict]:
+        try:
+            with path.open("r", encoding="utf-8") as handle:
+                payload = json.load(handle)
+        except (OSError, json.JSONDecodeError):
+            return {}
         works = payload.get("works", {})
-        metadata[corpus_id] = works if isinstance(works, dict) else {}
-    WORK_METADATA_CACHE = metadata
-    return WORK_METADATA_CACHE
+        return works if isinstance(works, dict) else {}
+
+    return WORK_METADATA_CACHE.get_or_set((corpus_id, signature[0], signature[1]), load_works)
+
+
+def load_work_metadata() -> dict[str, dict]:
+    return {corpus_id: load_work_metadata_for_corpus(corpus_id) for corpus_id in sorted(METADATA_FILES)}
 
 
 def work_display_title(work: dict, fallback: str = "") -> str:
@@ -307,7 +445,7 @@ def note_context_title(corpus_id: str, work_id: str) -> str:
     corpus_id = str(corpus_id or "").strip()
     work_id = str(work_id or "").strip()
     if work_id:
-        work = load_work_metadata().get(corpus_id, {}).get(work_id)
+        work = load_work_metadata_for_corpus(corpus_id).get(work_id)
         if isinstance(work, dict):
             title = work_display_title(work)
             if title:
@@ -401,11 +539,10 @@ def search_work_records(query: str, corpus_id: str, work_id: str, variant_id: st
     terms = [term for term in normalize_search_text(work_query).split(" ") if term]
     if not terms:
         return {"count": 0, "results": []}
-    metadata = load_work_metadata()
-    corpora = [corpus_id] if corpus_id else sorted(metadata)
+    corpora = [corpus_id] if corpus_id else sorted(METADATA_FILES)
     ranked: list[tuple[int, str, str, dict]] = []
     for current_corpus_id in corpora:
-        for current_work_id, work in metadata.get(current_corpus_id, {}).items():
+        for current_work_id, work in load_work_metadata_for_corpus(current_corpus_id).items():
             if work_id and current_work_id != work_id:
                 continue
             if not work_matches_variant(work, variant_id):
@@ -510,13 +647,27 @@ def search_note_records(query: str, corpus_id: str, work_id: str, limit: int) ->
     return {"count": len(ranked), "results": [item[2] for item in ranked[:limit]]}
 
 
-def attach_related_results(payload: dict, query: str, corpus_id: str, work_id: str, variant_id: str, limit: int) -> dict:
+def attach_related_results(
+    payload: dict,
+    query: str,
+    corpus_id: str,
+    work_id: str,
+    variant_id: str,
+    limit: int,
+    profile: dict | None = None,
+) -> dict:
+    started_at = time.perf_counter()
     works = search_work_records(query, corpus_id, work_id, variant_id, min(limit, 20))
+    profile_add_ms(profile, "work_lookup_ms", started_at)
+    started_at = time.perf_counter()
     notes = search_note_records(query, corpus_id, work_id, min(limit, 20))
+    profile_add_ms(profile, "note_lookup_ms", started_at)
     payload["work_count"] = works["count"]
     payload["work_results"] = works["results"]
     payload["note_count"] = notes["count"]
     payload["note_results"] = notes["results"]
+    profile_set_row_count(profile, "work_returned", len(works["results"]))
+    profile_set_row_count(profile, "note_returned", len(notes["results"]))
     return payload
 
 
@@ -528,8 +679,33 @@ def sqlite_search_has_fts(connection: sqlite3.Connection) -> bool:
     )
 
 
+def ensure_search_aux_indexes(connection: sqlite3.Connection, profile: dict | None = None) -> None:
+    global SEARCH_AUX_INDEXES_READY
+
+    if SEARCH_AUX_INDEXES_READY:
+        return
+    with SEARCH_AUX_INDEX_LOCK:
+        if SEARCH_AUX_INDEXES_READY:
+            return
+        started_at = time.perf_counter()
+        try:
+            for statement in SEARCH_AUX_INDEX_SQL:
+                connection.execute(statement)
+            connection.commit()
+            SEARCH_AUX_INDEXES_READY = True
+        except sqlite3.Error as exc:
+            profile_note(profile, f"aux index migration skipped: {exc}")
+        finally:
+            profile_add_ms(profile, "aux_index_ms", started_at)
+
+
 def fts5_query(terms: list[str]) -> str:
     return " AND ".join(f'"{term.replace(chr(34), chr(34) + chr(34))}"' for term in terms)
+
+
+def candidate_scan_limit(limit: int, offset: int) -> int:
+    requested = max(1, limit + offset)
+    return min(max(requested * FTS_SCAN_MULTIPLIER, FTS_MIN_SCAN_LIMIT), FTS_MAX_SCAN_LIMIT)
 
 
 def search_result_from_row(row: sqlite3.Row, terms: list[str], score: int) -> dict:
@@ -582,6 +758,8 @@ def search_records_sqlite_direct_bible(
     work_id: str,
     variant_id: str,
     limit: int,
+    offset: int = 0,
+    profile: dict | None = None,
 ) -> dict | None:
     if corpus_id and corpus_id != "bible":
         return None
@@ -613,24 +791,35 @@ def search_records_sqlite_direct_bible(
         if reference["chapter"] == "1":
             segment_ids.append(f"{book_id}.0.{reference['verse']}")
         for segment_id in segment_ids:
+            started_at = time.perf_counter()
             found = connection.execute(
                 """
                 SELECT corpus_id, work_id, variant_id, segment_id, segment_type, label, title, url, snippet, search_text
                 FROM search_segments
-                WHERE corpus_id = 'bible' AND work_id = ? AND segment_id = ?
+                WHERE corpus_id = ? AND work_id = ? AND segment_id = ?
                 """,
-                (work.get("work_id"), segment_id),
+                ("bible", work.get("work_id"), segment_id),
             ).fetchall()
+            profile_add_ms(profile, "segment_query_ms", started_at)
             rows.extend((candidate_index, row) for row in found)
 
     if not rows:
         return None
-    rows = sorted(rows, key=lambda item: item[0])[:limit]
-    results = [direct_bible_result_from_row(row, 10000 - index) for index, (_, row) in enumerate(rows)]
-    first = results[0]
+    rows = sorted(rows, key=lambda item: item[0])
+    page_rows = rows[offset : offset + limit]
+    profile_set_row_count(profile, "segment_candidates", len(rows))
+    profile_set_row_count(profile, "segment_returned", len(page_rows))
+    profile_set_row_count(profile, "segment_count", len(rows))
+    profile_note(profile, "direct Bible reference lookup used auxiliary row lookup")
+    results = [direct_bible_result_from_row(row, 10000 - index) for index, (_, row) in enumerate(page_rows)]
+    first = results[0] if results else {"segment_id": ""}
     return {
         "query": query,
         "count": len(rows),
+        "count_exact": True,
+        "limit": limit,
+        "offset": offset,
+        "has_more": offset + limit < len(rows),
         "results": results,
         "engine": "sqlite-direct-bible",
         "direct": {
@@ -649,6 +838,9 @@ def search_records_sqlite_fts(
     work_id: str,
     variant_id: str,
     limit: int,
+    offset: int = 0,
+    profile: dict | None = None,
+    exact_count: bool = False,
 ) -> dict:
     clauses = ["search_segments_fts MATCH ?"]
     params: list[str] = [fts5_query(terms)]
@@ -662,17 +854,24 @@ def search_records_sqlite_fts(
         clauses.append("s.variant_id = ?")
         params.append(variant_id)
     where = " AND ".join(clauses)
-    scan_limit = max(limit * 5, 100)
+    scan_limit = candidate_scan_limit(limit, offset)
+    profile_set_row_count(profile, "segment_scan_limit", scan_limit)
 
-    total = connection.execute(
-        f"""
-        SELECT COUNT(*)
-        FROM search_segments_fts
-        JOIN search_segments AS s ON s.id = search_segments_fts.rowid
-        WHERE {where}
-        """,
-        params,
-    ).fetchone()[0]
+    total = 0
+    if exact_count:
+        started_at = time.perf_counter()
+        total = connection.execute(
+            f"""
+            SELECT COUNT(*)
+            FROM search_segments_fts
+            JOIN search_segments AS s ON s.id = search_segments_fts.rowid
+            WHERE {where}
+            """,
+            params,
+        ).fetchone()[0]
+        profile_add_ms(profile, "segment_count_ms", started_at)
+
+    started_at = time.perf_counter()
     rows = connection.execute(
         f"""
         SELECT
@@ -685,15 +884,35 @@ def search_records_sqlite_fts(
         ORDER BY rank
         LIMIT ?
         """,
-        [*params, scan_limit],
+        [*params, scan_limit + 1],
     ).fetchall()
+    profile_add_ms(profile, "segment_query_ms", started_at)
 
+    has_more = len(rows) > scan_limit
+    rows = rows[:scan_limit]
+    profile_set_row_count(profile, "segment_candidates", len(rows))
+
+    started_at = time.perf_counter()
     ranked = []
     for index, row in enumerate(rows):
         score = score_sqlite_segment_row(row, terms, index)
         ranked.append((score, -index, search_result_from_row(row, terms, score)))
-    results = [item[2] for item in sorted(ranked, reverse=True)[:limit]]
-    return {"query": " ".join(terms), "count": total, "results": results, "engine": "sqlite-fts5"}
+    sorted_ranked = sorted(ranked, reverse=True)
+    results = [item[2] for item in sorted_ranked[offset : offset + limit]]
+    profile_add_ms(profile, "result_assembly_ms", started_at)
+    profile_set_row_count(profile, "segment_returned", len(results))
+    observed_count = total if exact_count else len(sorted_ranked) + (1 if has_more else 0)
+    profile_set_row_count(profile, "segment_count", observed_count)
+    return {
+        "query": " ".join(terms),
+        "count": observed_count,
+        "count_exact": exact_count,
+        "limit": limit,
+        "offset": offset,
+        "has_more": has_more or offset + len(results) < len(sorted_ranked),
+        "results": results,
+        "engine": "sqlite-fts5",
+    }
 
 
 def search_records_sqlite_like(
@@ -703,6 +922,9 @@ def search_records_sqlite_like(
     work_id: str,
     variant_id: str,
     limit: int,
+    offset: int = 0,
+    profile: dict | None = None,
+    exact_count: bool = False,
 ) -> dict:
     clauses = ["search_text LIKE ?"]
     params: list[str] = [f"%{terms[0]}%"]
@@ -719,9 +941,15 @@ def search_records_sqlite_like(
         clauses.append("variant_id = ?")
         params.append(variant_id)
     where = " AND ".join(clauses)
-    scan_limit = max(limit * 30, 500)
+    scan_limit = candidate_scan_limit(limit, offset)
+    profile_set_row_count(profile, "segment_scan_limit", scan_limit)
 
-    total = connection.execute(f"SELECT COUNT(*) FROM search_segments WHERE {where}", params).fetchone()[0]
+    total = 0
+    if exact_count:
+        started_at = time.perf_counter()
+        total = connection.execute(f"SELECT COUNT(*) FROM search_segments WHERE {where}", params).fetchone()[0]
+        profile_add_ms(profile, "segment_count_ms", started_at)
+    started_at = time.perf_counter()
     rows = connection.execute(
         f"""
         SELECT corpus_id, work_id, variant_id, segment_id, segment_type, label, title, url, snippet, search_text
@@ -729,41 +957,91 @@ def search_records_sqlite_like(
         WHERE {where}
         LIMIT ?
         """,
-        [*params, scan_limit],
+        [*params, scan_limit + 1],
     ).fetchall()
+    profile_add_ms(profile, "segment_query_ms", started_at)
+    has_more = len(rows) > scan_limit
+    rows = rows[:scan_limit]
+    profile_set_row_count(profile, "segment_candidates", len(rows))
 
+    started_at = time.perf_counter()
     ranked = []
     for index, row in enumerate(rows):
         score = score_sqlite_segment_row(row, terms, index)
         ranked.append((score, -index, search_result_from_row(row, terms, score)))
-    results = [item[2] for item in sorted(ranked, reverse=True)[:limit]]
-    return {"query": " ".join(terms), "count": total, "results": results, "engine": "sqlite-like"}
+    sorted_ranked = sorted(ranked, reverse=True)
+    results = [item[2] for item in sorted_ranked[offset : offset + limit]]
+    profile_add_ms(profile, "result_assembly_ms", started_at)
+    profile_set_row_count(profile, "segment_returned", len(results))
+    observed_count = total if exact_count else len(sorted_ranked) + (1 if has_more else 0)
+    profile_set_row_count(profile, "segment_count", observed_count)
+    return {
+        "query": " ".join(terms),
+        "count": observed_count,
+        "count_exact": exact_count,
+        "limit": limit,
+        "offset": offset,
+        "has_more": has_more or offset + len(results) < len(sorted_ranked),
+        "results": results,
+        "engine": "sqlite-like",
+    }
 
 
-def search_records_sqlite(query: str, corpus_id: str, work_id: str, variant_id: str, limit: int) -> dict:
-    terms = [term for term in normalize_search_text(query).split(" ") if term]
+def search_records_sqlite(
+    query: str,
+    corpus_id: str,
+    work_id: str,
+    variant_id: str,
+    limit: int,
+    offset: int = 0,
+    profile: dict | None = None,
+    exact_count: bool = False,
+) -> dict:
+    terms = search_terms(query)
     if not terms:
-        return {"query": normalize_search_text(query), "count": 0, "results": []}
+        return {
+            "query": normalize_search_text(query),
+            "count": 0,
+            "count_exact": True,
+            "limit": limit,
+            "offset": offset,
+            "has_more": False,
+            "results": [],
+        }
     connection = sqlite3.connect(SEARCH_DB)
     connection.row_factory = sqlite3.Row
     try:
-        direct_result = search_records_sqlite_direct_bible(connection, query, corpus_id, work_id, variant_id, limit)
+        connection.execute("PRAGMA busy_timeout = 3000")
+        ensure_search_aux_indexes(connection, profile)
+        direct_result = search_records_sqlite_direct_bible(connection, query, corpus_id, work_id, variant_id, limit, offset, profile)
         if direct_result is not None:
             return direct_result
         if sqlite_search_has_fts(connection):
             try:
-                return search_records_sqlite_fts(connection, terms, corpus_id, work_id, variant_id, limit)
-            except sqlite3.Error:
-                return search_records_sqlite_like(connection, terms, corpus_id, work_id, variant_id, limit)
-        return search_records_sqlite_like(connection, terms, corpus_id, work_id, variant_id, limit)
+                return search_records_sqlite_fts(connection, terms, corpus_id, work_id, variant_id, limit, offset, profile, exact_count)
+            except sqlite3.Error as exc:
+                profile_note(profile, f"sqlite-fts5 fallback: {exc}")
+                return search_records_sqlite_like(connection, terms, corpus_id, work_id, variant_id, limit, offset, profile, exact_count)
+        return search_records_sqlite_like(connection, terms, corpus_id, work_id, variant_id, limit, offset, profile, exact_count)
     finally:
         connection.close()
 
 
-def search_records_jsonl(query: str, terms: list[str], corpus_id: str, work_id: str, variant_id: str, limit: int) -> dict:
+def search_records_jsonl(
+    query: str,
+    terms: list[str],
+    corpus_id: str,
+    work_id: str,
+    variant_id: str,
+    limit: int,
+    offset: int = 0,
+    profile: dict | None = None,
+) -> dict:
     total_matches = 0
     heap: list[tuple[int, int, dict]] = []
     order = 0
+    heap_limit = limit + offset
+    started_at = time.perf_counter()
     with SEARCH_INDEX.open("r", encoding="utf-8") as handle:
         for line in handle:
             line = line.strip()
@@ -806,13 +1084,28 @@ def search_records_jsonl(query: str, terms: list[str], corpus_id: str, work_id: 
                 "score": score,
             }
             item = (score, -order, result)
-            if len(heap) < limit:
+            if len(heap) < heap_limit:
                 heapq.heappush(heap, item)
             elif item > heap[0]:
                 heapq.heapreplace(heap, item)
+    profile_add_ms(profile, "segment_query_ms", started_at)
 
-    results = [item[2] for item in sorted(heap, reverse=True)]
-    return {"query": query, "count": total_matches, "results": results, "engine": "jsonl"}
+    started_at = time.perf_counter()
+    results = [item[2] for item in sorted(heap, reverse=True)[offset : offset + limit]]
+    profile_add_ms(profile, "result_assembly_ms", started_at)
+    profile_set_row_count(profile, "segment_candidates", min(total_matches, heap_limit))
+    profile_set_row_count(profile, "segment_returned", len(results))
+    profile_set_row_count(profile, "segment_count", total_matches)
+    return {
+        "query": query,
+        "count": total_matches,
+        "count_exact": True,
+        "limit": limit,
+        "offset": offset,
+        "has_more": offset + limit < total_matches,
+        "results": results,
+        "engine": "jsonl",
+    }
 
 
 def first_query_value(query: dict[str, list[str]], key: str, default: str = "") -> str:
@@ -827,31 +1120,66 @@ def safe_search_slug(value: str) -> str:
 
 
 def search_payload_from_query(query: dict[str, list[str]]) -> dict:
-    try:
-        limit = int(first_query_value(query, "limit", "30"))
-    except ValueError:
-        limit = 30
+    requested_limit = first_query_value(query, "limit", str(DEFAULT_SEARCH_LIMIT))
+    requested_offset = first_query_value(query, "offset", "0")
+    limit = bounded_int(requested_limit, DEFAULT_SEARCH_LIMIT, 1, MAX_SEARCH_LIMIT)
+    offset = bounded_int(requested_offset, 0, 0, MAX_SEARCH_OFFSET)
     return search_records(
         first_query_value(query, "q"),
         safe_search_slug(first_query_value(query, "corpus_id")),
         first_query_value(query, "work_id"),
         first_query_value(query, "variant_id"),
         limit,
+        offset=offset,
+        debug=search_debug_enabled(first_query_value(query, "debug")),
+        exact_count=query_flag_enabled(first_query_value(query, "exact_count")),
     )
 
 
-def search_records(query: str, corpus_id: str = "", work_id: str = "", variant_id: str = "", limit: int = 30) -> dict:
-    query = normalize_search_text(query)
-    terms = [term for term in query.split(" ") if term]
+def _search_records_impl(
+    query: str,
+    corpus_id: str = "",
+    work_id: str = "",
+    variant_id: str = "",
+    limit: int = DEFAULT_SEARCH_LIMIT,
+    offset: int = 0,
+    debug: bool = False,
+    exact_count: bool = False,
+) -> dict:
+    query = normalize_search_text(query)[:MAX_SEARCH_QUERY_CHARS]
+    terms = search_terms(query)
+    limit = bounded_int(limit, DEFAULT_SEARCH_LIMIT, 1, MAX_SEARCH_LIMIT)
+    offset = bounded_int(offset, 0, 0, MAX_SEARCH_OFFSET)
+    profile = search_profile(debug or search_debug_enabled(), query, corpus_id, work_id, variant_id, limit, offset)
+    if corpus_id and corpus_id not in BASIC_CORPUS_IDS:
+        profile_note(profile, f"unknown corpus filter returned empty segment/work scope: {corpus_id}")
     if not terms:
-        return {"query": query, "count": 0, "results": [], "work_count": 0, "work_results": [], "note_count": 0, "note_results": []}
-    limit = max(1, min(int(limit), 100))
-    if SEARCH_DB.exists():
-        return attach_related_results(search_records_sqlite(query, corpus_id, work_id, variant_id, limit), query, corpus_id, work_id, variant_id, limit)
-    if not SEARCH_INDEX.exists():
-        return {
+        payload = {
             "query": query,
             "count": 0,
+            "count_exact": True,
+            "limit": limit,
+            "offset": offset,
+            "has_more": False,
+            "results": [],
+            "work_count": 0,
+            "work_results": [],
+            "note_count": 0,
+            "note_results": [],
+        }
+        return attach_search_metadata(payload, profile)
+    if SEARCH_DB.exists():
+        payload = search_records_sqlite(query, corpus_id, work_id, variant_id, limit, offset, profile, exact_count)
+        payload = attach_related_results(payload, query, corpus_id, work_id, variant_id, limit, profile)
+        return attach_search_metadata(payload, profile)
+    if not SEARCH_INDEX.exists():
+        payload = {
+            "query": query,
+            "count": 0,
+            "count_exact": True,
+            "limit": limit,
+            "offset": offset,
+            "has_more": False,
             "results": [],
             "work_count": 0,
             "work_results": [],
@@ -859,4 +1187,56 @@ def search_records(query: str, corpus_id: str = "", work_id: str = "", variant_i
             "note_results": [],
             "error": "search index not found",
         }
-    return attach_related_results(search_records_jsonl(query, terms, corpus_id, work_id, variant_id, limit), query, corpus_id, work_id, variant_id, limit)
+        return attach_search_metadata(payload, profile)
+    payload = search_records_jsonl(query, terms, corpus_id, work_id, variant_id, limit, offset, profile)
+    payload = attach_related_results(payload, query, corpus_id, work_id, variant_id, limit, profile)
+    return attach_search_metadata(payload, profile)
+
+
+def search_records(
+    query: str,
+    corpus_id: str = "",
+    work_id: str = "",
+    variant_id: str = "",
+    limit: int = DEFAULT_SEARCH_LIMIT,
+    offset: int = 0,
+    debug: bool = False,
+    exact_count: bool = False,
+) -> dict:
+    started_at = time.perf_counter()
+    payload: dict | None = None
+    status = "ok"
+    error_type = ""
+    sanitized_query = normalize_search_text(query)[:MAX_SEARCH_QUERY_CHARS]
+    bounded_limit = bounded_int(limit, DEFAULT_SEARCH_LIMIT, 1, MAX_SEARCH_LIMIT)
+    bounded_offset = bounded_int(offset, 0, 0, MAX_SEARCH_OFFSET)
+    try:
+        payload = _search_records_impl(
+            query,
+            corpus_id=corpus_id,
+            work_id=work_id,
+            variant_id=variant_id,
+            limit=limit,
+            offset=offset,
+            debug=debug,
+            exact_count=exact_count,
+        )
+        return payload
+    except Exception as exc:
+        status = "error"
+        error_type = type(exc).__name__
+        raise
+    finally:
+        record_search_request(
+            duration_ms=elapsed_ms(started_at),
+            status=status,
+            query=sanitized_query,
+            corpus_id=corpus_id,
+            work_id=work_id,
+            variant_id=variant_id,
+            limit=bounded_limit,
+            offset=bounded_offset,
+            engine=str((payload or {}).get("engine", "")),
+            result_count=len((payload or {}).get("results", [])),
+            error_type=error_type,
+        )

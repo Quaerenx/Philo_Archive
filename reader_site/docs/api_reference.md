@@ -88,6 +88,7 @@ Notes:
   "corpora": [],
   "search": {},
   "gemma": {},
+  "metrics": {},
   "issues": [],
   "next_recommended_upgrades": []
 }
@@ -97,6 +98,7 @@ Notes:
 
 - `ok`: required source folders, metadata, segment artifacts, and search DB are currently usable.
 - `warning`: one or more required local artifacts are missing or degraded.
+- `degraded`: the Reader is alive, but the local Gemma sidecar is unavailable or unhealthy.
 
 `corpora[]`:
 
@@ -160,7 +162,14 @@ File records such as `metadata`, `segments`, and `notes`:
   "base_url": "http://127.0.0.1:8794",
   "reachable": true,
   "model_count": 1,
-  "models": ["gemma-4-26B-A4B-it-Q4_K_M.gguf"]
+  "models": ["gemma-4-26B-A4B-it-Q4_K_M.gguf"],
+  "requests": {
+    "max_concurrency": 1,
+    "active": 0,
+    "request_timeout_seconds": 180.0,
+    "queue_timeout_seconds": 8.0,
+    "last_status": "idle"
+  }
 }
 ```
 
@@ -168,6 +177,9 @@ Notes:
 
 - `issues[]` is empty when `status` is `ok`.
 - `next_recommended_upgrades[]` is advisory and may change as implementation work progresses.
+- Metadata health summaries are cached in `data/runtime.local/metadata_health_summary.json` by file path, mtime, and size. If a metadata file changes, the next health check reparses it and refreshes the small summary cache.
+- Runtime metadata/work caches use bounded LRU-style caches with 300 second TTLs: corpus metadata `8` entries, Bible work segments `24` entries, source target records `256` entries, search work metadata `8` entries, and Bible alias lookup `2` entries.
+- `metrics` is an optional lightweight runtime observability field. It reports search/Gemma/cache counters, recent slow requests, and the bounded JSONL log status. Runtime events are written to `data/runtime.local/runtime_metrics.jsonl`, rotated to a single `.1` file when it exceeds 512 KiB by default. Logged search and Gemma records store hashes, lengths, IDs, status, and durations; they do not store full source text or prompts.
 
 ## `GET /api/artifacts`
 
@@ -233,7 +245,10 @@ q=<search text>
 corpus_id=<optional corpus id>
 work_id=<optional work id>
 variant_id=<optional variant id>
-limit=<1-100, default 30>
+limit=<1-50, default 30>
+offset=<0-500, default 0>
+debug=<optional 1/true to include timing metadata>
+exact_count=<optional 1/true to run a full count query>
 ```
 
 General response:
@@ -242,6 +257,10 @@ General response:
 {
   "query": "ressentiment",
   "count": 20,
+  "count_exact": false,
+  "limit": 30,
+  "offset": 0,
+  "has_more": false,
   "engine": "sqlite-fts5",
   "results": [],
   "work_count": 0,
@@ -250,6 +269,8 @@ General response:
   "note_results": []
 }
 ```
+
+Default SQLite FTS5 search avoids a full `COUNT(*)` pass and reports an observed count with `count_exact: false`; request `exact_count=1` only when an exact count is needed. `debug=1` adds `metadata.search_debug` with SQL time, result assembly time, related lookup time, candidate row count, and returned row count.
 
 `work_results[]`:
 
@@ -310,6 +331,12 @@ General response:
 ```
 
 Work, segment, and note search use the same `q`, `corpus_id`, and `work_id` filters. `variant_id` applies to work and segment search.
+
+Search DB migration notes:
+
+- Runtime search creates missing auxiliary lookup indexes with `CREATE INDEX IF NOT EXISTS`, so an existing `data/search_index.sqlite` does not need a full rebuild for the corpus/work/segment lookup optimization.
+- Fresh rebuilds create the same indexes through `python .\scripts\build_search_db.py`.
+- Verify the current DB with `python .\scripts\build_search_db.py --check`; rebuild from JSONL only when the segment corpus itself changes.
 
 Work alias ranking rules:
 
@@ -393,11 +420,28 @@ Response:
     "source_text_sha256": "64-char sha256",
     "sentence_text_sha256": "64-char sha256",
     "prompt_sha256": "64-char sha256"
+  },
+  "metadata": {
+    "cache": {
+      "hit": false,
+      "source": "gemma_runtime",
+      "cache_key": "64-char sha256",
+      "schema_version": 1,
+      "prompt_version": "sentence_translation_study_v1",
+      "model_name": "gemma-4-26B-A4B-it-Q4_K_M"
+    },
+    "gemma_request": {
+      "request_id": "gemma-...",
+      "status": "completed",
+      "timeout_seconds": 180.0,
+      "queue_timeout_seconds": 8.0,
+      "max_concurrency": 1
+    }
   }
 }
 ```
 
-If the llama.cpp sidecar is not running at `127.0.0.1:8794`, the endpoint returns `503` with `{"ok": false, "error": "번역 준비가 필요합니다."}`. Generated JSONL files under `data/ai/` are local-only and ignored by Git.
+`metadata.cache.source` is `translation_record` when an existing reviewed/generated JSONL record is reused, `gemma_response_cache` when the local runtime response cache avoids a model call, and `gemma_runtime` when llama.cpp is called. `metadata.gemma_request` is present only when the request had to call Gemma; queue saturation returns `429`, and runtime timeout returns `504`, both with the same request metadata shape. The Gemma response cache stores normalized model output in `data/runtime.local/gemma_response_cache.sqlite`; it does not store prompt text. If the llama.cpp sidecar is not running at `127.0.0.1:8794`, the endpoint returns `503` with `{"ok": false, "error": "번역 준비가 필요합니다."}`. Generated JSONL files under `data/ai/` and runtime cache files under `data/runtime.local/` are local-only and ignored by Git.
 
 ## `PUT /api/sentence-translations/<record_id>`
 

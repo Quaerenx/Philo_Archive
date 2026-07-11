@@ -5,6 +5,7 @@ import re
 from pathlib import Path
 
 from path_config import NIETZSCHE_OUTPUT, ROOT, SITE
+from services.bounded_cache import TTLBoundedCache
 
 DATA = SITE / "data"
 
@@ -16,7 +17,23 @@ BIBLE_SEGMENTS = DATA / "bible_segments.jsonl"
 KIERKEGAARD_METADATA = DATA / "kierkegaard_metadata.json"
 WITTGENSTEIN_METADATA = DATA / "wittgenstein_metadata.json"
 
-BIBLE_SEGMENTS_CACHE: tuple[float, list[dict]] | None = None
+METADATA_CACHE_MAX_ENTRIES = 8
+METADATA_CACHE_TTL_SECONDS = 300
+BIBLE_WORK_SEGMENTS_CACHE_MAX_ENTRIES = 24
+BIBLE_WORK_SEGMENTS_CACHE_TTL_SECONDS = 300
+METADATA_CACHE: TTLBoundedCache[tuple[str, int, int], dict] = TTLBoundedCache(
+    max_entries=METADATA_CACHE_MAX_ENTRIES,
+    ttl_seconds=METADATA_CACHE_TTL_SECONDS,
+)
+BIBLE_WORK_SEGMENTS_CACHE: TTLBoundedCache[tuple[str, int, int], list[dict]] = TTLBoundedCache(
+    max_entries=BIBLE_WORK_SEGMENTS_CACHE_MAX_ENTRIES,
+    ttl_seconds=BIBLE_WORK_SEGMENTS_CACHE_TTL_SECONDS,
+)
+
+
+def file_signature(path: Path) -> tuple[int, int]:
+    stat = path.stat()
+    return (int(stat.st_mtime_ns), int(stat.st_size))
 
 
 def read_json(path: Path) -> dict:
@@ -24,16 +41,34 @@ def read_json(path: Path) -> dict:
         return json.load(handle)
 
 
-def read_jsonl(path: Path) -> list[dict]:
+def cached_json(path: Path, fallback: dict) -> dict:
     if not path.exists():
-        return []
-    records = []
+        return dict(fallback)
+    signature = file_signature(path)
+
+    def load_or_fallback() -> dict:
+        try:
+            return read_json(path)
+        except (OSError, json.JSONDecodeError):
+            return dict(fallback)
+
+    return METADATA_CACHE.get_or_set((str(path), signature[0], signature[1]), load_or_fallback)
+
+
+def iter_jsonl(path: Path):
+    if not path.exists():
+        return
     with path.open("r", encoding="utf-8") as handle:
         for line in handle:
             line = line.strip()
-            if line:
-                records.append(json.loads(line))
-    return records
+            if not line:
+                continue
+            try:
+                record = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if isinstance(record, dict):
+                yield record
 
 
 def is_inside(path: Path, root: Path) -> bool:
@@ -64,9 +99,7 @@ def nietzsche_catalog_record(work_id: str) -> dict:
 
 
 def load_nietzsche_metadata() -> dict:
-    if not NIETZSCHE_METADATA.exists():
-        return {"works": {}}
-    return read_json(NIETZSCHE_METADATA)
+    return cached_json(NIETZSCHE_METADATA, {"schema_version": 1, "corpus_id": "nietzsche", "works": {}})
 
 
 def nietzsche_metadata_record(work_id: str) -> dict:
@@ -80,21 +113,15 @@ def load_nietzsche_concepts() -> dict:
 
 
 def load_bible_metadata() -> dict:
-    if not BIBLE_METADATA.exists():
-        return {"schema_version": 1, "corpus_id": "bible", "works": {}}
-    return read_json(BIBLE_METADATA)
+    return cached_json(BIBLE_METADATA, {"schema_version": 1, "corpus_id": "bible", "works": {}})
 
 
 def load_kierkegaard_metadata() -> dict:
-    if not KIERKEGAARD_METADATA.exists():
-        return {"schema_version": 1, "corpus_id": "kierkegaard", "works": {}}
-    return read_json(KIERKEGAARD_METADATA)
+    return cached_json(KIERKEGAARD_METADATA, {"schema_version": 1, "corpus_id": "kierkegaard", "works": {}})
 
 
 def load_wittgenstein_metadata() -> dict:
-    if not WITTGENSTEIN_METADATA.exists():
-        return {"schema_version": 1, "corpus_id": "wittgenstein", "works": {}}
-    return read_json(WITTGENSTEIN_METADATA)
+    return cached_json(WITTGENSTEIN_METADATA, {"schema_version": 1, "corpus_id": "wittgenstein", "works": {}})
 
 
 def bible_metadata_record(work_id: str) -> dict:
@@ -109,18 +136,15 @@ def wittgenstein_metadata_record(work_id: str) -> dict:
     return load_wittgenstein_metadata().get("works", {}).get(work_id, {})
 
 
-def load_bible_segments() -> list[dict]:
-    global BIBLE_SEGMENTS_CACHE
+def bible_segments_for_work(work_id: str) -> list[dict]:
     if not BIBLE_SEGMENTS.exists():
         return []
-    mtime = BIBLE_SEGMENTS.stat().st_mtime
-    if BIBLE_SEGMENTS_CACHE is None or BIBLE_SEGMENTS_CACHE[0] != mtime:
-        BIBLE_SEGMENTS_CACHE = (mtime, read_jsonl(BIBLE_SEGMENTS))
-    return BIBLE_SEGMENTS_CACHE[1]
+    signature = file_signature(BIBLE_SEGMENTS)
 
+    def load_work_segments() -> list[dict]:
+        return [segment for segment in iter_jsonl(BIBLE_SEGMENTS) if segment.get("work_id") == work_id]
 
-def bible_segments_for_work(work_id: str) -> list[dict]:
-    return [segment for segment in load_bible_segments() if segment.get("work_id") == work_id]
+    return BIBLE_WORK_SEGMENTS_CACHE.get_or_set((work_id, signature[0], signature[1]), load_work_segments)
 
 
 def first_query_value(query: dict[str, list[str]], key: str, default: str = "") -> str:

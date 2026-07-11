@@ -10,6 +10,7 @@ sys.path.insert(0, str(SITE))
 
 from corpora.archive import build_archive  # noqa: E402
 from corpora.catalogs import bible_segments_payload_from_query  # noqa: E402
+import runtime_status  # noqa: E402
 from runtime_status import build_artifact_manifest, build_runtime_health  # noqa: E402
 from services.sentence_translations import (  # noqa: E402
     sentence_translations_export_from_query,
@@ -86,7 +87,7 @@ def check_health(payload: dict[str, Any]) -> None:
         {"status", "generated_at", "site_root", "corpus_root", "corpora", "search", "gemma", "issues", "next_recommended_upgrades"},
         "health",
     )
-    require(payload["status"] in {"ok", "warning"}, "health.status must be ok or warning")
+    require(payload["status"] in {"ok", "warning", "degraded"}, "health.status must be ok, warning, or degraded")
     require(isinstance(payload["issues"], list), "health.issues must be list")
     require(isinstance(payload["next_recommended_upgrades"], list), "health.next_recommended_upgrades must be list")
     for index, corpus in enumerate(payload["corpora"]):
@@ -114,10 +115,32 @@ def check_health(payload: dict[str, Any]) -> None:
         check_file_record(corpus["notes"], f"{context}.notes")
     check_file_record(payload["search"], "health.search")
     require_keys(payload["search"], {"records", "fts5"}, "health.search")
-    require_keys(payload["gemma"], {"base_url", "reachable", "model_count", "models"}, "health.gemma")
+    require_keys(payload["gemma"], {"base_url", "reachable", "model_count", "models", "requests"}, "health.gemma")
     require(isinstance(payload["gemma"]["reachable"], bool), "health.gemma.reachable must be bool")
     require(isinstance(payload["gemma"]["model_count"], int), "health.gemma.model_count must be int")
     require(isinstance(payload["gemma"]["models"], list), "health.gemma.models must be list")
+    require_keys(
+        payload["gemma"]["requests"],
+        {"max_concurrency", "active", "request_timeout_seconds", "queue_timeout_seconds", "last_status"},
+        "health.gemma.requests",
+    )
+    if "metrics" in payload:
+        require_keys(payload["metrics"], {"schema_version", "counters", "recent_slow_requests", "log"}, "health.metrics")
+        require_keys(payload["metrics"]["counters"], {"search", "gemma", "cache"}, "health.metrics.counters")
+        require(isinstance(payload["metrics"]["recent_slow_requests"], list), "health.metrics.recent_slow_requests must be list")
+        require_keys(payload["metrics"]["log"], {"path", "exists", "bytes", "max_bytes", "rotation"}, "health.metrics.log")
+
+
+def check_health_degraded_when_gemma_unreachable() -> None:
+    original_base_url = runtime_status.GEMMA_BASE_URL
+    runtime_status.GEMMA_BASE_URL = "http://127.0.0.1:1"
+    try:
+        payload = build_runtime_health()
+        require(payload["status"] == "degraded", "health should be degraded when only Gemma is unreachable")
+        require(payload["gemma"]["reachable"] is False, "unreachable Gemma health should mark reachable false")
+        require(any("Gemma runtime" in issue for issue in payload["issues"]), "Gemma health issue missing")
+    finally:
+        runtime_status.GEMMA_BASE_URL = original_base_url
 
 
 def check_artifacts(payload: dict[str, Any]) -> None:
@@ -279,6 +302,7 @@ def check_study_session_export() -> None:
 def main() -> None:
     check_archive(build_archive())
     check_health(build_runtime_health())
+    check_health_degraded_when_gemma_unreachable()
     check_artifacts(build_artifact_manifest())
     check_bible_segments_payload()
     check_source_target_payload()

@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import time
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -10,7 +11,17 @@ from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
+from services.gemma_response_cache import CACHE_SCHEMA_VERSION as GEMMA_CACHE_SCHEMA_VERSION
+from services.gemma_response_cache import build_cache_key, cached_response, store_response
+from services.gemma_runtime import (
+    GemmaRuntimeTimeout,
+    GemmaRuntimeUnavailable,
+    gemma_request_metadata,
+    new_gemma_request_id,
+    run_gemma_operation,
+)
 from services.interpretation_prompts import load_prompt_template
+from services.runtime_metrics import elapsed_ms, record_gemma_cache_event, record_gemma_request
 from services.sentence_targets import sentence_target_bundle
 from services.source_targets import sha256_text
 
@@ -23,6 +34,10 @@ MODEL_RUNTIME = os.environ.get("PHILO_GEMMA_RUNTIME", "llama.cpp b9371-f12cc6d0f
 LLAMA_BASE_URL = os.environ.get("PHILO_GEMMA_BASE_URL", "http://127.0.0.1:8794")
 MAX_SOURCE_CHARS = 6000
 TRANSLATION_FILE_SUFFIX = "_sentence_translations.jsonl"
+LLAMA_SYSTEM_PROMPT = "You are a source-bounded translation tutor. Return only final JSON. Do not reveal hidden reasoning."
+LLAMA_TOP_P = 0.95
+LLAMA_MAX_TOKENS = 900
+GEMMA_CACHE_NAMESPACE = "sentence_translation"
 
 
 def require(condition: bool, message: str) -> None:
@@ -201,40 +216,156 @@ def normalized_model_output(content: str) -> dict[str, Any]:
     }
 
 
-def call_llama_server(prompt_bundle: dict[str, Any]) -> dict[str, Any]:
-    body = {
+def llama_request_options(prompt_bundle: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "temperature": prompt_bundle["temperature"],
+        "top_p": LLAMA_TOP_P,
+        "max_tokens": LLAMA_MAX_TOKENS,
+        "response_format": "json_object",
+        "system_prompt_sha256": sha256_text(LLAMA_SYSTEM_PROMPT),
+        "model_runtime": MODEL_RUNTIME,
+        "prompt_bundle_schema_version": prompt_bundle.get("schema_version", 1),
+    }
+
+
+def llama_request_body(prompt_bundle: dict[str, Any]) -> dict[str, Any]:
+    options = llama_request_options(prompt_bundle)
+    return {
         "model": MODEL_NAME,
         "messages": [
             {
                 "role": "system",
-                "content": "You are a source-bounded translation tutor. Return only final JSON. Do not reveal hidden reasoning.",
+                "content": LLAMA_SYSTEM_PROMPT,
             },
             {"role": "user", "content": prompt_bundle["prompt"]},
         ],
-        "temperature": prompt_bundle["temperature"],
-        "top_p": 0.95,
-        "max_tokens": 900,
+        "temperature": options["temperature"],
+        "top_p": options["top_p"],
+        "max_tokens": options["max_tokens"],
         "stream": False,
         "response_format": {"type": "json_object"},
         "chat_template_kwargs": {"enable_thinking": False},
     }
-    request = Request(
-        f"{LLAMA_BASE_URL.rstrip('/')}/v1/chat/completions",
-        data=json.dumps(body).encode("utf-8"),
-        headers={"Content-Type": "application/json"},
-        method="POST",
+
+
+def sentence_gemma_cache_identity(prompt_bundle: dict[str, Any]) -> dict[str, Any]:
+    options = llama_request_options(prompt_bundle)
+    prompt_version = str(prompt_bundle.get("prompt_template_id") or PROMPT_TEMPLATE_ID)
+    input_sha256 = str(prompt_bundle["prompt_sha256"])
+    cache_key = build_cache_key(
+        namespace=GEMMA_CACHE_NAMESPACE,
+        prompt_version=prompt_version,
+        model_name=MODEL_NAME,
+        input_sha256=input_sha256,
+        options=options,
     )
-    try:
-        with urlopen(request, timeout=180) as response:
-            payload = json.loads(response.read().decode("utf-8"))
-    except (HTTPError, URLError, TimeoutError, OSError) as exc:
-        raise ConnectionError("번역 준비가 필요합니다.") from exc
-    choices = payload.get("choices", [])
-    require(isinstance(choices, list) and choices, "model response missing choices")
-    message = choices[0].get("message", {}) if isinstance(choices[0], dict) else {}
-    content = str(message.get("content") or "").strip()
-    require(content, "model response missing content")
-    return normalized_model_output(content)
+    return {
+        "schema_version": GEMMA_CACHE_SCHEMA_VERSION,
+        "namespace": GEMMA_CACHE_NAMESPACE,
+        "prompt_version": prompt_version,
+        "model_name": MODEL_NAME,
+        "input_sha256": input_sha256,
+        "options": options,
+        "cache_key": cache_key,
+    }
+
+
+def cache_metadata(
+    identity: dict[str, Any],
+    hit: bool,
+    source: str,
+    request_id: str = "",
+    request_status: str = "",
+) -> dict[str, Any]:
+    metadata = {
+        "cache": {
+            "hit": hit,
+            "source": source,
+            "cache_key": identity["cache_key"],
+            "schema_version": identity["schema_version"],
+            "prompt_version": identity["prompt_version"],
+            "model_name": identity["model_name"],
+        }
+    }
+    if request_id:
+        metadata["gemma_request"] = gemma_request_metadata(
+            request_id,
+            status=request_status or "completed",
+        )
+    return metadata
+
+
+def sentence_translation_response(
+    *,
+    record: dict[str, Any],
+    cached: bool,
+    identity: dict[str, Any],
+    cache_source: str,
+    request_id: str = "",
+    request_status: str = "",
+) -> dict[str, Any]:
+    return {
+        "ok": True,
+        "cached": cached,
+        "record": public_translation_record(record),
+        "metadata": cache_metadata(
+            identity,
+            hit=cached,
+            source=cache_source,
+            request_id=request_id,
+            request_status=request_status,
+        ),
+    }
+
+
+def call_llama_server(prompt_bundle: dict[str, Any], request_id: str | None = None) -> dict[str, Any]:
+    request_id = request_id or new_gemma_request_id()
+    body = llama_request_body(prompt_bundle)
+
+    def fetch_model_response(timeout_seconds: float) -> dict[str, Any]:
+        request = Request(
+            f"{LLAMA_BASE_URL.rstrip('/')}/v1/chat/completions",
+            data=json.dumps(body).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        try:
+            with urlopen(request, timeout=timeout_seconds) as response:
+                payload = json.loads(response.read().decode("utf-8"))
+        except TimeoutError as exc:
+            raise GemmaRuntimeTimeout(
+                "번역 요청 시간이 초과되었습니다. 잠시 후 다시 시도해주세요.",
+                request_id=request_id,
+            ) from exc
+        except HTTPError as exc:
+            raise GemmaRuntimeUnavailable(
+                "번역 서비스가 응답하지 못했습니다. 잠시 후 다시 시도해주세요.",
+                request_id=request_id,
+            ) from exc
+        except (URLError, OSError) as exc:
+            raise GemmaRuntimeUnavailable("번역 준비가 필요합니다.", request_id=request_id) from exc
+        except json.JSONDecodeError as exc:
+            raise GemmaRuntimeUnavailable(
+                "번역 응답을 해석하지 못했습니다. 잠시 후 다시 시도해주세요.",
+                request_id=request_id,
+            ) from exc
+
+        choices = payload.get("choices", [])
+        if not isinstance(choices, list) or not choices:
+            raise GemmaRuntimeUnavailable(
+                "번역 응답 형식이 올바르지 않습니다. 잠시 후 다시 시도해주세요.",
+                request_id=request_id,
+            )
+        message = choices[0].get("message", {}) if isinstance(choices[0], dict) else {}
+        content = str(message.get("content") or "").strip()
+        if not content:
+            raise GemmaRuntimeUnavailable(
+                "번역 응답 내용이 비어 있습니다. 잠시 후 다시 시도해주세요.",
+                request_id=request_id,
+            )
+        return normalized_model_output(content)
+
+    return run_gemma_operation(fetch_model_response, request_id=request_id)
 
 
 def iter_cached_records(path: Path) -> list[dict[str, Any]]:
@@ -333,6 +464,8 @@ def build_record(target: dict[str, Any], prompt_bundle: dict[str, Any], output: 
         "prompt_template_id": prompt_bundle["prompt_template_id"],
         "prompt_sha256": prompt_bundle["prompt_sha256"],
         "temperature": prompt_bundle["temperature"],
+        "gemma_response_cache_schema_version": GEMMA_CACHE_SCHEMA_VERSION,
+        "gemma_response_cache_key": sentence_gemma_cache_identity(prompt_bundle)["cache_key"],
         "translation": output["translation"],
         "commentary": output["commentary"],
         "cautions": [str(item) for item in output["cautions"]],
@@ -538,12 +671,110 @@ def sentence_translation_from_payload(payload: dict[str, Any]) -> dict[str, Any]
     target = sentence_target_bundle(corpus_id, work_id, segment_id, sentence_id, variant_id)
     prompt_bundle = build_sentence_prompt_bundle(target)
     path = ai_record_path(corpus_id)
+    cache_identity = sentence_gemma_cache_identity(prompt_bundle)
     if not regenerate:
         cached = find_cached_record(path, target, prompt_bundle)
         if cached:
-            return {"ok": True, "cached": True, "record": public_translation_record(cached)}
+            record_gemma_cache_event(
+                source="translation_record",
+                hit=True,
+                cache_key=cache_identity["cache_key"],
+                prompt_version=cache_identity["prompt_version"],
+                model_name=cache_identity["model_name"],
+                corpus_id=corpus_id,
+                work_id=work_id,
+                segment_id=segment_id,
+                sentence_id=sentence_id,
+            )
+            return sentence_translation_response(
+                record=cached,
+                cached=True,
+                identity=cache_identity,
+                cache_source="translation_record",
+            )
+        output = cached_response(cache_identity["cache_key"])
+        if output:
+            record_gemma_cache_event(
+                source="gemma_response_cache",
+                hit=True,
+                cache_key=cache_identity["cache_key"],
+                prompt_version=cache_identity["prompt_version"],
+                model_name=cache_identity["model_name"],
+                corpus_id=corpus_id,
+                work_id=work_id,
+                segment_id=segment_id,
+                sentence_id=sentence_id,
+            )
+            record = build_record(target, prompt_bundle, output)
+            append_record(path, record)
+            return sentence_translation_response(
+                record=record,
+                cached=True,
+                identity=cache_identity,
+                cache_source="gemma_response_cache",
+            )
 
-    output = call_llama_server(prompt_bundle)
+    record_gemma_cache_event(
+        source="regenerate" if regenerate else "gemma_runtime",
+        hit=False,
+        cache_key=cache_identity["cache_key"],
+        prompt_version=cache_identity["prompt_version"],
+        model_name=cache_identity["model_name"],
+        corpus_id=corpus_id,
+        work_id=work_id,
+        segment_id=segment_id,
+        sentence_id=sentence_id,
+    )
+    runtime_request_id = new_gemma_request_id()
+    runtime_started_at = time.perf_counter()
+    try:
+        output = call_llama_server(prompt_bundle, request_id=runtime_request_id)
+    except ConnectionError as exc:
+        record_gemma_request(
+            duration_ms=elapsed_ms(runtime_started_at),
+            status=str(getattr(exc, "error_code", "error")),
+            request_id=runtime_request_id,
+            model_name=MODEL_NAME,
+            prompt_sha256=str(prompt_bundle.get("prompt_sha256", "")),
+            input_sha256=cache_identity["input_sha256"],
+            prompt_chars=len(str(prompt_bundle.get("prompt", ""))),
+            corpus_id=corpus_id,
+            work_id=work_id,
+            segment_id=segment_id,
+            sentence_id=sentence_id,
+            error_type=type(exc).__name__,
+        )
+        raise
+    else:
+        record_gemma_request(
+            duration_ms=elapsed_ms(runtime_started_at),
+            status="completed",
+            request_id=runtime_request_id,
+            model_name=MODEL_NAME,
+            prompt_sha256=str(prompt_bundle.get("prompt_sha256", "")),
+            input_sha256=cache_identity["input_sha256"],
+            prompt_chars=len(str(prompt_bundle.get("prompt", ""))),
+            corpus_id=corpus_id,
+            work_id=work_id,
+            segment_id=segment_id,
+            sentence_id=sentence_id,
+        )
+    store_response(
+        cache_key=cache_identity["cache_key"],
+        namespace=cache_identity["namespace"],
+        prompt_version=cache_identity["prompt_version"],
+        model_name=cache_identity["model_name"],
+        input_sha256=cache_identity["input_sha256"],
+        options=cache_identity["options"],
+        response=output,
+    )
     record = build_record(target, prompt_bundle, output)
     append_record(path, record)
-    return {"ok": True, "cached": False, "record": public_translation_record(record)}
+    return sentence_translation_response(
+        record=record,
+        cached=False,
+        identity=cache_identity,
+        cache_source="gemma_runtime",
+        request_id=runtime_request_id,
+        request_status="completed",
+    )

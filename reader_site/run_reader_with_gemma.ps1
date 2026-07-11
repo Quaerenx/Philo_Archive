@@ -1,7 +1,7 @@
 param(
     [string]$ModelPath = "C:\Users\PP\Downloads\gemma-4-26B-A4B-it-Q4_K_M.gguf",
-    [string]$ReaderHost = "0.0.0.0",
-    [int]$ReaderPort = 8793,
+    [string]$ReaderHost = "127.0.0.1",
+    [int]$ReaderPort = 18170,
     [string]$GemmaHost = "127.0.0.1",
     [int]$GemmaPort = 8794,
     [int]$ContextSize = 8192,

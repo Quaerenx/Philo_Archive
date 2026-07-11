@@ -9,7 +9,7 @@ SITE = Path(__file__).resolve().parents[1]
 DATA = SITE / "data"
 sys.path.insert(0, str(SITE))
 
-from services.search import search_payload_from_query, search_records  # noqa: E402
+from services.search import MAX_SEARCH_LIMIT, MAX_SEARCH_OFFSET, search_payload_from_query, search_records  # noqa: E402
 from services.notes import append_note, note_storage_path  # noqa: E402
 
 
@@ -84,6 +84,37 @@ def check_query_payload_helper() -> None:
 
     limited = search_payload_from_query({"q": ["John"], "corpus_id": ["bible"], "limit": ["0"]})
     require(len(limited.get("work_results", [])) <= 1, "search query limit clamp failed")
+
+    capped = search_payload_from_query({"q": ["John"], "corpus_id": ["bible"], "limit": ["5000"], "offset": ["9999"]})
+    require(capped.get("limit") == MAX_SEARCH_LIMIT, "large search limit should be capped")
+    require(capped.get("offset") == MAX_SEARCH_OFFSET, "large search offset should be capped")
+    require(len(capped.get("results", [])) <= MAX_SEARCH_LIMIT, "large limit should not return too many segment rows")
+
+    debug_payload = search_payload_from_query({"q": ["ressentiment"], "corpus_id": ["nietzsche"], "limit": ["5"], "debug": ["1"]})
+    debug = debug_payload.get("metadata", {}).get("search_debug", {})
+    require(debug, "debug search payload should include search_debug metadata")
+    require("segment_query_ms" in debug.get("timings_ms", {}), "debug search payload missing segment query timing")
+    require("result_assembly_ms" in debug.get("timings_ms", {}), "debug search payload missing result assembly timing")
+    require(debug.get("rows", {}).get("segment_returned", 0) <= 5, "debug search row count should respect limit")
+
+    paged = search_records("ressentiment", corpus_id="nietzsche", limit=2, offset=1)
+    require(paged.get("limit") == 2 and paged.get("offset") == 1, "search pagination metadata mismatch")
+    require(len(paged.get("results", [])) <= 2, "offset search should respect page size")
+
+
+def check_safe_edge_queries() -> None:
+    empty = search_payload_from_query({"q": [""], "limit": ["5000"]})
+    require(empty.get("results") == [], "empty search should return empty results")
+    require(empty.get("limit") == MAX_SEARCH_LIMIT, "empty search should still report capped limit")
+
+    missing_corpus = search_payload_from_query({"q": ["ressentiment"], "corpus_id": ["missing-corpus"], "debug": ["1"]})
+    require(missing_corpus.get("results") == [], "unknown corpus should not leak segment results")
+    require(missing_corpus.get("work_results") == [], "unknown corpus should not leak work results")
+    require("metadata" in missing_corpus, "unknown corpus debug search should still return metadata")
+
+    for query in ['""" *** ((( )))', "x" * 1000, "ressentiment OR *"]:
+        payload = search_records(query, corpus_id="nietzsche", limit=5)
+        require(isinstance(payload.get("results", []), list), f"edge query {query[:16]!r} should return a result list")
 
 
 def check_work_alias_search() -> None:
@@ -264,6 +295,7 @@ def main() -> None:
     check_bible_direct_lookup()
     check_filters()
     check_query_payload_helper()
+    check_safe_edge_queries()
     check_work_alias_search()
     check_segment_ranking()
     check_nietzsche_concept_search_links()

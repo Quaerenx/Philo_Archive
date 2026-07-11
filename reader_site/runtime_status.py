@@ -23,8 +23,12 @@ from path_config import (
     WITTGENSTEIN_OUTPUT,
     WITTGENSTEIN_SOURCE_ROOT,
 )
+from services.gemma_runtime import gemma_runtime_status
+from services.runtime_metrics import runtime_metrics_snapshot
 
 DATA = SITE / "data"
+RUNTIME_LOCAL = DATA / "runtime.local"
+METADATA_SUMMARY_CACHE = RUNTIME_LOCAL / "metadata_health_summary.json"
 
 SEARCH_INDEX = DATA / "search_index.jsonl"
 SEARCH_DB = DATA / "search_index.sqlite"
@@ -122,8 +126,23 @@ def sha256_file(path: Path) -> str:
 def read_metadata_summary(path: Path) -> dict[str, Any]:
     if not path.exists():
         return {"exists": False, "works": 0, "variants": 0}
+    stat = path.stat()
+    cache_key = str(path.resolve())
+    cached_summaries = read_metadata_summary_cache()
+    cached = cached_summaries.get(cache_key)
+    if (
+        isinstance(cached, dict)
+        and cached.get("mtime_ns") == stat.st_mtime_ns
+        and cached.get("bytes") == stat.st_size
+        and isinstance(cached.get("summary"), dict)
+    ):
+        summary = dict(cached["summary"])
+        summary["exists"] = True
+        summary["cached"] = True
+        return summary
     try:
-        data = json.loads(path.read_text(encoding="utf-8"))
+        with path.open("r", encoding="utf-8") as handle:
+            data = json.load(handle)
     except (OSError, json.JSONDecodeError) as exc:
         return {"exists": True, "error": str(exc), "works": 0, "variants": 0}
 
@@ -135,7 +154,34 @@ def read_metadata_summary(path: Path) -> dict[str, Any]:
             continue
         work_variants = work.get("variants") or []
         variants += len(work_variants) if isinstance(work_variants, (list, dict)) else 0
-    return {"exists": True, "works": len(work_items), "variants": variants}
+    summary = {"exists": True, "works": len(work_items), "variants": variants, "cached": False}
+    cached_summaries[cache_key] = {
+        "mtime_ns": stat.st_mtime_ns,
+        "bytes": stat.st_size,
+        "summary": summary,
+    }
+    write_metadata_summary_cache(cached_summaries)
+    return summary
+
+
+def read_metadata_summary_cache() -> dict[str, Any]:
+    if not METADATA_SUMMARY_CACHE.exists():
+        return {}
+    try:
+        with METADATA_SUMMARY_CACHE.open("r", encoding="utf-8") as handle:
+            payload = json.load(handle)
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return payload if isinstance(payload, dict) else {}
+
+
+def write_metadata_summary_cache(payload: dict[str, Any]) -> None:
+    try:
+        RUNTIME_LOCAL.mkdir(parents=True, exist_ok=True)
+        with METADATA_SUMMARY_CACHE.open("w", encoding="utf-8", newline="\n") as handle:
+            json.dump(payload, handle, ensure_ascii=False, sort_keys=True)
+    except OSError:
+        return
 
 
 def search_database_summary() -> dict[str, Any]:
@@ -174,6 +220,7 @@ def gemma_runtime_summary() -> dict[str, Any]:
         "reachable": False,
         "model_count": 0,
         "models": [],
+        "requests": gemma_runtime_status(),
     }
     try:
         with urlopen(f"{GEMMA_BASE_URL.rstrip('/')}/v1/models", timeout=0.8) as response:
@@ -281,13 +328,14 @@ def build_runtime_health() -> dict[str, Any]:
         next_upgrades.insert(1, "Replace LIKE-based search with SQLite FTS5.")
 
     return {
-        "status": "ok" if not issues else "warning",
+        "status": "degraded" if not gemma.get("reachable") else ("ok" if not issues else "warning"),
         "generated_at": utc_now(),
         "site_root": str(SITE),
         "corpus_root": str(ROOT),
         "corpora": corpora,
         "search": search,
         "gemma": gemma,
+        "metrics": runtime_metrics_snapshot(),
         "issues": issues,
         "next_recommended_upgrades": next_upgrades,
     }
