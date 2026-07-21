@@ -56,6 +56,8 @@ REQUIRED_FILES = [
     "reader_site/sentence_units.py",
     "reader_site/run_reader_with_gemma.ps1",
     "reader_site/scripts/rebuild_all.py",
+    "reader_site/scripts/build_backup_snapshot.py",
+    "reader_site/scripts/check_backup_snapshot_contracts.py",
     "reader_site/scripts/check_clean_clone_contracts.py",
     "reader_site/scripts/check_ci_contracts.py",
     "reader_site/scripts/check_encoding_contracts.py",
@@ -170,6 +172,7 @@ SOURCE_LIGHT_COMMANDS = [
     [sys.executable, "scripts/check_prompt_template_contracts.py"],
     [sys.executable, "scripts/check_sentence_translation_contracts.py"],
     [sys.executable, "scripts/check_ai_records_contracts.py"],
+    [sys.executable, "scripts/check_backup_snapshot_contracts.py"],
     [sys.executable, "scripts/build_release_stage_manifest.py", "--check"],
 ]
 

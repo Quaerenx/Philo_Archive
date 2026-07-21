@@ -45,6 +45,7 @@ python .\scripts\check_provenance_contracts.py
 python .\scripts\check_prompt_template_contracts.py
 python .\scripts\check_sentence_translation_contracts.py
 python .\scripts\check_ai_records_contracts.py
+python .\scripts\check_backup_snapshot_contracts.py
 python .\scripts\build_release_stage_manifest.py --check
 ```
 
