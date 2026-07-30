@@ -289,7 +289,7 @@ def check_route_markup(route: str, html: str) -> None:
             "aria-busy=\"false\"",
             "notes.css?v=notes28",
             "translations.css?v=trans35",
-            "translations.js?v=trans88",
+            "translations.js?v=trans89",
             'href="/translations" aria-current="page">번역</a>',
             "번역 찾기",
             "translationsListTools",
@@ -380,7 +380,8 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work.css?v=common146",
-            "reader-work.js?v=common191",
+            "reader-work-storage.js?v=storage1",
+            "reader-work.js?v=common192",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         require("Contents (" not in html, f"{route} should not expose TOC inventory counts")
@@ -1661,6 +1662,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       const selectedMarkerStyle = selectedSentenceNode?.classList.contains('has-translation-state')
         ? window.getComputedStyle(selectedSentenceNode, '::after')
         : null;
+      const recentWork = JSON.parse(window.localStorage.getItem('philo.reader.recentWork') || 'null');
       return {
         isMobile: window.innerWidth <= 860,
         viewportHeight: window.innerHeight,
@@ -1727,10 +1729,19 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         selectedSentenceBoxShadow: selectedSentenceStyle?.boxShadow || '',
         selectedMarkerFound: Boolean(selectedMarkerStyle),
         selectedMarkerOpacity: selectedMarkerStyle?.opacity || '',
-        selectedMarkerWidth: selectedMarkerStyle?.width || ''
+        selectedMarkerWidth: selectedMarkerStyle?.width || '',
+        storageApiReady: Boolean(window.ReaderWorkStorage && Object.isFrozen(window.ReaderWorkStorage)),
+        recentWork
       };
     });
     if (!state.selectedSentence) throw new Error(`selected work route did not select a sentence: ${JSON.stringify(state)}`);
+    if (!state.storageApiReady) {
+      throw new Error(`selected work route should load the frozen storage adapter before the controller: ${JSON.stringify(state)}`);
+    }
+    const expectedRecentHref = `${parsed.pathname}${parsed.search}${parsed.hash}`;
+    if (state.recentWork?.href !== expectedRecentHref || state.recentWork?.work_id !== 'GM') {
+      throw new Error(`selected work route should preserve the recent-work storage payload: ${JSON.stringify(state)}`);
+    }
     if (!state.outputVisible) throw new Error(`selected work route did not show translation output: ${JSON.stringify(state)}`);
     if (!state.readingMode) throw new Error(`translation output did not default to reading mode: ${JSON.stringify(state)}`);
     if (!state.cardReadingMode) throw new Error(`translation card did not default to reading mode: ${JSON.stringify(state)}`);
@@ -1921,10 +1932,11 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
           selectedBottom: selectedBox?.bottom || 0,
           panelTop: studyPageBox?.top || 0,
           toggleAction: toggle?.querySelector('.study-panel-toggle-action')?.textContent.trim() || '',
-          toggleSummary: toggle?.querySelector('.study-panel-toggle-summary')?.textContent.trim() || ''
+          toggleSummary: toggle?.querySelector('.study-panel-toggle-summary')?.textContent.trim() || '',
+          storedExpanded: window.localStorage.getItem('philo.reader.studyPanelExpanded')
         };
       });
-      if (collapsedStudyState.expanded || !collapsedStudyState.scrimHidden || !collapsedStudyState.selectedVisible) {
+      if (collapsedStudyState.expanded || !collapsedStudyState.scrimHidden || !collapsedStudyState.selectedVisible || collapsedStudyState.storedExpanded !== 'false') {
         throw new Error(`mobile body toggle should collapse the study panel and return to the selected source: ${JSON.stringify(collapsedStudyState)}`);
       }
       if (collapsedStudyState.toggleAction !== '해설 보기') {
@@ -1932,6 +1944,12 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       await page.click('#studyPanelToggle');
       await page.waitForFunction(() => document.querySelector('.study-page')?.classList.contains('is-expanded'), null, { timeout: 3000 });
+      const storedExpanded = await page.evaluate(
+        () => window.localStorage.getItem('philo.reader.studyPanelExpanded')
+      );
+      if (storedExpanded !== 'true') {
+        throw new Error(`mobile study panel should persist its expanded state: ${JSON.stringify({ storedExpanded })}`);
+      }
       const scrimClickPoint = await page.evaluate(() => {
         const studyPage = document.querySelector('.study-page');
         const studyPageBox = studyPage?.getBoundingClientRect();
@@ -1956,10 +1974,11 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
           selectedVisible: Boolean(selectedBox && selectedBox.bottom > 0 && selectedBox.top < (studyPageBox?.top || window.innerHeight) - 8),
           selectedBottom: selectedBox?.bottom || 0,
           panelTop: studyPageBox?.top || 0,
-          toggleAction: toggle?.querySelector('.study-panel-toggle-action')?.textContent.trim() || ''
+          toggleAction: toggle?.querySelector('.study-panel-toggle-action')?.textContent.trim() || '',
+          storedExpanded: window.localStorage.getItem('philo.reader.studyPanelExpanded')
         };
       });
-      if (scrimCollapsedStudyState.expanded || !scrimCollapsedStudyState.scrimHidden || !scrimCollapsedStudyState.selectedVisible) {
+      if (scrimCollapsedStudyState.expanded || !scrimCollapsedStudyState.scrimHidden || !scrimCollapsedStudyState.selectedVisible || scrimCollapsedStudyState.storedExpanded !== 'false') {
         throw new Error(`mobile scrim should collapse the study panel and return to the selected source: ${JSON.stringify(scrimCollapsedStudyState)}`);
       }
       if (scrimCollapsedStudyState.toggleAction !== '해설 보기') {
@@ -1994,13 +2013,22 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     await page.waitForFunction(() => document.activeElement?.id === 'noteText', null, { timeout: 3000 }).catch(() => {});
     const draftState = await page.evaluate(() => {
       const note = document.querySelector('#noteText')?.value || '';
+      const research = JSON.parse(document.querySelector('#researchData')?.textContent || '{}');
+      const draftKey = [
+        'philo.reader.noteDraft',
+        research.corpus_id || research.author_id || '',
+        research.work_id || '',
+        research.variant_id || ''
+      ].join(':');
+      const storedDraft = JSON.parse(window.sessionStorage.getItem(draftKey) || 'null');
       return {
         activeTab: document.querySelector('.study-tab.active')?.textContent.trim() || '',
         note,
         tags: document.querySelector('#noteTags')?.value || '',
         noteStatus: document.querySelector('#noteStatus')?.textContent.trim() || '',
         translationStatus: document.querySelector('#translationStatus')?.textContent.trim() || '',
-        activeElementId: document.activeElement?.id || ''
+        activeElementId: document.activeElement?.id || '',
+        storedDraft
       };
     });
     if (draftState.activeTab !== '노트') {
@@ -2027,6 +2055,14 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (draftState.activeElementId !== 'noteText') {
       throw new Error(`Add note should focus the note editor: ${JSON.stringify(draftState)}`);
+    }
+    if (
+      draftState.storedDraft?.note !== draftState.note ||
+      draftState.storedDraft?.tags !== draftState.tags ||
+      !draftState.storedDraft?.locked_target ||
+      !draftState.storedDraft?.updated_at
+    ) {
+      throw new Error(`Add note should preserve the existing session draft payload: ${JSON.stringify(draftState)}`);
     }
       const notesState = await page.evaluate(() => {
         const targetTools = document.querySelector('.note-target-tools');
@@ -2294,6 +2330,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         const wasRejectOpen = Boolean(reject?.open);
         const rejectSummary = reject?.querySelector(':scope > summary');
         const rejectButton = reject?.querySelector('button[data-review-state="rejected"]');
+        const deleteButton = more?.querySelector('button[data-delete-translation]');
+        const deleteDetails = deleteButton?.closest('.translation-danger-actions');
+        const deleteSummary = deleteDetails?.querySelector(':scope > summary');
         const rejectSummaryStyle = rejectSummary ? window.getComputedStyle(rejectSummary) : null;
         const save = card?.querySelector('.primary-review-action');
         const sourceAction = card?.querySelector('.translation-actions [data-open-source]');
@@ -2329,6 +2368,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
           rejectSummaryText: rejectSummary?.textContent.trim() || '',
           rejectButtonText: rejectButton?.textContent.trim() || '',
           rejectButtonLabel: rejectButton?.getAttribute('aria-label') || '',
+          deleteSummaryText: deleteSummary?.textContent.trim() || '',
+          deleteButtonText: deleteButton?.textContent.trim() || '',
+          deleteButtonLabel: deleteButton?.getAttribute('aria-label') || '',
           rejectDisplay: reject ? window.getComputedStyle(reject).display : '',
           rejectSummaryBorderColor: rejectSummaryStyle?.borderColor || '',
           rejectSummaryBackground: rejectSummaryStyle?.backgroundColor || '',
@@ -2394,6 +2436,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       }
       if (reviewTargetState.rejectButtonText !== '제외하기' || reviewTargetState.rejectButtonLabel !== '이 번역 제외하기') {
         throw new Error(`review queue discard confirmation should name the result of the action: ${JSON.stringify(reviewTargetState)}`);
+      }
+      if (reviewTargetState.deleteSummaryText !== '삭제' || reviewTargetState.deleteButtonText !== '영구 삭제' || reviewTargetState.deleteButtonLabel !== '이 번역 기록을 영구 삭제하기') {
+        throw new Error(`review queue permanent delete should stay explicit and nested inside More: ${JSON.stringify(reviewTargetState)}`);
       }
       if (!reviewTargetState.isDesktopLayout) {
         if (reviewTargetState.reviewFooterDisplay !== 'block') {

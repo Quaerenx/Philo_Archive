@@ -149,5 +149,136 @@
     "corpus_id": "wittgenstein",
     "expected_work_id": "Group_Works",
     "expected_work_rank_max": 1
+  },
+  {
+    "id": "nietzsche_genealogy_korean_title",
+    "query": "도덕의 계보",
+    "corpus_id": "nietzsche",
+    "expected_work_id": "GM",
+    "expected_work_rank_max": 1
+  },
+  {
+    "id": "nietzsche_morgenrothe_ascii_title",
+    "query": "Morgenrothe",
+    "corpus_id": "nietzsche",
+    "expected_work_id": "M",
+    "expected_work_rank_max": 1
+  },
+  {
+    "id": "nietzsche_frohliche_ascii_title",
+    "query": "Frohliche Wissenschaft",
+    "corpus_id": "nietzsche",
+    "expected_work_id": "FW",
+    "expected_work_rank_max": 1
+  },
+  {
+    "id": "nietzsche_gotzen_ascii_title",
+    "query": "Gotzen-Dammerung",
+    "corpus_id": "nietzsche",
+    "expected_work_id": "GD",
+    "expected_work_rank_max": 1
+  },
+  {
+    "id": "nietzsche_jgb_ascii_title",
+    "query": "Jenseits von Gut und Bose",
+    "corpus_id": "nietzsche",
+    "expected_work_id": "JGB",
+    "expected_work_rank_max": 1
+  },
+  {
+    "id": "nietzsche_ressentiment_work_filter",
+    "query": "ressentiment",
+    "corpus_id": "nietzsche",
+    "work_id": "GM",
+    "expected_engine": "sqlite-fts5",
+    "expected_segment_work_id": "GM",
+    "expected_segment_id": "p-0023",
+    "expected_segment_rank_max": 1
+  },
+  {
+    "id": "kierkegaard_angest_full_title",
+    "query": "Begrebet Angest",
+    "corpus_id": "kierkegaard",
+    "expected_work_id": "ba",
+    "expected_work_rank_max": 1
+  },
+  {
+    "id": "kierkegaard_frygt_ascii_title",
+    "query": "Frygt og Baeven",
+    "corpus_id": "kierkegaard",
+    "expected_work_id": "fb",
+    "expected_work_rank_max": 1
+  },
+  {
+    "id": "kierkegaard_smuler_full_title",
+    "query": "Philosophiske Smuler",
+    "corpus_id": "kierkegaard",
+    "expected_work_id": "ps",
+    "expected_work_rank_max": 1
+  },
+  {
+    "id": "bible_genesis_korean_reference",
+    "query": "창 1:1",
+    "corpus_id": "bible",
+    "expected_engine": "sqlite-direct-bible",
+    "expected_segment_work_id": "oshb.Gen",
+    "expected_segment_id": "Gen.1.1",
+    "expected_segment_rank_max": 1
+  },
+  {
+    "id": "bible_john_korean_reference",
+    "query": "요 3:16",
+    "corpus_id": "bible",
+    "expected_engine": "sqlite-direct-bible",
+    "expected_segment_work_id": "sblgnt.John",
+    "expected_segment_id": "John.3.16",
+    "expected_segment_rank_max": 1
+  },
+  {
+    "id": "bible_lxx_genesis_reference",
+    "query": "lxx Gen 1:1",
+    "corpus_id": "bible",
+    "expected_engine": "sqlite-direct-bible",
+    "expected_segment_work_id": "lxx.Gen",
+    "expected_segment_id": "Gen.1.1",
+    "expected_segment_rank_max": 1
+  },
+  {
+    "id": "bible_epistle_jeremiah_reference",
+    "query": "EpJer 1:1",
+    "corpus_id": "bible",
+    "expected_engine": "sqlite-direct-bible",
+    "expected_segment_work_id": "lxx.LetJer",
+    "expected_segment_id": "LetJer.0.1",
+    "expected_segment_rank_max": 1
+  },
+  {
+    "id": "wittgenstein_group_works_spaced_alias",
+    "query": "Group Works",
+    "corpus_id": "wittgenstein",
+    "expected_work_id": "Group_Works",
+    "expected_work_rank_max": 1
+  },
+  {
+    "id": "wittgenstein_language_game_normalized_variant",
+    "query": "language game",
+    "corpus_id": "wittgenstein",
+    "variant_id": "source_transcription_normalized.full",
+    "expected_engine": "sqlite-fts5",
+    "expected_segment_work_id": "Ts-226",
+    "expected_segment_id": "p-0074",
+    "expected_segment_variant_id": "source_transcription_normalized.full",
+    "expected_segment_rank_max": 1
+  },
+  {
+    "id": "wittgenstein_language_game_diplomatic_variant",
+    "query": "language game",
+    "corpus_id": "wittgenstein",
+    "variant_id": "source_transcription_diplomatic.full",
+    "expected_engine": "sqlite-fts5",
+    "expected_segment_work_id": "Ts-226",
+    "expected_segment_id": "p-0070",
+    "expected_segment_variant_id": "source_transcription_diplomatic.full",
+    "expected_segment_rank_max": 1
   }
 ]

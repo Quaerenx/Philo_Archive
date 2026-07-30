@@ -41,7 +41,7 @@ The AI request must use source text gathered from the current corpus segment rec
 
 The local `GET /api/source-target` endpoint is allowed before any AI runtime is enabled. It returns a bounded source target bundle for a single generated segment record: target URL, label, exact source text, source text preview, character count, and `source_text_sha256`. This endpoint does not call a model, does not store generated output, and must not be treated as an AI interpretation route.
 
-The local `POST /api/sentence-translation` endpoint is the first active AI runtime boundary. It accepts only a selected `corpus_id`, `work_id`, `variant_id`, `segment_id`, and `sentence_id`; it does not accept arbitrary user prompt text. The server resolves the sentence from local generated segment records, computes `source_text_sha256`, `sentence_text_sha256`, and `prompt_sha256`, then calls a local-only llama.cpp server. The llama.cpp server must bind to `127.0.0.1`, even when the reader itself is exposed on the LAN.
+The local `POST /api/sentence-translation` endpoint is the first active AI runtime boundary. It accepts only a selected `corpus_id`, `work_id`, `variant_id`, `segment_id`, and `sentence_id`; it does not accept arbitrary user prompt text. The server resolves the sentence from local generated segment records, computes `source_text_sha256`, `sentence_text_sha256`, and `prompt_sha256`, then calls a local-only llama.cpp server. Both the reader and llama.cpp server must bind to loopback; unauthenticated LAN exposure is unsupported.
 
 ## Record Schema
 

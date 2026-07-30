@@ -13,7 +13,7 @@ This project runs the reader and local Gemma runtime through a user-logon Schedu
 - Gemma sidecar: `127.0.0.1:8794`
 - Runtime logs: `reader_site\data\runtime.local\`
 
-The task intentionally avoids `ExecutionPolicy Bypass` and administrator run level. The llama.cpp sidecar remains bound to `127.0.0.1` even when the reader is exposed on the LAN.
+The task intentionally avoids `ExecutionPolicy Bypass` and administrator run level. Both the reader and llama.cpp sidecar remain bound to `127.0.0.1`.
 
 ## Register
 
@@ -36,12 +36,11 @@ cd .\reader_site
 .\run_reader_with_gemma.ps1
 ```
 
-The script prints the address to open on this PC and, when available, same-LAN addresses for another device:
+The script prints the loopback address to open on this PC:
 
 ```text
 Open Philo Archive:
   This PC: http://127.0.0.1:8793/
-  Same LAN: http://<machine-ip>:8793/
 ```
 
 ## Health Checks
@@ -51,4 +50,4 @@ Invoke-WebRequest -UseBasicParsing http://127.0.0.1:8793/api/health
 Invoke-WebRequest -UseBasicParsing http://127.0.0.1:8794/v1/models
 ```
 
-`/api/health` includes a `gemma` object with `reachable`, `model_count`, and `models`.
+`/api/health` includes a redacted `gemma` object with `reachable` and `model_count`. Model names, local paths, and detailed artifact inventory are not returned by the HTTP diagnostics.

@@ -212,6 +212,23 @@ def corpus_status(config: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def public_corpus_status(status: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "corpus_id": status["corpus_id"],
+        "title": status["title"],
+        "source_ready": bool(status["source_root_exists"] and status["primary_output_exists"]),
+        "metadata_ready": bool(status["metadata"]["exists"] and not status.get("metadata_error")),
+        "segments_ready": bool(status["segments"]["exists"]),
+    }
+
+
+def public_search_summary(summary: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "ready": bool(summary.get("exists")),
+        "fts5": bool(summary.get("fts5")),
+    }
+
+
 def build_artifact_manifest(include_checksums: bool = False) -> dict[str, Any]:
     artifacts = []
     for config in CORPORA:
@@ -245,6 +262,25 @@ def build_artifact_manifest(include_checksums: bool = False) -> dict[str, Any]:
             "python .\\scripts\\build_search_db.py",
             "python .\\scripts\\build_artifact_manifest.py",
         ],
+    }
+
+
+def build_public_artifact_manifest() -> dict[str, Any]:
+    manifest = build_artifact_manifest()
+    return {
+        "schema_version": manifest["schema_version"],
+        "generated_at": manifest["generated_at"],
+        "corpora": [public_corpus_status(status) for status in manifest["corpora"]],
+        "artifacts": [
+            {
+                "name": artifact["name"],
+                "kind": artifact["kind"],
+                "role": artifact["role"],
+                "ready": bool(artifact["exists"]),
+            }
+            for artifact in manifest["artifacts"]
+        ],
+        "search": public_search_summary(manifest["search"]),
     }
 
 
@@ -290,4 +326,19 @@ def build_runtime_health() -> dict[str, Any]:
         "gemma": gemma,
         "issues": issues,
         "next_recommended_upgrades": next_upgrades,
+    }
+
+
+def build_public_runtime_health() -> dict[str, Any]:
+    health = build_runtime_health()
+    return {
+        "status": health["status"],
+        "generated_at": health["generated_at"],
+        "corpora": [public_corpus_status(status) for status in health["corpora"]],
+        "search": public_search_summary(health["search"]),
+        "gemma": {
+            "reachable": bool(health["gemma"].get("reachable")),
+            "model_count": int(health["gemma"].get("model_count") or 0),
+        },
+        "issues": list(health["issues"]),
     }

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import ipaddress
 import json
 import re
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -16,7 +17,7 @@ from corpora.catalogs import (
     load_nietzsche_metadata,
     load_wittgenstein_metadata,
 )
-from runtime_status import build_artifact_manifest, build_runtime_health
+from runtime_status import build_public_artifact_manifest, build_public_runtime_health
 from services.notes import (
     create_note_from_payload,
     delete_note_from_query,
@@ -29,6 +30,7 @@ from services.notes import (
 from services.search import search_payload_from_query
 from services.sentence_translations import sentence_translation_from_payload
 from services.sentence_translations import (
+    delete_sentence_translation_from_query,
     sentence_translations_export_from_query,
     sentence_translations_summary_from_query,
     update_sentence_translation_review,
@@ -44,6 +46,29 @@ from services.work_pages import build_work_page_html
 
 
 SITE = Path(__file__).resolve().parent
+
+
+def validate_reader_host(host: str) -> str:
+    candidate = str(host or "").strip()
+    normalized = candidate[1:-1] if candidate.startswith("[") and candidate.endswith("]") else candidate
+    if normalized.lower() == "localhost":
+        return "127.0.0.1"
+    try:
+        address = ipaddress.ip_address(normalized)
+        is_loopback = address.version == 4 and address.is_loopback
+    except ValueError:
+        is_loopback = False
+    if not is_loopback:
+        raise ValueError("reader host must be IPv4 loopback-only (127.0.0.1 or localhost)")
+    return normalized
+
+
+class LoopbackThreadingHTTPServer(ThreadingHTTPServer):
+    def server_bind(self) -> None:
+        host, *address_tail = self.server_address
+        normalized_host = validate_reader_host(str(host))
+        self.server_address = (normalized_host, *address_tail)
+        super().server_bind()
 
 
 def first_value(value) -> str:
@@ -65,10 +90,10 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         parsed = urlparse(self.path)
         if parsed.path == "/api/health":
-            self.send_json(build_runtime_health())
+            self.send_json(build_public_runtime_health())
             return
         if parsed.path == "/api/artifacts":
-            self.send_json(build_artifact_manifest())
+            self.send_json(build_public_artifact_manifest())
             return
         if parsed.path == "/api/archive":
             self.send_json(build_archive())
@@ -157,6 +182,13 @@ class Handler(BaseHTTPRequestHandler):
         note_match = re.fullmatch(r"/api/notes/([^/]+)/?", parsed.path)
         if note_match:
             self.handle_notes_delete(unquote(note_match.group(1)), parse_qs(parsed.query))
+            return
+        translation_match = re.fullmatch(r"/api/sentence-translations/([^/]+)/?", parsed.path)
+        if translation_match:
+            self.handle_sentence_translation_delete(
+                unquote(translation_match.group(1)),
+                parse_qs(parsed.query),
+            )
             return
         self.send_error(404)
 
@@ -256,6 +288,21 @@ class Handler(BaseHTTPRequestHandler):
             return
         except FileNotFoundError as exc:
             self.send_error(404, str(exc))
+            return
+        self.send_json({"ok": True, "deleted": deleted})
+
+    def handle_sentence_translation_delete(
+        self,
+        record_id: str,
+        query: dict[str, list[str]],
+    ) -> None:
+        try:
+            deleted = delete_sentence_translation_from_query(record_id, query)
+        except ValueError as exc:
+            self.send_json({"ok": False, "error": str(exc)}, status=400)
+            return
+        except FileNotFoundError as exc:
+            self.send_json({"ok": False, "error": str(exc)}, status=404)
             return
         self.send_json({"ok": True, "deleted": deleted})
 
@@ -422,9 +469,12 @@ def main() -> None:
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8793)
     args = parser.parse_args()
-    server = ThreadingHTTPServer((args.host, args.port), Handler)
-    display_host = "127.0.0.1" if args.host in {"0.0.0.0", ""} else args.host
-    print(f"Personal Archive of Literature reader running at http://{display_host}:{args.port}/")
+    try:
+        args.host = validate_reader_host(args.host)
+    except ValueError as exc:
+        parser.error(str(exc))
+    server = LoopbackThreadingHTTPServer((args.host, args.port), Handler)
+    print(f"Personal Archive of Literature reader running at http://{args.host}:{args.port}/")
     server.serve_forever()
 
 

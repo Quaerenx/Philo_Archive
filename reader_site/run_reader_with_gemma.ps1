@@ -1,6 +1,6 @@
 param(
     [string]$ModelPath = "C:\Users\PP\Downloads\gemma-4-26B-A4B-it-Q4_K_M.gguf",
-    [string]$ReaderHost = "0.0.0.0",
+    [string]$ReaderHost = "127.0.0.1",
     [int]$ReaderPort = 8793,
     [string]$GemmaHost = "127.0.0.1",
     [int]$GemmaPort = 8794,
@@ -12,7 +12,7 @@ $ErrorActionPreference = "Stop"
 $Site = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RuntimeDir = Join-Path $Site "data\runtime.local"
 $GemmaBaseUrl = "http://${GemmaHost}:${GemmaPort}"
-$ReaderBaseUrl = if ($ReaderHost -eq "0.0.0.0") { "http://127.0.0.1:${ReaderPort}" } else { "http://${ReaderHost}:${ReaderPort}" }
+$ReaderBaseUrl = "http://${ReaderHost}:${ReaderPort}"
 $ReaderAlreadyRunning = $false
 $StartedGemma = $false
 $GemmaProcess = $null
@@ -46,6 +46,44 @@ function Test-PortListening {
     return $null -ne $connection
 }
 
+function Test-PortLoopbackOnly {
+    param([int]$Port)
+    $connections = @(
+        Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue
+    )
+    if (!$connections.Count) {
+        return $false
+    }
+    foreach ($connection in $connections) {
+        $address = $null
+        if (
+            ![System.Net.IPAddress]::TryParse($connection.LocalAddress, [ref]$address) -or
+            ![System.Net.IPAddress]::IsLoopback($address)
+        ) {
+            return $false
+        }
+    }
+    return $true
+}
+
+function Test-LoopbackHost {
+    param([string]$HostName)
+    if (!$HostName) {
+        return $false
+    }
+    if ($HostName -eq "localhost") {
+        return $true
+    }
+    $address = $null
+    if (![System.Net.IPAddress]::TryParse($HostName, [ref]$address)) {
+        return $false
+    }
+    return (
+        $address.AddressFamily -eq [System.Net.Sockets.AddressFamily]::InterNetwork -and
+        [System.Net.IPAddress]::IsLoopback($address)
+    )
+}
+
 function Get-PortOwnerHint {
     param([int]$Port)
     $connection = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
@@ -67,25 +105,7 @@ function Get-ReaderOpenUrlLines {
         [int]$Port
     )
     $lines = New-Object System.Collections.Generic.List[string]
-    if ($HostName -eq "0.0.0.0" -or !$HostName) {
-        $lines.Add("This PC: http://127.0.0.1:${Port}/")
-        try {
-            $addresses = Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue |
-                Where-Object {
-                    $_.IPAddress -and
-                    $_.IPAddress -notmatch "^127\." -and
-                    $_.IPAddress -notmatch "^169\.254\."
-                } |
-                Select-Object -ExpandProperty IPAddress -Unique
-            foreach ($address in $addresses) {
-                $lines.Add("Same LAN: http://${address}:${Port}/")
-            }
-        } catch {
-            return $lines
-        }
-        return $lines
-    }
-    $lines.Add("Open: http://${HostName}:${Port}/")
+    $lines.Add("This PC: http://${HostName}:${Port}/")
     return $lines
 }
 
@@ -127,6 +147,13 @@ function Wait-GemmaReady {
     throw "Gemma runtime did not become ready at ${BaseUrl}"
 }
 
+if (!(Test-LoopbackHost -HostName $ReaderHost)) {
+    Stop-WithHint "ReaderHost must be loopback-only; unauthenticated LAN exposure is disabled." @(
+        "Use the default: .\run_reader_with_gemma.ps1",
+        "Or pass -ReaderHost 127.0.0.1 explicitly."
+    )
+}
+
 if (!(Get-Command python -ErrorAction SilentlyContinue)) {
     Stop-WithHint "Python was not found in PATH." @(
         "Install Python or add it to PATH.",
@@ -135,6 +162,13 @@ if (!(Get-Command python -ErrorAction SilentlyContinue)) {
 }
 
 if (Test-PortListening -Port $ReaderPort) {
+    if (!(Test-PortLoopbackOnly -Port $ReaderPort)) {
+        Stop-WithHint "Reader port ${ReaderPort} has a non-loopback listener." @(
+            (Get-PortOwnerHint -Port $ReaderPort),
+            "Stop the existing LAN-bound reader or service before restarting Philo Archive.",
+            "The supported reader boundary is 127.0.0.1 only."
+        )
+    }
     if (Test-ReaderReady -BaseUrl $ReaderBaseUrl) {
         $ReaderAlreadyRunning = $true
         Write-Host "Philo Archive reader already running at ${ReaderBaseUrl}"

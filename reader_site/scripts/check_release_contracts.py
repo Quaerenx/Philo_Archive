@@ -13,6 +13,7 @@ sys.path.insert(0, str(SITE))
 MAX_TRACKED_FILE_BYTES = 20 * 1024 * 1024
 
 from path_config import SOURCE_ROOT_NAMES  # noqa: E402
+from scripts.build_release_stage_manifest import allowed_category  # noqa: E402
 
 SOURCE_DIRS = list(SOURCE_ROOT_NAMES)
 
@@ -167,6 +168,15 @@ def assert_required_docs() -> None:
             require(snippet in text, f"{relative_path} missing release handoff snippet {snippet!r}")
 
 
+def assert_reader_entrypoint_classification() -> None:
+    for path in SITE.glob("*.html"):
+        relative_path = repo_relative(path)
+        require(
+            allowed_category(relative_path) == "reader_entrypoint",
+            f"release stage manifest does not classify reader entrypoint: {relative_path}",
+        )
+
+
 def main() -> None:
     assert_git_available()
     paths = tracked_paths()
@@ -175,6 +185,7 @@ def main() -> None:
     assert_no_forbidden_tracked_files(paths)
     assert_no_large_tracked_files(paths)
     assert_required_docs()
+    assert_reader_entrypoint_classification()
     print("release contracts ok")
 
 

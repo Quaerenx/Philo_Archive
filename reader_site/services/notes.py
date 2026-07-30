@@ -4,11 +4,13 @@ import json
 import os
 import re
 from datetime import datetime
+from functools import lru_cache
 from pathlib import Path
 from urllib.parse import quote
 from uuid import uuid4
 
 from corpora.catalogs import validate_work_target
+from services.jsonl_storage import atomic_write_jsonl, jsonl_snapshot_key, locked_jsonl
 from services.sentence_targets import resolve_sentence_target
 from services.source_targets import resolve_segment_target
 from services.sources import work_href
@@ -77,29 +79,39 @@ def note_storage_path(corpus_id: str) -> Path:
     return NOTES_DIR / f"{corpus_id}_notes.jsonl"
 
 
-def read_jsonl(path: Path) -> list[dict]:
-    if not path.exists():
-        return []
+@lru_cache(maxsize=16)
+def _read_jsonl_snapshot(
+    path_value: str,
+    _modified_ns: int,
+    _changed_ns: int,
+    _size: int,
+) -> tuple[dict, ...]:
     records = []
-    with path.open("r", encoding="utf-8") as handle:
+    with Path(path_value).open("r", encoding="utf-8") as handle:
         for line in handle:
             line = line.strip()
             if line:
                 records.append(json.loads(line))
-    return records
+    return tuple(records)
+
+
+def read_jsonl(path: Path) -> list[dict]:
+    snapshot_key = jsonl_snapshot_key(path)
+    if snapshot_key is None:
+        return []
+    return [dict(record) for record in _read_jsonl_snapshot(*snapshot_key)]
 
 
 def append_jsonl(path: Path, record: dict) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("a", encoding="utf-8", newline="\n") as handle:
-        handle.write(json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n")
+    with locked_jsonl(path):
+        records = read_jsonl(path)
+        records.append(record)
+        write_jsonl(path, records)
 
 
 def write_jsonl(path: Path, records: list[dict]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8", newline="\n") as handle:
-        for record in records:
-            handle.write(json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n")
+    atomic_write_jsonl(path, records)
+    _read_jsonl_snapshot.cache_clear()
 
 
 def normalize_note_record(note: dict, fallback_corpus_id: str) -> dict:
@@ -498,29 +510,30 @@ def update_note(corpus_id: str, note_id: str, updates: dict) -> dict:
     if not corpus_id or not note_id:
         raise ValueError("missing note id")
     path = note_storage_path(corpus_id)
-    records = read_jsonl(path)
-    updated = None
-    allowed_fields = {"note", "tags", "quote", "target_label", "review_state", "reviewed_at"}
-    for index, record in enumerate(records):
-        if record.get("id") != note_id:
-            continue
-        next_record = normalize_note_record(record, corpus_id)
-        for field in allowed_fields:
-            if field in updates:
-                next_record[field] = updates[field]
-        if "tags" in next_record and not isinstance(next_record["tags"], list):
-            next_record["tags"] = []
-        if "review_state" in next_record:
-            next_record["review_state"] = normalize_review_state(next_record["review_state"])
-        if "updated_at" in updates:
-            next_record["updated_at"] = updates["updated_at"]
-        records[index] = next_record
-        updated = next_record
-        break
-    if updated is None:
-        raise FileNotFoundError("note not found")
-    write_jsonl(path, records)
-    return updated
+    with locked_jsonl(path):
+        records = read_jsonl(path)
+        updated = None
+        allowed_fields = {"note", "tags", "quote", "target_label", "review_state", "reviewed_at"}
+        for index, record in enumerate(records):
+            if record.get("id") != note_id:
+                continue
+            next_record = normalize_note_record(record, corpus_id)
+            for field in allowed_fields:
+                if field in updates:
+                    next_record[field] = updates[field]
+            if "tags" in next_record and not isinstance(next_record["tags"], list):
+                next_record["tags"] = []
+            if "review_state" in next_record:
+                next_record["review_state"] = normalize_review_state(next_record["review_state"])
+            if "updated_at" in updates:
+                next_record["updated_at"] = updates["updated_at"]
+            records[index] = next_record
+            updated = next_record
+            break
+        if updated is None:
+            raise FileNotFoundError("note not found")
+        write_jsonl(path, records)
+        return updated
 
 
 def delete_note(corpus_id: str, note_id: str) -> dict:
@@ -528,9 +541,10 @@ def delete_note(corpus_id: str, note_id: str) -> dict:
     if not corpus_id or not note_id:
         raise ValueError("missing note id")
     path = note_storage_path(corpus_id)
-    records = read_jsonl(path)
-    remaining = [record for record in records if record.get("id") != note_id]
-    if len(remaining) == len(records):
-        raise FileNotFoundError("note not found")
-    write_jsonl(path, remaining)
-    return {"id": note_id}
+    with locked_jsonl(path):
+        records = read_jsonl(path)
+        remaining = [record for record in records if record.get("id") != note_id]
+        if len(remaining) == len(records):
+            raise FileNotFoundError("note not found")
+        write_jsonl(path, remaining)
+        return {"id": note_id}

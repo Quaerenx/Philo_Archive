@@ -22,16 +22,15 @@ The start script also prints browser-ready links:
 ```text
 Open Philo Archive:
   This PC: http://127.0.0.1:8793/
-  Same LAN: http://<machine-ip>:8793/
 ```
 
 What starts:
 
-- Reader site: `0.0.0.0:8793`, also reachable as `http://127.0.0.1:8793/` on the same machine.
+- Reader site: `127.0.0.1:8793`, reachable only from the same machine.
 - Local AI sidecar: `127.0.0.1:8794`.
 - Runtime logs: `reader_site\data\runtime.local\`.
 
-The local AI sidecar is intentionally local-only. LAN users may open the reader by machine IP, but they do not get direct access to the llama.cpp sidecar.
+The reader and local AI sidecar are intentionally loopback-only. The reader APIs can read source material and modify personal notes, so unauthenticated LAN binding is rejected. Remote-device access requires a future authenticated deployment layer rather than `-ReaderHost 0.0.0.0`.
 
 ## Reader Only
 

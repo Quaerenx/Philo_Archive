@@ -132,6 +132,13 @@ After starting the server, check the local runtime state at:
 - `http://127.0.0.1:8793/api/health`
 - `http://127.0.0.1:8793/api/artifacts`
 
+The reader is loopback-only. Both diagnostic endpoints return redacted readiness data; use `reader_site\scripts\build_artifact_manifest.py` when a detailed local manifest is required.
+
+Independent security revalidation:
+
+- `reader_site/docs/external_security_revalidation_prompt_ko.md`: reusable external-verifier prompt for the four remediated findings.
+- `reader_site/docs/security_validation/2026-07-30/`: local validation summary and per-finding receipts. Publication verification remains blocked until the remediation is committed and pushed.
+
 Key validation commands:
 
 ```powershell

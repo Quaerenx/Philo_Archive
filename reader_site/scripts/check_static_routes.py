@@ -3,22 +3,35 @@ from __future__ import annotations
 import json
 import sys
 import threading
-from http.server import ThreadingHTTPServer
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from urllib.error import HTTPError
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
 
 
 SITE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SITE))
 
 from corpora.archive import build_archive  # noqa: E402
-from server import Handler  # noqa: E402
+from server import Handler, LoopbackThreadingHTTPServer  # noqa: E402
+from services import sentence_translations as sentence_translation_service  # noqa: E402
 
 
 def require(condition: bool, message: str) -> None:
     if not condition:
         raise AssertionError(message)
+
+
+def nested_keys(value) -> set[str]:
+    keys: set[str] = set()
+    if isinstance(value, dict):
+        keys.update(str(key) for key in value)
+        for child in value.values():
+            keys.update(nested_keys(child))
+    elif isinstance(value, list):
+        for child in value:
+            keys.update(nested_keys(child))
+    return keys
 
 
 def fetch_json(base_url: str, path: str) -> dict:
@@ -64,6 +77,57 @@ def first_source_routes() -> tuple[str, str]:
     raise AssertionError("no read/source route pair found in archive")
 
 
+def check_translation_delete_route(base_url: str) -> None:
+    with TemporaryDirectory(prefix="philo_translation_delete_route_") as temp_dir:
+        original_ai_dir = sentence_translation_service.AI_DIR
+        sentence_translation_service.AI_DIR = Path(temp_dir)
+        try:
+            path = sentence_translation_service.ai_record_path("contract")
+            sentence_translation_service.write_records(
+                path,
+                [
+                    {
+                        "id": "delete-route-record",
+                        "record_type": "ai_sentence_translation",
+                        "corpus_id": "contract",
+                        "work_id": "demo",
+                        "translation": "temporary route contract",
+                        "review_state": "generated",
+                    }
+                ],
+            )
+            request = Request(
+                base_url + "/api/sentence-translations/delete-route-record?corpus_id=contract",
+                method="DELETE",
+            )
+            with urlopen(request, timeout=15) as response:
+                status = response.status
+                payload = json.loads(response.read().decode("utf-8"))
+            require(status == 200, "sentence translation DELETE route should return 200")
+            require(payload.get("deleted", {}).get("id") == "delete-route-record", "DELETE response record mismatch")
+            require(sentence_translation_service.iter_cached_records(path) == [], "DELETE route left the record stored")
+
+            try:
+                urlopen(request, timeout=15)
+            except HTTPError as exc:
+                require(exc.code == 404, "repeated sentence translation DELETE should return 404")
+            else:
+                raise AssertionError("repeated sentence translation DELETE should fail")
+
+            missing_corpus_request = Request(
+                base_url + "/api/sentence-translations/delete-route-record",
+                method="DELETE",
+            )
+            try:
+                urlopen(missing_corpus_request, timeout=15)
+            except HTTPError as exc:
+                require(exc.code == 400, "sentence translation DELETE without corpus_id should return 400")
+            else:
+                raise AssertionError("sentence translation DELETE without corpus_id should fail")
+        finally:
+            sentence_translation_service.AI_DIR = original_ai_dir
+
+
 def check_routes(base_url: str) -> None:
     static_cases = {
         "/": "Personal Archive",
@@ -84,6 +148,15 @@ def check_routes(base_url: str) -> None:
     require("--page-frame-width" in tokens, "design tokens asset did not load")
     require(fetch_status(base_url, "/assets/missing.css") == 404, "missing static asset should return 404")
     require(fetch_status(base_url, "/%2e%2e/server.py") == 403, "path traversal should return 403")
+    for private_path in (
+        "/server.py",
+        "/runtime_status.py",
+        "/README.md",
+        "/templates/work.html",
+        "/data/notes/nietzsche_notes.jsonl",
+        "/data/search_index.sqlite",
+    ):
+        require(fetch_status(base_url, private_path) == 403, f"private static path should return 403: {private_path}")
 
     work_path = first_work_route()
     work_body = fetch_text(base_url, work_path)
@@ -120,6 +193,28 @@ def check_routes(base_url: str) -> None:
 
     health = fetch_json(base_url, "/api/health")
     require(health.get("status") in {"ok", "warning"}, "health status invalid")
+    artifacts = fetch_json(base_url, "/api/artifacts")
+    forbidden_diagnostic_keys = {
+        "base_url",
+        "bytes",
+        "corpus_root",
+        "error",
+        "models",
+        "modified_at",
+        "notes",
+        "path",
+        "primary_output",
+        "site_root",
+        "source_root",
+    }
+    require(
+        not (forbidden_diagnostic_keys & nested_keys(health)),
+        "health response exposed private diagnostic fields",
+    )
+    require(
+        not (forbidden_diagnostic_keys & nested_keys(artifacts)),
+        "artifact response exposed private diagnostic fields",
+    )
     study = fetch_json(base_url, "/api/study")
     require("groups" in study and "count" in study, "study api shape invalid")
     translation_export = fetch_text(base_url, "/api/sentence-translations/export?corpus_id=nietzsche&work_id=GM&format=markdown")
@@ -146,12 +241,14 @@ def check_routes(base_url: str) -> None:
 
 
 def main() -> None:
-    httpd = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    httpd = LoopbackThreadingHTTPServer(("127.0.0.1", 0), Handler)
     thread = threading.Thread(target=httpd.serve_forever, daemon=True)
     thread.start()
     try:
         host, port = httpd.server_address
-        check_routes(f"http://{host}:{port}")
+        base_url = f"http://{host}:{port}"
+        check_routes(base_url)
+        check_translation_delete_route(base_url)
     finally:
         httpd.shutdown()
         thread.join(timeout=5)

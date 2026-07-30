@@ -145,26 +145,30 @@ Bible lookup and work aliases also accept LXX/deuterocanonical shorthand such as
 Bible direct lookup handles references such as `Gen 1:1`, `Genesis 1:1`, `John 3:16`, `1 John 5:7`, Korean abbreviations such as `창 1:1`, `요 3:16`, `요일 5:7`, and source-prefixed `lxx Gen 1:1`.
 Search responses include matching works through `work_results`, segment results through `results`, and matching personal notes through `note_results`.
 Work alias search handles compact sigla and titles such as `GM`, `M`, `John`, `1 John`, `Genesis`, `Ecclesiasticus`, and source-prefixed queries such as `lxx Genesis`.
+Work-title aliases are Unicode-folded for matching, so practical ASCII input such as `Morgenrothe`, `Gotzen-Dammerung`, `Jenseits von Gut und Bose`, and `Frygt og Baeven` resolves to titles stored with diacritics.
 Search results link back into `/notes` by work and segment target. Notes storage, query/export payload assembly, and create/update/delete record normalization live in `services/notes.py`; the `/notes` page gives a cross-work notes index with direct edit/delete controls and a Working/Saved workflow (stored as raw/reviewed internally), while `/study` is backed by `/api/study` bundles and gives a quieter reading view for saved notes by corpus and work. Study bundles include deterministic summaries, tag counts, saved date ranges, Markdown export, and print-friendly CSS. JSON, JSONL, and Markdown export links remain available.
 Source path validation plus `/read` and `/source` response assembly live in `services/sources.py`; `server.py` only maps errors to HTTP responses and sends the returned HTML or inline file.
 Shared source-root and primary-output path constants live in `path_config.py`; runtime diagnostics, source serving, builders, and release checks use that file as the path baseline.
-Static entrypoint resolution and file response metadata live in `services/static_files.py`; `/`, `/category/...`, `/search`, `/notes`, `/study`, and asset paths use the same site-root boundary checks.
+Static entrypoint resolution and file response metadata live in `services/static_files.py`; only named pages, top-level `app.js`/`styles.css`, and approved web assets under `/assets/` are publishable. Code, templates, local data, logs, and configuration remain private even though they share the site directory.
 Archive index construction for `/api/archive` lives in `corpora/archive.py`; it turns the local corpus folders and generated metadata into root-category and category-page links.
 Corpus catalog, metadata, work resolution, Bible segment lookup, and `/api/bible/segments` payload assembly live in `corpora/catalogs.py`.
 Corpus-specific work-page model builders live in `corpora/work_models.py`; they adapt Nietzsche, Bible, Kierkegaard, and Wittgenstein into the common work-page shape.
 Work page HTML assembly lives in `services/work_pages.py`; it selects the corpus-specific work model and applies the common `templates/work.html` markup.
+Work-page browser persistence lives in `assets/reader-work-storage.js`, which is loaded before `assets/reader-work.js`. The storage adapter owns the existing recent-work, study-panel, and session note-draft keys plus JSON/error handling; the main reader controller owns the DOM-derived payloads and UI state.
 Markdown, Bible verse, Kierkegaard JSON, and plain segment rendering helpers live in `rendering/documents.py`.
 Common work-page markup and template rendering live in `rendering/work_markup.py`.
 Reading/source page rendering lives in `rendering/static_pages.py`, backed by `templates/reading.html`, `templates/source.html`, and `assets/static-reader.css`.
 Source target resolution for AI/Gemma interpretation lives in `services/source_targets.py`; it resolves selected segment URLs and computes `source_text_sha256` from local `text_raw` segment records.
 The local `/api/source-target?corpus_id=...&work_id=...&target_id=...` endpoint returns a bounded source target bundle for one generated segment. It is a pre-AI input boundary only: it returns exact source text plus checksum, but it does not call Gemma or save generated interpretations.
 Prompt template preparation lives in `data/ai_prompt_templates.json` and `services/interpretation_prompts.py`. It renders a selected source target into a deterministic prompt bundle with `prompt_template_id`, `prompt_sha256`, and `source_text_sha256`.
-On-demand sentence translation lives in `services/sentence_targets.py` and `services/sentence_translations.py`. The reader sends only the clicked sentence plus its bounded segment context to the local llama.cpp server. Generated records are stored locally under `data/ai/*_sentence_translations.jsonl` and are intentionally ignored by Git.
+On-demand sentence translation lives in `services/sentence_targets.py` and `services/sentence_translations.py`. The reader sends only the clicked sentence plus its bounded segment context to the local llama.cpp server. Generated records are stored locally under `data/ai/*_sentence_translations.jsonl` and are intentionally ignored by Git. The Translations page supports review-state changes, export, and confirmation-gated permanent deletion of an individual generated record.
+
+Repeated note and sentence-translation list reads use bounded, file-signature-aware in-process caches. Successful atomic writes invalidate the relevant service cache, while external file changes are detected from file metadata. The JSONL files remain the source of truth.
 
 Runtime diagnostics:
 
-- `/api/health` reports source-folder, metadata, segment, note, and search database readiness.
-- `/api/artifacts` returns the current generated artifact manifest without writing a file.
+- `/api/health` reports redacted corpus, search, and Gemma readiness without local paths, model names, personal-note state, or detailed file inventory.
+- `/api/artifacts` returns a redacted artifact-readiness manifest without paths, sizes, timestamps, checksums, or local configuration.
 - To write a local manifest for handoff or backup checks:
 
 ```powershell
@@ -173,6 +177,19 @@ python .\scripts\build_artifact_manifest.py
 
 The default manifest output is `data/artifact_manifest.local.json`, which is intentionally ignored by Git because it records local machine state. Add `--checksums` when you need SHA-256 hashes for large generated artifacts.
 Use `--check` when you only want to validate manifest generation and any existing local manifest JSON without writing.
+
+The HTTP server accepts loopback bind addresses only. Its APIs can read local source material and mutate notes, so direct unauthenticated LAN exposure is deliberately unsupported.
+
+Security remediation handoff:
+
+- `docs/external_security_revalidation_prompt_ko.md`: reusable Korean prompt for independent revalidation of SEC-01, SEC-02, DATA-01, and PRIV-01.
+- `docs/security_validation/2026-07-30/`: local working-tree validation summary and one receipt per remediated finding.
+
+Codebase review and optimization evidence:
+
+- `docs/codebase_review_2026-07-30.md`: reviewed scope, implemented feature/efficiency changes, benchmark evidence, validation, and deliberately deferred recommendations.
+- `docs/next_search_quality_prompt_ko.md`: reusable Korean prompt for evidence-based search evaluation and ranking work.
+- `docs/search_quality_calibration_2026-07-30.md`: expanded evaluation set, before/after metrics, implementation rationale, and remaining search-quality limits.
 
 Check the release/Git handoff policy with:
 
@@ -256,7 +273,7 @@ Validate the core reader interaction flow in a headless browser:
 python .\scripts\check_reader_interaction_smoke.py
 ```
 
-This checks that a sentence URL selects the source sentence, opens the study panel state, and keeps the selected sentence visible to the translation/commentary workflow.
+This checks that a sentence URL selects the source sentence, opens the study panel state, keeps the selected sentence visible to the translation/commentary workflow, and carries the recent-work record back to the home page. It prefers the same local Node/Playwright runtime used by the visual smoke check and retains direct headless-browser capture as a fallback.
 
 For manual browser QA of the work reader, open a cached sentence such as:
 

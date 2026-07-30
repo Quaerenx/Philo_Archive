@@ -5,12 +5,14 @@ import os
 import re
 import uuid
 from datetime import datetime, timezone
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 from services.interpretation_prompts import load_prompt_template
+from services.jsonl_storage import atomic_write_jsonl, jsonl_snapshot_key, locked_jsonl
 from services.sentence_targets import sentence_target_bundle
 from services.source_targets import sha256_text
 
@@ -237,11 +239,15 @@ def call_llama_server(prompt_bundle: dict[str, Any]) -> dict[str, Any]:
     return normalized_model_output(content)
 
 
-def iter_cached_records(path: Path) -> list[dict[str, Any]]:
-    if not path.exists():
-        return []
+@lru_cache(maxsize=16)
+def _read_translation_snapshot(
+    path_value: str,
+    _modified_ns: int,
+    _changed_ns: int,
+    _size: int,
+) -> tuple[dict[str, Any], ...]:
     records = []
-    for line in path.read_text(encoding="utf-8").splitlines():
+    for line in Path(path_value).read_text(encoding="utf-8").splitlines():
         if not line.strip():
             continue
         try:
@@ -250,14 +256,19 @@ def iter_cached_records(path: Path) -> list[dict[str, Any]]:
             continue
         if isinstance(record, dict):
             records.append(record)
-    return records
+    return tuple(records)
+
+
+def iter_cached_records(path: Path) -> list[dict[str, Any]]:
+    snapshot_key = jsonl_snapshot_key(path)
+    if snapshot_key is None:
+        return []
+    return [dict(record) for record in _read_translation_snapshot(*snapshot_key)]
 
 
 def write_records(path: Path, records: list[dict[str, Any]]) -> None:
-    AI_DIR.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8", newline="\n") as handle:
-        for record in records:
-            handle.write(json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n")
+    atomic_write_jsonl(path, records)
+    _read_translation_snapshot.cache_clear()
 
 
 def public_record_id(record: dict[str, Any]) -> str:
@@ -301,9 +312,10 @@ def find_cached_record(path: Path, target: dict[str, Any], prompt_bundle: dict[s
 
 
 def append_record(path: Path, record: dict[str, Any]) -> None:
-    AI_DIR.mkdir(parents=True, exist_ok=True)
-    with path.open("a", encoding="utf-8", newline="\n") as handle:
-        handle.write(json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n")
+    with locked_jsonl(path):
+        records = iter_cached_records(path)
+        records.append(record)
+        write_records(path, records)
 
 
 def build_record(target: dict[str, Any], prompt_bundle: dict[str, Any], output: dict[str, Any]) -> dict[str, Any]:
@@ -360,25 +372,50 @@ def update_sentence_translation_review(payload: dict[str, Any], record_id: str) 
     require(review_state in {"reviewed", "rejected", "generated"}, "invalid review_state")
     record_id = clean_id(record_id)
     path = ai_record_path(corpus_id)
-    records = iter_cached_records(path)
-    now = utc_now()
-    updated: dict[str, Any] | None = None
-    for index, record in enumerate(records):
-        if public_record_id(record) != record_id:
-            continue
-        next_record = dict(record)
-        if not valid_record_id(next_record.get("id")):
-            next_record["id"] = record_id
-        next_record["review_state"] = review_state
-        next_record["reviewed_at"] = now if review_state == "reviewed" else ""
-        next_record["updated_at"] = now
-        records[index] = next_record
-        updated = next_record
-        break
-    if updated is None:
-        raise FileNotFoundError("sentence translation record not found")
-    write_records(path, records)
-    return {"ok": True, "record": public_translation_record(updated)}
+    with locked_jsonl(path):
+        records = iter_cached_records(path)
+        now = utc_now()
+        updated: dict[str, Any] | None = None
+        for index, record in enumerate(records):
+            if public_record_id(record) != record_id:
+                continue
+            next_record = dict(record)
+            if not valid_record_id(next_record.get("id")):
+                next_record["id"] = record_id
+            next_record["review_state"] = review_state
+            next_record["reviewed_at"] = now if review_state == "reviewed" else ""
+            next_record["updated_at"] = now
+            records[index] = next_record
+            updated = next_record
+            break
+        if updated is None:
+            raise FileNotFoundError("sentence translation record not found")
+        write_records(path, records)
+        return {"ok": True, "record": public_translation_record(updated)}
+
+
+def delete_sentence_translation(corpus_id: str, record_id: str) -> dict[str, Any]:
+    corpus_id = safe_corpus_id(corpus_id)
+    record_id = clean_id(record_id)
+    path = ai_record_path(corpus_id)
+    with locked_jsonl(path):
+        records = iter_cached_records(path)
+        for index, record in enumerate(records):
+            if public_record_id(record) != record_id:
+                continue
+            deleted = records.pop(index)
+            write_records(path, records)
+            return public_translation_record(deleted)
+    raise FileNotFoundError("sentence translation record not found")
+
+
+def delete_sentence_translation_from_query(
+    record_id: str,
+    query: dict[str, list[str]],
+) -> dict[str, Any]:
+    corpus_id = query_corpus_id(query)
+    require(bool(corpus_id), "missing corpus_id")
+    return delete_sentence_translation(corpus_id, record_id)
 
 
 def translation_record_matches_text_query(record: dict[str, Any], text_query: str) -> bool:

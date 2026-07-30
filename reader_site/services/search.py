@@ -4,6 +4,7 @@ import heapq
 import json
 import re
 import sqlite3
+import unicodedata
 from pathlib import Path
 from urllib.parse import quote
 
@@ -28,6 +29,17 @@ CORPUS_TITLES = {
 }
 BIBLE_ALIAS_CACHE: dict[str, list[dict]] | None = None
 WORK_METADATA_CACHE: dict[str, dict] | None = None
+ALIAS_ASCII_TRANSLATION = str.maketrans(
+    {
+        "æ": "ae",
+        "ð": "d",
+        "ø": "o",
+        "þ": "th",
+        "ß": "ss",
+        "œ": "oe",
+        "ł": "l",
+    }
+)
 BIBLE_KO_ABBREVIATIONS = {
     "창": "Gen",
     "출": "Exod",
@@ -133,7 +145,11 @@ def normalize_search_text(value: str) -> str:
 
 
 def compact_alias_key(value: str) -> str:
-    return re.sub(r"[\W_]+", "", normalize_search_text(value), flags=re.UNICODE)
+    translated = normalize_search_text(value).translate(ALIAS_ASCII_TRANSLATION)
+    decomposed = unicodedata.normalize("NFKD", translated)
+    without_marks = "".join(character for character in decomposed if not unicodedata.combining(character))
+    folded = unicodedata.normalize("NFC", without_marks)
+    return re.sub(r"[\W_]+", "", folded, flags=re.UNICODE)
 
 
 def bible_source_priority(work: dict, preferred_source: str = "") -> tuple[int, int, str]:
@@ -347,16 +363,21 @@ def work_matches_variant(work: dict, variant_id: str) -> bool:
 
 def score_work_match(query: str, terms: list[str], aliases: list[str], work: dict) -> int:
     compact_query = compact_alias_key(query)
-    compact_aliases = {compact_alias_key(alias) for alias in aliases if compact_alias_key(alias)}
+    compact_aliases = {
+        compact_alias
+        for alias in aliases
+        if (compact_alias := compact_alias_key(alias))
+    }
     haystack = normalize_search_text(" ".join(aliases))
     compact_haystack = compact_alias_key(haystack)
+    compact_terms = [compact_alias_key(term) for term in terms]
     exact_match = bool(compact_query and compact_query in compact_aliases)
     prefix_match = bool(
         compact_query and len(compact_query) >= 2 and any(alias.startswith(compact_query) for alias in compact_aliases)
     )
     term_matches = [
-        term in haystack or (compact_alias_key(term) and compact_alias_key(term) in compact_haystack)
-        for term in terms
+        term in haystack or (compact_term and compact_term in compact_haystack)
+        for term, compact_term in zip(terms, compact_terms)
     ]
     if not exact_match and not prefix_match and not all(term_matches):
         return 0
@@ -370,7 +391,7 @@ def score_work_match(query: str, terms: list[str], aliases: list[str], work: dic
     if compact_query and compact_query == compact_alias_key(str(work.get("work_id", ""))):
         score += 500
     score += sum(30 for term in terms if term in haystack)
-    score += sum(15 for term in terms if compact_alias_key(term) and compact_alias_key(term) in compact_haystack)
+    score += sum(15 for compact_term in compact_terms if compact_term and compact_term in compact_haystack)
     return score
 
 

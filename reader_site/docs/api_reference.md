@@ -75,6 +75,38 @@ Notes:
 
 ## `GET /api/health`
 
+The HTTP health response is intentionally redacted. It contains readiness booleans only; absolute paths, local model names, personal-note state, raw backend errors, byte counts, timestamps, and detailed file inventory are excluded.
+
+```json
+{
+  "status": "ok",
+  "generated_at": "2026-07-30T03:00:00+00:00",
+  "corpora": [
+    {
+      "corpus_id": "bible",
+      "title": "Bible",
+      "source_ready": true,
+      "metadata_ready": true,
+      "segments_ready": true
+    }
+  ],
+  "search": {
+    "ready": true,
+    "fts5": true
+  },
+  "gemma": {
+    "reachable": true,
+    "model_count": 1
+  },
+  "issues": []
+}
+```
+
+The detailed structure below is retained for local maintenance builders such as `build_runtime_health()` and is not returned by the HTTP handler.
+
+<details>
+<summary>Detailed local maintenance payload</summary>
+
 현재 로컬 reader site 실행 상태를 빠르게 확인하는 endpoint이다.
 
 최상위 필드:
@@ -83,8 +115,8 @@ Notes:
 {
   "status": "ok",
   "generated_at": "2026-06-04T03:00:00+00:00",
-  "site_root": "C:\\Users\\PP\\PROJECT\\0.philosophy\\philosophy_crawl\\reader_site",
-  "corpus_root": "C:\\Users\\PP\\PROJECT\\0.philosophy\\philosophy_crawl",
+  "site_root": "<reader_site>",
+  "corpus_root": "<corpus_root>",
   "corpora": [],
   "search": {},
   "gemma": {},
@@ -169,7 +201,36 @@ Notes:
 - `issues[]` is empty when `status` is `ok`.
 - `next_recommended_upgrades[]` is advisory and may change as implementation work progresses.
 
+</details>
+
 ## `GET /api/artifacts`
+
+The HTTP response is a redacted readiness manifest. Paths, sizes, timestamps, checksums, local configuration, and regeneration commands are excluded.
+
+```json
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-30T03:00:00+00:00",
+  "corpora": [],
+  "artifacts": [
+    {
+      "name": "search_index.sqlite",
+      "kind": "search",
+      "role": "query database",
+      "ready": true
+    }
+  ],
+  "search": {
+    "ready": true,
+    "fts5": true
+  }
+}
+```
+
+For paths, byte sizes, timestamps, optional checksums, and rebuild commands, generate the ignored local manifest with `python .\scripts\build_artifact_manifest.py`.
+
+<details>
+<summary>Detailed local maintenance manifest</summary>
 
 현재 로컬 생성 산출물 manifest를 반환한다. `scripts/build_artifact_manifest.py`가 파일로 쓰는 내용과 같은 계열의 payload이다.
 
@@ -179,8 +240,8 @@ Notes:
 {
   "schema_version": 1,
   "generated_at": "2026-06-04T03:00:00+00:00",
-  "site_root": "C:\\Users\\PP\\PROJECT\\0.philosophy\\philosophy_crawl\\reader_site",
-  "corpus_root": "C:\\Users\\PP\\PROJECT\\0.philosophy\\philosophy_crawl",
+  "site_root": "<reader_site>",
+  "corpus_root": "<corpus_root>",
   "uses_env_corpus_root": false,
   "corpora": [],
   "artifacts": [],
@@ -221,6 +282,8 @@ Notes:
 - The HTTP API does not write `data/artifact_manifest.local.json`.
 - To write the manifest, run `python .\scripts\build_artifact_manifest.py`.
 - Use `--checksums` only when SHA-256 hashes are needed, because it reads large generated files.
+
+</details>
 
 ## `GET /api/search`
 
@@ -413,6 +476,34 @@ Request:
 ```
 
 Allowed `review_state` values are `generated`, `reviewed`, and `rejected`.
+
+## `DELETE /api/sentence-translations/<record_id>`
+
+Permanently removes one local generated sentence-translation record. The record is deleted from the corpus JSONL file; source text and notes are not changed.
+
+Query parameters:
+
+- `corpus_id`: required corpus id.
+
+Example:
+
+```text
+DELETE /api/sentence-translations/record-id?corpus_id=nietzsche
+```
+
+Response:
+
+```json
+{
+  "ok": true,
+  "deleted": {
+    "id": "record-id",
+    "corpus_id": "nietzsche"
+  }
+}
+```
+
+The Translations page places this operation behind a permanent-delete action and an explicit browser confirmation. A missing `corpus_id` returns `400`; an unknown record returns `404`.
 
 ## `GET /api/sentence-translations/summary`
 

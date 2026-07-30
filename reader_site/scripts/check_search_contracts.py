@@ -149,6 +149,22 @@ def check_work_alias_search() -> None:
         "Additions to Daniel alias should find LXX Daniel/Susanna/Bel materials",
     )
 
+    ascii_title_cases = [
+        ("Morgenrothe", "nietzsche", "M"),
+        ("Frohliche Wissenschaft", "nietzsche", "FW"),
+        ("Gotzen-Dammerung", "nietzsche", "GD"),
+        ("Jenseits von Gut und Bose", "nietzsche", "JGB"),
+        ("Frygt og Baeven", "kierkegaard", "fb"),
+    ]
+    for query, corpus_id, expected_work_id in ascii_title_cases:
+        payload = search_records(query, corpus_id=corpus_id, limit=5)
+        results = payload.get("work_results", [])
+        require(results, f"{query} ASCII title alias returned no work results")
+        require(
+            results[0].get("work_id") == expected_work_id,
+            f"{query} expected {expected_work_id}, got {results[0].get('work_id')}",
+        )
+
 
 def check_segment_ranking() -> None:
     ressentiment = search_records("ressentiment", corpus_id="nietzsche", limit=5)

@@ -73,6 +73,7 @@ ALLOWED_TOP_LEVEL_FILES = {
     "reader_site/server.py",
     "reader_site/study.html",
     "reader_site/styles.css",
+    "reader_site/translations.html",
 }
 
 ALLOWED_DATA_PATTERNS = [

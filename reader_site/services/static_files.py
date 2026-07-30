@@ -9,7 +9,22 @@ from services.sources import is_inside
 
 
 SITE = Path(__file__).resolve().parents[1]
+ASSETS = SITE / "assets"
 TEXT_SUFFIXES = {".html", ".css", ".js", ".svg", ".md", ".txt", ".csv"}
+PUBLIC_ROOT_FILES = {"app.js", "styles.css"}
+PUBLIC_ASSET_SUFFIXES = {
+    ".css",
+    ".gif",
+    ".ico",
+    ".jpeg",
+    ".jpg",
+    ".js",
+    ".png",
+    ".svg",
+    ".webp",
+    ".woff",
+    ".woff2",
+}
 STATIC_ENTRYPOINTS = {
     "/search": "search.html",
     "/notes": "notes.html",
@@ -35,6 +50,16 @@ def resolve_static_file(request_path: str) -> Path:
         target = (SITE / clean).resolve()
         if not is_inside(target, SITE.resolve()):
             raise PermissionError("static path is outside site root")
+        relative = target.relative_to(SITE.resolve())
+        is_public_root_file = len(relative.parts) == 1 and relative.name in PUBLIC_ROOT_FILES
+        is_public_asset = (
+            len(relative.parts) > 1
+            and relative.parts[0] == ASSETS.name
+            and is_inside(target, ASSETS.resolve())
+            and target.suffix.lower() in PUBLIC_ASSET_SUFFIXES
+        )
+        if not is_public_root_file and not is_public_asset:
+            raise PermissionError("static path is not public")
     if not target.exists() or not target.is_file():
         raise FileNotFoundError("static file not found")
     return target

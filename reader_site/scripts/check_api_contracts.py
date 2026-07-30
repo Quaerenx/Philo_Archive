@@ -10,7 +10,12 @@ sys.path.insert(0, str(SITE))
 
 from corpora.archive import build_archive  # noqa: E402
 from corpora.catalogs import bible_segments_payload_from_query  # noqa: E402
-from runtime_status import build_artifact_manifest, build_runtime_health  # noqa: E402
+from runtime_status import (  # noqa: E402
+    build_artifact_manifest,
+    build_public_artifact_manifest,
+    build_public_runtime_health,
+    build_runtime_health,
+)
 from services.sentence_translations import (  # noqa: E402
     sentence_translations_export_from_query,
     sentence_translations_summary_from_query,
@@ -41,6 +46,24 @@ FORBIDDEN_SOURCE_TARGET_KEYS = {
     "source_root",
     "local_path",
     "metadata_path",
+}
+
+FORBIDDEN_PUBLIC_DIAGNOSTIC_KEYS = {
+    "base_url",
+    "bytes",
+    "corpus_root",
+    "error",
+    "metadata_error",
+    "models",
+    "modified_at",
+    "notes",
+    "path",
+    "primary_output",
+    "regeneration_commands",
+    "sha256",
+    "site_root",
+    "source_root",
+    "uses_env_corpus_root",
 }
 
 
@@ -146,6 +169,43 @@ def check_artifacts(payload: dict[str, Any]) -> None:
     for index, artifact in enumerate(payload["artifacts"]):
         check_file_record(artifact, f"artifacts.artifacts[{index}]")
     check_file_record(payload["search"], "artifacts.search")
+
+
+def nested_keys(value: Any) -> set[str]:
+    keys: set[str] = set()
+    if isinstance(value, dict):
+        keys.update(str(key) for key in value)
+        for child in value.values():
+            keys.update(nested_keys(child))
+    elif isinstance(value, list):
+        for child in value:
+            keys.update(nested_keys(child))
+    return keys
+
+
+def check_public_health(payload: dict[str, Any]) -> None:
+    require_keys(payload, {"status", "generated_at", "corpora", "search", "gemma", "issues"}, "public health")
+    require(payload["status"] in {"ok", "warning"}, "public health.status must be ok or warning")
+    require_keys(payload["search"], {"ready", "fts5"}, "public health.search")
+    require_keys(payload["gemma"], {"reachable", "model_count"}, "public health.gemma")
+    for index, corpus in enumerate(payload["corpora"]):
+        require_keys(
+            corpus,
+            {"corpus_id", "title", "source_ready", "metadata_ready", "segments_ready"},
+            f"public health.corpora[{index}]",
+        )
+    exposed = sorted(FORBIDDEN_PUBLIC_DIAGNOSTIC_KEYS & nested_keys(payload))
+    require(not exposed, "public health exposes private keys: " + ", ".join(exposed))
+
+
+def check_public_artifacts(payload: dict[str, Any]) -> None:
+    require_keys(payload, {"schema_version", "generated_at", "corpora", "artifacts", "search"}, "public artifacts")
+    require(payload["schema_version"] == 1, "public artifacts.schema_version must be 1")
+    require(isinstance(payload["artifacts"], list), "public artifacts.artifacts must be list")
+    for index, artifact in enumerate(payload["artifacts"]):
+        require_keys(artifact, {"name", "kind", "role", "ready"}, f"public artifacts.artifacts[{index}]")
+    exposed = sorted(FORBIDDEN_PUBLIC_DIAGNOSTIC_KEYS & nested_keys(payload))
+    require(not exposed, "public artifacts expose private keys: " + ", ".join(exposed))
 
 
 def check_bible_segments_payload() -> None:
@@ -280,6 +340,8 @@ def main() -> None:
     check_archive(build_archive())
     check_health(build_runtime_health())
     check_artifacts(build_artifact_manifest())
+    check_public_health(build_public_runtime_health())
+    check_public_artifacts(build_public_artifact_manifest())
     check_bible_segments_payload()
     check_source_target_payload()
     check_sentence_translation_export()

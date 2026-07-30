@@ -717,7 +717,7 @@ def check_translations_ui() -> None:
     for needle in [
         "/assets/notes.css?v=notes28",
         "/assets/translations.css?v=trans35",
-        "/assets/translations.js?v=trans88",
+        "/assets/translations.js?v=trans89",
         "<title>번역 목록 / Personal Archive of Literature</title>",
         '<h1 id="translationsPageTitle">번역 목록</h1>',
         'aria-label="번역 이동"',
@@ -914,6 +914,11 @@ def check_translations_ui() -> None:
         "저장한 번역으로 표시했습니다.",
         "모든 번역을 검토했습니다.",
         "function updateRecordReview",
+        "function deleteTranslationRecord",
+        "data-delete-translation",
+        'method: "DELETE"',
+        "이 번역 기록을 영구 삭제할까요? 이 작업은 되돌릴 수 없습니다.",
+        "번역 기록을 영구 삭제했습니다.",
         "function reviewActionMessage",
         "제외한 번역으로 옮겼습니다.",
         "검토할 번역으로 되돌렸습니다.",
@@ -1339,7 +1344,53 @@ def check_work_source_bundle_ui() -> None:
     ]:
         require_contains(template, needle, "templates/work.html")
 
+    storage_script = read_site_file("assets/reader-work-storage.js")
+    for needle in [
+        '(function (global)',
+        '"use strict"',
+        'const RECENT_WORK_STORAGE_KEY = "philo.reader.recentWork"',
+        'const STUDY_PANEL_STORAGE_KEY = "philo.reader.studyPanelExpanded"',
+        'const NOTE_DRAFT_STORAGE_PREFIX = "philo.reader.noteDraft"',
+        "function storageFor",
+        "function readValue",
+        "function writeValue",
+        "function removeValue",
+        "function readJson",
+        "function writeJson",
+        "function noteDraftStorageKey",
+        "function storeRecentWork",
+        "function readStudyPanelExpanded",
+        "function storeStudyPanelExpanded",
+        "function readNoteDraft",
+        "function storeNoteDraft",
+        "function clearNoteDraft",
+        '"localStorage"',
+        '"sessionStorage"',
+        "JSON.parse",
+        "JSON.stringify",
+        "Object.freeze",
+        "global.ReaderWorkStorage",
+    ]:
+        require_contains(storage_script, needle, "assets/reader-work-storage.js")
+    for forbidden in ["document.", "fetch(", "XMLHttpRequest"]:
+        require(
+            forbidden not in storage_script,
+            f"assets/reader-work-storage.js should stay independent of UI and server APIs without {forbidden!r}",
+        )
+
     script = read_site_file("assets/reader-work.js")
+    require_contains(script, "const readerWorkStorage = window.ReaderWorkStorage", "assets/reader-work.js")
+    for direct_storage_api in [
+        "window.localStorage",
+        "window.sessionStorage",
+        ".getItem(",
+        ".setItem(",
+        ".removeItem(",
+    ]:
+        require(
+            direct_storage_api not in script,
+            f"assets/reader-work.js should delegate browser persistence without {direct_storage_api!r}",
+        )
     for needle in [
         "function sourceBundleUrl",
         "function citationPreviewText",
@@ -1572,7 +1623,7 @@ def check_work_source_bundle_ui() -> None:
         'event.key === "Escape"',
         "selectedSentencePositionLabel",
         "rememberRecentWork",
-        "RECENT_WORK_STORAGE_KEY",
+        "readerWorkStorage.storeRecentWork",
         "sentencePositionText",
         "function displayPositionLabel",
         "Paragraph\\s+(\\d+)",
@@ -1637,7 +1688,8 @@ def check_work_source_bundle_ui() -> None:
         "window.scrollBy",
         "window.setTimeout(() => adjustSentenceAboveStudyPanel(node)",
         "behavior: prefersReducedMotion() ? \"auto\" : \"smooth\"",
-        "STUDY_PANEL_STORAGE_KEY",
+        "readerWorkStorage.readStudyPanelExpanded",
+        "readerWorkStorage.storeStudyPanelExpanded",
         "storedStudyPanelExpanded",
         "rememberStudyPanelExpanded",
         "updateSentenceContext",
@@ -1677,12 +1729,13 @@ def check_work_source_bundle_ui() -> None:
         "원문이 화면 밖에 있음",
         "NOTE_DRAFT_STORAGE_KEY",
         "noteDraftPayload",
-        "readerSessionStorage",
+        "readerWorkStorage.readNoteDraft",
+        "readerWorkStorage.storeNoteDraft",
+        "readerWorkStorage.clearNoteDraft",
         "saveNoteDraft",
         "locked_target",
         "restoreNoteDraft",
         "clearNoteDraft",
-        "sessionStorage",
         "노트 초안을 복원했습니다.",
         "노트 대상을 고정했습니다.",
         "노트 대상이 선택 문장을 따라갑니다.",
@@ -1901,7 +1954,14 @@ def check_work_source_bundle_ui() -> None:
             noisy_marker not in request_translation_body,
             f"requestSentenceTranslation should avoid storage-log status text {noisy_marker!r}",
         )
-    require_contains(template, "/assets/reader-work.js?v=common191", "templates/work.html")
+    require_ordered_markers(
+        template,
+        [
+            "/assets/reader-work-storage.js?v=storage1",
+            "/assets/reader-work.js?v=common192",
+        ],
+        "templates/work.html reader script dependency order",
+    )
     require_contains(template, "/assets/reader-work.css?v=common146", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',

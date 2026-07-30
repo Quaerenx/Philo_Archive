@@ -1,4 +1,8 @@
 const researchData = JSON.parse(document.getElementById("researchData").textContent);
+const readerWorkStorage = window.ReaderWorkStorage;
+if (!readerWorkStorage) {
+  throw new Error("Reader work storage module is required.");
+}
 const citationPreview = document.getElementById("citationPreview");
 const noteForm = document.getElementById("noteForm");
 const noteStatus = document.getElementById("noteStatus");
@@ -78,8 +82,6 @@ let ignoreNextStudyPanelToggleClick = false;
 let pendingActionConfirmation = "";
 let actionConfirmationTimer = 0;
 const visibleSentenceNodes = new Set();
-const RECENT_WORK_STORAGE_KEY = "philo.reader.recentWork";
-const STUDY_PANEL_STORAGE_KEY = "philo.reader.studyPanelExpanded";
 const STUDY_PANEL_DRAG_THRESHOLD = 36;
 const ACTION_CONFIRM_MS = 4500;
 const GEMMA_RUNTIME_COMMAND = ".\\run_reader_with_gemma.ps1";
@@ -103,12 +105,7 @@ const TRANSLATION_STATE_SHORT = {
   reviewed: "저장",
   rejected: "제외"
 };
-const NOTE_DRAFT_STORAGE_KEY = [
-  "philo.reader.noteDraft",
-  researchData.corpus_id || researchData.author_id || "",
-  researchData.work_id || "",
-  researchData.variant_id || ""
-].join(":");
+const NOTE_DRAFT_STORAGE_KEY = readerWorkStorage.noteDraftStorageKey(researchData);
 
 function cleanText(value) {
   return String(value || "").replace(/[#¶]/g, "").replace(/\s+/g, " ").trim();
@@ -135,20 +132,14 @@ function syncConceptReturnLinks() {
 }
 
 function rememberRecentWork() {
-  try {
-    const storage = window.localStorage;
-    if (!storage) return;
-    storage.setItem(RECENT_WORK_STORAGE_KEY, JSON.stringify({
-      href: currentWorkHref(),
-      title: cleanText(researchData.title || document.title || researchData.work_id || "현재 문서"),
-      corpus_id: cleanText(researchData.corpus_id || researchData.author_id || ""),
-      corpus_title: cleanText(researchData.corpus_title || ""),
-      work_id: cleanText(researchData.work_id || ""),
-      updated_at: new Date().toISOString()
-    }));
-  } catch (error) {
-    return;
-  }
+  readerWorkStorage.storeRecentWork({
+    href: currentWorkHref(),
+    title: cleanText(researchData.title || document.title || researchData.work_id || "현재 문서"),
+    corpus_id: cleanText(researchData.corpus_id || researchData.author_id || ""),
+    corpus_title: cleanText(researchData.corpus_title || ""),
+    work_id: cleanText(researchData.work_id || ""),
+    updated_at: new Date().toISOString()
+  });
 }
 
 function escapeHtml(value) {
@@ -210,19 +201,11 @@ function activateStudyTabByIndex(index) {
 }
 
 function storedStudyPanelExpanded() {
-  try {
-    return window.localStorage.getItem(STUDY_PANEL_STORAGE_KEY) === "true";
-  } catch (error) {
-    return false;
-  }
+  return readerWorkStorage.readStudyPanelExpanded();
 }
 
 function rememberStudyPanelExpanded(expanded) {
-  try {
-    window.localStorage.setItem(STUDY_PANEL_STORAGE_KEY, expanded ? "true" : "false");
-  } catch (error) {
-    return;
-  }
+  readerWorkStorage.storeStudyPanelExpanded(expanded);
 }
 
 function selectedSentencePositionLabel() {
@@ -2385,31 +2368,16 @@ function hasNoteDraftValue(payload) {
   return Boolean(cleanText(payload.note || "") || cleanText(payload.tags || ""));
 }
 
-function readerSessionStorage() {
-  try {
-    return window.sessionStorage || null;
-  } catch (error) {
-    return null;
-  }
-}
-
 function saveNoteDraft(autoLockTarget = true) {
-  const storage = readerSessionStorage();
-  if (!storage) return;
   if (autoLockTarget && !lockedNoteTarget && hasNoteDraftValue({ note: noteText.value, tags: noteTags.value })) {
     lockedNoteTarget = targetSnapshot();
     updateNoteTargetPreview();
   }
   const payload = noteDraftPayload();
-  try {
-    if (hasNoteDraftValue(payload)) {
-      storage.setItem(NOTE_DRAFT_STORAGE_KEY, JSON.stringify(payload));
-    } else {
-      storage.removeItem(NOTE_DRAFT_STORAGE_KEY);
-    }
-  } catch (error) {
-    return;
-  }
+  readerWorkStorage.storeNoteDraft(
+    NOTE_DRAFT_STORAGE_KEY,
+    hasNoteDraftValue(payload) ? payload : null
+  );
 }
 
 function scheduleNoteDraftSave() {
@@ -2422,13 +2390,9 @@ function scheduleNoteDraftSave() {
 }
 
 function restoreNoteDraft() {
-  const storage = readerSessionStorage();
-  if (!storage) return;
+  const draft = readerWorkStorage.readNoteDraft(NOTE_DRAFT_STORAGE_KEY);
+  if (!draft || !hasNoteDraftValue(draft)) return;
   try {
-    const rawDraft = storage.getItem(NOTE_DRAFT_STORAGE_KEY);
-    if (!rawDraft) return;
-    const draft = JSON.parse(rawDraft);
-    if (!hasNoteDraftValue(draft)) return;
     if (draft.locked_target) {
       lockedNoteTarget = targetSnapshot(draft.locked_target);
       updateNoteTargetPreview();
@@ -2449,13 +2413,7 @@ function restoreNoteDraft() {
 
 function clearNoteDraft() {
   window.clearTimeout(noteDraftSaveTimer);
-  const storage = readerSessionStorage();
-  if (!storage) return;
-  try {
-    storage.removeItem(NOTE_DRAFT_STORAGE_KEY);
-  } catch (error) {
-    return;
-  }
+  readerWorkStorage.clearNoteDraft(NOTE_DRAFT_STORAGE_KEY);
 }
 
 async function copyStudyCard() {

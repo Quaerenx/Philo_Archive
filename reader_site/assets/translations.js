@@ -550,7 +550,11 @@ function renderRecord(record, options) {
         <button type="button" data-review-state="rejected" aria-keyshortcuts="X" title="이 번역 제외하기" aria-label="이 번역 제외하기">제외하기</button>
       </details>`
     : "";
-  const moreActions = [resetAction, rejectAction].filter(Boolean).join("");
+  const deleteAction = `<details class="translation-danger-actions">
+      <summary>삭제</summary>
+      <button type="button" data-delete-translation title="이 번역 기록을 영구 삭제하기" aria-label="이 번역 기록을 영구 삭제하기">영구 삭제</button>
+    </details>`;
+  const moreActions = [resetAction, rejectAction, deleteAction].filter(Boolean).join("");
   const moreAction = moreActions
     ? `<details class="translation-more-actions">
         <summary>더보기</summary>
@@ -761,6 +765,14 @@ async function updateRecordReview(recordId, corpusId, reviewState) {
   return response.ok;
 }
 
+async function deleteTranslationRecord(recordId, corpusId) {
+  const params = new URLSearchParams({ corpus_id: corpusId });
+  const response = await fetch(`/api/sentence-translations/${encodeURIComponent(recordId)}?${params}`, {
+    method: "DELETE"
+  });
+  return response.ok;
+}
+
 function reviewActionMessage(reviewState) {
   if (reviewState === "reviewed") return "저장한 번역으로 표시했습니다.";
   if (reviewState === "rejected") return "제외한 번역으로 옮겼습니다.";
@@ -892,6 +904,30 @@ resultsEl.addEventListener("click", async (event) => {
   if (emptyAction) {
     if (emptyAction.dataset.emptyAction === "clear-filters") {
       clearFilters();
+    }
+    return;
+  }
+  const deleteButton = event.target.closest("button[data-delete-translation]");
+  if (deleteButton) {
+    const card = deleteButton.closest(".translation-record-card");
+    if (!card) return;
+    const recordId = card.dataset.recordId || "";
+    const corpusId = card.dataset.corpusId || corpusSelect.value || DEFAULT_CORPUS;
+    if (!window.confirm("이 번역 기록을 영구 삭제할까요? 이 작업은 되돌릴 수 없습니다.")) return;
+    setActionButtonBusy(deleteButton, true);
+    try {
+      const ok = await deleteTranslationRecord(recordId, corpusId);
+      if (!ok) {
+        statusEl.textContent = "삭제하지 못했습니다.";
+        return;
+      }
+      recentlyChangedRecordId = "";
+      await loadRecords();
+      statusEl.textContent = "번역 기록을 영구 삭제했습니다.";
+    } catch {
+      statusEl.textContent = "삭제하지 못했습니다.";
+    } finally {
+      setActionButtonBusy(deleteButton, false);
     }
     return;
   }

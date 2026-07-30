@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import argparse
+import json
+import os
 import re
 import shutil
 import subprocess
@@ -12,7 +14,14 @@ from pathlib import Path
 SITE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SITE / "scripts"))
 
-from check_visual_smoke import find_browser, free_port, wait_for_health  # noqa: E402
+from check_visual_smoke import (  # noqa: E402
+    find_browser,
+    find_node,
+    find_playwright_node_path,
+    free_port,
+    playwright_is_available,
+    wait_for_health,
+)
 
 
 TARGET_ROUTE = "/work/nietzsche/GM#p-0023.s001"
@@ -62,6 +71,108 @@ def dump_dom_with_profile(browser: str, url: str, width: int, height: int, profi
     return result.stdout
 
 
+def dump_reader_and_home_with_playwright(
+    node: str,
+    node_path: str,
+    browser: str,
+    work_url: str,
+    home_url: str,
+    width: int,
+    height: int,
+) -> tuple[str, str]:
+    script = r"""
+require('module').Module._initPaths();
+const { chromium } = require('playwright-core');
+const [workUrl, homeUrl, widthText, heightText, executablePath] = process.argv.slice(2);
+(async () => {
+  const browser = await chromium.launch({
+    headless: true,
+    executablePath,
+    args: [
+      '--disable-background-networking',
+      '--disable-breakpad',
+      '--disable-crash-reporter',
+      '--disable-features=DawnGraphite,Vulkan,UseSkiaRenderer,CanvasOopRasterization',
+      '--no-default-browser-check',
+      '--no-first-run',
+      '--use-angle=swiftshader'
+    ]
+  });
+  try {
+    const page = await browser.newPage({
+      viewport: { width: Number(widthText), height: Number(heightText) },
+      deviceScaleFactor: 1
+    });
+    await page.goto(workUrl, { waitUntil: 'domcontentloaded', timeout: 15000 });
+    await page.waitForSelector('.reader-sentence.selected', { timeout: 10000 });
+    await page.waitForSelector('#translationOutput:not([hidden])', { timeout: 10000 });
+    await page.waitForFunction(
+      () => ['선택한 문장', '번역 완료'].includes(
+        document.querySelector('.study-panel-toggle-summary')?.textContent.trim() || ''
+      ),
+      null,
+      { timeout: 10000 }
+    );
+    const workHtml = await page.content();
+    await page.goto(homeUrl, { waitUntil: 'domcontentloaded', timeout: 15000 });
+    await page.waitForSelector('.recent-work .recent-work-link', { timeout: 10000 });
+    const homeHtml = await page.content();
+    process.stdout.write(JSON.stringify({ work_html: workHtml, home_html: homeHtml }));
+  } finally {
+    await browser.close();
+  }
+})().catch((error) => {
+  console.error(error && error.stack ? error.stack : String(error));
+  process.exit(1);
+});
+"""
+    env = os.environ.copy()
+    env["NODE_PATH"] = node_path
+    script_path: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            "w",
+            suffix=".cjs",
+            prefix="reader-interaction-",
+            delete=False,
+            encoding="utf-8",
+        ) as script_file:
+            script_file.write(script)
+            script_path = Path(script_file.name)
+        result = subprocess.run(
+            [
+                node,
+                str(script_path),
+                work_url,
+                home_url,
+                str(width),
+                str(height),
+                browser,
+            ],
+            cwd=SITE,
+            env=env,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=60,
+        )
+    finally:
+        if script_path:
+            script_path.unlink(missing_ok=True)
+    stderr = (result.stderr or "").strip()
+    require(result.returncode == 0, f"Playwright interaction capture failed for {work_url}: {stderr}")
+    try:
+        payload = json.loads(result.stdout)
+    except json.JSONDecodeError as error:
+        raise AssertionError(f"Playwright interaction capture returned invalid JSON: {error}") from error
+    work_html = payload.get("work_html")
+    home_html = payload.get("home_html")
+    require(isinstance(work_html, str) and "<html" in work_html.lower(), "Playwright work capture did not return HTML")
+    require(isinstance(home_html, str) and "<html" in home_html.lower(), "Playwright home capture did not return HTML")
+    return work_html, home_html
+
+
 def check_selected_sentence_dom(html: str, viewport_label: str) -> None:
     context = f"reader interaction {viewport_label}"
     require(TARGET_SENTENCE_ID in html, f"{context} missing target sentence id")
@@ -109,6 +220,9 @@ def main() -> None:
     args = parser.parse_args()
 
     browser = find_browser(args.browser)
+    node = find_node()
+    node_path = find_playwright_node_path()
+    use_playwright = playwright_is_available(node, node_path)
     port = free_port()
     base_url = f"http://127.0.0.1:{port}"
     server = subprocess.Popen(
@@ -122,14 +236,25 @@ def main() -> None:
         wait_for_health(base_url, server)
         url = f"{base_url}{TARGET_ROUTE}"
         for viewport_label, width, height in VIEWPORTS:
-            profile_dir = Path(tempfile.mkdtemp(prefix="philo-reader-interaction-"))
-            try:
-                html = dump_dom_with_profile(browser, url, width, height, profile_dir)
-                check_selected_sentence_dom(html, viewport_label)
-                home_html = dump_dom_with_profile(browser, f"{base_url}/", width, height, profile_dir)
-                check_recent_work_dom(home_html, viewport_label)
-            finally:
-                shutil.rmtree(profile_dir, ignore_errors=True)
+            if use_playwright:
+                html, home_html = dump_reader_and_home_with_playwright(
+                    node,
+                    node_path,
+                    browser,
+                    url,
+                    f"{base_url}/",
+                    width,
+                    height,
+                )
+            else:
+                profile_dir = Path(tempfile.mkdtemp(prefix="philo-reader-interaction-"))
+                try:
+                    html = dump_dom_with_profile(browser, url, width, height, profile_dir)
+                    home_html = dump_dom_with_profile(browser, f"{base_url}/", width, height, profile_dir)
+                finally:
+                    shutil.rmtree(profile_dir, ignore_errors=True)
+            check_selected_sentence_dom(html, viewport_label)
+            check_recent_work_dom(home_html, viewport_label)
         print("reader interaction smoke ok")
     finally:
         server.terminate()

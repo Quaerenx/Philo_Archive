@@ -4,6 +4,7 @@ import argparse
 import json
 import sys
 import tempfile
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 
@@ -15,10 +16,14 @@ from services.sentence_targets import sentence_target_bundle  # noqa: E402
 from services import sentence_translations as sentence_translation_service  # noqa: E402
 from services.sentence_translations import (  # noqa: E402
     PROMPT_TEMPLATE_ID,
+    append_record,
     build_record,
     build_sentence_prompt_bundle,
+    delete_sentence_translation,
+    delete_sentence_translation_from_query,
     export_sentence_translations_markdown,
     find_cached_record,
+    iter_cached_records,
     normalized_model_output,
     public_record_id,
     public_translation_record,
@@ -39,6 +44,97 @@ def check_ai_dir_override_contract() -> None:
     source = Path(sentence_translation_service.__file__).read_text(encoding="utf-8")
     require("PHILO_AI_DIR" in source, "sentence translation storage should support an isolated AI data directory")
     require('os.environ.get("PHILO_AI_DIR"' in source, "sentence translation storage should use PHILO_AI_DIR")
+
+
+def check_concurrent_cache_writes() -> None:
+    record_count = 32
+    with tempfile.TemporaryDirectory(prefix="philo_translation_atomic_") as temp_dir:
+        original_ai_dir = sentence_translation_service.AI_DIR
+        sentence_translation_service.AI_DIR = Path(temp_dir)
+        try:
+            path = sentence_translation_service.ai_record_path("nietzsche")
+
+            def append_index(index: int) -> None:
+                append_record(
+                    path,
+                    {
+                        "schema_version": 2,
+                        "record_type": "ai_sentence_translation",
+                        "id": f"concurrent-translation-{index:02d}",
+                        "corpus_id": "nietzsche",
+                        "work_id": "demo",
+                        "review_state": "generated",
+                        "translation": f"translation {index}",
+                    },
+                )
+
+            with ThreadPoolExecutor(max_workers=8) as executor:
+                list(executor.map(append_index, range(record_count)))
+
+            records = iter_cached_records(path)
+            require(len(records) == record_count, "concurrent sentence translation writes lost records")
+            require(
+                len({record["id"] for record in records}) == record_count,
+                "concurrent translation writes duplicated records",
+            )
+
+            def review_index(index: int) -> None:
+                update_sentence_translation_review(
+                    {"corpus_id": "nietzsche", "review_state": "reviewed"},
+                    f"concurrent-translation-{index:02d}",
+                )
+
+            with ThreadPoolExecutor(max_workers=8) as executor:
+                list(executor.map(review_index, range(record_count)))
+            records = iter_cached_records(path)
+            require(
+                all(record["review_state"] == "reviewed" for record in records),
+                "concurrent sentence translation reviews lost changes",
+            )
+
+            def delete_index(index: int) -> None:
+                delete_sentence_translation("nietzsche", f"concurrent-translation-{index:02d}")
+
+            with ThreadPoolExecutor(max_workers=8) as executor:
+                list(executor.map(delete_index, range(0, record_count, 2)))
+            records = iter_cached_records(path)
+            require(len(records) == record_count // 2, "concurrent sentence translation deletes lost changes")
+            require(
+                all(int(record["id"].rsplit("-", 1)[1]) % 2 == 1 for record in records),
+                "concurrent sentence translation deletes removed the wrong records",
+            )
+            require(
+                not list(path.parent.glob(f".{path.name}.*.tmp")),
+                "atomic sentence translation writes left temporary files behind",
+            )
+        finally:
+            sentence_translation_service.AI_DIR = original_ai_dir
+
+
+def check_snapshot_read_cache() -> None:
+    with tempfile.TemporaryDirectory(prefix="philo_translation_cache_") as temp_dir:
+        path = Path(temp_dir) / "sentence_translations.jsonl"
+        first_record = {
+            "id": "cache-record-1",
+            "record_type": "ai_sentence_translation",
+            "translation": "first snapshot",
+        }
+        sentence_translation_service.write_records(path, [first_record])
+        first_read = iter_cached_records(path)
+        first_read[0]["translation"] = "caller mutation"
+        cache_before = sentence_translation_service._read_translation_snapshot.cache_info()
+        second_read = iter_cached_records(path)
+        cache_after = sentence_translation_service._read_translation_snapshot.cache_info()
+        require(second_read[0]["translation"] == "first snapshot", "translation cache leaked caller mutation")
+        require(cache_after.hits > cache_before.hits, "unchanged translation snapshot should hit the read cache")
+        require(cache_after.maxsize == 16, "translation read cache should remain bounded")
+
+        second_record = dict(first_record)
+        second_record["id"] = "cache-record-2"
+        second_record["translation"] = "externally replaced snapshot with a different size"
+        path.write_text(json.dumps(second_record, ensure_ascii=False) + "\n", encoding="utf-8")
+        external_read = iter_cached_records(path)
+        require(external_read[0]["id"] == "cache-record-2", "translation cache missed an external file change")
 
 
 def synthetic_sentence_target() -> dict:
@@ -221,6 +317,18 @@ def check_cache_and_review_compatibility(target: dict) -> None:
             require(all_summary["count"] == 3, "sentence translation summary without corpus_id should count all corpora")
             require(all_summary["review_state_counts"]["generated"] == 2, "all-corpus summary generated count failed")
             require(all_summary["review_state_counts"]["reviewed"] == 1, "all-corpus summary reviewed count failed")
+            deleted = delete_sentence_translation_from_query(
+                public_legacy["id"],
+                {"corpus_id": [target["corpus_id"]]},
+            )
+            require(deleted["id"] == public_legacy["id"], "legacy public id should support permanent deletion")
+            require(iter_cached_records(path) == [], "permanent deletion should remove the stored translation")
+            try:
+                delete_sentence_translation(target["corpus_id"], public_legacy["id"])
+            except FileNotFoundError:
+                pass
+            else:
+                require(False, "deleting a missing sentence translation should fail")
         finally:
             sentence_translation_service.AI_DIR = original_ai_dir
 
@@ -259,6 +367,8 @@ def main() -> None:
     args = parser.parse_args()
 
     check_ai_dir_override_contract()
+    check_concurrent_cache_writes()
+    check_snapshot_read_cache()
     check_sentence_units()
     synthetic_target = synthetic_sentence_target()
     check_prompt_and_record(synthetic_target)

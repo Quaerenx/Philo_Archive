@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 import tempfile
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 
@@ -31,6 +32,7 @@ from services.notes import (  # noqa: E402
 
 
 CORPUS_ID = "contract_notes"
+CONCURRENT_CORPUS_ID = "contract_notes_concurrent"
 
 
 def require(condition: bool, message: str) -> None:
@@ -39,9 +41,84 @@ def require(condition: bool, message: str) -> None:
 
 
 def cleanup() -> None:
-    path = note_storage_path(CORPUS_ID)
-    if path.exists():
-        path.unlink()
+    for corpus_id in (CORPUS_ID, CONCURRENT_CORPUS_ID):
+        path = note_storage_path(corpus_id)
+        if path.exists():
+            path.unlink()
+
+
+def check_concurrent_note_writes() -> None:
+    record_count = 32
+
+    def append_index(index: int) -> None:
+        append_note(
+            CONCURRENT_CORPUS_ID,
+            {
+                "id": f"concurrent-note-{index:02d}",
+                "created_at": "2026-07-30T00:00:00",
+                "corpus_id": CONCURRENT_CORPUS_ID,
+                "work_id": "demo",
+                "note": f"concurrent note {index}",
+            },
+        )
+
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        list(executor.map(append_index, range(record_count)))
+
+    records = read_notes(CONCURRENT_CORPUS_ID)
+    require(len(records) == record_count, "concurrent note writes lost records")
+    require(len({record["id"] for record in records}) == record_count, "concurrent note writes duplicated records")
+
+    def update_index(index: int) -> None:
+        update_note(
+            CONCURRENT_CORPUS_ID,
+            f"concurrent-note-{index:02d}",
+            {"note": f"updated concurrent note {index}", "updated_at": "2026-07-30T00:01:00"},
+        )
+
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        list(executor.map(update_index, range(record_count)))
+    records = read_notes(CONCURRENT_CORPUS_ID)
+    require(
+        all(record["note"].startswith("updated concurrent note ") for record in records),
+        "concurrent note updates lost changes",
+    )
+
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        list(
+            executor.map(
+                lambda index: delete_note(CONCURRENT_CORPUS_ID, f"concurrent-note-{index:02d}"),
+                range(0, record_count, 2),
+            )
+        )
+    records = read_notes(CONCURRENT_CORPUS_ID)
+    require(len(records) == record_count // 2, "concurrent note deletes lost changes")
+    require(
+        all(int(record["id"].rsplit("-", 1)[1]) % 2 == 1 for record in records),
+        "concurrent note deletes removed the wrong records",
+    )
+
+    path = note_storage_path(CONCURRENT_CORPUS_ID)
+    original_bytes = path.read_bytes()
+    try:
+        notes_service.write_jsonl(path, [{"id": "invalid", "value": object()}])
+    except TypeError:
+        pass
+    else:
+        raise AssertionError("non-serializable note write should fail")
+    require(path.read_bytes() == original_bytes, "failed atomic note write replaced the valid snapshot")
+    require(
+        not list(path.parent.glob(f".{path.name}.*.tmp")),
+        "atomic note writes left temporary files behind",
+    )
+    first_read = notes_service.read_jsonl(path)
+    first_read[0]["note"] = "caller mutation"
+    cache_before = notes_service._read_jsonl_snapshot.cache_info()
+    second_read = notes_service.read_jsonl(path)
+    cache_after = notes_service._read_jsonl_snapshot.cache_info()
+    require(second_read[0]["note"] != "caller mutation", "note cache leaked caller mutation")
+    require(cache_after.hits > cache_before.hits, "unchanged note snapshot should hit the read cache")
+    require(cache_after.maxsize == 16, "note read cache should remain bounded")
 
 
 def run_contracts() -> None:
@@ -203,6 +280,7 @@ def run_contracts() -> None:
         deleted = delete_note(CORPUS_ID, "note-1")
         require(deleted["id"] == "note-1", "delete response failed")
         require(len(read_notes(CORPUS_ID)) == 0, "delete did not remove notes")
+        check_concurrent_note_writes()
         print("notes contracts ok")
     finally:
         cleanup()

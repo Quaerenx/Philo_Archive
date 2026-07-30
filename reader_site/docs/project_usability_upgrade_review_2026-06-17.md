@@ -121,7 +121,7 @@ These should remain deferred until a human chooses the product direction:
 - Final Bible canon-layer taxonomy and deuterocanonical grouping labels.
 - Final Kierkegaard text/commentary/textual-account vocabulary.
 - Final Wittgenstein normalized/diplomatic/full/index vocabulary and default variant policy.
-- A dedicated cache-management page for local Gemma sentence translations.
+- A separate cache-management page remains unnecessary for now: the Translations page can review, filter, export, and permanently delete individual local Gemma records with confirmation.
 - Search relevance calibration from a real query set.
 - Broader visual identity decisions beyond the current quiet archive frame.
 
