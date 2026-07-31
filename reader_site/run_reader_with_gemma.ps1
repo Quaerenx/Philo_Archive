@@ -13,10 +13,12 @@ $Site = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RuntimeDir = Join-Path $Site "data\runtime.local"
 $GemmaBaseUrl = "http://${GemmaHost}:${GemmaPort}"
 $ReaderBaseUrl = "http://${ReaderHost}:${ReaderPort}"
+$RuntimeStatePath = Join-Path $RuntimeDir "gemma-state.json"
 $ReaderAlreadyRunning = $false
+$StartedReader = $false
 $StartedGemma = $false
+$ReaderProcess = $null
 $GemmaProcess = $null
-$PushedSiteLocation = $false
 
 function Stop-WithHint {
     param(
@@ -38,6 +40,16 @@ function Stop-WithHint {
         }
     }
     throw ($lines -join [Environment]::NewLine)
+}
+
+function Repair-DuplicateProcessPath {
+    $pathKeys = @(
+        [System.Environment]::GetEnvironmentVariables().Keys |
+            Where-Object { [string]$_ -ieq "path" }
+    )
+    if ($pathKeys.Count -gt 1 -and $pathKeys -ccontains "Path" -and $pathKeys -ccontains "PATH") {
+        Remove-Item Env:PATH -ErrorAction Stop
+    }
 }
 
 function Test-PortListening {
@@ -134,9 +146,62 @@ function Test-ReaderReady {
     }
 }
 
+function Write-GemmaRuntimeState {
+    param(
+        [ValidateSet("starting", "ready", "failed", "stopped")]
+        [string]$State,
+        [string]$Detail = "",
+        [int]$RuntimeProcessId = 0
+    )
+    $payload = [ordered]@{
+        schema_version = 1
+        state = $State
+        base_url = $GemmaBaseUrl
+        updated_at = [DateTime]::UtcNow.ToString("o")
+        launcher_pid = $PID
+        runtime_pid = $RuntimeProcessId
+        detail = $Detail
+    }
+    $temporaryPath = "${RuntimeStatePath}.tmp.${PID}"
+    $json = $payload | ConvertTo-Json -Compress
+    [System.IO.File]::WriteAllText(
+        $temporaryPath,
+        $json,
+        (New-Object System.Text.UTF8Encoding($false))
+    )
+    Move-Item -LiteralPath $temporaryPath -Destination $RuntimeStatePath -Force
+}
+
+function Wait-ReaderReady {
+    param(
+        [string]$BaseUrl,
+        [System.Diagnostics.Process]$Process,
+        [int]$TimeoutSeconds = 30
+    )
+    $deadline = [DateTime]::UtcNow.AddSeconds($TimeoutSeconds)
+    while ([DateTime]::UtcNow -lt $deadline) {
+        if ($Process -and $Process.HasExited) {
+            throw "Reader process exited with code $($Process.ExitCode)."
+        }
+        if (Test-ReaderReady -BaseUrl $BaseUrl) {
+            return
+        }
+        Start-Sleep -Milliseconds 100
+    }
+    throw "Reader did not become ready at ${BaseUrl} within ${TimeoutSeconds} seconds."
+}
+
 function Wait-GemmaReady {
-    param([string]$BaseUrl)
-    for ($i = 0; $i -lt 120; $i++) {
+    param(
+        [string]$BaseUrl,
+        [System.Diagnostics.Process]$Process,
+        [int]$TimeoutSeconds = 120
+    )
+    $deadline = [DateTime]::UtcNow.AddSeconds($TimeoutSeconds)
+    while ([DateTime]::UtcNow -lt $deadline) {
+        if ($Process -and $Process.HasExited) {
+            throw "Gemma runtime exited with code $($Process.ExitCode)."
+        }
         try {
             Invoke-WebRequest -UseBasicParsing "${BaseUrl}/v1/models" -TimeoutSec 2 | Out-Null
             return
@@ -144,7 +209,31 @@ function Wait-GemmaReady {
             Start-Sleep -Seconds 1
         }
     }
-    throw "Gemma runtime did not become ready at ${BaseUrl}"
+    throw "Gemma runtime did not become ready at ${BaseUrl} within ${TimeoutSeconds} seconds."
+}
+
+function Wait-OwnedProcesses {
+    param(
+        [System.Diagnostics.Process]$Reader,
+        [bool]$OwnsReader,
+        [System.Diagnostics.Process]$Gemma,
+        [bool]$OwnsGemma
+    )
+    $gemmaExitReported = $false
+    while ($true) {
+        if ($OwnsReader -and $Reader -and $Reader.HasExited) {
+            throw "Reader process exited with code $($Reader.ExitCode)."
+        }
+        if ($OwnsGemma -and $Gemma -and $Gemma.HasExited -and !$gemmaExitReported) {
+            $gemmaExitReported = $true
+            Write-GemmaRuntimeState -State "failed" -Detail "Gemma runtime exited after startup."
+            Write-Warning "Gemma runtime exited. Reader browsing, search, and notes remain available."
+            if (!$OwnsReader) {
+                return
+            }
+        }
+        Start-Sleep -Seconds 1
+    }
 }
 
 if (!(Test-LoopbackHost -HostName $ReaderHost)) {
@@ -154,12 +243,14 @@ if (!(Test-LoopbackHost -HostName $ReaderHost)) {
     )
 }
 
-if (!(Get-Command python -ErrorAction SilentlyContinue)) {
+$PythonCommand = Get-Command python -ErrorAction SilentlyContinue
+if (!$PythonCommand) {
     Stop-WithHint "Python was not found in PATH." @(
         "Install Python or add it to PATH.",
         "Verify with: python --version"
     )
 }
+Repair-DuplicateProcessPath
 
 if (Test-PortListening -Port $ReaderPort) {
     if (!(Test-PortLoopbackOnly -Port $ReaderPort)) {
@@ -176,7 +267,6 @@ if (Test-PortListening -Port $ReaderPort) {
         if ($readerOwner) {
             Write-Host $readerOwner
         }
-        Write-Host "Checking Gemma runtime for the existing reader..."
     } else {
         Stop-WithHint "Reader port ${ReaderPort} is already used by another process." @(
             (Get-PortOwnerHint -Port $ReaderPort),
@@ -186,91 +276,148 @@ if (Test-PortListening -Port $ReaderPort) {
     }
 }
 
-if (!(Test-Path -LiteralPath $ModelPath)) {
-    Stop-WithHint "Model file not found: ${ModelPath}" @(
-        "Check that the GGUF model exists at the path above.",
-        "Or pass a model explicitly: .\run_reader_with_gemma.ps1 -ModelPath ""D:\models\gemma.gguf"""
-    )
-}
-
 New-Item -ItemType Directory -Force -Path $RuntimeDir | Out-Null
-
-if (Test-PortListening -Port $GemmaPort) {
-    Write-Host "Gemma runtime already listening at ${GemmaBaseUrl}"
-    try {
-        Wait-GemmaReady -BaseUrl $GemmaBaseUrl
-    } catch {
-        Stop-WithHint "A process is listening on Gemma port ${GemmaPort}, but it did not respond like llama.cpp server." @(
-            (Get-PortOwnerHint -Port $GemmaPort),
-            "If this is a stale process, stop it and run this script again.",
-            "If you intentionally use another Gemma port: .\run_reader_with_gemma.ps1 -GemmaPort 8795"
-        )
-    }
-} else {
-    $llamaServer = Get-Command llama-server.exe -ErrorAction SilentlyContinue
-    if (!$llamaServer) {
-        Stop-WithHint "llama-server.exe was not found in PATH." @(
-            "Install or build llama.cpp for Windows.",
-            "Add the folder containing llama-server.exe to PATH.",
-            "Verify with: Get-Command llama-server.exe"
-        )
-    }
-    $stdout = Join-Path $RuntimeDir "llama-server.out.log"
-    $stderr = Join-Path $RuntimeDir "llama-server.err.log"
-    $args = @(
-        "-m", $ModelPath,
-        "--host", $GemmaHost,
-        "--port", [string]$GemmaPort,
-        "--ctx-size", [string]$ContextSize,
-        "--n-gpu-layers", $GpuLayers
-    )
-    Write-Host "Starting Gemma runtime at ${GemmaBaseUrl}"
-    $GemmaProcess = Start-Process -WindowStyle Hidden -PassThru -FilePath $llamaServer.Source -ArgumentList $args -RedirectStandardOutput $stdout -RedirectStandardError $stderr
-    $StartedGemma = $true
-    try {
-        Wait-GemmaReady -BaseUrl $GemmaBaseUrl
-    } catch {
-        if ($StartedGemma -and $GemmaProcess -and !$GemmaProcess.HasExited) {
-            Stop-Process -Id $GemmaProcess.Id
-        }
-        Stop-WithHint "Gemma runtime did not become ready at ${GemmaBaseUrl}." @(
-            "Check stdout log: ${stdout}",
-            "Check stderr log: ${stderr}",
-            "Try a smaller context size: .\run_reader_with_gemma.ps1 -ContextSize 4096"
-        )
-    }
-}
 
 $env:PHILO_GEMMA_BASE_URL = $GemmaBaseUrl
 $env:PHILO_GEMMA_MODEL_NAME = "gemma-4-26B-A4B-it-Q4_K_M"
 $env:PHILO_GEMMA_RUNTIME = "llama.cpp b9371-f12cc6d0f"
+$env:PHILO_GEMMA_STATE_PATH = $RuntimeStatePath
+
+Write-GemmaRuntimeState -State "starting" -Detail "Gemma startup requested."
+$startupClock = [System.Diagnostics.Stopwatch]::StartNew()
+$readerStdout = Join-Path $RuntimeDir "reader-server.out.log"
+$readerStderr = Join-Path $RuntimeDir "reader-server.err.log"
+$gemmaStdout = Join-Path $RuntimeDir "llama-server.out.log"
+$gemmaStderr = Join-Path $RuntimeDir "llama-server.err.log"
+$gemmaSetupError = ""
+$GemmaReady = $false
 
 try {
-    Push-Location $Site
-    $PushedSiteLocation = $true
     if ($ReaderAlreadyRunning) {
-        Write-ReaderOpenUrls -HostName $ReaderHost -Port $ReaderPort
-        Write-Host "Health check: python .\scripts\check_local_runtime.py --plain"
-        if ($StartedGemma) {
-            Write-Host "Gemma runtime started for the existing reader. Keep this window open; press Ctrl+C to stop it."
-            while ($true) {
-                Start-Sleep -Seconds 3600
+        Write-Host "Checking Gemma runtime for the existing reader..."
+    } else {
+        Write-Host "Starting Philo Archive reader on ${ReaderHost}:${ReaderPort}"
+        $readerArgs = @(".\server.py", "--host", $ReaderHost, "--port", [string]$ReaderPort)
+        $ReaderProcess = Start-Process `
+            -WindowStyle Hidden `
+            -PassThru `
+            -FilePath $PythonCommand.Source `
+            -ArgumentList $readerArgs `
+            -WorkingDirectory $Site `
+            -RedirectStandardOutput $readerStdout `
+            -RedirectStandardError $readerStderr
+        $StartedReader = $true
+    }
+    Write-ReaderOpenUrls -HostName $ReaderHost -Port $ReaderPort
+
+    if (Test-PortListening -Port $GemmaPort) {
+        Write-Host "Gemma runtime already listening at ${GemmaBaseUrl}"
+    } elseif (!(Test-Path -LiteralPath $ModelPath)) {
+        $gemmaSetupError = "Model file not found: ${ModelPath}"
+    } else {
+        $llamaServer = Get-Command llama-server.exe -ErrorAction SilentlyContinue
+        if (!$llamaServer) {
+            $gemmaSetupError = "llama-server.exe was not found in PATH."
+        } else {
+            $gemmaArgs = @(
+                "-m", $ModelPath,
+                "--host", $GemmaHost,
+                "--port", [string]$GemmaPort,
+                "--ctx-size", [string]$ContextSize,
+                "--n-gpu-layers", $GpuLayers
+            )
+            Write-Host "Starting Gemma runtime at ${GemmaBaseUrl}"
+            try {
+                $GemmaProcess = Start-Process `
+                    -WindowStyle Hidden `
+                    -PassThru `
+                    -FilePath $llamaServer.Source `
+                    -ArgumentList $gemmaArgs `
+                    -RedirectStandardOutput $gemmaStdout `
+                    -RedirectStandardError $gemmaStderr
+                $StartedGemma = $true
+                Write-GemmaRuntimeState `
+                    -State "starting" `
+                    -Detail "Gemma process started and is loading the model." `
+                    -RuntimeProcessId $GemmaProcess.Id
+            } catch {
+                $gemmaSetupError = "Could not start llama-server.exe: $($_.Exception.Message)"
             }
         }
-        Write-Host "Reader and Gemma runtime are ready."
-        return
     }
 
-    Write-Host "Starting Philo Archive reader on ${ReaderHost}:${ReaderPort}"
-    Write-ReaderOpenUrls -HostName $ReaderHost -Port $ReaderPort
+    if ($gemmaSetupError) {
+        Write-GemmaRuntimeState -State "failed" -Detail $gemmaSetupError
+        Write-Warning "${gemmaSetupError} Reader browsing, search, and notes remain available."
+    }
+
+    try {
+        Wait-ReaderReady -BaseUrl $ReaderBaseUrl -Process $ReaderProcess
+    } catch {
+        Stop-WithHint $_.Exception.Message @(
+            "Check stdout log: ${readerStdout}",
+            "Check stderr log: ${readerStderr}",
+            (Get-PortOwnerHint -Port $ReaderPort)
+        )
+    }
+    $readerReadySeconds = [Math]::Round($startupClock.Elapsed.TotalSeconds, 2)
+    Write-Host "Reader ready in ${readerReadySeconds}s at ${ReaderBaseUrl}"
+
+    if (!$gemmaSetupError) {
+        try {
+            Wait-GemmaReady -BaseUrl $GemmaBaseUrl -Process $GemmaProcess
+            $GemmaReady = $true
+            $runtimeProcessId = if ($GemmaProcess) { $GemmaProcess.Id } else { 0 }
+            Write-GemmaRuntimeState `
+                -State "ready" `
+                -Detail "Gemma runtime is ready." `
+                -RuntimeProcessId $runtimeProcessId
+            $gemmaReadySeconds = [Math]::Round($startupClock.Elapsed.TotalSeconds, 2)
+            Write-Host "Gemma runtime ready in ${gemmaReadySeconds}s at ${GemmaBaseUrl}"
+        } catch {
+            $gemmaSetupError = $_.Exception.Message
+            if ($StartedGemma -and $GemmaProcess -and !$GemmaProcess.HasExited) {
+                Stop-Process -Id $GemmaProcess.Id -ErrorAction SilentlyContinue
+            }
+            $StartedGemma = $false
+            Write-GemmaRuntimeState -State "failed" -Detail $gemmaSetupError
+            Write-Warning "${gemmaSetupError} Reader browsing, search, and notes remain available."
+            if (Test-PortListening -Port $GemmaPort) {
+                $ownerHint = Get-PortOwnerHint -Port $GemmaPort
+                if ($ownerHint) {
+                    Write-Warning $ownerHint
+                }
+            }
+        }
+    }
+
     Write-Host "Health check: python .\scripts\check_local_runtime.py --plain"
-    python .\server.py --host $ReaderHost --port $ReaderPort
+    if ($GemmaReady) {
+        Write-Host "Reader and Gemma runtime are ready."
+    } else {
+        Write-Host "Reader is ready. Gemma translation is unavailable; see the warning and runtime logs above."
+    }
+
+    if ($ReaderAlreadyRunning -and $StartedGemma) {
+        Write-Host "Gemma runtime started for the existing reader. Keep this window open; press Ctrl+C to stop it."
+    } elseif ($StartedReader -or $StartedGemma) {
+        Write-Host "Keep this window open; press Ctrl+C to stop processes started by this launcher."
+    } else {
+        return
+    }
+    Wait-OwnedProcesses `
+        -Reader $ReaderProcess `
+        -OwnsReader $StartedReader `
+        -Gemma $GemmaProcess `
+        -OwnsGemma $StartedGemma
 } finally {
-    if ($PushedSiteLocation) {
-        Pop-Location
+    if ($StartedReader -and $ReaderProcess -and !$ReaderProcess.HasExited) {
+        Write-Host "Stopping Reader process $($ReaderProcess.Id)"
+        Stop-Process -Id $ReaderProcess.Id -ErrorAction SilentlyContinue
     }
     if ($StartedGemma -and $GemmaProcess -and !$GemmaProcess.HasExited) {
         Write-Host "Stopping Gemma runtime process $($GemmaProcess.Id)"
-        Stop-Process -Id $GemmaProcess.Id
+        Stop-Process -Id $GemmaProcess.Id -ErrorAction SilentlyContinue
+        Write-GemmaRuntimeState -State "stopped" -Detail "Gemma runtime stopped with the launcher."
     }
 }

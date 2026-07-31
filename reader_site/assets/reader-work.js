@@ -54,7 +54,22 @@ const noteSaveButton = noteForm.querySelector("button[type='submit']");
 const studyTabsContainer = document.querySelector(".study-tabs");
 const studyTabs = Array.from(document.querySelectorAll(".study-tab"));
 const studyPanels = Array.from(document.querySelectorAll(".study-panel"));
-const sentenceNodes = Array.from(document.querySelectorAll(".reader-sentence"));
+const readingBody = document.querySelector(".reading-body");
+const virtualDocument = researchData.virtual_document?.enabled ? researchData.virtual_document : null;
+let sentenceNodes = [];
+const sentenceNodeById = new Map();
+const sentenceIndexById = new Map();
+const sentenceNodeByPosition = new Map();
+const virtualChunkCache = new Map();
+const virtualChunkRequests = new Map();
+const virtualChunkDescriptors = Array.isArray(virtualDocument?.chunks) ? virtualDocument.chunks : [];
+const virtualChunkByIndex = new Map(
+  virtualChunkDescriptors.map((descriptor) => [Number(descriptor.index), descriptor])
+);
+let virtualChunkObserver = null;
+let virtualCleanupTimer = 0;
+let virtualViewportLoadHandle = 0;
+let activeVirtualChunkIndex = Number(virtualDocument?.initial_chunk || 0);
 const sourceBundleTargetTypes = new Set(["segment", "section", "paragraph", "verse"]);
 let selectedSentence = null;
 let selectedTranslationRecord = null;
@@ -72,6 +87,8 @@ let sentenceReviewFlashTimer = 0;
 let translationSentenceStates = new Map();
 let translationSentenceStatesLoaded = false;
 let gemmaRuntimeCheckController = null;
+let gemmaRuntimePollTimer = 0;
+let gemmaRuntimeState = "checking";
 let recentlyChangedNoteId = "";
 let activeReadingCueNode = null;
 let readingPositionRefreshHandle = 0;
@@ -84,6 +101,7 @@ let actionConfirmationTimer = 0;
 const visibleSentenceNodes = new Set();
 const STUDY_PANEL_DRAG_THRESHOLD = 36;
 const ACTION_CONFIRM_MS = 4500;
+const GEMMA_RUNTIME_POLL_MS = 2000;
 const GEMMA_RUNTIME_COMMAND = ".\\run_reader_with_gemma.ps1";
 const TRANSLATION_STATE_LABELS = {
   generated: "검토할 번역",
@@ -109,6 +127,316 @@ const NOTE_DRAFT_STORAGE_KEY = readerWorkStorage.noteDraftStorageKey(researchDat
 
 function cleanText(value) {
   return String(value || "").replace(/[#¶]/g, "").replace(/\s+/g, " ").trim();
+}
+
+function totalSentenceCount() {
+  return virtualDocument
+    ? Number(virtualDocument.total_sentences || 0)
+    : sentenceNodes.length;
+}
+
+function sentencePosition(node) {
+  if (!node) return 0;
+  const explicitPosition = Number(node.dataset.sentencePosition || 0);
+  if (explicitPosition > 0) return explicitPosition;
+  const sentenceId = node.dataset.sentenceId || node.id || "";
+  const index = sentenceIndexById.get(sentenceId);
+  return Number.isInteger(index) ? index + 1 : 0;
+}
+
+function refreshSentenceNodeIndex() {
+  sentenceNodes = Array.from(readingBody?.querySelectorAll(".reader-sentence") || []);
+  if (virtualDocument) {
+    sentenceNodes.sort((left, right) => sentencePosition(left) - sentencePosition(right));
+  }
+  sentenceNodeById.clear();
+  sentenceIndexById.clear();
+  sentenceNodeByPosition.clear();
+  sentenceNodes.forEach((node, localIndex) => {
+    const sentenceId = node.dataset.sentenceId || node.id || "";
+    const position = virtualDocument
+      ? Number(node.dataset.sentencePosition || 0)
+      : localIndex + 1;
+    if (!sentenceId || position <= 0) return;
+    sentenceNodeById.set(sentenceId, node);
+    sentenceIndexById.set(sentenceId, position - 1);
+    sentenceNodeByPosition.set(position, node);
+    const storedState = translationSentenceStates.get(sentenceId);
+    if (storedState) {
+      applySentenceTranslationVisualState(node, storedState, false);
+    }
+  });
+}
+
+function virtualChunkElement(chunkIndex) {
+  return document.getElementById(`work-chunk-${chunkIndex}`);
+}
+
+function virtualChunkIndexForPosition(position) {
+  let low = 0;
+  let high = virtualChunkDescriptors.length - 1;
+  while (low <= high) {
+    const middle = Math.floor((low + high) / 2);
+    const descriptor = virtualChunkDescriptors[middle];
+    const start = Number(descriptor.sentence_start || 0);
+    const end = start + Number(descriptor.sentence_count || 0) - 1;
+    if (position < start) {
+      high = middle - 1;
+    } else if (position > end) {
+      low = middle + 1;
+    } else {
+      return Number(descriptor.index);
+    }
+  }
+  return -1;
+}
+
+function rememberVirtualChunk(payload) {
+  const chunkIndex = Number(payload?.chunk?.index);
+  if (!Number.isInteger(chunkIndex)) return;
+  virtualChunkCache.delete(chunkIndex);
+  virtualChunkCache.set(chunkIndex, payload);
+  while (virtualChunkCache.size > 8) {
+    const oldestIndex = virtualChunkCache.keys().next().value;
+    virtualChunkCache.delete(oldestIndex);
+  }
+}
+
+async function requestVirtualChunk({ chunkIndex = null, anchor = "" } = {}) {
+  if (!virtualDocument) return null;
+  const requestKey = anchor ? `anchor:${anchor}` : `chunk:${chunkIndex}`;
+  if (virtualChunkRequests.has(requestKey)) {
+    return virtualChunkRequests.get(requestKey);
+  }
+  const request = (async () => {
+    const url = new URL(virtualDocument.endpoint, location.origin);
+    url.searchParams.set("corpus_id", researchData.corpus_id || researchData.author_id || "");
+    url.searchParams.set("work_id", researchData.work_id || "");
+    if (researchData.variant_id) {
+      url.searchParams.set("variant_id", researchData.variant_id);
+    }
+    if (anchor) {
+      url.searchParams.set("anchor", anchor);
+      url.searchParams.delete("chunk");
+    } else {
+      url.searchParams.set("chunk", String(chunkIndex));
+      url.searchParams.delete("anchor");
+    }
+    const response = await fetch(url, { headers: { Accept: "application/json" } });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok || !payload?.chunk) {
+      throw new Error(payload?.error || `청크를 불러오지 못했습니다 (${response.status})`);
+    }
+    rememberVirtualChunk(payload);
+    return payload;
+  })();
+  virtualChunkRequests.set(requestKey, request);
+  try {
+    return await request;
+  } finally {
+    virtualChunkRequests.delete(requestKey);
+  }
+}
+
+function applyVirtualScrollCorrection(chunk, beforeTop, beforeHeight) {
+  if (beforeTop >= 0) return;
+  const heightDelta = chunk.getBoundingClientRect().height - beforeHeight;
+  if (Math.abs(heightDelta) > 0.5) {
+    window.scrollBy({ top: heightDelta, left: 0, behavior: "auto" });
+  }
+}
+
+function mountVirtualChunk(payload, preserveScroll = true) {
+  const chunkData = payload?.chunk;
+  const chunkIndex = Number(chunkData?.index);
+  const chunk = virtualChunkElement(chunkIndex);
+  if (!chunk || !chunkData) return null;
+  const beforeRect = chunk.getBoundingClientRect();
+  chunk.innerHTML = String(chunkData.html || "");
+  chunk.style.removeProperty("min-height");
+  chunk.classList.add("is-loaded");
+  chunk.classList.remove("reader-chunk-placeholder", "is-load-error");
+  chunk.dataset.chunkState = "loaded";
+  chunk.removeAttribute("aria-hidden");
+  chunk.setAttribute("aria-busy", "false");
+  const measuredHeight = Math.ceil(chunk.getBoundingClientRect().height);
+  const descriptor = virtualChunkByIndex.get(chunkIndex);
+  if (descriptor && measuredHeight > 0) {
+    descriptor.measured_height = measuredHeight;
+  }
+  refreshSentenceNodeIndex();
+  if (selectedSentence) {
+    sentenceNodeById.get(selectedSentence.sentenceId)?.classList.add("selected");
+  }
+  if (preserveScroll) {
+    applyVirtualScrollCorrection(chunk, beforeRect.top, beforeRect.height);
+  }
+  scheduleReadingPositionRefresh();
+  queueVirtualChunkCleanup();
+  return chunk;
+}
+
+function renderVirtualChunkError(chunk, chunkIndex) {
+  chunk.style.removeProperty("min-height");
+  chunk.classList.remove("is-loaded");
+  chunk.classList.add("reader-chunk-placeholder", "is-load-error");
+  chunk.dataset.chunkState = "error";
+  chunk.removeAttribute("aria-hidden");
+  chunk.setAttribute("aria-busy", "false");
+  chunk.innerHTML = `<p class="reader-chunk-error" role="status">이 부분을 불러오지 못했습니다. <button type="button" data-load-work-chunk="${chunkIndex}">다시 시도</button></p>`;
+}
+
+async function ensureVirtualChunk(chunkIndex, { preserveScroll = true } = {}) {
+  if (!virtualDocument || chunkIndex < 0 || chunkIndex >= virtualChunkDescriptors.length) return null;
+  const chunk = virtualChunkElement(chunkIndex);
+  if (!chunk) return null;
+  if (chunk.dataset.chunkState === "loaded") return chunk;
+  chunk.dataset.chunkState = "loading";
+  chunk.setAttribute("aria-busy", "true");
+  try {
+    const cached = virtualChunkCache.get(chunkIndex);
+    const payload = cached || await requestVirtualChunk({ chunkIndex });
+    return mountVirtualChunk(payload, preserveScroll);
+  } catch (error) {
+    renderVirtualChunkError(chunk, chunkIndex);
+    throw error;
+  }
+}
+
+async function ensureVirtualTarget(targetId) {
+  if (!targetId) return null;
+  const existing = document.getElementById(targetId);
+  if (existing) return existing;
+  if (!virtualDocument) return null;
+  const payload = await requestVirtualChunk({ anchor: targetId });
+  const chunkIndex = Number(payload.chunk.index);
+  const chunk = mountVirtualChunk(payload, true);
+  activeVirtualChunkIndex = chunkIndex;
+  await Promise.all(
+    [chunkIndex - 1, chunkIndex + 1]
+      .filter((neighborIndex) => neighborIndex >= 0 && neighborIndex < virtualChunkDescriptors.length)
+      .map((neighborIndex) => ensureVirtualChunk(neighborIndex).catch(() => null))
+  );
+  return chunk ? document.getElementById(targetId) : null;
+}
+
+function warmVirtualChunks(chunkIndex) {
+  if (!virtualDocument) return;
+  [chunkIndex - 1, chunkIndex + 1].forEach((neighborIndex) => {
+    if (neighborIndex < 0 || neighborIndex >= virtualChunkDescriptors.length) return;
+    ensureVirtualChunk(neighborIndex).catch(() => {});
+  });
+}
+
+function virtualChunkForNode(node) {
+  const chunk = node?.closest?.(".reader-chunk");
+  const chunkIndex = Number(chunk?.dataset.chunkIndex);
+  return Number.isInteger(chunkIndex) ? chunkIndex : -1;
+}
+
+function unmountVirtualChunk(chunk) {
+  if (!chunk || chunk.dataset.chunkState !== "loaded") return false;
+  if (chunk.contains(document.activeElement)) return false;
+  const selectedNode = selectedSentenceNode();
+  if (selectedNode && chunk.contains(selectedNode)) return false;
+  const chunkIndex = Number(chunk.dataset.chunkIndex);
+  const descriptor = virtualChunkByIndex.get(chunkIndex);
+  const measuredHeight = Math.ceil(chunk.getBoundingClientRect().height);
+  if (descriptor && measuredHeight > 0) {
+    descriptor.measured_height = measuredHeight;
+  }
+  chunk.style.minHeight = `${Math.max(1, measuredHeight)}px`;
+  chunk.innerHTML = `<span class="visually-hidden">문서 청크 ${chunkIndex + 1}. 스크롤하면 다시 불러옵니다.</span>`;
+  chunk.classList.remove("is-loaded");
+  chunk.classList.add("reader-chunk-placeholder");
+  chunk.dataset.chunkState = "placeholder";
+  chunk.setAttribute("aria-hidden", "true");
+  return true;
+}
+
+function cleanupVirtualChunks() {
+  virtualCleanupTimer = 0;
+  if (!virtualDocument) return;
+  const keepIndexes = new Set([
+    activeVirtualChunkIndex - 1,
+    activeVirtualChunkIndex,
+    activeVirtualChunkIndex + 1
+  ]);
+  const selectedChunkIndex = virtualChunkForNode(selectedSentenceNode());
+  if (selectedChunkIndex >= 0) keepIndexes.add(selectedChunkIndex);
+  const focusedChunkIndex = virtualChunkForNode(document.activeElement);
+  if (focusedChunkIndex >= 0) keepIndexes.add(focusedChunkIndex);
+  let changed = false;
+  document.querySelectorAll(".reader-chunk.is-loaded").forEach((chunk) => {
+    const chunkIndex = Number(chunk.dataset.chunkIndex);
+    if (!keepIndexes.has(chunkIndex)) {
+      changed = unmountVirtualChunk(chunk) || changed;
+    }
+  });
+  if (changed) refreshSentenceNodeIndex();
+}
+
+function queueVirtualChunkCleanup() {
+  if (!virtualDocument) return;
+  window.clearTimeout(virtualCleanupTimer);
+  virtualCleanupTimer = window.setTimeout(cleanupVirtualChunks, 180);
+}
+
+function refreshVirtualViewportChunk() {
+  virtualViewportLoadHandle = 0;
+  if (!virtualDocument || !readingBody) return;
+  const bodyRect = readingBody.getBoundingClientRect();
+  const probeX = Math.max(1, Math.min(window.innerWidth - 1, bodyRect.left + Math.min(180, bodyRect.width / 2)));
+  const probeY = Math.max(1, Math.min(window.innerHeight - 1, readingCueTargetLine()));
+  const chunk = document.elementFromPoint(probeX, probeY)?.closest?.(".reader-chunk");
+  if (!chunk) return;
+  const chunkIndex = Number(chunk.dataset.chunkIndex);
+  if (!Number.isInteger(chunkIndex)) return;
+  activeVirtualChunkIndex = chunkIndex;
+  ensureVirtualChunk(chunkIndex).catch(() => {});
+  warmVirtualChunks(chunkIndex);
+  queueVirtualChunkCleanup();
+}
+
+function scheduleVirtualViewportChunkRefresh() {
+  if (!virtualDocument || virtualViewportLoadHandle) return;
+  virtualViewportLoadHandle = window.requestAnimationFrame(refreshVirtualViewportChunk);
+}
+
+function initializeVirtualWork() {
+  refreshSentenceNodeIndex();
+  if (!virtualDocument) return;
+  document.querySelectorAll(".reader-chunk.is-loaded").forEach((chunk) => {
+    const descriptor = virtualChunkByIndex.get(Number(chunk.dataset.chunkIndex));
+    if (descriptor) descriptor.measured_height = Math.ceil(chunk.getBoundingClientRect().height);
+  });
+  if ("IntersectionObserver" in window) {
+    virtualChunkObserver = new IntersectionObserver((entries) => {
+      let closestEntry = null;
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const chunkIndex = Number(entry.target.dataset.chunkIndex);
+        ensureVirtualChunk(chunkIndex).catch(() => {});
+        if (!closestEntry || Math.abs(entry.boundingClientRect.top) < Math.abs(closestEntry.boundingClientRect.top)) {
+          closestEntry = entry;
+        }
+      });
+      if (closestEntry) {
+        activeVirtualChunkIndex = Number(closestEntry.target.dataset.chunkIndex);
+        warmVirtualChunks(activeVirtualChunkIndex);
+        queueVirtualChunkCleanup();
+      }
+    }, {
+      root: null,
+      rootMargin: "1000px 0px",
+      threshold: 0
+    });
+    document.querySelectorAll(".reader-chunk").forEach((chunk) => virtualChunkObserver.observe(chunk));
+  }
+  window.addEventListener("scroll", scheduleVirtualViewportChunkRefresh, { passive: true });
+  window.addEventListener("pageshow", scheduleVirtualViewportChunkRefresh);
+  warmVirtualChunks(activeVirtualChunkIndex);
+  scheduleVirtualViewportChunkRefresh();
 }
 
 function currentWorkHref() {
@@ -211,7 +539,7 @@ function rememberStudyPanelExpanded(expanded) {
 function selectedSentencePositionLabel() {
   if (!selectedSentence) return "문장 선택";
   const index = sentenceIndex(selectedSentence.sentenceId);
-  return index >= 0 ? `문장 ${index + 1} / ${sentenceNodes.length}` : selectedSentence.sentenceId;
+  return index >= 0 ? `문장 ${index + 1} / ${totalSentenceCount()}` : selectedSentence.sentenceId;
 }
 
 function studyPanelToggleSummary() {
@@ -375,14 +703,30 @@ function setTranslationUtilityVisible(visible) {
 }
 
 function setGemmaRuntimeIndicator(state, text, title = "") {
+  gemmaRuntimeState = state;
   if (!gemmaRuntimeStatus || !gemmaRuntimeStatusText) return;
   gemmaRuntimeStatus.dataset.runtimeState = state;
   gemmaRuntimeStatusText.textContent = text;
   gemmaRuntimeStatus.title = title || text;
 }
 
+function clearGemmaRuntimePoll() {
+  window.clearTimeout(gemmaRuntimePollTimer);
+  gemmaRuntimePollTimer = 0;
+}
+
+function scheduleGemmaRuntimeCheck() {
+  clearGemmaRuntimePoll();
+  gemmaRuntimePollTimer = window.setTimeout(() => {
+    gemmaRuntimePollTimer = 0;
+    checkGemmaRuntimeStatus(false);
+  }, GEMMA_RUNTIME_POLL_MS);
+}
+
 async function checkGemmaRuntimeStatus(announce = false) {
   if (!gemmaRuntimeStatus) return;
+  const previousState = gemmaRuntimeState;
+  clearGemmaRuntimePoll();
   if (gemmaRuntimeCheckController) {
     gemmaRuntimeCheckController.abort();
   }
@@ -392,18 +736,36 @@ async function checkGemmaRuntimeStatus(announce = false) {
   setGemmaRuntimeIndicator("checking", "번역기 확인 중", "번역기 상태");
   setActionButtonBusy(gemmaRuntimeCheckButton, true);
   try {
-    const response = await fetch("/api/health", { signal: controller.signal });
+    const response = await fetch("/api/health/gemma", { signal: controller.signal });
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) {
       throw new Error("Runtime status unavailable");
     }
     const gemma = payload.gemma || {};
     if (gemma.reachable) {
+      clearGemmaRuntimePoll();
       const model = Array.isArray(gemma.models) ? cleanText(gemma.models[0] || "") : "";
       const title = model ? `번역기 준비됨: ${model}` : "번역기 준비됨";
       setGemmaRuntimeIndicator("ready", "번역기 준비됨", title);
-      if (announce) {
+      if (announce || previousState === "starting") {
         setTranslationStatus("번역기 준비됨.");
+      }
+      return;
+    }
+    const runtimeState = cleanText(gemma.state || "unavailable");
+    if (runtimeState === "starting") {
+      setGemmaRuntimeIndicator("starting", "번역기 시작 중", "모델을 불러오는 중입니다. 읽기와 검색은 바로 사용할 수 있습니다.");
+      scheduleGemmaRuntimeCheck();
+      if (announce) {
+        setTranslationStatus("번역기를 시작하고 있습니다. 준비 상태를 자동으로 확인합니다.", true);
+      }
+      return;
+    }
+    clearGemmaRuntimePoll();
+    if (runtimeState === "failed") {
+      setGemmaRuntimeIndicator("failed", "번역기 시작 실패", "런처 경고와 data/runtime.local 로그를 확인하세요.");
+      if (announce) {
+        setTranslationStatus("번역기를 시작하지 못했습니다. 읽기와 검색은 계속 사용할 수 있습니다.", true);
       }
       return;
     }
@@ -414,6 +776,14 @@ async function checkGemmaRuntimeStatus(announce = false) {
     }
   } catch (error) {
     if (error && error.name === "AbortError" && gemmaRuntimeCheckController !== controller) {
+      return;
+    }
+    if (previousState === "starting") {
+      setGemmaRuntimeIndicator("starting", "번역기 시작 중", "상태 확인이 지연되어 다시 확인합니다.");
+      scheduleGemmaRuntimeCheck();
+      if (announce) {
+        setTranslationStatus("번역기 준비 상태를 다시 확인합니다.", true);
+      }
       return;
     }
     const label = error && error.name === "AbortError" ? "번역기 확인 지연" : "번역 상태 확인 필요";
@@ -519,7 +889,7 @@ function updateStudyProgress() {
     return;
   }
   const studied = translationSentenceStates.size;
-  const total = sentenceNodes.length;
+  const total = totalSentenceCount();
   const remaining = Math.max(0, total - studied);
   const stateCounts = translationStateCountsFromSentences();
   const pendingReview = stateCounts.generated;
@@ -540,6 +910,9 @@ function updateStudyProgress() {
     const wantsPreview = remaining === 0 && pendingReview === 0 && stateCounts.reviewed > 0;
     const nextIndex = wantsReview ? nextGeneratedSentenceIndex() : continueStudySentenceIndex();
     const nextLabel = nextIndex >= 0 ? sentencePositionText(sentenceNodeId(sentenceNodes[nextIndex])) : "";
+    const canSearchVirtual = Boolean(
+      virtualDocument && (wantsReview ? pendingReview > 0 : remaining > 0)
+    );
     if (wantsPreview) {
       continueStudyButton.textContent = "기록 보기";
       continueStudyButton.dataset.studyAction = "preview-session";
@@ -549,13 +922,15 @@ function updateStudyProgress() {
     } else {
       continueStudyButton.textContent = wantsReview ? "검토 계속" : "이어 읽기";
       continueStudyButton.dataset.studyAction = wantsReview ? "review-generated" : "continue";
-      continueStudyButton.disabled = nextIndex < 0;
+      continueStudyButton.disabled = nextIndex < 0 && !canSearchVirtual;
       continueStudyButton.title = nextIndex >= 0
         ? `${wantsReview ? "검토" : "이어 읽기"} ${nextLabel}`
-        : (wantsReview ? "검토할 번역이 없습니다" : "모든 문장이 번역되었습니다");
+        : (canSearchVirtual ? "다음 문서 청크에서 이어 읽기" : "")
+          || (wantsReview ? "검토할 번역이 없습니다" : "모든 문장이 번역되었습니다");
       continueStudyButton.setAttribute("aria-label", nextIndex >= 0
         ? `${nextLabel} ${wantsReview ? "번역 검토" : "부터 이어 읽기"}`
-        : (wantsReview ? "검토할 번역이 없습니다" : "학습 진행 완료"));
+        : (canSearchVirtual ? "다음 문서 청크에서 이어 읽기" : "")
+          || (wantsReview ? "검토할 번역이 없습니다" : "학습 진행 완료"));
     }
   }
 }
@@ -568,16 +943,25 @@ function normalizedTranslationReviewState(value) {
 function applySentenceTranslationState(item, flash = false) {
   const sentenceId = cleanText(item && (item.sentence_id || item.target_id));
   if (!sentenceId) return false;
-  const node = document.getElementById(sentenceId);
-  if (!node || !node.classList.contains("reader-sentence")) return false;
   const reviewState = normalizedTranslationReviewState(item.review_state);
   const label = TRANSLATION_STATE_LABELS[reviewState];
-  translationSentenceStates.set(sentenceId, {
+  const state = {
     reviewState,
     label,
     recordId: cleanText(item.record_id || item.id || ""),
     updatedAt: cleanText(item.updated_at || item.reviewed_at || item.generated_at || "")
-  });
+  };
+  translationSentenceStates.set(sentenceId, state);
+  const node = sentenceNodeById.get(sentenceId) || document.getElementById(sentenceId);
+  if (node && node.classList.contains("reader-sentence")) {
+    applySentenceTranslationVisualState(node, state, flash);
+  }
+  return true;
+}
+
+function applySentenceTranslationVisualState(node, state, flash = false) {
+  const reviewState = normalizedTranslationReviewState(state.reviewState);
+  const label = TRANSLATION_STATE_LABELS[reviewState];
   if (!Object.prototype.hasOwnProperty.call(node.dataset, "originalTitle")) {
     node.dataset.originalTitle = node.getAttribute("title") || "";
   }
@@ -590,7 +974,6 @@ function applySentenceTranslationState(item, flash = false) {
   if (flash) {
     flashSentenceReviewState(node, reviewState);
   }
-  return true;
 }
 
 function clearSentenceTranslationStates(markLoaded = false) {
@@ -823,7 +1206,8 @@ function handleConfirmedAction(action) {
 }
 
 function sentenceIndex(sentenceId) {
-  return sentenceNodes.findIndex((node) => (node.dataset.sentenceId || node.id) === sentenceId);
+  const index = sentenceIndexById.get(sentenceId);
+  return Number.isInteger(index) ? index : -1;
 }
 
 function sentenceNodeId(node) {
@@ -843,10 +1227,11 @@ function sentenceTranslationState(node) {
 
 function nextUnstudiedSentenceIndex() {
   if (!translationSentenceStatesLoaded || !sentenceNodes.length) return -1;
-  const currentIndex = selectedSentence ? sentenceIndex(selectedSentence.sentenceId) : -1;
-  for (let index = currentIndex + 1; index < sentenceNodes.length; index += 1) {
-    if (!sentenceHasTranslationState(sentenceNodes[index])) {
-      return index;
+  const currentPosition = selectedSentence ? sentenceIndex(selectedSentence.sentenceId) + 1 : 0;
+  for (let localIndex = 0; localIndex < sentenceNodes.length; localIndex += 1) {
+    const node = sentenceNodes[localIndex];
+    if (sentencePosition(node) > currentPosition && !sentenceHasTranslationState(node)) {
+      return localIndex;
     }
   }
   return -1;
@@ -854,7 +1239,10 @@ function nextUnstudiedSentenceIndex() {
 
 function firstUnstudiedSentenceIndex() {
   if (!translationSentenceStatesLoaded || !sentenceNodes.length) return -1;
-  return sentenceNodes.findIndex((node) => !sentenceHasTranslationState(node));
+  for (let localIndex = 0; localIndex < sentenceNodes.length; localIndex += 1) {
+    if (!sentenceHasTranslationState(sentenceNodes[localIndex])) return localIndex;
+  }
+  return -1;
 }
 
 function continueStudySentenceIndex() {
@@ -864,18 +1252,22 @@ function continueStudySentenceIndex() {
 
 function nextGeneratedSentenceIndex() {
   if (!translationSentenceStatesLoaded || !sentenceNodes.length) return -1;
-  const currentIndex = selectedSentence ? sentenceIndex(selectedSentence.sentenceId) : -1;
-  for (let index = currentIndex + 1; index < sentenceNodes.length; index += 1) {
-    if (sentenceTranslationState(sentenceNodes[index]) === "generated") {
-      return index;
+  const currentPosition = selectedSentence ? sentenceIndex(selectedSentence.sentenceId) + 1 : 0;
+  for (let localIndex = 0; localIndex < sentenceNodes.length; localIndex += 1) {
+    const node = sentenceNodes[localIndex];
+    if (sentencePosition(node) > currentPosition && sentenceTranslationState(node) === "generated") {
+      return localIndex;
     }
   }
-  return sentenceNodes.findIndex((node) => sentenceTranslationState(node) === "generated");
+  for (let localIndex = 0; localIndex < sentenceNodes.length; localIndex += 1) {
+    if (sentenceTranslationState(sentenceNodes[localIndex]) === "generated") return localIndex;
+  }
+  return -1;
 }
 
 function sentencePositionText(sentenceId) {
   const index = sentenceIndex(sentenceId);
-  return index >= 0 ? `문장 ${index + 1} / ${sentenceNodes.length}` : sentenceId;
+  return index >= 0 ? `문장 ${index + 1} / ${totalSentenceCount()}` : sentenceId;
 }
 
 function displayPositionLabel(value) {
@@ -1038,7 +1430,20 @@ function studyReadingCueSentence() {
 function refreshReadingPosition() {
   readingPositionRefreshHandle = 0;
   if (!sentenceNodes.length || !readingPosition) return;
-  const candidates = visibleSentenceNodes.size ? Array.from(visibleSentenceNodes) : sentenceNodes;
+  let candidates = visibleSentenceNodes.size ? Array.from(visibleSentenceNodes) : sentenceNodes;
+  if (virtualDocument) {
+    const targetElement = document.elementFromPoint(
+      Math.max(1, Math.floor(window.innerWidth * 0.35)),
+      Math.max(1, Math.floor(readingCueTargetLine()))
+    );
+    const targetChunk = targetElement?.closest?.(".reader-chunk.is-loaded");
+    candidates = targetChunk
+      ? Array.from(targetChunk.querySelectorAll(".reader-sentence"))
+      : sentenceNodes.filter((node) => {
+        const rect = node.closest(".reader-chunk")?.getBoundingClientRect();
+        return rect && rect.bottom >= 0 && rect.top <= window.innerHeight;
+      });
+  }
   const targetLine = readingCueTargetLine();
   let bestNode = null;
   let bestDistance = Number.POSITIVE_INFINITY;
@@ -1072,7 +1477,7 @@ function handleViewportLayoutChange() {
 
 function initializeReadingPositionTracker() {
   if (!readingPosition || !sentenceNodes.length) return;
-  if ("IntersectionObserver" in window) {
+  if (!virtualDocument && "IntersectionObserver" in window) {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
@@ -1121,13 +1526,14 @@ function updateSentenceContext() {
     ["이전", index - 1],
     ["현재", index],
     ["다음", index + 1]
-  ].filter((entry) => entry[1] >= 0 && entry[1] < sentenceNodes.length);
+  ].filter((entry) => entry[1] >= 0 && entry[1] < totalSentenceCount())
+    .map(([label, rowIndex]) => [label, sentenceNodeByPosition.get(rowIndex + 1)])
+    .filter((entry) => Boolean(entry[1]));
   if (sentenceContextTools) {
     sentenceContextTools.hidden = false;
   }
   sentenceContext.hidden = false;
-  sentenceContext.innerHTML = rows.map(([label, rowIndex]) => {
-    const node = sentenceNodes[rowIndex];
+  sentenceContext.innerHTML = rows.map(([label, node]) => {
     const sentenceId = node.dataset.sentenceId || node.id || "";
     const isCurrent = sentenceId === selectedSentence.sentenceId;
     return `<button type="button" class="sentence-context-item${isCurrent ? " current" : ""}" data-sentence-id="${escapeHtml(sentenceId)}">
@@ -1143,12 +1549,19 @@ function updateSentenceControls() {
   const nextUnstudiedIndex = nextUnstudiedSentenceIndex();
   const nextReviewIndex = nextGeneratedSentenceIndex();
   previousSentenceButton.disabled = !hasSelection || index === 0;
-  nextSentenceButton.disabled = !hasSelection || index === sentenceNodes.length - 1;
+  nextSentenceButton.disabled = !hasSelection || index === totalSentenceCount() - 1;
   if (nextUnstudiedSentenceButton) {
-    nextUnstudiedSentenceButton.disabled = nextUnstudiedIndex < 0;
+    const canSearchVirtualUnstudied = Boolean(
+      virtualDocument
+      && translationSentenceStatesLoaded
+      && translationSentenceStates.size < totalSentenceCount()
+    );
+    nextUnstudiedSentenceButton.disabled = nextUnstudiedIndex < 0 && !canSearchVirtualUnstudied;
     const nextLabel = nextUnstudiedIndex >= 0
       ? sentencePositionText(sentenceNodeId(sentenceNodes[nextUnstudiedIndex]))
-      : (translationSentenceStatesLoaded ? "현재 위치 뒤에 미번역 문장이 없습니다" : "번역 상태를 불러오는 중입니다");
+      : (canSearchVirtualUnstudied
+        ? "다음 문서 청크의 미번역 문장"
+        : (translationSentenceStatesLoaded ? "현재 위치 뒤에 미번역 문장이 없습니다" : "번역 상태를 불러오는 중입니다"));
     nextUnstudiedSentenceButton.title = nextUnstudiedIndex >= 0
       ? `${nextLabel}로 이동`
       : nextLabel;
@@ -1157,10 +1570,17 @@ function updateSentenceControls() {
       : nextLabel);
   }
   if (nextReviewSentenceButton) {
-    nextReviewSentenceButton.disabled = nextReviewIndex < 0;
+    const canSearchVirtualReview = Boolean(
+      virtualDocument
+      && translationSentenceStatesLoaded
+      && translationStateCountsFromSentences().generated > 0
+    );
+    nextReviewSentenceButton.disabled = nextReviewIndex < 0 && !canSearchVirtualReview;
     const nextReviewLabel = nextReviewIndex >= 0
       ? sentencePositionText(sentenceNodeId(sentenceNodes[nextReviewIndex]))
-      : (translationSentenceStatesLoaded ? "검토할 번역이 없습니다" : "번역 상태를 불러오는 중입니다");
+      : (canSearchVirtualReview
+        ? "다음 문서 청크의 검토할 번역"
+        : (translationSentenceStatesLoaded ? "검토할 번역이 없습니다" : "번역 상태를 불러오는 중입니다"));
     nextReviewSentenceButton.title = nextReviewIndex >= 0
       ? `${nextReviewLabel} 검토`
       : nextReviewLabel;
@@ -1333,7 +1753,9 @@ function sentenceFromNode(node) {
     sentenceId: node.dataset.sentenceId || node.id || "",
     segmentId: node.dataset.segmentId || (parent ? parent.id : ""),
     label: cleanText(node.dataset.label || node.textContent),
-    text: cleanText(node.textContent)
+    text: cleanText(node.textContent),
+    position: sentencePosition(node),
+    chunkIndex: virtualChunkForNode(node)
   };
 }
 
@@ -1355,6 +1777,14 @@ function selectSentence(node, updateHash = true) {
   updateSentenceControls();
   updateStudyPanelToggleLabel();
   updateReadingPosition(node);
+  if (virtualDocument) {
+    const chunkIndex = virtualChunkForNode(node);
+    if (chunkIndex >= 0) {
+      activeVirtualChunkIndex = chunkIndex;
+      warmVirtualChunks(chunkIndex);
+      queueVirtualChunkCleanup();
+    }
+  }
   if (updateHash) {
     history.replaceState(null, "", `${location.pathname}${location.search}#${encodeURIComponent(sentence.sentenceId)}`);
   }
@@ -1362,16 +1792,32 @@ function selectSentence(node, updateHash = true) {
   syncTargetDependentViews();
 }
 
-function selectSentenceFromHash() {
+async function selectSentenceFromHash() {
   const id = decodeURIComponent(location.hash.replace(/^#/, ""));
   if (!id) return;
-  const node = document.getElementById(id);
+  let node = document.getElementById(id);
+  if (!node && virtualDocument) {
+    try {
+      node = await ensureVirtualTarget(id);
+    } catch (error) {
+      setTranslationStatus("요청한 원문 위치를 불러오지 못했습니다.", true);
+      return;
+    }
+  }
   if (node && node.classList.contains("reader-sentence")) {
     selectSentence(node, false);
     setStudyPanel("translation");
     setStudyPanelExpanded(true);
     scrollSentenceIntoView(node);
     keepSentenceAboveStudyPanel(node);
+    return;
+  }
+  if (node && typeof node.scrollIntoView === "function") {
+    node.scrollIntoView({
+      block: "center",
+      inline: "nearest",
+      behavior: virtualDocument || prefersReducedMotion() ? "auto" : "smooth"
+    });
   }
 }
 
@@ -1432,19 +1878,32 @@ function scrollSentenceIntoView(node) {
   node.scrollIntoView({
     block: sentenceScrollBlock(),
     inline: "nearest",
-    behavior: prefersReducedMotion() ? "auto" : "smooth"
+    behavior: virtualDocument || prefersReducedMotion() ? "auto" : "smooth"
   });
   keepSentenceAboveStudyPanel(node);
 }
 
-function navigateSentence(delta) {
-  if (!sentenceNodes.length) return;
+async function navigateSentence(delta) {
+  if (!sentenceNodes.length && !virtualDocument) return;
   const currentIndex = selectedSentence ? sentenceIndex(selectedSentence.sentenceId) : -1;
-  const initialIndex = delta < 0 ? sentenceNodes.length - 1 : 0;
+  const total = totalSentenceCount();
+  const initialIndex = delta < 0 ? total - 1 : 0;
   const nextIndex = currentIndex < 0
     ? initialIndex
-    : Math.min(sentenceNodes.length - 1, Math.max(0, currentIndex + delta));
-  const nextNode = sentenceNodes[nextIndex];
+    : Math.min(total - 1, Math.max(0, currentIndex + delta));
+  if (nextIndex === currentIndex) return;
+  let nextNode = sentenceNodeByPosition.get(nextIndex + 1);
+  if (!nextNode && virtualDocument) {
+    const chunkIndex = virtualChunkIndexForPosition(nextIndex + 1);
+    try {
+      await ensureVirtualChunk(chunkIndex);
+      activeVirtualChunkIndex = chunkIndex;
+      nextNode = sentenceNodeByPosition.get(nextIndex + 1);
+    } catch (error) {
+      setTranslationStatus("다음 문장 청크를 불러오지 못했습니다.", true);
+      return;
+    }
+  }
   if (!nextNode) return;
   const nextSentenceId = nextNode.dataset.sentenceId || nextNode.id || "";
   const wasSelected = selectedSentence && selectedSentence.sentenceId === nextSentenceId;
@@ -1456,51 +1915,99 @@ function navigateSentence(delta) {
   if (!wasSelected || !selectedTranslationRecord) {
     requestSentenceTranslation(false);
   }
+  warmVirtualChunks(virtualChunkForNode(nextNode));
 }
 
-function navigateToNextUnstudiedSentence() {
+function activateSentenceForStudy(node) {
+  if (!node) return false;
+  selectSentence(node);
+  scrollSentenceIntoView(node);
+  setStudyPanel("translation");
+  setStudyPanelExpanded(true);
+  keepSentenceAboveStudyPanel(node);
+  requestSentenceTranslation(false);
+  return true;
+}
+
+async function nextVirtualUnstudiedSentenceNode() {
+  if (!virtualDocument || !translationSentenceStatesLoaded) return null;
+  const selectedChunkIndex = virtualChunkForNode(selectedSentenceNode());
+  const startingChunk = Math.max(
+    0,
+    selectedChunkIndex >= 0
+      ? selectedChunkIndex
+      : activeVirtualChunkIndex
+  );
+  for (let offset = 1; offset <= virtualChunkDescriptors.length; offset += 1) {
+    const chunkIndex = (startingChunk + offset) % virtualChunkDescriptors.length;
+    let chunk;
+    try {
+      chunk = await ensureVirtualChunk(chunkIndex);
+    } catch (error) {
+      continue;
+    }
+    const nodes = Array.from(chunk?.querySelectorAll(".reader-sentence") || []);
+    const node = nodes.find((candidate) => !sentenceHasTranslationState(candidate));
+    if (node) return node;
+  }
+  return null;
+}
+
+function nextGeneratedSentenceId() {
+  if (!translationSentenceStatesLoaded) return "";
+  const currentId = selectedSentence?.sentenceId || "";
+  let firstId = "";
+  let nextId = "";
+  translationSentenceStates.forEach((state, sentenceId) => {
+    if (normalizedTranslationReviewState(state.reviewState) !== "generated") return;
+    if (!firstId || sentenceId.localeCompare(firstId) < 0) firstId = sentenceId;
+    if (sentenceId.localeCompare(currentId) > 0 && (!nextId || sentenceId.localeCompare(nextId) < 0)) {
+      nextId = sentenceId;
+    }
+  });
+  return nextId || firstId;
+}
+
+async function nextVirtualReviewSentenceNode() {
+  if (!virtualDocument) return null;
+  const sentenceId = nextGeneratedSentenceId();
+  if (!sentenceId) return null;
+  try {
+    return await ensureVirtualTarget(sentenceId);
+  } catch (error) {
+    return null;
+  }
+}
+
+async function navigateToNextUnstudiedSentence() {
   const nextIndex = nextUnstudiedSentenceIndex();
-  if (nextIndex < 0) {
-    setTranslationStatus(
-      translationSentenceStatesLoaded
-        ? "현재 위치 뒤에 미번역 문장이 없습니다."
-        : "번역 상태를 아직 불러오는 중입니다.",
-      true
-    );
-    return;
-  }
-  const nextNode = sentenceNodes[nextIndex];
-  if (!nextNode) return;
-  selectSentence(nextNode);
-  scrollSentenceIntoView(nextNode);
-  setStudyPanel("translation");
-  setStudyPanelExpanded(true);
-  keepSentenceAboveStudyPanel(nextNode);
-  requestSentenceTranslation(false);
+  const nextNode = nextIndex >= 0
+    ? sentenceNodes[nextIndex]
+    : await nextVirtualUnstudiedSentenceNode();
+  if (activateSentenceForStudy(nextNode)) return;
+  setTranslationStatus(
+    translationSentenceStatesLoaded
+      ? "현재 위치 뒤에 미번역 문장이 없습니다."
+      : "번역 상태를 아직 불러오는 중입니다.",
+    true
+  );
 }
 
-function navigateToNextReviewSentence() {
+async function navigateToNextReviewSentence() {
   const nextIndex = nextGeneratedSentenceIndex();
-  if (nextIndex < 0) {
-    setTranslationStatus(
-      translationSentenceStatesLoaded
-        ? "검토할 번역이 없습니다."
-        : "번역 상태를 아직 불러오는 중입니다.",
-      true
-    );
-    return;
-  }
-  const nextNode = sentenceNodes[nextIndex];
-  if (!nextNode) return;
-  selectSentence(nextNode);
-  scrollSentenceIntoView(nextNode);
-  setStudyPanel("translation");
-  setStudyPanelExpanded(true);
-  keepSentenceAboveStudyPanel(nextNode);
-  requestSentenceTranslation(false);
+  const nextNode = nextIndex >= 0
+    ? sentenceNodes[nextIndex]
+    : await nextVirtualReviewSentenceNode();
+  if (activateSentenceForStudy(nextNode)) return;
+  setTranslationStatus(
+    translationSentenceStatesLoaded
+      ? "검토할 번역이 없습니다."
+      : "번역 상태를 아직 불러오는 중입니다.",
+    true
+  );
 }
 
-function continueStudy() {
+async function continueStudy() {
   const action = continueStudyButton?.dataset.studyAction || "continue";
   if (action === "preview-session") {
     previewStudySession();
@@ -1509,7 +2016,13 @@ function continueStudy() {
   const nextIndex = action === "review-generated"
     ? nextGeneratedSentenceIndex()
     : continueStudySentenceIndex();
-  if (nextIndex < 0) {
+  let nextNode = nextIndex >= 0 ? sentenceNodes[nextIndex] : null;
+  if (!nextNode && virtualDocument) {
+    nextNode = action === "review-generated"
+      ? await nextVirtualReviewSentenceNode()
+      : await nextVirtualUnstudiedSentenceNode();
+  }
+  if (!nextNode) {
     setTranslationStatus(
       translationSentenceStatesLoaded
         ? (action === "review-generated" ? "검토할 번역이 없습니다." : "모든 문장이 번역되었습니다.")
@@ -1518,14 +2031,7 @@ function continueStudy() {
     );
     return;
   }
-  const nextNode = sentenceNodes[nextIndex];
-  if (!nextNode) return;
-  selectSentence(nextNode);
-  scrollSentenceIntoView(nextNode);
-  setStudyPanel("translation");
-  setStudyPanelExpanded(true);
-  keepSentenceAboveStudyPanel(nextNode);
-  requestSentenceTranslation(false);
+  activateSentenceForStudy(nextNode);
 }
 
 function renderList(values) {
@@ -1615,7 +2121,7 @@ function translationQuickActions(reviewState) {
     ? '<span class="translation-quick-state" data-review-state="reviewed" title="저장된 번역" aria-label="저장된 번역">저장됨</span>'
     : '<button type="button" data-translation-quick-action="mark-reviewed" title="번역 저장" aria-label="번역 저장">저장</button>';
   const selectedIndex = selectedSentence ? sentenceIndex(selectedSentence.sentenceId) : -1;
-  const nextSentenceDisabled = selectedIndex < 0 || selectedIndex >= sentenceNodes.length - 1
+  const nextSentenceDisabled = selectedIndex < 0 || selectedIndex >= totalSentenceCount() - 1
     ? " disabled"
     : "";
   return `<div class="translation-reading-actions" aria-label="학습 동작">
@@ -1767,9 +2273,22 @@ function translationErrorIsRuntime(message) {
 }
 
 function translationErrorDisplayMessage(message) {
-  return translationErrorIsRuntime(message)
-    ? "번역기를 켜면 이 문장을 이어서 번역할 수 있습니다."
-    : cleanText(message || "번역을 사용할 수 없습니다.");
+  if (!translationErrorIsRuntime(message)) {
+    return cleanText(message || "번역을 사용할 수 없습니다.");
+  }
+  if (gemmaRuntimeState === "starting") {
+    return "번역기를 시작하고 있습니다. 준비되면 번역 다시 시도를 눌러주세요.";
+  }
+  return "번역기를 켜면 이 문장을 이어서 번역할 수 있습니다.";
+}
+
+function reflectTranslationRuntimeFailure() {
+  if (gemmaRuntimeState === "starting") {
+    scheduleGemmaRuntimeCheck();
+    return;
+  }
+  if (gemmaRuntimeState === "failed") return;
+  setGemmaRuntimeIndicator("offline", "번역 준비 필요", "번역기를 켜면 이어서 번역할 수 있습니다.");
 }
 
 function runtimeRecoveryMarkup(message) {
@@ -1916,9 +2435,16 @@ function sessionPreviewTargetId(item) {
   return decodeURIComponent(url.slice(hashIndex + 1));
 }
 
-function openSessionPreviewTarget(targetId) {
+async function openSessionPreviewTarget(targetId) {
   const id = cleanText(targetId);
-  const node = id ? document.getElementById(id) : null;
+  let node = id ? document.getElementById(id) : null;
+  if (!node && virtualDocument) {
+    try {
+      node = await ensureVirtualTarget(id);
+    } catch (error) {
+      node = null;
+    }
+  }
   if (!node) {
     setTranslationStatus("이 페이지에서 해당 원문 위치를 찾을 수 없습니다.", true);
     return;
@@ -2184,7 +2710,7 @@ async function requestSentenceTranslation(regenerate = false) {
     if (!response.ok || !payload.ok) {
       const message = cleanText(payload.error || "번역 준비가 필요합니다.");
       if (translationErrorIsRuntime(message)) {
-        setGemmaRuntimeIndicator("offline", "번역 준비 필요", "번역기를 켜면 이어서 번역할 수 있습니다.");
+        reflectTranslationRuntimeFailure();
       }
       setTranslationStatus(translationErrorDisplayMessage(message), true);
       renderTranslationError(message);
@@ -2205,7 +2731,7 @@ async function requestSentenceTranslation(regenerate = false) {
     if (requestId === activeTranslationRequest) {
       const message = cleanText(error && error.message ? error.message : "번역 준비가 필요합니다.");
       if (translationErrorIsRuntime(message)) {
-        setGemmaRuntimeIndicator("offline", "번역 준비 필요", "번역기를 켜면 이어서 번역할 수 있습니다.");
+        reflectTranslationRuntimeFailure();
       }
       setTranslationStatus(translationErrorDisplayMessage(message), true);
       renderTranslationError(message);
@@ -2927,7 +3453,13 @@ if (studyTabsContainer) {
   });
 }
 
-document.querySelector(".reading-body").addEventListener("click", (event) => {
+readingBody.addEventListener("click", (event) => {
+  const retryChunk = event.target.closest("[data-load-work-chunk]");
+  if (retryChunk) {
+    const chunkIndex = Number(retryChunk.dataset.loadWorkChunk);
+    ensureVirtualChunk(chunkIndex).catch(() => {});
+    return;
+  }
   const sentence = event.target.closest(".reader-sentence");
   if (sentence) {
     const sentenceId = sentence.dataset.sentenceId || sentence.id || "";
@@ -3111,14 +3643,14 @@ notesList.addEventListener("click", async (event) => {
   }
 });
 
-window.addEventListener("hashchange", () => {
-  selectSentenceFromHash();
+window.addEventListener("hashchange", async () => {
+  await selectSentenceFromHash();
   syncTargetDependentViews();
   updateSentenceControls();
   syncConceptReturnLinks();
 });
 
-function initializeStudyCompanion() {
+async function initializeStudyCompanion() {
   rememberRecentWork();
   setTranslationMode("reading");
   restoreNoteDraft();
@@ -3143,7 +3675,7 @@ function initializeStudyCompanion() {
     exportStudySession.title = "이 문서의 학습 기록 다운로드";
   }
   syncConceptsPanelAvailability();
-  selectSentenceFromHash();
+  await selectSentenceFromHash();
   if (selectedSentence) {
     requestSentenceTranslation(false);
   }
@@ -3169,6 +3701,9 @@ function syncConceptsPanelAvailability() {
   conceptsPanel.classList.remove("active");
 }
 
-initializeStudyCompanion();
-initializeReadingPositionTracker();
-loadNotes();
+if (!researchData.print_view) {
+  initializeVirtualWork();
+  initializeStudyCompanion();
+  initializeReadingPositionTracker();
+  loadNotes();
+}

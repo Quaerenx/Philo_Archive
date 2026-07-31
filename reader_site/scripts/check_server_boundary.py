@@ -39,8 +39,10 @@ BANNED_IMPORTED_NAMES = {
 
 REQUIRED_IMPORTED_NAMES = {
     "bible_segments_payload_from_query",
+    "build_archive_summary",
     "build_file_payload",
     "build_public_artifact_manifest",
+    "build_public_gemma_health",
     "build_public_runtime_health",
     "build_read_response",
     "build_source_response",
@@ -55,11 +57,13 @@ REQUIRED_IMPORTED_NAMES = {
     "sentence_translation_from_payload",
     "sentence_translations_export_from_query",
     "sentence_translations_summary_from_query",
+    "static_cache_control",
     "study_export_from_query",
     "study_payload_from_query",
     "study_session_export_from_query",
     "update_sentence_translation_review",
     "update_note_from_payload",
+    "work_chunk_payload_from_query",
 }
 
 FORBIDDEN_PUBLIC_DIAGNOSTIC_KEYS = {
@@ -167,6 +171,7 @@ def check_static_publication_boundary() -> None:
         "/README.md",
         "/templates/work.html",
         "/data/notes/nietzsche_notes.jsonl",
+        "/data/segment_offset_index.sqlite",
         "/data/search_index.sqlite",
         "/%2e%2e/server.py",
         "/assets/..%5cserver.py",
@@ -193,6 +198,7 @@ def check_public_diagnostics_boundary() -> None:
         "reachable": False,
         "model_count": 0,
         "models": [],
+        "state": "failed",
         "error": f"private runtime path: {SITE}",
     }
     try:

@@ -48,6 +48,7 @@ DERIVED_NAMES = (
     "kierkegaard_segments.jsonl",
     "nietzsche_segments.jsonl",
     "wittgenstein_segments.jsonl",
+    "segment_offset_index.sqlite",
     "search_index.jsonl",
     "search_index.sqlite",
 )

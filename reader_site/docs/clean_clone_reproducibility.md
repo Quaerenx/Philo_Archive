@@ -14,6 +14,7 @@ A clean clone should not contain:
 
 - the four local source-corpus folders;
 - generated `*_segments.jsonl` files;
+- generated `archive_catalog.local.json`;
 - generated search indexes or SQLite databases;
 - personal notes;
 - generated AI interpretations and sentence translations;
@@ -109,11 +110,13 @@ After a full local restore, also run:
 
 ```powershell
 python .\scripts\check_restore_readiness.py
+python .\scripts\check_segment_offset_contracts.py
+python .\scripts\check_work_chunk_contracts.py
 python .\scripts\check_source_target_contracts.py
 python .\scripts\check_note_target_integrity.py
 ```
 
-These checks intentionally are not part of the source-light CI subset because they require restored source folders and regenerated local artifacts. `check_restore_readiness.py` verifies source roots, primary output folders, metadata, segment artifacts, and search records. `check_source_target_contracts.py` proves that selected reading targets can be resolved back to exact `text_raw` records and stable SHA-256 source-text checksums. `check_note_target_integrity.py` verifies that local personal notes still point to existing works and generated segment targets.
+These checks intentionally are not part of the source-light CI subset because they require restored source folders and regenerated local artifacts. `check_restore_readiness.py` verifies source roots, primary output folders, metadata, segment artifacts, the source-target byte-offset index, and search records. `check_segment_offset_contracts.py` exercises the index format and failure modes without loading full corpora. `check_work_chunk_contracts.py` verifies large-work thresholds, first/middle/last deep links, bounded indexed reads, initial HTML size, the complete print view, and the unchanged eager path for normal works. `check_source_target_contracts.py` proves that selected reading targets can be resolved back to exact `text_raw` records and stable SHA-256 source-text checksums. `check_note_target_integrity.py` verifies that local personal notes still point to existing works and generated segment targets.
 
 The workflow shape is checked by:
 

@@ -2,13 +2,19 @@ from __future__ import annotations
 
 import json
 import sys
+import tempfile
+import threading
+import time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from unittest.mock import patch
 
 
 SITE = Path(__file__).resolve().parents[1]
 DATA = SITE / "data"
 sys.path.insert(0, str(SITE))
 
+import services.search as search_service  # noqa: E402
 from services.search import search_payload_from_query, search_records  # noqa: E402
 from services.notes import append_note, note_storage_path  # noqa: E402
 
@@ -166,6 +172,154 @@ def check_work_alias_search() -> None:
         )
 
 
+def reference_search_work_records(
+    query: str,
+    corpus_id: str = "",
+    work_id: str = "",
+    variant_id: str = "",
+    limit: int = 20,
+) -> dict:
+    preferred_source, work_query = search_service.source_prefix_query(query)
+    terms = [term for term in search_service.normalize_search_text(work_query).split(" ") if term]
+    if not terms:
+        return {"count": 0, "results": []}
+    metadata = search_service.load_work_metadata()
+    corpora = [corpus_id] if corpus_id else sorted(metadata)
+    ranked: list[tuple[int, str, str, dict]] = []
+    for current_corpus_id in corpora:
+        for current_work_id, work in metadata.get(current_corpus_id, {}).items():
+            if work_id and current_work_id != work_id:
+                continue
+            if not search_service.work_matches_variant(work, variant_id):
+                continue
+            if current_corpus_id == "bible" and preferred_source:
+                source_id = str(work.get("source_id", ""))
+                if not source_id.startswith(preferred_source):
+                    continue
+            aliases = search_service.work_alias_values(current_corpus_id, work)
+            score = search_service.score_work_match(work_query, terms, aliases, work)
+            if score <= 0:
+                continue
+            if current_corpus_id == "bible":
+                score += search_service.bible_work_source_score(work, preferred_source)
+            title = str(work.get("display_title") or work.get("title") or current_work_id)
+            category = str(work.get("category_title") or work.get("category_id") or "")
+            result = {
+                "kind": "work",
+                "corpus_id": current_corpus_id,
+                "work_id": current_work_id,
+                "variant_id": variant_id,
+                "title": title,
+                "label": category,
+                "url": work.get("work_url") or f"/work/{current_corpus_id}/{current_work_id}",
+                "snippet": " / ".join(alias for alias in aliases[:6] if alias),
+                "category_id": work.get("category_id", ""),
+                "category_title": category,
+                "variant_ids": work.get("variant_ids", []),
+                "score": score,
+            }
+            ranked.append((score, current_corpus_id, current_work_id, result))
+    ranked.sort(key=lambda item: (-item[0], item[1], item[2]))
+    return {"count": len(ranked), "results": [item[3] for item in ranked[:limit]]}
+
+
+def check_work_search_index_equivalence() -> None:
+    cases = [
+        ("ressentiment", "", "", "", 10),
+        ("Gen 1:1", "", "", "", 10),
+        ("Morgenrothe", "nietzsche", "", "", 10),
+        ("will to power", "nietzsche", "", "", 10),
+        ("lxx Genesis", "bible", "", "", 5),
+        ("Genesis", "bible", "", "lxx_swete", 5),
+    ]
+    for query, corpus_id, work_id, variant_id, limit in cases:
+        expected = reference_search_work_records(query, corpus_id, work_id, variant_id, limit)
+        actual = search_service.search_work_records(query, corpus_id, work_id, variant_id, limit)
+        require(actual == expected, f"{query}: indexed work results differ from per-request reference")
+
+
+def write_test_metadata(paths: dict[str, Path], title: str) -> None:
+    for corpus_id, path in paths.items():
+        works = {}
+        if corpus_id == "nietzsche":
+            works = {
+                "TEST": {
+                    "corpus_id": corpus_id,
+                    "work_id": "TEST",
+                    "title": title,
+                    "display_title": title,
+                    "category_id": "test",
+                    "category_title": "Test",
+                    "variant_ids": ["test.variant"],
+                    "work_url": "/work/nietzsche/TEST",
+                }
+            }
+        path.write_text(json.dumps({"works": works}, ensure_ascii=False), encoding="utf-8")
+
+
+def check_work_search_index_refresh_and_concurrency() -> None:
+    with tempfile.TemporaryDirectory(prefix="philo_search_metadata_") as temporary_directory:
+        temporary_path = Path(temporary_directory)
+        metadata_paths = {
+            corpus_id: temporary_path / f"{corpus_id}_metadata.json"
+            for corpus_id in search_service.METADATA_FILES
+        }
+        write_test_metadata(metadata_paths, "Alpha Work")
+        with (
+            patch.dict(search_service.METADATA_FILES, metadata_paths, clear=True),
+            patch.object(search_service, "_WORK_SEARCH_STATE", None),
+        ):
+            first_index = search_service.load_work_search_index()
+            first_signature = first_index.signature
+            first_result = search_service.search_work_records("Alpha", "nietzsche", "", "", 5)
+            require(first_result["results"][0]["work_id"] == "TEST", "initial metadata index lookup failed")
+            alpha_entry = first_index.entries_by_corpus["nietzsche"][0]
+            require(alpha_entry.normalized_title == "alpha work", "normalized work title was not precomputed")
+            require("alpha work" in alpha_entry.normalized_aliases, "normalized aliases were not precomputed")
+            require(isinstance(alpha_entry.aliases, tuple), "work aliases should be stored as an immutable tuple")
+            require(isinstance(alpha_entry.compact_aliases, frozenset), "compact aliases should be immutable")
+            try:
+                first_index.entries_by_corpus["new"] = ()
+            except TypeError:
+                pass
+            else:
+                raise AssertionError("corpus work index should be read-only")
+
+            write_test_metadata(metadata_paths, "Omega Expanded Work")
+            refreshed_index = search_service.load_work_search_index()
+            require(refreshed_index is not first_index, "metadata signature change did not replace the work index")
+            require(refreshed_index.signature != first_signature, "metadata signature did not change after rewrite")
+            refreshed_result = search_service.search_work_records("Omega Expanded", "nietzsche", "", "", 5)
+            require(refreshed_result["results"][0]["work_id"] == "TEST", "refreshed metadata lookup failed")
+            require(
+                not search_service.search_work_records("Alpha", "nietzsche", "", "", 5)["results"],
+                "stale alias remained after metadata index refresh",
+            )
+
+            search_service._WORK_SEARCH_STATE = None
+            build_count = 0
+            build_count_lock = threading.Lock()
+            start_barrier = threading.Barrier(8)
+            original_builder = search_service.build_work_search_index
+
+            def counted_builder(metadata: dict[str, dict], signature: search_service.WorkMetadataSignature):
+                nonlocal build_count
+                with build_count_lock:
+                    build_count += 1
+                time.sleep(0.02)
+                return original_builder(metadata, signature)
+
+            def concurrent_load():
+                start_barrier.wait()
+                return search_service.load_work_search_index()
+
+            with patch.object(search_service, "build_work_search_index", side_effect=counted_builder):
+                with ThreadPoolExecutor(max_workers=8) as executor:
+                    indexes = list(executor.map(lambda _index: concurrent_load(), range(8)))
+            require(build_count == 1, f"concurrent metadata requests built the index {build_count} times")
+            require(len({id(index) for index in indexes}) == 1, "concurrent requests observed different index instances")
+
+
 def check_segment_ranking() -> None:
     ressentiment = search_records("ressentiment", corpus_id="nietzsche", limit=5)
     ressentiment_results = require_results(ressentiment, "Nietzsche ressentiment segment ranking")
@@ -281,6 +435,8 @@ def main() -> None:
     check_filters()
     check_query_payload_helper()
     check_work_alias_search()
+    check_work_search_index_equivalence()
+    check_work_search_index_refresh_and_concurrency()
     check_segment_ranking()
     check_nietzsche_concept_search_links()
     check_note_search()

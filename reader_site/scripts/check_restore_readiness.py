@@ -10,6 +10,7 @@ SITE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SITE))
 
 from runtime_status import SEARCH_INDEX, build_runtime_health  # noqa: E402
+from services.segment_offsets import validate_segment_offset_index  # noqa: E402
 
 
 EXPECTED_CORPORA = {"nietzsche", "bible", "kierkegaard", "wittgenstein"}
@@ -58,6 +59,18 @@ def check_search(payload: dict[str, Any], allow_degraded_search: bool) -> None:
         require(search.get("fts5") is True, "search sqlite database is missing FTS5")
 
 
+def check_segment_offsets() -> None:
+    try:
+        summary = validate_segment_offset_index(verify_hashes=False)
+    except FileNotFoundError as exc:
+        fail(str(exc))
+    by_corpus = summary.get("by_corpus") or {}
+    missing = sorted(EXPECTED_CORPORA - set(by_corpus))
+    require(not missing, "segment offset index missing corpus records: " + ", ".join(missing))
+    for corpus_id in sorted(EXPECTED_CORPORA):
+        require(int(by_corpus.get(corpus_id) or 0) > 0, f"segment offset index has no {corpus_id} records")
+
+
 def check_restore_readiness(allow_degraded_search: bool = False) -> dict[str, Any]:
     payload = build_runtime_health()
     corpora = payload.get("corpora") or []
@@ -66,6 +79,7 @@ def check_restore_readiness(allow_degraded_search: bool = False) -> dict[str, An
     require(not missing, "readiness payload missing corpora: " + ", ".join(missing))
     for corpus in corpora:
         check_corpus(corpus)
+    check_segment_offsets()
     check_search(payload, allow_degraded_search)
     return payload
 

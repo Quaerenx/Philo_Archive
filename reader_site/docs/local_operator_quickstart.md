@@ -30,6 +30,8 @@ What starts:
 - Local AI sidecar: `127.0.0.1:8794`.
 - Runtime logs: `reader_site\data\runtime.local\`.
 
+The launcher starts the Reader and Local AI sidecar in parallel. Open the Reader as soon as it prints `Reader ready`; the work-page status changes from `번역기 시작 중` to `번역기 준비됨` without a browser refresh. Reading, search, and notes remain available while the model loads.
+
 The reader and local AI sidecar are intentionally loopback-only. The reader APIs can read source material and modify personal notes, so unauthenticated LAN binding is rejected. Remote-device access requires a future authenticated deployment layer rather than `-ReaderHost 0.0.0.0`.
 
 ## Reader Only
@@ -50,6 +52,8 @@ cd .\reader_site
 python .\scripts\check_local_runtime.py --plain
 ```
 
+For direct HTTP checks, `/api/health` reports the full redacted Reader readiness summary and `/api/health/gemma` returns only the translation-sidecar state used by the work page. The latter is intentionally cheaper and reflects unavailable/failed states within its shorter failure TTL.
+
 Expected healthy output:
 
 ```text
@@ -62,15 +66,15 @@ If `Reader` is not ready, start `run_reader_with_gemma.ps1` again. If `Reader` i
 
 ## Startup Failures
 
-`run_reader_with_gemma.ps1` checks common startup problems before it starts the reader:
+`run_reader_with_gemma.ps1` checks Reader-blocking problems before startup and reports Local AI failures separately:
 
 - Missing Python: install Python or add it to `PATH`.
 - Reader port `8793` already has Philo Archive running: the script reuses the existing reader and still checks/starts Local AI.
 - Reader port `8793` is used by another app: stop that app or run with `-ReaderPort 8795`.
-- Missing GGUF model: pass the correct model path with `-ModelPath`.
-- Missing `llama-server.exe`: add the llama.cpp folder to `PATH`.
-- Gemma port `8794` already in use by a different process: stop that process or run with `-GemmaPort 8795`.
-- Local AI does not become ready: check `data\runtime.local\llama-server.*.log` or try `-ContextSize 4096`.
+- Missing GGUF model: the Reader stays available; pass the correct model path with `-ModelPath` and start the launcher again.
+- Missing `llama-server.exe`: the Reader stays available; add the llama.cpp folder to `PATH` and start the launcher again.
+- Gemma port `8794` already in use by a different process: the Reader stays available; stop that process or run with `-GemmaPort 8795`.
+- Local AI does not become ready: the Reader stays available; check `data\runtime.local\llama-server.*.log` or try `-ContextSize 4096`.
 
 ## Study Workflow
 

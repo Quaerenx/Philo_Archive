@@ -8,7 +8,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
 
-from corpora.archive import build_archive
+from corpora.archive import build_archive, build_archive_summary
 from corpora.catalogs import (
     bible_segments_payload_from_query,
     load_bible_metadata,
@@ -17,7 +17,7 @@ from corpora.catalogs import (
     load_nietzsche_metadata,
     load_wittgenstein_metadata,
 )
-from runtime_status import build_public_artifact_manifest, build_public_runtime_health
+from runtime_status import build_public_artifact_manifest, build_public_gemma_health, build_public_runtime_health
 from services.notes import (
     create_note_from_payload,
     delete_note_from_query,
@@ -40,8 +40,9 @@ from services.sources import (
     build_read_response,
     build_source_response,
 )
-from services.static_files import build_file_payload, resolve_static_file
+from services.static_files import build_file_payload, resolve_static_file, static_cache_control
 from services.study_sessions import study_session_export_from_query
+from services.work_chunks import work_chunk_payload_from_query
 from services.work_pages import build_work_page_html
 
 
@@ -83,12 +84,13 @@ class Handler(BaseHTTPRequestHandler):
     server_version = "PersonalArchiveReader/1.0"
 
     def do_HEAD(self) -> None:
-        self.send_response(200)
-        self.send_header("Content-Type", "text/html; charset=utf-8")
-        self.end_headers()
+        self.do_GET()
 
     def do_GET(self) -> None:
         parsed = urlparse(self.path)
+        if parsed.path == "/api/health/gemma":
+            self.send_json(build_public_gemma_health())
+            return
         if parsed.path == "/api/health":
             self.send_json(build_public_runtime_health())
             return
@@ -97,6 +99,9 @@ class Handler(BaseHTTPRequestHandler):
             return
         if parsed.path == "/api/archive":
             self.send_json(build_archive())
+            return
+        if parsed.path == "/api/archive/summary":
+            self.send_json(build_archive_summary())
             return
         if parsed.path == "/api/nietzsche/metadata":
             self.send_json(load_nietzsche_metadata())
@@ -121,6 +126,9 @@ class Handler(BaseHTTPRequestHandler):
             return
         if parsed.path == "/api/source-target":
             self.handle_source_target_get(parse_qs(parsed.query))
+            return
+        if parsed.path == "/api/work-chunks":
+            self.handle_work_chunk_get(parse_qs(parsed.query))
             return
         if parsed.path == "/api/study":
             self.handle_study_get(parse_qs(parsed.query))
@@ -153,7 +161,7 @@ class Handler(BaseHTTPRequestHandler):
         if parsed.path == "/source":
             self.handle_source(parse_qs(parsed.query))
             return
-        self.serve_static(parsed.path)
+        self.serve_static(parsed.path, parsed.query)
 
     def do_POST(self) -> None:
         parsed = urlparse(self.path)
@@ -364,7 +372,28 @@ class Handler(BaseHTTPRequestHandler):
         self.send_json(result)
 
     def handle_work(self, corpus_id: str, work_id: str, query: dict[str, list[str]] | None = None) -> None:
-        self.send_work_viewer(corpus_id, work_id, first_value((query or {}).get("variant", [""])))
+        query = query or {}
+        self.send_work_viewer(
+            corpus_id,
+            work_id,
+            first_value(query.get("variant", [""])),
+            view=first_value(query.get("view", [""])),
+            initial_anchor=first_value(query.get("anchor", [""])),
+        )
+
+    def handle_work_chunk_get(self, query: dict[str, list[str]]) -> None:
+        try:
+            payload = work_chunk_payload_from_query(query)
+        except ValueError as exc:
+            self.send_json({"ok": False, "error": str(exc)}, status=400)
+            return
+        except PermissionError as exc:
+            self.send_json({"ok": False, "error": str(exc)}, status=403)
+            return
+        except FileNotFoundError as exc:
+            self.send_json({"ok": False, "error": str(exc)}, status=404)
+            return
+        self.send_json(payload)
 
     def handle_read(self, query: dict[str, list[str]]) -> None:
         try:
@@ -394,7 +423,7 @@ class Handler(BaseHTTPRequestHandler):
             return
         self.send_source_response(response)
 
-    def serve_static(self, request_path: str) -> None:
+    def serve_static(self, request_path: str, query_string: str = "") -> None:
         try:
             target = resolve_static_file(request_path)
         except PermissionError:
@@ -403,21 +432,62 @@ class Handler(BaseHTTPRequestHandler):
         except FileNotFoundError:
             self.send_error(404)
             return
-        self.send_file(target)
+        version_values = parse_qs(query_string, keep_blank_values=True).get("v", [])
+        versioned = any(str(value).strip() for value in version_values)
+        self.send_file(target, static_asset=True, versioned=versioned)
 
-    def send_file(self, target: Path, inline: bool = False) -> None:
-        payload = build_file_payload(target, inline)
-        self.send_response(200)
+    def send_file(
+        self,
+        target: Path,
+        inline: bool = False,
+        *,
+        static_asset: bool = False,
+        versioned: bool = False,
+    ) -> None:
+        payload = build_file_payload(
+            target,
+            inline,
+            accept_encoding=self.headers.get("Accept-Encoding", ""),
+            if_none_match=self.headers.get("If-None-Match", ""),
+            if_modified_since=self.headers.get("If-Modified-Since", ""),
+            cache_control=static_cache_control(target, versioned) if static_asset else "no-cache",
+            allow_compression=static_asset,
+            head_only=self.command == "HEAD",
+        )
+        self.send_response(payload.status)
         self.send_header("Content-Type", payload.content_type)
-        self.send_header("Content-Length", str(len(payload.body)))
+        self.send_header("Cache-Control", payload.cache_control)
+        self.send_header("ETag", payload.etag)
+        self.send_header("Last-Modified", payload.last_modified)
+        if payload.content_length is not None:
+            self.send_header("Content-Length", str(payload.content_length))
+        if payload.content_encoding:
+            self.send_header("Content-Encoding", payload.content_encoding)
+        if payload.vary_accept_encoding:
+            self.send_header("Vary", "Accept-Encoding")
         if payload.content_disposition:
             self.send_header("Content-Disposition", payload.content_disposition)
         self.end_headers()
-        self.wfile.write(payload.body)
+        if self.command != "HEAD" and payload.status != 304:
+            self.wfile.write(payload.body)
 
-    def send_work_viewer(self, corpus_id: str, work_id: str, variant_id: str = "") -> None:
+    def send_work_viewer(
+        self,
+        corpus_id: str,
+        work_id: str,
+        variant_id: str = "",
+        *,
+        view: str = "",
+        initial_anchor: str = "",
+    ) -> None:
         try:
-            body = build_work_page_html(corpus_id, work_id, variant_id).encode("utf-8")
+            body = build_work_page_html(
+                corpus_id,
+                work_id,
+                variant_id,
+                view=view,
+                initial_anchor=initial_anchor,
+            ).encode("utf-8")
         except ValueError as exc:
             self.send_error(400, str(exc))
             return
@@ -430,8 +500,10 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", "no-cache")
         self.end_headers()
-        self.wfile.write(body)
+        if self.command != "HEAD":
+            self.wfile.write(body)
 
     def send_source_response(self, response: dict) -> None:
         if response.get("kind") == "file":
@@ -441,24 +513,30 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", "no-cache")
         self.end_headers()
-        self.wfile.write(body)
+        if self.command != "HEAD":
+            self.wfile.write(body)
 
     def send_json(self, payload, status: int = 200) -> None:
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", "no-store")
         self.end_headers()
-        self.wfile.write(body)
+        if self.command != "HEAD":
+            self.wfile.write(body)
 
     def send_text(self, text: str, content_type: str, status: int = 200) -> None:
         body = text.encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", "no-store")
         self.end_headers()
-        self.wfile.write(body)
+        if self.command != "HEAD":
+            self.wfile.write(body)
 
     def log_message(self, format: str, *args) -> None:
         return

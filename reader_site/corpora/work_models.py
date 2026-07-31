@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from urllib.parse import quote
+from urllib.parse import quote, urlencode
 
 from corpora.catalogs import (
     bible_segments_for_work,
@@ -21,7 +21,15 @@ from rendering.documents import (
     render_segments_from_texts,
     title_from_markdown,
 )
-from rendering.work_markup import concept_markup, source_notice_markup, toc_markup, variant_tabs_for_work, variant_tabs_markup
+from rendering.work_markup import (
+    concept_markup,
+    source_notice_markup,
+    toc_markup,
+    variant_tabs_for_work,
+    variant_tabs_markup,
+    work_href,
+)
+from services.work_chunks import virtual_work_document
 
 
 def is_inside(path: Path, root: Path) -> bool:
@@ -216,7 +224,13 @@ def build_kierkegaard_work_model(work_id: str, variant_id: str = "") -> dict:
     }
 
 
-def build_wittgenstein_work_model(work_id: str, variant_id: str = "") -> dict:
+def build_wittgenstein_work_model(
+    work_id: str,
+    variant_id: str = "",
+    *,
+    view: str = "",
+    initial_anchor: str = "",
+) -> dict:
     work = resolve_metadata_work("wittgenstein", work_id)
     variant = selected_variant(
         work,
@@ -230,9 +244,19 @@ def build_wittgenstein_work_model(work_id: str, variant_id: str = "") -> dict:
         ],
     )
     target = variant_source_path(variant)
-    text = target.read_text(encoding="utf-8", errors="replace")
-    document = render_segments_from_texts([readable_markdown_text(text)], "p")
     active_variant_id = variant.get("variant_id", "")
+    document = None
+    if view != "print":
+        document = virtual_work_document(
+            "wittgenstein",
+            work_id,
+            active_variant_id,
+            initial_anchor=initial_anchor,
+        )
+    if document is None:
+        text = target.read_text(encoding="utf-8", errors="replace")
+        document = render_segments_from_texts([readable_markdown_text(text)], "p")
+    virtual_document = document.get("virtual_document")
     source_path = variant.get("source_path", "")
     title = work.get("display_title") or work.get("title") or work_id
     research_payload = {
@@ -246,6 +270,8 @@ def build_wittgenstein_work_model(work_id: str, variant_id: str = "") -> dict:
         "source_label": variant.get("label") or active_variant_id,
         "default_target_type": "paragraph",
         "source_path": source_path,
+        "virtual_document": virtual_document,
+        "print_view": view == "print",
     }
     notice = source_notice_markup(
         "Rights",
@@ -273,7 +299,18 @@ def build_wittgenstein_work_model(work_id: str, variant_id: str = "") -> dict:
         "heading_count": str(int(document["heading_count"])),
         "segment_count": str(int(document["paragraph_count"])),
         "content": str(document["html"]),
-        "body_class": "wittgenstein-work",
+        "body_class": (
+            "wittgenstein-work print-work"
+            if view == "print"
+            else ("wittgenstein-work virtual-work" if virtual_document else "wittgenstein-work")
+        ),
         "text_direction": "ltr",
         "research": research_payload,
+        "print_href": (
+            work_href("wittgenstein", work_id)
+            + "?"
+            + urlencode({"variant": active_variant_id, "view": "print"})
+            if virtual_document
+            else ""
+        ),
     }

@@ -1,6 +1,13 @@
 from __future__ import annotations
 
+import json
+import os
 import sys
+import tempfile
+import threading
+import time
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -8,14 +15,20 @@ from typing import Any
 SITE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SITE))
 
-from corpora.archive import build_archive  # noqa: E402
+from corpora import archive as archive_service  # noqa: E402
+from corpora.archive import build_archive, build_archive_summary  # noqa: E402
 from corpora.catalogs import bible_segments_payload_from_query  # noqa: E402
+import runtime_status  # noqa: E402
 from runtime_status import (  # noqa: E402
+    TTLCache,
     build_artifact_manifest,
     build_public_artifact_manifest,
+    build_public_gemma_health,
     build_public_runtime_health,
     build_runtime_health,
+    read_gemma_launcher_state,
 )
+from scripts import build_archive_catalog as archive_catalog_script  # noqa: E402
 from services.sentence_translations import (  # noqa: E402
     sentence_translations_export_from_query,
     sentence_translations_summary_from_query,
@@ -103,6 +116,17 @@ def check_archive(payload: dict[str, Any]) -> None:
                 require_keys(link, {"label", "href", "source_href", "path", "meta"}, link_context)
 
 
+def check_archive_summary(payload: dict[str, Any]) -> None:
+    require_keys(payload, {"schema_version", "generated_at", "corpora"}, "archive summary")
+    require(payload["schema_version"] == 1, "archive summary schema_version must be 1")
+    require(len(payload["corpora"]) == 4, "archive summary must list four corpora")
+    for index, corpus in enumerate(payload["corpora"]):
+        require(
+            set(corpus) == {"id", "title", "subtitle"},
+            f"archive summary corpus {index} must remain lightweight",
+        )
+
+
 def check_health(payload: dict[str, Any]) -> None:
     require_keys(
         payload,
@@ -137,10 +161,14 @@ def check_health(payload: dict[str, Any]) -> None:
         check_file_record(corpus["notes"], f"{context}.notes")
     check_file_record(payload["search"], "health.search")
     require_keys(payload["search"], {"records", "fts5"}, "health.search")
-    require_keys(payload["gemma"], {"base_url", "reachable", "model_count", "models"}, "health.gemma")
+    require_keys(payload["gemma"], {"base_url", "reachable", "model_count", "models", "state"}, "health.gemma")
     require(isinstance(payload["gemma"]["reachable"], bool), "health.gemma.reachable must be bool")
     require(isinstance(payload["gemma"]["model_count"], int), "health.gemma.model_count must be int")
     require(isinstance(payload["gemma"]["models"], list), "health.gemma.models must be list")
+    require(
+        payload["gemma"]["state"] in {"starting", "ready", "failed", "unavailable"},
+        "health.gemma.state must be a public runtime state",
+    )
 
 
 def check_artifacts(payload: dict[str, Any]) -> None:
@@ -166,6 +194,22 @@ def check_artifacts(payload: dict[str, Any]) -> None:
         any("rebuild_all.py" in command for command in payload["regeneration_commands"]),
         "artifacts.regeneration_commands must include rebuild_all.py",
     )
+    require(
+        any("build_segment_offset_index.py" in command for command in payload["regeneration_commands"]),
+        "artifacts.regeneration_commands must include build_segment_offset_index.py",
+    )
+    require(
+        any("build_archive_catalog.py" in command for command in payload["regeneration_commands"]),
+        "artifacts.regeneration_commands must include build_archive_catalog.py",
+    )
+    require(
+        any(artifact.get("name") == "segment_offset_index.sqlite" for artifact in payload["artifacts"]),
+        "artifacts.artifacts must include segment_offset_index.sqlite",
+    )
+    require(
+        any(artifact.get("name") == "archive_catalog.local.json" for artifact in payload["artifacts"]),
+        "artifacts.artifacts must include archive_catalog.local.json",
+    )
     for index, artifact in enumerate(payload["artifacts"]):
         check_file_record(artifact, f"artifacts.artifacts[{index}]")
     check_file_record(payload["search"], "artifacts.search")
@@ -187,7 +231,11 @@ def check_public_health(payload: dict[str, Any]) -> None:
     require_keys(payload, {"status", "generated_at", "corpora", "search", "gemma", "issues"}, "public health")
     require(payload["status"] in {"ok", "warning"}, "public health.status must be ok or warning")
     require_keys(payload["search"], {"ready", "fts5"}, "public health.search")
-    require_keys(payload["gemma"], {"reachable", "model_count"}, "public health.gemma")
+    require_keys(payload["gemma"], {"reachable", "model_count", "state"}, "public health.gemma")
+    require(
+        payload["gemma"]["state"] in {"starting", "ready", "failed", "unavailable"},
+        "public health.gemma.state must be a public runtime state",
+    )
     for index, corpus in enumerate(payload["corpora"]):
         require_keys(
             corpus,
@@ -198,6 +246,178 @@ def check_public_health(payload: dict[str, Any]) -> None:
     require(not exposed, "public health exposes private keys: " + ", ".join(exposed))
 
 
+def check_public_gemma_health(payload: dict[str, Any]) -> None:
+    require_keys(payload, {"status", "generated_at", "gemma"}, "public Gemma health")
+    require(payload["status"] in {"ok", "warning"}, "public Gemma health status invalid")
+    require_keys(payload["gemma"], {"reachable", "model_count", "state"}, "public Gemma health.gemma")
+    require(
+        payload["gemma"]["state"] in {"starting", "ready", "failed", "unavailable"},
+        "public Gemma health state invalid",
+    )
+    exposed = sorted(FORBIDDEN_PUBLIC_DIAGNOSTIC_KEYS & nested_keys(payload))
+    require(not exposed, "public Gemma health exposes private keys: " + ", ".join(exposed))
+
+
+def check_ttl_cache_contracts() -> None:
+    original_monotonic = runtime_status.monotonic
+    clock = [100.0]
+    runtime_status.monotonic = lambda: clock[0]
+    try:
+        cache = TTLCache()
+        calls = []
+
+        def build_state() -> dict[str, Any]:
+            calls.append(clock[0])
+            return {"reachable": len(calls) > 1, "nested": {"safe": True}}
+
+        ttl_for_state = lambda value: 3.0 if value["reachable"] else 0.5
+        first = cache.get(build_state, ttl_for_state)
+        first["nested"]["safe"] = False
+        require(cache.get(build_state, ttl_for_state)["nested"]["safe"], "TTL cache leaked caller mutation")
+        require(len(calls) == 1, "TTL cache rebuilt inside failure TTL")
+        clock[0] += 0.51
+        require(cache.get(build_state, ttl_for_state)["reachable"], "TTL cache did not expose changed state after TTL")
+        require(len(calls) == 2, "TTL cache did not rebuild after TTL")
+        clock[0] += 2.99
+        cache.get(build_state, ttl_for_state)
+        require(len(calls) == 2, "successful TTL expired too early")
+        clock[0] += 0.02
+        cache.get(build_state, ttl_for_state)
+        require(len(calls) == 3, "successful TTL did not expire")
+    finally:
+        runtime_status.monotonic = original_monotonic
+
+    cache = TTLCache()
+    build_count = 0
+    build_lock = threading.Lock()
+
+    def slow_builder() -> dict[str, int]:
+        nonlocal build_count
+        with build_lock:
+            build_count += 1
+        time.sleep(0.03)
+        return {"build": build_count}
+
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        results = list(executor.map(lambda _: cache.get(slow_builder, lambda _value: 1.0), range(8)))
+    require(build_count == 1, "concurrent TTL cache requests duplicated the build")
+    require({result["build"] for result in results} == {1}, "concurrent TTL cache observed partial values")
+
+
+def check_archive_cache_contracts() -> None:
+    with tempfile.TemporaryDirectory(prefix="philo_archive_cache_contract_") as temporary_directory:
+        input_path = Path(temporary_directory) / "metadata.json"
+        catalog_path = Path(temporary_directory) / "archive_catalog.local.json"
+        input_path.write_text('{"version":1}', encoding="utf-8")
+
+        original_metadata_files = archive_service.ARCHIVE_METADATA_FILES
+        original_input_trees = archive_service.ARCHIVE_INPUT_TREES
+        original_catalog_path = archive_service.ARCHIVE_CATALOG
+        try:
+            catalog_path.write_text('{"old":true}', encoding="utf-8")
+            original_json_dump = archive_catalog_script.json.dump
+
+            def fail_json_dump(*_args, **_kwargs) -> None:
+                raise RuntimeError("simulated interrupted catalog write")
+
+            archive_catalog_script.json.dump = fail_json_dump
+            try:
+                archive_catalog_script.atomic_write_json(catalog_path, {"new": True})
+            except RuntimeError:
+                pass
+            else:
+                raise AssertionError("interrupted archive catalog write should fail")
+            finally:
+                archive_catalog_script.json.dump = original_json_dump
+            require(
+                json.loads(catalog_path.read_text(encoding="utf-8")) == {"old": True},
+                "interrupted archive catalog write damaged the previous catalog",
+            )
+            require(
+                not list(catalog_path.parent.glob(f".{catalog_path.name}.*.tmp")),
+                "interrupted archive catalog write left a temporary file",
+            )
+
+            archive_service.ARCHIVE_METADATA_FILES = (input_path,)
+            archive_service.ARCHIVE_INPUT_TREES = ()
+            archive_service.ARCHIVE_CATALOG = catalog_path
+            first_snapshot = archive_service.archive_input_snapshot()
+            input_path.write_text('{"version":200}', encoding="utf-8")
+            os.utime(input_path, None)
+            second_snapshot = archive_service.archive_input_snapshot()
+            require(first_snapshot.signature != second_snapshot.signature, "archive input mutation was not detected")
+
+            cached_archive = {"generated_at": "contract", "corpora": []}
+            catalog_path.write_text(
+                json.dumps(
+                    {
+                        "schema_version": archive_service.ARCHIVE_SCHEMA_VERSION,
+                        "input_signature": second_snapshot.signature,
+                        "archive": cached_archive,
+                    }
+                ),
+                encoding="utf-8",
+            )
+            require(
+                archive_service.load_archive_catalog(second_snapshot) == cached_archive,
+                "matching archive catalog was not reused",
+            )
+            input_path.write_text('{"version":3000}', encoding="utf-8")
+            os.utime(input_path, None)
+            stale_snapshot = archive_service.archive_input_snapshot()
+            require(
+                archive_service.load_archive_catalog(stale_snapshot) is None,
+                "stale archive catalog was accepted",
+            )
+            catalog_path.write_text("{broken", encoding="utf-8")
+            require(
+                archive_service.load_archive_catalog(stale_snapshot) is None,
+                "corrupt archive catalog was accepted",
+            )
+        finally:
+            archive_service.ARCHIVE_METADATA_FILES = original_metadata_files
+            archive_service.ARCHIVE_INPUT_TREES = original_input_trees
+            archive_service.ARCHIVE_CATALOG = original_catalog_path
+
+    original_snapshot_builder = archive_service.archive_input_snapshot
+    original_catalog_loader = archive_service.load_archive_catalog
+    original_catalog_builder = archive_service.build_archive_catalog
+    original_cache = archive_service.ARCHIVE_CACHE
+    original_cache_state = archive_service._ARCHIVE_CACHE_STATE
+    build_count = 0
+    build_lock = threading.Lock()
+    signature = (("contract.json", "file", 1, 1, 1, 1),)
+    snapshot = archive_service.ArchiveInputSnapshot(signature, {})
+
+    def slow_catalog_builder(_snapshot=None) -> dict[str, Any]:
+        nonlocal build_count
+        with build_lock:
+            build_count += 1
+        time.sleep(0.03)
+        return {
+            "schema_version": archive_service.ARCHIVE_SCHEMA_VERSION,
+            "input_signature": signature,
+            "archive": {"generated_at": "contract", "corpora": []},
+        }
+
+    try:
+        archive_service.ARCHIVE_CACHE = None
+        archive_service._ARCHIVE_CACHE_STATE = None
+        archive_service.archive_input_snapshot = lambda: snapshot
+        archive_service.load_archive_catalog = lambda _snapshot: None
+        archive_service.build_archive_catalog = slow_catalog_builder
+        with ThreadPoolExecutor(max_workers=8) as executor:
+            payloads = list(executor.map(lambda _: archive_service.build_archive(), range(8)))
+        require(build_count == 1, "concurrent archive requests duplicated catalog construction")
+        require(all(payload is payloads[0] for payload in payloads), "archive cache did not publish one immutable snapshot")
+    finally:
+        archive_service.archive_input_snapshot = original_snapshot_builder
+        archive_service.load_archive_catalog = original_catalog_loader
+        archive_service.build_archive_catalog = original_catalog_builder
+        archive_service.ARCHIVE_CACHE = original_cache
+        archive_service._ARCHIVE_CACHE_STATE = original_cache_state
+
+
 def check_public_artifacts(payload: dict[str, Any]) -> None:
     require_keys(payload, {"schema_version", "generated_at", "corpora", "artifacts", "search"}, "public artifacts")
     require(payload["schema_version"] == 1, "public artifacts.schema_version must be 1")
@@ -206,6 +426,47 @@ def check_public_artifacts(payload: dict[str, Any]) -> None:
         require_keys(artifact, {"name", "kind", "role", "ready"}, f"public artifacts.artifacts[{index}]")
     exposed = sorted(FORBIDDEN_PUBLIC_DIAGNOSTIC_KEYS & nested_keys(payload))
     require(not exposed, "public artifacts expose private keys: " + ", ".join(exposed))
+
+
+def check_gemma_launcher_states() -> None:
+    base_url = "http://127.0.0.1:8794"
+    now = datetime(2026, 7, 30, 12, 0, tzinfo=timezone.utc)
+    with tempfile.TemporaryDirectory() as temporary_directory:
+        path = Path(temporary_directory) / "gemma-state.json"
+
+        def write_state(state: str, updated_at: datetime, marker_base_url: str = base_url) -> None:
+            path.write_text(
+                json.dumps(
+                    {
+                        "schema_version": 1,
+                        "state": state,
+                        "base_url": marker_base_url,
+                        "updated_at": updated_at.isoformat(),
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+        write_state("starting", now)
+        require(
+            read_gemma_launcher_state(path, base_url, now) == {"state": "starting"},
+            "fresh Gemma launcher state should remain starting",
+        )
+        write_state("starting", now - timedelta(minutes=4))
+        require(
+            read_gemma_launcher_state(path, base_url, now) == {"state": "unavailable"},
+            "stale Gemma launcher state should become unavailable",
+        )
+        write_state("failed", now)
+        require(
+            read_gemma_launcher_state(path, base_url, now) == {"state": "failed"},
+            "failed Gemma launcher state should remain failed",
+        )
+        write_state("ready", now, "http://127.0.0.1:9999")
+        require(
+            read_gemma_launcher_state(path, base_url, now) == {},
+            "Gemma launcher state for another base URL should be ignored",
+        )
 
 
 def check_bible_segments_payload() -> None:
@@ -338,10 +599,15 @@ def check_study_session_export() -> None:
 
 def main() -> None:
     check_archive(build_archive())
+    check_archive_summary(build_archive_summary())
+    check_archive_cache_contracts()
     check_health(build_runtime_health())
     check_artifacts(build_artifact_manifest())
     check_public_health(build_public_runtime_health())
+    check_public_gemma_health(build_public_gemma_health())
     check_public_artifacts(build_public_artifact_manifest())
+    check_ttl_cache_contracts()
+    check_gemma_launcher_states()
     check_bible_segments_payload()
     check_source_target_payload()
     check_sentence_translation_export()

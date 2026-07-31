@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import gzip
 import json
 import sys
 import threading
@@ -52,6 +53,114 @@ def fetch_status(base_url: str, path: str) -> int:
             return response.status
     except HTTPError as exc:
         return exc.code
+
+
+def request_bytes(
+    base_url: str,
+    path: str,
+    *,
+    method: str = "GET",
+    headers: dict[str, str] | None = None,
+    expected_status: int = 200,
+) -> tuple[bytes, object]:
+    request = Request(base_url + path, headers=headers or {}, method=method)
+    try:
+        response = urlopen(request, timeout=15)
+    except HTTPError as exc:
+        require(exc.code == expected_status, f"{method} {path} returned {exc.code}, expected {expected_status}")
+        body = exc.read()
+        response_headers = exc.headers
+    else:
+        with response:
+            require(
+                response.status == expected_status,
+                f"{method} {path} returned {response.status}, expected {expected_status}",
+            )
+            body = response.read()
+            response_headers = response.headers
+    return body, response_headers
+
+
+def check_static_cache_contracts(base_url: str) -> None:
+    for path, expected_type in (
+        ("/app.js?v=home16", "javascript"),
+        ("/assets/reader-work.css?v=common147", "text/css"),
+    ):
+        identity_body, identity_headers = request_bytes(
+            base_url,
+            path,
+            headers={"Accept-Encoding": "identity"},
+        )
+        require(identity_body, f"{path} identity response is empty")
+        require(expected_type in identity_headers.get("Content-Type", ""), f"{path} Content-Type drift")
+        require(
+            identity_headers.get("Cache-Control") == "public, max-age=31536000, immutable",
+            f"{path} versioned cache policy drift",
+        )
+        require(identity_headers.get("ETag"), f"{path} missing ETag")
+        require(identity_headers.get("Last-Modified"), f"{path} missing Last-Modified")
+        require(
+            int(identity_headers.get("Content-Length", "-1")) == len(identity_body),
+            f"{path} identity Content-Length mismatch",
+        )
+
+        gzip_body, gzip_headers = request_bytes(
+            base_url,
+            path,
+            headers={"Accept-Encoding": "gzip"},
+        )
+        require(gzip_headers.get("Content-Encoding") == "gzip", f"{path} did not negotiate gzip")
+        require(gzip_headers.get("Vary") == "Accept-Encoding", f"{path} missing Vary: Accept-Encoding")
+        require(int(gzip_headers.get("Content-Length", "-1")) == len(gzip_body), f"{path} gzip length mismatch")
+        require(len(gzip_body) < len(identity_body), f"{path} gzip response was not smaller")
+        require(gzip.decompress(gzip_body) == identity_body, f"{path} gzip response changed content")
+        gzip_etag = gzip_headers.get("ETag", "")
+        require(gzip_etag and gzip_etag != identity_headers.get("ETag"), f"{path} ETag must identify encoding")
+
+        conditional_body, conditional_headers = request_bytes(
+            base_url,
+            path,
+            headers={"Accept-Encoding": "gzip", "If-None-Match": gzip_etag},
+            expected_status=304,
+        )
+        require(not conditional_body, f"{path} 304 response included a body")
+        require(conditional_headers.get("ETag") == gzip_etag, f"{path} 304 ETag mismatch")
+        require(conditional_headers.get("Content-Length") is None, f"{path} 304 included Content-Length")
+
+        modified_body, _ = request_bytes(
+            base_url,
+            path,
+            headers={
+                "Accept-Encoding": "identity",
+                "If-Modified-Since": identity_headers.get("Last-Modified", ""),
+            },
+            expected_status=304,
+        )
+        require(not modified_body, f"{path} If-Modified-Since 304 included a body")
+
+        head_body, head_headers = request_bytes(
+            base_url,
+            path,
+            method="HEAD",
+            headers={"Accept-Encoding": "gzip"},
+        )
+        require(not head_body, f"{path} HEAD returned a body")
+        require(
+            int(head_headers.get("Content-Length", "-1")) == len(gzip_body),
+            f"{path} HEAD Content-Length does not match gzip GET",
+        )
+        require(head_headers.get("Content-Encoding") == "gzip", f"{path} HEAD lost Content-Encoding")
+
+    _, unversioned_headers = request_bytes(
+        base_url,
+        "/assets/reader-work.css",
+        headers={"Accept-Encoding": "identity"},
+    )
+    require(unversioned_headers.get("Cache-Control") == "no-cache", "unversioned asset received long cache")
+    _, root_headers = request_bytes(base_url, "/", headers={"Accept-Encoding": "identity"})
+    require(root_headers.get("Cache-Control") == "no-cache", "HTML should be revalidated")
+    _, api_headers = request_bytes(base_url, "/api/health")
+    require(api_headers.get("Cache-Control") == "no-store", "API response received static cache policy")
 
 
 def first_work_route() -> str:
@@ -154,6 +263,7 @@ def check_routes(base_url: str) -> None:
         "/README.md",
         "/templates/work.html",
         "/data/notes/nietzsche_notes.jsonl",
+        "/data/segment_offset_index.sqlite",
         "/data/search_index.sqlite",
     ):
         require(fetch_status(base_url, private_path) == 403, f"private static path should return 403: {private_path}")
@@ -193,6 +303,17 @@ def check_routes(base_url: str) -> None:
 
     health = fetch_json(base_url, "/api/health")
     require(health.get("status") in {"ok", "warning"}, "health status invalid")
+    gemma_health = fetch_json(base_url, "/api/health/gemma")
+    require(gemma_health.get("status") in {"ok", "warning"}, "Gemma health status invalid")
+    require(
+        (gemma_health.get("gemma") or {}).get("state") in {"starting", "ready", "failed", "unavailable"},
+        "Gemma health state invalid",
+    )
+    archive_summary = fetch_json(base_url, "/api/archive/summary")
+    require(
+        archive_summary.get("schema_version") == 1 and len(archive_summary.get("corpora", [])) == 4,
+        "archive summary shape invalid",
+    )
     artifacts = fetch_json(base_url, "/api/artifacts")
     forbidden_diagnostic_keys = {
         "base_url",
@@ -238,6 +359,25 @@ def check_routes(base_url: str) -> None:
         fetch_status(base_url, "/api/source-target?corpus_id=nietzsche&work_id=GM&target_id=missing") == 404,
         "missing source target should return 404",
     )
+    large_work_path = (
+        "/work/wittgenstein/Group_BigTypescriptCorpus"
+        "?variant=idp_transcription_linear"
+    )
+    large_work_body = fetch_text(base_url, large_work_path)
+    require(len(large_work_body.encode("utf-8")) < 2 * 1024 * 1024, "large work initial HTML exceeds 2 MiB")
+    require("virtual-work" in large_work_body, "large work route should use chunk loading")
+    require("p-0001.s001" in large_work_body, "large work route missing initial sentence")
+    require("p-3301.s001" not in large_work_body, "large work route eagerly rendered a middle sentence")
+    chunk = fetch_json(
+        base_url,
+        "/api/work-chunks?corpus_id=wittgenstein"
+        "&work_id=Group_BigTypescriptCorpus"
+        "&variant_id=idp_transcription_linear"
+        "&anchor=p-3301.s001",
+    )
+    require(chunk.get("chunk", {}).get("index") == 158, "work chunk anchor route resolved the wrong chunk")
+    require("p-3301.s001" in chunk.get("chunk", {}).get("html", ""), "work chunk route lost the sentence anchor")
+    require(fetch_status(base_url, "/api/work-chunks?corpus_id=wittgenstein") == 400, "missing chunk fields should return 400")
 
 
 def main() -> None:
@@ -248,6 +388,7 @@ def main() -> None:
         host, port = httpd.server_address
         base_url = f"http://{host}:{port}"
         check_routes(base_url)
+        check_static_cache_contracts(base_url)
         check_translation_delete_route(base_url)
     finally:
         httpd.shutdown()

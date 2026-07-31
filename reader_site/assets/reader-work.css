@@ -643,7 +643,6 @@ h1 {
 }
 
 .runtime-status[data-runtime-state="ready"] {
-  display: none;
   background: #f6fbf6;
   border-color: #c8dec8;
 }
@@ -653,12 +652,14 @@ h1 {
 }
 
 .runtime-status[data-runtime-state="offline"],
+.runtime-status[data-runtime-state="failed"],
 .runtime-status[data-runtime-state="unavailable"] {
   background: #fff7f7;
   border-color: #e3bcbc;
 }
 
 .runtime-status[data-runtime-state="offline"] .runtime-status-dot,
+.runtime-status[data-runtime-state="failed"] .runtime-status-dot,
 .runtime-status[data-runtime-state="unavailable"] .runtime-status-dot {
   background: #b00000;
 }
@@ -2494,6 +2495,57 @@ h1 {
   margin: 0 0 1em;
 }
 
+.reader-chunk {
+  display: block;
+  min-width: 0;
+  overflow-anchor: none;
+}
+
+.reader-chunk.is-loaded {
+  contain: layout style;
+}
+
+.reader-chunk-placeholder {
+  position: relative;
+  content-visibility: auto;
+  contain: layout style;
+  contain-intrinsic-size: auto 1200px;
+  border-radius: 3px;
+  background:
+    linear-gradient(90deg, transparent, rgb(176 0 0 / 4%), transparent) 0 28px / 100% 2px no-repeat,
+    linear-gradient(#f3f0e8, #f3f0e8) 0 52px / min(72%, 680px) 1px no-repeat;
+}
+
+.reader-chunk-error {
+  max-width: 620px;
+  padding: 18px;
+  margin: 24px auto;
+  color: #5f1f1f;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 13px;
+  text-align: center;
+  border: 1px solid #d8b7b7;
+  background: #fff7f5;
+}
+
+.reader-chunk-error button {
+  margin-left: 8px;
+}
+
+.print-work .reading-desk {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.print-work .source-page {
+  padding-right: 0;
+  border-right: 0;
+}
+
+.print-work .study-page,
+.print-work .study-panel-scrim {
+  display: none;
+}
+
 .reader-sentence {
   scroll-margin-block: 120px;
   border-bottom: 1px dotted transparent;
@@ -2787,6 +2839,29 @@ h1 {
 
 .bible-work .reading-body h2 {
   margin-top: 34px;
+}
+
+@media print {
+  .print-work .reader-header .toolbar,
+  .print-work .variant-tabs,
+  .print-work .study-page,
+  .print-work .study-panel-scrim {
+    display: none;
+  }
+
+  body.virtual-work .reading-body::before {
+    display: block;
+    padding: 12px;
+    margin-bottom: 18px;
+    content: "이 화면은 점진 로딩 보기입니다. 읽기 메뉴의 ‘전체 인쇄 보기’에서 완전한 문서를 인쇄하세요.";
+    color: #000;
+    font: 12pt/1.5 Arial, sans-serif;
+    border: 1px solid #000;
+  }
+
+  body.virtual-work .reader-chunk-placeholder {
+    display: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

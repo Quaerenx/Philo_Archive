@@ -16,6 +16,7 @@ Git must not contain:
 - local source-corpus folders;
 - full primary-source text exports;
 - generated segment JSONL files;
+- the generated local archive catalog;
 - generated search indexes or SQLite databases;
 - personal notes;
 - generated AI interpretations;
@@ -50,7 +51,7 @@ Full reading/search behavior is restored locally by placing the source corpora u
 python .\scripts\rebuild_all.py
 ```
 
-After local segment files are regenerated, `services/source_targets.py` may compute source-text checksums for bounded reading targets. Those checksums are validation/provenance metadata; the generated segment JSONL files and full source text still stay out of Git.
+After local segment files are regenerated, run `python .\scripts\build_segment_offset_index.py`. `services/source_targets.py` uses the ignored SQLite sidecar to seek directly to one JSONL record and may compute source-text checksums for that bounded reading target. The sidecar, checksums, generated segment JSONL files, and full source text all stay out of Git.
 
 The local `/api/source-target` runtime endpoint may return exact source text for one selected generated segment on the user's machine. It must not include local filesystem paths such as `source_path`, `source_root`, or absolute corpus locations in its response.
 

@@ -6,12 +6,14 @@ import sys
 import tempfile
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from unittest.mock import patch
 
 
 SITE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SITE))
 
 from sentence_units import render_sentence_spans, sentence_units  # noqa: E402
+from services.segment_offsets import SEGMENT_FILES  # noqa: E402
 from services.sentence_targets import sentence_target_bundle  # noqa: E402
 from services import sentence_translations as sentence_translation_service  # noqa: E402
 from services.sentence_translations import (  # noqa: E402
@@ -44,6 +46,25 @@ def check_ai_dir_override_contract() -> None:
     source = Path(sentence_translation_service.__file__).read_text(encoding="utf-8")
     require("PHILO_AI_DIR" in source, "sentence translation storage should support an isolated AI data directory")
     require('os.environ.get("PHILO_AI_DIR"' in source, "sentence translation storage should use PHILO_AI_DIR")
+
+
+def check_indexed_source_lookup_contract() -> None:
+    translation_source = Path(sentence_translation_service.__file__).read_text(encoding="utf-8")
+    source_target_source = (SITE / "services" / "source_targets.py").read_text(encoding="utf-8")
+    require(
+        "resolve_indexed_segment_record" in source_target_source,
+        "sentence source targets should use the byte-offset index",
+    )
+    require(
+        "def segment_records(" not in source_target_source,
+        "sentence source targets must not retain the full JSONL parser",
+    )
+    target_position = translation_source.index("target = sentence_target_bundle(")
+    cache_position = translation_source.index("cached = find_cached_record(")
+    require(
+        target_position < cache_position,
+        "translation cache lookup contract changed unexpectedly",
+    )
 
 
 def check_concurrent_cache_writes() -> None:
@@ -340,6 +361,74 @@ def check_restored_source_target() -> None:
     check_cache_and_review_compatibility(target)
 
 
+def check_translation_cache_paths_use_bounded_source_reads() -> None:
+    source_path = SEGMENT_FILES["nietzsche"]
+    source_size = source_path.stat().st_size
+    read_sizes: list[int] = []
+    model_calls = 0
+    original_open = Path.open
+
+    class TrackingReader:
+        def __init__(self, handle):
+            self.handle = handle
+
+        def __enter__(self):
+            self.handle.__enter__()
+            return self
+
+        def __exit__(self, *args):
+            return self.handle.__exit__(*args)
+
+        def seek(self, *args):
+            return self.handle.seek(*args)
+
+        def read(self, size: int = -1):
+            require(size > 0, "translation source lookup attempted an unbounded JSONL read")
+            read_sizes.append(size)
+            return self.handle.read(size)
+
+    def tracked_open(path: Path, mode: str = "r", *args, **kwargs):
+        handle = original_open(path, mode, *args, **kwargs)
+        if path == source_path and mode == "rb":
+            return TrackingReader(handle)
+        return handle
+
+    def fake_model(_prompt_bundle: dict) -> dict:
+        nonlocal model_calls
+        model_calls += 1
+        return {
+            "translation": "bounded lookup test translation",
+            "commentary": "bounded lookup test commentary",
+            "cautions": [],
+        }
+
+    payload = {
+        "corpus_id": "nietzsche",
+        "work_id": "GM",
+        "variant_id": "",
+        "segment_id": "p-0023",
+        "sentence_id": "p-0023.s001",
+    }
+    with tempfile.TemporaryDirectory(prefix="philo_translation_offset_") as temp_dir:
+        original_ai_dir = sentence_translation_service.AI_DIR
+        sentence_translation_service.AI_DIR = Path(temp_dir)
+        try:
+            with (
+                patch.object(Path, "open", tracked_open),
+                patch.object(sentence_translation_service, "call_llama_server", fake_model),
+            ):
+                generated = sentence_translation_service.sentence_translation_from_payload(payload)
+                cached = sentence_translation_service.sentence_translation_from_payload(payload)
+        finally:
+            sentence_translation_service.AI_DIR = original_ai_dir
+
+    require(generated["cached"] is False, "first isolated translation request should be a cache miss")
+    require(cached["cached"] is True, "second isolated translation request should be a cache hit")
+    require(model_calls == 1, "cache hit should not call the model")
+    require(len(read_sizes) == 2, "cache miss and cache hit should each read one indexed source record")
+    require(all(size < source_size for size in read_sizes), "translation request read the entire segment JSONL")
+
+
 def check_runtime_error_copy(target: dict) -> None:
     prompt_bundle = build_sentence_prompt_bundle(target)
     original_urlopen = sentence_translation_service.urlopen
@@ -367,6 +456,7 @@ def main() -> None:
     args = parser.parse_args()
 
     check_ai_dir_override_contract()
+    check_indexed_source_lookup_contract()
     check_concurrent_cache_writes()
     check_snapshot_read_cache()
     check_sentence_units()
@@ -376,6 +466,7 @@ def main() -> None:
     check_runtime_error_copy(synthetic_target)
     if args.with_source_targets:
         check_restored_source_target()
+        check_translation_cache_paths_use_bounded_source_reads()
     print("sentence translation contracts ok")
 
 

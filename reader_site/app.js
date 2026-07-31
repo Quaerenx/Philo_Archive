@@ -359,7 +359,8 @@ function bindCategoryControls() {
 
 async function init() {
   try {
-    const response = await fetch("/api/archive");
+    const archiveEndpoint = currentCategoryId() ? "/api/archive" : "/api/archive/summary";
+    const response = await fetch(archiveEndpoint);
     if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
     state.archive = await response.json();
     renderArchive();

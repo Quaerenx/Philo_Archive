@@ -19,6 +19,7 @@ Git should not store:
 
 - local source corpus folders;
 - generated `*_segments.jsonl` files;
+- generated `archive_catalog.local.json`;
 - generated search indexes and SQLite databases;
 - local artifact manifests;
 - local visual QA screenshots;
@@ -37,6 +38,9 @@ The enforced source-corpus exclusions are:
 The enforced generated-artifact exclusions are:
 
 - `reader_site/data/*_segments.jsonl`
+- `reader_site/data/segment_offset_index.sqlite`
+- `reader_site/data/segment_offset_index.sqlite-*`
+- `reader_site/data/archive_catalog.local.json`
 - `reader_site/data/search_index.jsonl`
 - `reader_site/data/search_index.sqlite`
 - `reader_site/data/search_index.sqlite-*`
@@ -99,6 +103,7 @@ python .\scripts\check_provenance_contracts.py
 python .\scripts\check_prompt_template_contracts.py --with-source-targets
 python .\scripts\check_sentence_translation_contracts.py --with-source-targets
 python .\scripts\check_corpus_schema.py
+python .\scripts\check_segment_offset_contracts.py
 python .\scripts\check_restore_readiness.py
 python .\scripts\check_source_target_contracts.py
 python .\scripts\check_api_contracts.py
@@ -120,7 +125,9 @@ git status --short
 
 `check_clean_clone_contracts.py --run-source-light-checks` verifies that a source-light clone contains tracked restore documentation, validation scripts, and no forbidden source/generated artifacts while using an empty temporary corpus root. Use `--clone-smoke` after committing to create a real temporary clean clone; see `docs/clean_clone_reproducibility.md`.
 
-`check_restore_readiness.py` verifies the local full-restore side of the same handoff: source roots, primary output folders, metadata, segment artifacts, portable search index, SQLite search database, and corpus coverage in search records.
+`check_restore_readiness.py` verifies the local full-restore side of the same handoff: source roots, primary output folders, metadata, segment artifacts, the source-target byte-offset index, portable search index, SQLite search database, and corpus coverage in search records.
+
+`check_segment_offset_contracts.py` verifies atomic index generation, file-signature validation, bounded binary reads, Unicode records, missing keys, and corrupt or stale index handling.
 
 `check_search_artifact_integrity.py` verifies that generated segment JSONL files, the portable search index, the SQLite search table, and the SQLite FTS table agree on target keys, URLs, text previews, and corpus record counts.
 

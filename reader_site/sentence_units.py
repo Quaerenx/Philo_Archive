@@ -33,18 +33,24 @@ def sentence_units(segment_id: str, text: str) -> list[dict[str, str | int]]:
     return units
 
 
-def render_sentence_spans(segment_id: str, text: str) -> str:
+def render_sentence_spans(segment_id: str, text: str, *, sentence_position_offset: int = -1) -> str:
     spans = []
     for unit in sentence_units(segment_id, text):
         sentence_id = str(unit["sentence_id"])
         label = str(unit["label"])
         sentence_text = str(unit["text_raw"])
+        sentence_position = sentence_position_offset + int(unit["sentence_index"])
+        position_attribute = (
+            f' data-sentence-position="{sentence_position}"'
+            if sentence_position_offset >= 0
+            else ""
+        )
         spans.append(
             f'<span id="{html.escape(sentence_id, quote=True)}" '
             f'class="reader-sentence" data-target-type="sentence" '
             f'data-segment-id="{html.escape(segment_id, quote=True)}" '
             f'data-sentence-id="{html.escape(sentence_id, quote=True)}" '
-            f'data-label="{html.escape(label, quote=True)}">'
+            f'data-label="{html.escape(label, quote=True)}"{position_attribute}>'
             f"{html.escape(sentence_text)}</span>"
         )
     return " ".join(spans)

@@ -1,9 +1,17 @@
 from __future__ import annotations
 
 import csv
+import fnmatch
 import json
+import os
+import stat as stat_module
+import threading
 from datetime import datetime
+from dataclasses import dataclass
 from pathlib import Path
+from time import monotonic
+from types import MappingProxyType
+from typing import Mapping
 from urllib.parse import quote
 
 from corpora.catalogs import load_bible_metadata, load_kierkegaard_metadata, load_nietzsche_catalog, load_wittgenstein_metadata
@@ -18,7 +26,50 @@ from path_config import (
 from rendering.documents import title_from_markdown
 
 
+ARCHIVE_SCHEMA_VERSION = 1
+ARCHIVE_CATALOG = SITE / "data" / "archive_catalog.local.json"
+ARCHIVE_CACHE_CHECK_TTL_SECONDS = 5.0
+ROOT_RESOLVED = ROOT
+WITTGENSTEIN_METADATA_PATH = SITE / "data" / "wittgenstein_metadata.json"
+ARCHIVE_METADATA_FILES = (
+    SITE / "data" / "nietzsche_catalog.json",
+    SITE / "data" / "nietzsche_metadata.json",
+    SITE / "data" / "bible_metadata.json",
+    SITE / "data" / "kierkegaard_metadata.json",
+    WITTGENSTEIN_METADATA_PATH,
+    BIBLE_OUTPUT / "mapping" / "source_inventory.csv",
+    WITTGENSTEIN_OUTPUT / "_manifest.json",
+)
+ARCHIVE_INPUT_TREES = (
+    (NIETZSCHE_OUTPUT / "works", "*.md"),
+    (NIETZSCHE_OUTPUT / "nachlass", "*.md"),
+    (NIETZSCHE_OUTPUT / "briefe", "*.md"),
+    (BIBLE_OUTPUT / "markdown", "*.md"),
+    (KIERKEGAARD_TEXTS, "*.json"),
+    (WITTGENSTEIN_OUTPUT, "*.md"),
+)
+ROOT_PATH_VALUE = os.fspath(ROOT_RESOLVED)
+ROOT_PATH_PREFIX = ROOT_PATH_VALUE.rstrip("\\/") + os.sep
+ROOT_PATH_PREFIX_CASEFOLD = ROOT_PATH_PREFIX.casefold()
+ArchiveInputSignature = tuple[tuple[str, str, int, int, int, int], ...]
+
+
+@dataclass(frozen=True)
+class ArchiveInputSnapshot:
+    signature: ArchiveInputSignature
+    file_sizes: Mapping[str, int]
+
+
+@dataclass(frozen=True)
+class ArchiveCacheState:
+    payload: dict
+    signature: ArchiveInputSignature
+    validate_after: float
+
+
 ARCHIVE_CACHE: dict | None = None
+_ARCHIVE_CACHE_STATE: ArchiveCacheState | None = None
+_ARCHIVE_CACHE_LOCK = threading.Lock()
 
 
 def read_json(path: Path) -> dict:
@@ -34,7 +85,8 @@ def read_csv_rows(path: Path) -> list[dict[str, str]]:
 
 
 def relative_source_path(path: Path) -> str:
-    return path.resolve().relative_to(ROOT.resolve()).as_posix()
+    source_path = path if path.is_absolute() else ROOT_RESOLVED / path
+    return source_path.relative_to(ROOT_RESOLVED).as_posix()
 
 
 def source_href(path: Path) -> str:
@@ -80,9 +132,93 @@ def work_link(path: Path, corpus_id: str, work_id: str, label: str | None = None
     return link
 
 
-def count_bytes(paths: list[Path]) -> int:
+def archive_input_key(path: Path) -> str:
+    path_value = os.fspath(path)
+    if not os.path.isabs(path_value):
+        path_value = os.path.join(ROOT_PATH_VALUE, path_value)
+    if path_value.casefold().startswith(ROOT_PATH_PREFIX_CASEFOLD):
+        return path_value[len(ROOT_PATH_PREFIX) :].replace(os.sep, "/")
+    relative = os.path.relpath(path_value, ROOT_PATH_VALUE)
+    if relative != os.pardir and not relative.startswith(os.pardir + os.sep):
+        return relative.replace(os.sep, "/")
+    return path_value.replace(os.sep, "/")
+
+
+def archive_tree_records(root: Path, pattern: str) -> list[tuple[str, Path, os.stat_result | None]]:
+    records: list[tuple[str, Path, os.stat_result | None]] = []
+    try:
+        root_info = root.stat()
+    except OSError:
+        return [(archive_input_key(root), root, None)]
+    records.append((archive_input_key(root), root, root_info))
+    if not stat_module.S_ISDIR(root_info.st_mode):
+        return records
+
+    pending = [root]
+    while pending:
+        folder = pending.pop()
+        try:
+            with os.scandir(folder) as entries:
+                for entry in entries:
+                    try:
+                        if entry.is_dir(follow_symlinks=False):
+                            pending.append(Path(entry.path))
+                            continue
+                        if not fnmatch.fnmatch(entry.name, pattern):
+                            continue
+                        path = Path(entry.path)
+                        records.append((archive_input_key(path), path, entry.stat()))
+                    except OSError:
+                        path = Path(entry.path)
+                        records.append((archive_input_key(path), path, None))
+        except OSError:
+            records.append((archive_input_key(folder), folder, None))
+    return records
+
+
+def archive_input_records() -> list[tuple[str, Path, os.stat_result | None]]:
+    records: dict[str, tuple[Path, os.stat_result | None]] = {}
+    for path in ARCHIVE_METADATA_FILES:
+        try:
+            info = path.stat()
+        except OSError:
+            info = None
+        records[archive_input_key(path)] = (path, info)
+    for root, pattern in ARCHIVE_INPUT_TREES:
+        for key, path, info in archive_tree_records(root, pattern):
+            records.setdefault(key, (path, info))
+    if not WITTGENSTEIN_METADATA_PATH.is_file():
+        for key, path, info in archive_tree_records(WITTGENSTEIN_OUTPUT, "*.html"):
+            records.setdefault(key, (path, info))
+    return [(key, *records[key]) for key in sorted(records)]
+
+
+def archive_input_paths() -> list[tuple[str, Path]]:
+    return [(key, path) for key, path, _info in archive_input_records()]
+
+
+def archive_input_snapshot() -> ArchiveInputSnapshot:
+    signature = []
+    file_sizes: dict[str, int] = {}
+    for key, _path, info in archive_input_records():
+        if info is None:
+            signature.append((key, "missing", -1, -1, -1, -1))
+            continue
+        kind = "file" if stat_module.S_ISREG(info.st_mode) else "directory"
+        signature.append((key, kind, info.st_size, info.st_mtime_ns, info.st_ctime_ns, info.st_ino))
+        if kind == "file":
+            file_sizes[key] = info.st_size
+    return ArchiveInputSnapshot(tuple(signature), MappingProxyType(file_sizes))
+
+
+def count_bytes(paths: list[Path], file_sizes: Mapping[str, int] | None = None) -> int:
     total = 0
     for path in paths:
+        if file_sizes is not None:
+            size = file_sizes.get(archive_input_key(path))
+            if size is not None:
+                total += size
+                continue
         try:
             total += path.stat().st_size
         except OSError:
@@ -90,15 +226,19 @@ def count_bytes(paths: list[Path]) -> int:
     return total
 
 
-def corpus_counts(sections: list[dict], files: list[Path]) -> dict:
+def corpus_counts(
+    sections: list[dict],
+    files: list[Path],
+    file_sizes: Mapping[str, int] | None = None,
+) -> dict:
     return {
         "files": len(files),
         "links": sum(len(section["links"]) for section in sections),
-        "bytes": count_bytes(files),
+        "bytes": count_bytes(files, file_sizes),
     }
 
 
-def build_nietzsche_archive() -> dict:
+def build_nietzsche_archive(file_sizes: Mapping[str, int] | None = None) -> dict:
     sections = []
     all_files: list[Path] = []
     work_files = sorted((NIETZSCHE_OUTPUT / "works").glob("*.md"), key=lambda item: item.name.lower())
@@ -142,13 +282,13 @@ def build_nietzsche_archive() -> dict:
         "id": "nietzsche",
         "title": "니체",
         "subtitle": "eKGWB markdown exports, grouped for reading",
-        "counts": corpus_counts(sections, all_files),
+        "counts": corpus_counts(sections, all_files, file_sizes),
         "links": [link for section in sections for link in section["links"][:4]],
         "sections": sections,
     }
 
 
-def build_wittgenstein_archive() -> dict:
+def build_wittgenstein_archive(file_sizes: Mapping[str, int] | None = None) -> dict:
     metadata = load_wittgenstein_metadata()
     works = metadata.get("works", {})
     if works:
@@ -160,7 +300,7 @@ def build_wittgenstein_archive() -> dict:
         for work in works.values():
             variants = work.get("variants", [])
             if variants:
-                files.extend((ROOT / variant["source_path"]).resolve() for variant in variants if variant.get("source_path"))
+                files.extend(ROOT_RESOLVED / variant["source_path"] for variant in variants if variant.get("source_path"))
             meta = " / ".join(variant.get("label", "") for variant in variants[:4] if variant.get("label"))
             link = {
                 "label": work.get("display_title") or work.get("title") or work.get("work_id"),
@@ -182,7 +322,7 @@ def build_wittgenstein_archive() -> dict:
             "id": "wittgenstein",
             "title": "비트겐슈타인",
             "subtitle": "Wittgenstein Archive exports grouped by siglum",
-            "counts": corpus_counts(sections, files + ([manifest] if manifest.exists() else [])),
+            "counts": corpus_counts(sections, files + ([manifest] if manifest.exists() else []), file_sizes),
             "links": [link for section in sections for link in section["links"][:3]],
             "sections": sections,
         }
@@ -224,7 +364,7 @@ def build_wittgenstein_archive() -> dict:
         "id": "wittgenstein",
         "title": "비트겐슈타인",
         "subtitle": "Wittgenstein Archive exports",
-        "counts": corpus_counts(sections, files + ([manifest_path] if manifest_path.exists() else [])),
+        "counts": corpus_counts(sections, files + ([manifest_path] if manifest_path.exists() else []), file_sizes),
         "links": [link for section in sections for link in section["links"][:3]],
         "sections": sections,
     }
@@ -240,7 +380,7 @@ def bible_section_stats(source_id: str) -> dict[str, int]:
     }
 
 
-def build_bible_archive() -> dict:
+def build_bible_archive(file_sizes: Mapping[str, int] | None = None) -> dict:
     markdown_root = BIBLE_OUTPUT / "markdown"
     bible_metadata = load_bible_metadata()
     works_by_path = {
@@ -286,7 +426,7 @@ def build_bible_archive() -> dict:
         "id": "bible",
         "title": "성경",
         "subtitle": "Hebrew, Greek, and LXX markdown exports",
-        "counts": corpus_counts(sections, all_files),
+        "counts": corpus_counts(sections, all_files, file_sizes),
         "links": [link for section in sections for link in section["links"][:3]],
         "sections": sections,
     }
@@ -309,7 +449,7 @@ def kierkegaard_label(path: Path) -> tuple[str, str]:
         return path.stem, path.stem
 
 
-def build_kierkegaard_archive() -> dict:
+def build_kierkegaard_archive(file_sizes: Mapping[str, int] | None = None) -> dict:
     metadata = load_kierkegaard_metadata()
     works = metadata.get("works", {})
     if works:
@@ -318,7 +458,7 @@ def build_kierkegaard_archive() -> dict:
         for work in works.values():
             variants = work.get("variants", [])
             if variants:
-                files.extend((ROOT / variant["source_path"]).resolve() for variant in variants if variant.get("source_path"))
+                files.extend(ROOT_RESOLVED / variant["source_path"] for variant in variants if variant.get("source_path"))
             meta = " / ".join(variant.get("label", "") for variant in variants if variant.get("label"))
             links.append(
                 {
@@ -343,7 +483,7 @@ def build_kierkegaard_archive() -> dict:
             "id": "kierkegaard",
             "title": "키르케고르",
             "subtitle": "Soren Kierkegaards Skrifter grouped by work",
-            "counts": corpus_counts(sections, files),
+            "counts": corpus_counts(sections, files, file_sizes),
             "links": links[:6],
             "sections": sections,
         }
@@ -372,23 +512,100 @@ def build_kierkegaard_archive() -> dict:
         "id": "kierkegaard",
         "title": "키르케고르",
         "subtitle": "Soren Kierkegaards Skrifter raw JSON exports",
-        "counts": corpus_counts(sections, files),
+        "counts": corpus_counts(sections, files, file_sizes),
         "links": [link for section in sections for link in section["links"][:3]],
         "sections": sections,
     }
 
 
-def build_archive() -> dict:
-    global ARCHIVE_CACHE
-    if ARCHIVE_CACHE is not None:
-        return ARCHIVE_CACHE
-    ARCHIVE_CACHE = {
+def build_archive_payload(file_sizes: Mapping[str, int] | None = None) -> dict:
+    return {
         "generated_at": datetime.now().isoformat(timespec="seconds"),
         "corpora": [
-            build_nietzsche_archive(),
-            build_bible_archive(),
-            build_kierkegaard_archive(),
-            build_wittgenstein_archive(),
+            build_nietzsche_archive(file_sizes),
+            build_bible_archive(file_sizes),
+            build_kierkegaard_archive(file_sizes),
+            build_wittgenstein_archive(file_sizes),
         ],
     }
-    return ARCHIVE_CACHE
+
+
+def build_archive_catalog(initial_snapshot: ArchiveInputSnapshot | None = None) -> dict:
+    snapshot = initial_snapshot
+    for _attempt in range(3):
+        before = snapshot or archive_input_snapshot()
+        archive = build_archive_payload(before.file_sizes)
+        after = archive_input_snapshot()
+        if before.signature == after.signature:
+            return {
+                "schema_version": ARCHIVE_SCHEMA_VERSION,
+                "input_signature": after.signature,
+                "archive": archive,
+            }
+        snapshot = after
+    raise RuntimeError("archive inputs changed repeatedly while building the catalog")
+
+
+def load_archive_catalog(snapshot: ArchiveInputSnapshot) -> dict | None:
+    if not ARCHIVE_CATALOG.is_file():
+        return None
+    try:
+        catalog = read_json(ARCHIVE_CATALOG)
+        stored_signature = tuple(tuple(item) for item in catalog.get("input_signature", []))
+    except (OSError, json.JSONDecodeError, TypeError):
+        return None
+    archive = catalog.get("archive")
+    if (
+        catalog.get("schema_version") != ARCHIVE_SCHEMA_VERSION
+        or stored_signature != snapshot.signature
+        or not isinstance(archive, dict)
+        or not isinstance(archive.get("corpora"), list)
+    ):
+        return None
+    return archive
+
+
+def build_archive_summary() -> dict:
+    return {
+        "schema_version": ARCHIVE_SCHEMA_VERSION,
+        "generated_at": datetime.now().isoformat(timespec="seconds"),
+        "corpora": [
+            {"id": "nietzsche", "title": "니체", "subtitle": "eKGWB markdown exports, grouped for reading"},
+            {"id": "bible", "title": "성경", "subtitle": "Hebrew, Greek, and LXX markdown exports"},
+            {"id": "kierkegaard", "title": "키르케고르", "subtitle": "Soren Kierkegaards Skrifter grouped by work"},
+            {"id": "wittgenstein", "title": "비트겐슈타인", "subtitle": "Wittgenstein Archive exports grouped by siglum"},
+        ],
+    }
+
+
+def build_archive() -> dict:
+    global ARCHIVE_CACHE, _ARCHIVE_CACHE_STATE
+    now = monotonic()
+    state = _ARCHIVE_CACHE_STATE if ARCHIVE_CACHE is not None else None
+    if state is not None and now < state.validate_after:
+        return state.payload
+
+    with _ARCHIVE_CACHE_LOCK:
+        now = monotonic()
+        state = _ARCHIVE_CACHE_STATE if ARCHIVE_CACHE is not None else None
+        if state is not None and now < state.validate_after:
+            return state.payload
+
+        snapshot = archive_input_snapshot()
+        active_signature = snapshot.signature
+        if state is not None and state.signature == snapshot.signature:
+            payload = state.payload
+        else:
+            payload = load_archive_catalog(snapshot)
+            if payload is None:
+                catalog = build_archive_catalog(snapshot)
+                payload = catalog["archive"]
+                active_signature = tuple(tuple(item) for item in catalog["input_signature"])
+        state = ArchiveCacheState(
+            payload=payload,
+            signature=active_signature,
+            validate_after=monotonic() + ARCHIVE_CACHE_CHECK_TTL_SECONDS,
+        )
+        ARCHIVE_CACHE = payload
+        _ARCHIVE_CACHE_STATE = state
+        return payload

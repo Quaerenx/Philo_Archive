@@ -14,6 +14,8 @@
 
 ## `GET /api/archive`
 
+This compatible endpoint remains the full archive index for `/category/<corpus_id>` and existing archive consumers. The response may come from the versioned local archive catalog when its input signature matches; a missing, corrupt, or stale catalog is rebuilt safely in memory.
+
 루트 페이지와 `/category/<corpus_id>` 페이지가 사용하는 archive index이다.
 
 최상위 필드:
@@ -73,9 +75,29 @@ Notes:
 - `href` may point to `/work/...` for catalogued works or `/read?path=...` for raw Markdown-style reading pages.
 - `source_href` points to the raw source viewer when available.
 
+## `GET /api/archive/summary`
+
+The home page uses this lightweight response instead of downloading every section and work link:
+
+```json
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-30T12:00:00",
+  "corpora": [
+    {
+      "id": "nietzsche",
+      "title": "Nietzsche",
+      "subtitle": "eKGWB markdown exports, grouped for reading"
+    }
+  ]
+}
+```
+
+Each `corpora[]` entry contains only `id`, `title`, and `subtitle`. Use `/api/archive` when counts, sections, or work links are required.
+
 ## `GET /api/health`
 
-The HTTP health response is intentionally redacted. It contains readiness booleans only; absolute paths, local model names, personal-note state, raw backend errors, byte counts, timestamps, and detailed file inventory are excluded.
+The HTTP health response is intentionally redacted. It contains readiness fields only; absolute paths, local model names, personal-note state, raw backend errors, byte counts, timestamps, and detailed file inventory are excluded.
 
 ```json
 {
@@ -96,11 +118,36 @@ The HTTP health response is intentionally redacted. It contains readiness boolea
   },
   "gemma": {
     "reachable": true,
-    "model_count": 1
+    "model_count": 1,
+    "state": "ready"
   },
   "issues": []
 }
 ```
+
+Corpus readiness and search-database readiness are cached independently for up to three seconds when healthy and one second when degraded. Gemma readiness is cached for one second when reachable and 0.5 seconds when unavailable, so a failure is not retained for the static-status TTL.
+
+## `GET /api/health/gemma`
+
+Returns only the redacted translation-sidecar readiness used by the Reader polling loop:
+
+```json
+{
+  "status": "warning",
+  "generated_at": "2026-07-30T03:00:00+00:00",
+  "gemma": {
+    "reachable": false,
+    "model_count": 0,
+    "state": "starting"
+  }
+}
+```
+
+The response preserves the same public Gemma fields and states as `/api/health`, without recalculating corpus or search readiness.
+
+## Static response caching
+
+JS and CSS URLs with a non-empty `v` query parameter return `Cache-Control: public, max-age=31536000, immutable`. Static responses include representation-specific weak ETags and Last-Modified, honor `If-None-Match` and `If-Modified-Since` with `304`, and negotiate gzip for compressible assets. `HEAD` preserves the selected representation's headers and Content-Length without a body. Unversioned assets and HTML use `no-cache`; JSON APIs and user-data responses use `no-store`.
 
 The detailed structure below is retained for local maintenance builders such as `build_runtime_health()` and is not returned by the HTTP handler.
 
@@ -185,6 +232,20 @@ File records such as `metadata`, `segments`, and `notes`:
 }
 ```
 
+The artifact list also includes the local source-target index:
+
+```json
+{
+  "name": "segment_offset_index.sqlite",
+  "kind": "index",
+  "role": "source target byte-offset index",
+  "path": "data/segment_offset_index.sqlite",
+  "exists": true,
+  "bytes": 31490048,
+  "modified_at": "2026-07-30T08:54:26+00:00"
+}
+```
+
 `gemma`:
 
 ```json
@@ -192,13 +253,15 @@ File records such as `metadata`, `segments`, and `notes`:
   "base_url": "http://127.0.0.1:8794",
   "reachable": true,
   "model_count": 1,
-  "models": ["gemma-4-26B-A4B-it-Q4_K_M.gguf"]
+  "models": ["gemma-4-26B-A4B-it-Q4_K_M.gguf"],
+  "state": "ready"
 }
 ```
 
 Notes:
 
 - `issues[]` is empty when `status` is `ok`.
+- `gemma.state` is one of `starting`, `ready`, `failed`, or `unavailable`.
 - `next_recommended_upgrades[]` is advisory and may change as implementation work progresses.
 
 </details>
@@ -264,7 +327,7 @@ For paths, byte sizes, timestamps, optional checksums, and rebuild commands, gen
 }
 ```
 
-`regeneration_commands[]` currently lists the local commands needed to rebuild metadata, segments, search, and the local artifact manifest.
+`regeneration_commands[]` currently lists the local commands needed to rebuild metadata, segments, the source-target byte-offset index, search, and the local artifact manifest.
 
 Example:
 
@@ -272,6 +335,7 @@ Example:
 python .\scripts\build_nietzsche_metadata.py
 python .\scripts\build_bible_metadata.py
 python .\scripts\build_bible_segments.py
+python .\scripts\build_segment_offset_index.py
 python .\scripts\build_search_index.py
 python .\scripts\build_search_db.py
 python .\scripts\build_artifact_manifest.py
@@ -382,6 +446,23 @@ Work alias ranking rules:
 - Bible work aliases prefer the primary source layer by default: SBLGNT for New Testament, OSHB for Hebrew Bible, then LXX.
 - Bible source prefixes such as `lxx Genesis` constrain work alias results to that source layer.
 - LXX/deuterocanonical work aliases include shorthand and alternate titles such as `Tob`, `Wis`, `Sir`, `Ecclesiasticus`, `EpJer`, `Psalm 151`, and `Additions to Daniel`.
+
+## `GET /api/work-chunks`
+
+Returns one rendered chunk for a work that exceeds the server's large-work virtualization thresholds. The reader uses this endpoint internally; existing work URLs, paragraph IDs, sentence IDs, translation targets, and note targets remain unchanged.
+
+Query parameters:
+
+```text
+corpus_id=wittgenstein
+work_id=Group_BigTypescriptCorpus
+variant_id=idp_transcription_linear
+chunk=158
+```
+
+Use `anchor=p-3301.s001` instead of `chunk` to resolve a deep link to the chunk that contains that paragraph or sentence. The response contains stable first/last segment IDs, one-based global sentence positions, counts, an estimated placeholder height, and rendered HTML for only the requested chunk. Missing fields and works below the virtualization thresholds return `400`; unknown chunks and anchors return `404`.
+
+The endpoint reads only the byte ranges listed in `segment_offset_index.sqlite`. It does not parse or retain the complete corpus JSONL in memory. The normal `/work/<corpus_id>/<work_id>` route remains eager for ordinary works. A virtual work's `view=print` query renders the complete document for printing.
 
 ## `GET /api/source-target`
 

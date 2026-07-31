@@ -26,6 +26,8 @@ BUILD_STEPS = [
     Step("Wittgenstein metadata", "build_wittgenstein_metadata.py"),
     Step("Wittgenstein segments", "build_wittgenstein_segments.py"),
     Step("Nietzsche segments", "build_nietzsche_segments.py"),
+    Step("Segment byte-offset index", "build_segment_offset_index.py"),
+    Step("Versioned archive catalog", "build_archive_catalog.py"),
     Step("Portable search index", "build_search_index.py"),
     Step("SQLite search database", "build_search_db.py"),
 ]
@@ -42,6 +44,8 @@ CHECK_STEPS = [
     Step("Prompt template contracts", "check_prompt_template_contracts.py", ("--with-source-targets",)),
     Step("Sentence translation contracts", "check_sentence_translation_contracts.py", ("--with-source-targets",)),
     Step("Corpus schema contracts", "check_corpus_schema.py"),
+    Step("Segment offset contracts", "check_segment_offset_contracts.py"),
+    Step("Large work chunk contracts", "check_work_chunk_contracts.py"),
     Step("Source target contracts", "check_source_target_contracts.py"),
     Step("Restore readiness contracts", "check_restore_readiness.py"),
     Step("Runtime API contracts", "check_api_contracts.py"),

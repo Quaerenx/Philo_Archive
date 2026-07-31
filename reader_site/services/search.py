@@ -4,8 +4,12 @@ import heapq
 import json
 import re
 import sqlite3
+import threading
 import unicodedata
+from dataclasses import dataclass
 from pathlib import Path
+from types import MappingProxyType
+from typing import Mapping
 from urllib.parse import quote
 
 from services.notes import read_all_notes
@@ -28,7 +32,6 @@ CORPUS_TITLES = {
     "wittgenstein": "비트겐슈타인",
 }
 BIBLE_ALIAS_CACHE: dict[str, list[dict]] | None = None
-WORK_METADATA_CACHE: dict[str, dict] | None = None
 ALIAS_ASCII_TRANSLATION = str.maketrans(
     {
         "æ": "ae",
@@ -139,17 +142,60 @@ BIBLE_ALTERNATE_BOOK_ALIASES = {
     "BelTh": ["Bel", "Bel and Dragon", "Bel and the Dragon", "Bel Th", "Theodotion Bel", "Additions to Daniel"],
 }
 
+WorkMetadataSignature = tuple[tuple[str, str, int, int, int, int], ...]
+
+
+@dataclass(frozen=True)
+class WorkSearchEntry:
+    corpus_id: str
+    work_id: str
+    variant_id: str
+    variant_ids: tuple[str, ...]
+    source_id: str
+    title: str
+    normalized_title: str
+    category: str
+    category_id: str
+    work_url: str
+    aliases: tuple[str, ...]
+    normalized_aliases: tuple[str, ...]
+    compact_aliases: frozenset[str]
+    alias_haystack: str
+    compact_alias_haystack: str
+    compact_work_id: str
+
+
+@dataclass(frozen=True)
+class WorkSearchIndex:
+    signature: WorkMetadataSignature
+    entries_by_corpus: Mapping[str, tuple[WorkSearchEntry, ...]]
+
+
+@dataclass(frozen=True)
+class WorkSearchState:
+    signature: WorkMetadataSignature
+    metadata: dict[str, dict]
+    index: WorkSearchIndex
+
+
+_WORK_SEARCH_STATE: WorkSearchState | None = None
+_WORK_SEARCH_STATE_LOCK = threading.Lock()
+
 
 def normalize_search_text(value: str) -> str:
     return re.sub(r"\s+", " ", value).strip().lower()
 
 
-def compact_alias_key(value: str) -> str:
-    translated = normalize_search_text(value).translate(ALIAS_ASCII_TRANSLATION)
+def compact_normalized_search_text(value: str) -> str:
+    translated = value.translate(ALIAS_ASCII_TRANSLATION)
     decomposed = unicodedata.normalize("NFKD", translated)
     without_marks = "".join(character for character in decomposed if not unicodedata.combining(character))
     folded = unicodedata.normalize("NFC", without_marks)
     return re.sub(r"[\W_]+", "", folded, flags=re.UNICODE)
+
+
+def compact_alias_key(value: str) -> str:
+    return compact_normalized_search_text(normalize_search_text(value))
 
 
 def bible_source_priority(work: dict, preferred_source: str = "") -> tuple[int, int, str]:
@@ -291,10 +337,29 @@ def segment_type_boost(segment_type: str, title: str, label: str, terms: list[st
     return 0
 
 
-def load_work_metadata() -> dict[str, dict]:
-    global WORK_METADATA_CACHE
-    if WORK_METADATA_CACHE is not None:
-        return WORK_METADATA_CACHE
+def work_metadata_signature() -> WorkMetadataSignature:
+    signature = []
+    for corpus_id, path in sorted(METADATA_FILES.items()):
+        path = Path(path)
+        try:
+            stat = path.stat()
+        except FileNotFoundError:
+            signature.append((corpus_id, str(path.resolve()), -1, -1, -1, -1))
+            continue
+        signature.append(
+            (
+                corpus_id,
+                str(path.resolve()),
+                stat.st_size,
+                stat.st_mtime_ns,
+                stat.st_ctime_ns,
+                stat.st_ino,
+            )
+        )
+    return tuple(signature)
+
+
+def read_work_metadata() -> dict[str, dict]:
     metadata: dict[str, dict] = {}
     for corpus_id, path in METADATA_FILES.items():
         if not path.exists():
@@ -303,8 +368,83 @@ def load_work_metadata() -> dict[str, dict]:
         payload = json.loads(path.read_text(encoding="utf-8"))
         works = payload.get("works", {})
         metadata[corpus_id] = works if isinstance(works, dict) else {}
-    WORK_METADATA_CACHE = metadata
-    return WORK_METADATA_CACHE
+    return metadata
+
+
+def build_work_search_index(metadata: dict[str, dict], signature: WorkMetadataSignature) -> WorkSearchIndex:
+    entries_by_corpus: dict[str, tuple[WorkSearchEntry, ...]] = {}
+    for corpus_id, works in metadata.items():
+        entries = []
+        for current_work_id, work in works.items():
+            aliases = tuple(work_alias_values(corpus_id, work))
+            normalized_aliases = tuple(normalize_search_text(alias) for alias in aliases)
+            compact_aliases = frozenset(
+                compact_alias
+                for alias in normalized_aliases
+                if (compact_alias := compact_normalized_search_text(alias))
+            )
+            alias_haystack = " ".join(normalized_aliases)
+            title = str(work.get("display_title") or work.get("title") or current_work_id)
+            category = str(work.get("category_title") or work.get("category_id") or "")
+            variant_ids = tuple(str(item) for item in work.get("variant_ids", []))
+            entries.append(
+                WorkSearchEntry(
+                    corpus_id=corpus_id,
+                    work_id=current_work_id,
+                    variant_id=str(work.get("variant_id") or ""),
+                    variant_ids=variant_ids,
+                    source_id=str(work.get("source_id", "")),
+                    title=title,
+                    normalized_title=normalize_search_text(title),
+                    category=category,
+                    category_id=str(work.get("category_id", "")),
+                    work_url=str(work.get("work_url") or f"/work/{corpus_id}/{current_work_id}"),
+                    aliases=aliases,
+                    normalized_aliases=normalized_aliases,
+                    compact_aliases=compact_aliases,
+                    alias_haystack=alias_haystack,
+                    compact_alias_haystack=compact_normalized_search_text(alias_haystack),
+                    compact_work_id=compact_alias_key(str(work.get("work_id", ""))),
+                )
+            )
+        entries_by_corpus[corpus_id] = tuple(entries)
+    return WorkSearchIndex(signature=signature, entries_by_corpus=MappingProxyType(entries_by_corpus))
+
+
+def load_work_search_state() -> WorkSearchState:
+    global _WORK_SEARCH_STATE
+    signature = work_metadata_signature()
+    state = _WORK_SEARCH_STATE
+    if state is not None and state.signature == signature:
+        return state
+
+    with _WORK_SEARCH_STATE_LOCK:
+        state = _WORK_SEARCH_STATE
+        for _attempt in range(3):
+            signature = work_metadata_signature()
+            if state is not None and state.signature == signature:
+                return state
+            try:
+                metadata = read_work_metadata()
+                index = build_work_search_index(metadata, signature)
+            except (OSError, json.JSONDecodeError):
+                if work_metadata_signature() != signature:
+                    continue
+                raise
+            if work_metadata_signature() != signature:
+                continue
+            state = WorkSearchState(signature=signature, metadata=metadata, index=index)
+            _WORK_SEARCH_STATE = state
+            return state
+    raise RuntimeError("work metadata changed repeatedly while building the search index")
+
+
+def load_work_metadata() -> dict[str, dict]:
+    return load_work_search_state().metadata
+
+
+def load_work_search_index() -> WorkSearchIndex:
+    return load_work_search_state().index
 
 
 def work_display_title(work: dict, fallback: str = "") -> str:
@@ -371,6 +511,26 @@ def score_work_match(query: str, terms: list[str], aliases: list[str], work: dic
     haystack = normalize_search_text(" ".join(aliases))
     compact_haystack = compact_alias_key(haystack)
     compact_terms = [compact_alias_key(term) for term in terms]
+    return score_indexed_work_match(
+        compact_query,
+        terms,
+        compact_terms,
+        compact_aliases,
+        haystack,
+        compact_haystack,
+        compact_alias_key(str(work.get("work_id", ""))),
+    )
+
+
+def score_indexed_work_match(
+    compact_query: str,
+    terms: list[str],
+    compact_terms: list[str],
+    compact_aliases: set[str] | frozenset[str],
+    haystack: str,
+    compact_haystack: str,
+    compact_work_id: str,
+) -> int:
     exact_match = bool(compact_query and compact_query in compact_aliases)
     prefix_match = bool(
         compact_query and len(compact_query) >= 2 and any(alias.startswith(compact_query) for alias in compact_aliases)
@@ -388,7 +548,7 @@ def score_work_match(query: str, terms: list[str], aliases: list[str], work: dic
         score += 1000
     elif prefix_match:
         score += 250
-    if compact_query and compact_query == compact_alias_key(str(work.get("work_id", ""))):
+    if compact_query and compact_query == compact_work_id:
         score += 500
     score += sum(30 for term in terms if term in haystack)
     score += sum(15 for compact_term in compact_terms if compact_term and compact_term in compact_haystack)
@@ -404,8 +564,7 @@ def source_prefix_query(query: str) -> tuple[str, str]:
     return source_id, match.group(2).strip()
 
 
-def bible_work_source_score(work: dict, preferred_source: str = "") -> int:
-    source_id = str(work.get("source_id", ""))
+def bible_source_score(source_id: str, preferred_source: str = "") -> int:
     if preferred_source and source_id.startswith(preferred_source):
         return 100
     if source_id == "sblgnt":
@@ -417,47 +576,57 @@ def bible_work_source_score(work: dict, preferred_source: str = "") -> int:
     return 0
 
 
+def bible_work_source_score(work: dict, preferred_source: str = "") -> int:
+    return bible_source_score(str(work.get("source_id", "")), preferred_source)
+
+
 def search_work_records(query: str, corpus_id: str, work_id: str, variant_id: str, limit: int) -> dict:
     preferred_source, work_query = source_prefix_query(query)
     terms = [term for term in normalize_search_text(work_query).split(" ") if term]
     if not terms:
         return {"count": 0, "results": []}
-    metadata = load_work_metadata()
-    corpora = [corpus_id] if corpus_id else sorted(metadata)
+    compact_query = compact_alias_key(work_query)
+    compact_terms = [compact_alias_key(term) for term in terms]
+    index = load_work_search_index()
+    corpora = [corpus_id] if corpus_id else sorted(index.entries_by_corpus)
     ranked: list[tuple[int, str, str, dict]] = []
     for current_corpus_id in corpora:
-        for current_work_id, work in metadata.get(current_corpus_id, {}).items():
-            if work_id and current_work_id != work_id:
+        for entry in index.entries_by_corpus.get(current_corpus_id, ()):
+            if work_id and entry.work_id != work_id:
                 continue
-            if not work_matches_variant(work, variant_id):
+            if variant_id and entry.variant_id != variant_id and variant_id not in entry.variant_ids:
                 continue
             if current_corpus_id == "bible" and preferred_source:
-                source_id = str(work.get("source_id", ""))
-                if not source_id.startswith(preferred_source):
+                if not entry.source_id.startswith(preferred_source):
                     continue
-            aliases = work_alias_values(current_corpus_id, work)
-            score = score_work_match(work_query, terms, aliases, work)
+            score = score_indexed_work_match(
+                compact_query,
+                terms,
+                compact_terms,
+                entry.compact_aliases,
+                entry.alias_haystack,
+                entry.compact_alias_haystack,
+                entry.compact_work_id,
+            )
             if score <= 0:
                 continue
             if current_corpus_id == "bible":
-                score += bible_work_source_score(work, preferred_source)
-            title = str(work.get("display_title") or work.get("title") or current_work_id)
-            category = str(work.get("category_title") or work.get("category_id") or "")
+                score += bible_source_score(entry.source_id, preferred_source)
             result = {
                 "kind": "work",
                 "corpus_id": current_corpus_id,
-                "work_id": current_work_id,
+                "work_id": entry.work_id,
                 "variant_id": variant_id,
-                "title": title,
-                "label": category,
-                "url": work.get("work_url") or f"/work/{current_corpus_id}/{current_work_id}",
-                "snippet": " / ".join(alias for alias in aliases[:6] if alias),
-                "category_id": work.get("category_id", ""),
-                "category_title": category,
-                "variant_ids": work.get("variant_ids", []),
+                "title": entry.title,
+                "label": entry.category,
+                "url": entry.work_url,
+                "snippet": " / ".join(alias for alias in entry.aliases[:6] if alias),
+                "category_id": entry.category_id,
+                "category_title": entry.category,
+                "variant_ids": list(entry.variant_ids),
                 "score": score,
             }
-            ranked.append((score, current_corpus_id, current_work_id, result))
+            ranked.append((score, current_corpus_id, entry.work_id, result))
     ranked.sort(key=lambda item: (-item[0], item[1], item[2]))
     return {"count": len(ranked), "results": [item[3] for item in ranked[:limit]]}
 

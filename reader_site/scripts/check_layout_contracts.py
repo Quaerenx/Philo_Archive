@@ -104,7 +104,7 @@ def check_html_entrypoints() -> None:
         if relative_path == "index.html":
             require_contains(html, "번역", relative_path)
             require_contains(html, "/styles.css?v=home10", relative_path)
-            require_contains(html, "/app.js?v=home15", relative_path)
+            require_contains(html, "/app.js?v=home16", relative_path)
         if relative_path in {"templates/reading.html", "templates/source.html"}:
             require_contains(html, "/assets/static-reader.css?v=static3", relative_path)
             require_contains(html, "파일 정보</summary>", relative_path)
@@ -1380,6 +1380,19 @@ def check_work_source_bundle_ui() -> None:
 
     script = read_site_file("assets/reader-work.js")
     require_contains(script, "const readerWorkStorage = window.ReaderWorkStorage", "assets/reader-work.js")
+    for needle in [
+        "const virtualDocument = researchData.virtual_document?.enabled",
+        "const sentenceIndexById = new Map()",
+        "function refreshSentenceNodeIndex",
+        "async function ensureVirtualChunk",
+        "async function ensureVirtualTarget",
+        "function unmountVirtualChunk",
+        "function initializeVirtualWork",
+        'rootMargin: "1000px 0px"',
+        'if (!virtualDocument && "IntersectionObserver" in window)',
+        "virtualDocument || prefersReducedMotion()",
+    ]:
+        require_contains(script, needle, "assets/reader-work.js virtual work")
     for direct_storage_api in [
         "window.localStorage",
         "window.sessionStorage",
@@ -1425,9 +1438,13 @@ def check_work_source_bundle_ui() -> None:
         "gemmaRuntimeCheckButton",
         "function setGemmaRuntimeIndicator",
         "async function checkGemmaRuntimeStatus",
-        "/api/health",
+        "function scheduleGemmaRuntimeCheck",
+        "GEMMA_RUNTIME_POLL_MS",
+        "/api/health/gemma",
         "setGemmaRuntimeIndicator(\"checking\", \"번역기 확인 중\",",
+        "번역기 시작 중",
         "번역기 준비됨",
+        "번역기 시작 실패",
         "번역 준비 필요",
         "번역 상태 확인 필요",
         "gemmaRuntimeCheckButton.addEventListener",
@@ -1958,19 +1975,20 @@ def check_work_source_bundle_ui() -> None:
         template,
         [
             "/assets/reader-work-storage.js?v=storage1",
-            "/assets/reader-work.js?v=common192",
+            "/assets/reader-work.js?v=common194",
         ],
         "templates/work.html reader script dependency order",
     )
-    require_contains(template, "/assets/reader-work.css?v=common146", "templates/work.html")
+    require_contains(template, "/assets/reader-work.css?v=common147", "templates/work.html")
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
         'aria-label="읽기 화면 이동"',
         "reading-desk",
         "toolbar-more",
-        "toolbar-more-links",
-        "읽기 메뉴</summary>",
-        "{{TOC_LINK}}",
+            "toolbar-more-links",
+            "읽기 메뉴</summary>",
+            "{{TOC_LINK}}",
+            "{{PRINT_LINK}}",
         'href="/notes?corpus_id={{CORPUS_ID}}&work_id={{WORK_ID}}">노트</a>',
         'href="/study?corpus_id={{CORPUS_ID}}&work_id={{WORK_ID}}">학습</a>',
         'href="/translations?corpus_id={{CORPUS_ID}}&work_id={{WORK_ID}}">번역</a>',
@@ -2118,6 +2136,13 @@ def check_work_source_bundle_ui() -> None:
     require("작업</summary>" not in template, "templates/work.html should use reader-facing tool wording")
 
     css = read_site_file("assets/reader-work.css")
+    for needle in [
+        ".reader-chunk-placeholder",
+        "content-visibility: auto",
+        ".reader-chunk-error",
+        "body.virtual-work .reading-body::before",
+    ]:
+        require_contains(css, needle, "assets/reader-work.css virtual work")
     work_markup = read_site_file("rendering/work_markup.py")
     require_contains(work_markup, '<details id="toc" class="toc"><summary>목차</summary>', "rendering/work_markup.py")
     require_contains(work_markup, 'concept.get("label_ko")', "rendering/work_markup.py")

@@ -23,6 +23,7 @@ SOURCE_DIRS = list(SOURCE_ROOT_NAMES)
 
 FORBIDDEN_PATTERNS = [
     "reader_site/data/*_segments.jsonl",
+    "reader_site/data/archive_catalog.local.json",
     "reader_site/data/search_index.jsonl",
     "reader_site/data/search_index.sqlite",
     "reader_site/data/search_index.sqlite-*",

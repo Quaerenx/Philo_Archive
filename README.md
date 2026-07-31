@@ -110,6 +110,8 @@ python .\scripts\build_kierkegaard_segments.py
 python .\scripts\build_wittgenstein_metadata.py
 python .\scripts\build_wittgenstein_segments.py
 python .\scripts\build_nietzsche_segments.py
+python .\scripts\build_segment_offset_index.py
+python .\scripts\build_archive_catalog.py
 python .\scripts\build_search_index.py
 python .\scripts\build_search_db.py
 python .\scripts\build_artifact_manifest.py
@@ -120,6 +122,8 @@ python .\scripts\build_artifact_manifest.py
 Large generated files are ignored by Git:
 
 - `reader_site/data/*_segments.jsonl`
+- `reader_site/data/archive_catalog.local.json`
+- `reader_site/data/segment_offset_index.sqlite`
 - `reader_site/data/search_index.jsonl`
 - `reader_site/data/search_index.sqlite`
 - `reader_site/data/artifact_manifest.local.json`
@@ -130,6 +134,7 @@ Large generated files are ignored by Git:
 After starting the server, check the local runtime state at:
 
 - `http://127.0.0.1:8793/api/health`
+- `http://127.0.0.1:8793/api/health/gemma`
 - `http://127.0.0.1:8793/api/artifacts`
 
 The reader is loopback-only. Both diagnostic endpoints return redacted readiness data; use `reader_site\scripts\build_artifact_manifest.py` when a detailed local manifest is required.

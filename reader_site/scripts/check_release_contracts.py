@@ -19,6 +19,9 @@ SOURCE_DIRS = list(SOURCE_ROOT_NAMES)
 
 GENERATED_ARTIFACT_PATTERNS = [
     "reader_site/data/*_segments.jsonl",
+    "reader_site/data/archive_catalog.local.json",
+    "reader_site/data/segment_offset_index.sqlite",
+    "reader_site/data/segment_offset_index.sqlite-*",
     "reader_site/data/search_index.jsonl",
     "reader_site/data/search_index.sqlite",
     "reader_site/data/search_index.sqlite-*",
@@ -125,6 +128,8 @@ def assert_ignored_existing_artifacts() -> None:
         [
             SITE / "data" / "search_index.jsonl",
             SITE / "data" / "search_index.sqlite",
+            SITE / "data" / "archive_catalog.local.json",
+            SITE / "data" / "segment_offset_index.sqlite",
             SITE / "data" / "artifact_manifest.local.json",
             SITE / "data" / "release_stage_manifest.local.json",
             SITE / "data" / "visual_qa.local",

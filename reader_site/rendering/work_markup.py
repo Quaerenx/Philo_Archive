@@ -106,6 +106,12 @@ def apply_template(template: str, values: dict[str, str]) -> str:
 def render_work_page_html(template: str, model: dict) -> str:
     research_json = json.dumps(model["research"], ensure_ascii=False).replace("</", "<\\/")
     toc_link = '<a href="#toc">목차</a>' if model.get("toc") else ""
+    print_href = str(model.get("print_href") or "")
+    print_link = (
+        f'<a href="{html.escape(print_href, quote=True)}" target="_blank" rel="noopener">전체 인쇄 보기</a>'
+        if print_href
+        else ""
+    )
     return apply_template(
         template,
         {
@@ -120,6 +126,7 @@ def render_work_page_html(template: str, model: dict) -> str:
             "SOURCE_HREF": html.escape(str(model.get("source_href", "#")), quote=True),
             "CATEGORY_HREF": html.escape(str(model.get("category_href", "/")), quote=True),
             "TOC_LINK": toc_link,
+            "PRINT_LINK": print_link,
             "TOC": str(model.get("toc", "")),
             "CONCEPTS": str(model.get("concepts", "")),
             "VARIANT_TABS": str(model.get("variant_tabs", "")),
