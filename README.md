@@ -139,10 +139,10 @@ After starting the server, check the local runtime state at:
 
 The reader is loopback-only. Both diagnostic endpoints return redacted readiness data; use `reader_site\scripts\build_artifact_manifest.py` when a detailed local manifest is required.
 
-Independent security revalidation:
+Documentation:
 
-- `reader_site/docs/external_security_revalidation_prompt_ko.md`: reusable external-verifier prompt for the four remediated findings.
-- `reader_site/docs/security_validation/2026-07-30/`: local validation summary and per-finding receipts. Publication verification remains blocked until the remediation is committed and pushed.
+- `reader_site/docs/README.md`: current operating, API, schema, policy, and release documentation.
+- `OLD/README.md`: superseded roadmaps, completed reviews, historical validation receipts, and other archived material.
 
 Key validation commands:
 

@@ -25,6 +25,8 @@ reader_site/data/ai/*.sqlite-*
 reader_site/data/runtime.local/
 reader_site/data/runtime.local/*
 reader_site/local_paths.json
+OLD/local-only/
+OLD/local-only/*
 .env
 .env.*
 

@@ -35,6 +35,7 @@ FORBIDDEN_TRACKED_PATTERNS = [
     "reader_site/data/ai/*.jsonl",
     "reader_site/data/ai/*.sqlite",
     "reader_site/data/ai/*.sqlite-*",
+    "OLD/local-only/*",
 ]
 
 REQUIRED_POLICY_SECTIONS = [
@@ -67,6 +68,7 @@ REQUIRED_GITIGNORE_RULES = [
     "reader_site/data/notes/*.jsonl",
     "reader_site/data/ai/*.jsonl",
     "reader_site/data/runtime.local/",
+    "OLD/local-only/",
 ]
 
 FORBIDDEN_TEXT_KEYS = {

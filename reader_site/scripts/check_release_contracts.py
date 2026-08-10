@@ -31,6 +31,8 @@ GENERATED_ARTIFACT_PATTERNS = [
     "reader_site/data/visual_qa.local/*",
     "reader_site/data/runtime.local/",
     "reader_site/data/runtime.local/*",
+    "OLD/local-only/",
+    "OLD/local-only/*",
 ]
 
 LOCAL_STATE_PATTERNS = [

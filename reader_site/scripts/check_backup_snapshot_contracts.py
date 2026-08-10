@@ -184,7 +184,10 @@ def check_manifest_contract(snapshot_dir: Path, expected_consistency: str) -> No
         manifest["scope"]["required_derived_files"] == len(snapshot.DERIVED_NAMES),
         "wrong derived scope",
     )
-    require(manifest["scope"]["required_tracked_metadata_files"] == 10, "wrong metadata scope")
+    require(
+        manifest["scope"]["required_tracked_metadata_files"] == len(snapshot.TRACKED_METADATA_NAMES),
+        "wrong metadata scope",
+    )
     require(manifest["git"] == {"branch": "synthetic-backup", "commit": "a" * 40}, "wrong git binding")
     malformed = [record for record in records if record.get("jsonl", {}).get("malformed_records") == 1]
     if expected_consistency == "preflight":

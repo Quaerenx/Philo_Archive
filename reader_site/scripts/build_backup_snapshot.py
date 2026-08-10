@@ -58,9 +58,7 @@ TRACKED_METADATA_NAMES = (
     "kierkegaard_metadata.json",
     "nietzsche_catalog.json",
     "nietzsche_concepts.json",
-    "nietzsche_encoding_report.json",
     "nietzsche_metadata.json",
-    "nietzsche_notes_schema.json",
     "search_eval_queries.json",
     "wittgenstein_metadata.json",
 )

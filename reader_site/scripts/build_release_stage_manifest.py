@@ -38,6 +38,8 @@ FORBIDDEN_PATTERNS = [
     "reader_site/data/ai/*.sqlite",
     "reader_site/data/ai/*.sqlite-*",
     "reader_site/local_paths.json",
+    "OLD/local-only/",
+    "OLD/local-only/*",
     ".env",
     ".env.*",
 ]
@@ -52,6 +54,7 @@ ALLOWED_EXACT_PATHS = {
     "reader_site/data/notes/.gitkeep",
     "reader_site/run_reader_with_gemma.ps1",
     "reader_site/sentence_units.py",
+    "OLD/README.md",
 }
 
 ALLOWED_PREFIXES = [
@@ -62,6 +65,7 @@ ALLOWED_PREFIXES = [
     "reader_site/scripts/",
     "reader_site/services/",
     "reader_site/templates/",
+    "OLD/reader_site/",
 ]
 
 ALLOWED_TOP_LEVEL_FILES = {
@@ -81,11 +85,15 @@ ALLOWED_DATA_PATTERNS = [
     "reader_site/data/*_metadata.json",
     "reader_site/data/nietzsche_catalog.json",
     "reader_site/data/nietzsche_concepts.json",
-    "reader_site/data/nietzsche_encoding_report.json",
-    "reader_site/data/nietzsche_notes_schema.json",
     "reader_site/data/search_eval_queries.json",
     "reader_site/data/ai_prompt_templates.json",
 ]
+
+ARCHIVED_ORIGINAL_PATHS = {
+    "reader_site/RESEARCH_UPGRADE_ROADMAP.md",
+    "reader_site/data/nietzsche_encoding_report.json",
+    "reader_site/data/nietzsche_notes_schema.json",
+}
 
 
 def run_git(*args: str) -> subprocess.CompletedProcess[bytes]:
@@ -135,6 +143,10 @@ def allowed_category(path: str) -> str:
         return "reader_entrypoint"
     if matches_any(path, ALLOWED_DATA_PATTERNS):
         return "small_metadata"
+    if path in ARCHIVED_ORIGINAL_PATHS:
+        return "archive"
+    if path.startswith("OLD/reader_site/"):
+        return "archive"
     for prefix in ALLOWED_PREFIXES:
         if path.startswith(prefix):
             if prefix == "reader_site/assets/":

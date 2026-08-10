@@ -51,7 +51,7 @@ MOJIBAKE_NEEDLES = [
 ]
 
 ALLOWED_REPLACEMENT_CHAR_FILES = {
-    "reader_site/RESEARCH_UPGRADE_ROADMAP.md",
+    "OLD/reader_site/RESEARCH_UPGRADE_ROADMAP.md",
 }
 SELF_RELATIVE_PATH = "reader_site/scripts/check_encoding_contracts.py"
 
