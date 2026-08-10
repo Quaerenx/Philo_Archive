@@ -414,7 +414,7 @@ def clone_smoke(parent: Path, keep_clone: bool) -> None:
     remove_tree(empty_root)
 
     try:
-        run(["git", "clone", "--local", str(REPO), str(target)], cwd=parent)
+        run(["git", "clone", "--local", "--no-hardlinks", str(REPO), str(target)], cwd=parent)
         run(["git", "checkout", branch], cwd=target)
         for source in SOURCE_ROOTS:
             require(not (target / source).exists(), f"clean clone unexpectedly contains source corpus: {source}")
