@@ -17,7 +17,7 @@ def fetch_json(url: str, timeout: float = 5.0) -> tuple[bool, dict]:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Check local Philo Archive reader and Gemma runtime.", allow_abbrev=False)
     parser.add_argument("--reader", default="http://127.0.0.1:8793", help="Reader base URL.")
-    parser.add_argument("--gemma", default="http://127.0.0.1:8794", help="Gemma llama.cpp base URL.")
+    parser.add_argument("--gemma", default="http://127.0.0.1:9999", help="Gemma llama.cpp base URL.")
     parser.add_argument("--plain", action="store_true", help="Print a short human-readable status instead of JSON.")
     args = parser.parse_args()
 

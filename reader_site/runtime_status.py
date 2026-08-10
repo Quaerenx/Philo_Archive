@@ -34,7 +34,7 @@ DATA = SITE / "data"
 SEARCH_INDEX = DATA / "search_index.jsonl"
 SEARCH_DB = DATA / "search_index.sqlite"
 ARCHIVE_CATALOG = DATA / "archive_catalog.local.json"
-GEMMA_BASE_URL = os.environ.get("PHILO_GEMMA_BASE_URL", "http://127.0.0.1:8794")
+GEMMA_BASE_URL = os.environ.get("PHILO_GEMMA_BASE_URL", "http://127.0.0.1:9999")
 GEMMA_STATE_PATH = Path(
     os.environ.get("PHILO_GEMMA_STATE_PATH", str(DATA / "runtime.local" / "gemma-state.json"))
 )
@@ -87,8 +87,6 @@ CORPORA = [
 SMALL_METADATA = [
     ("nietzsche_catalog", DATA / "nietzsche_catalog.json"),
     ("nietzsche_concepts", DATA / "nietzsche_concepts.json"),
-    ("nietzsche_encoding_report", DATA / "nietzsche_encoding_report.json"),
-    ("nietzsche_notes_schema", DATA / "nietzsche_notes_schema.json"),
 ]
 
 
@@ -477,7 +475,7 @@ def build_runtime_health() -> dict[str, Any]:
     next_upgrades = [
         "Use the automated visual smoke script plus targeted browser review for future layout changes.",
         "Add a dedicated local cache management page for generated Gemma sentence translations.",
-        "Refine corpus-specific reading paths after reviewing Bible canon layers and Wittgenstein/Kierkegaard variant semantics.",
+        "Revisit the documented corpus display policy only when new source families or representation types are added.",
         "Split route dispatch into a dedicated route module only if the HTTP handler grows again.",
     ]
     if search.get("fts5"):

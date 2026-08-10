@@ -429,7 +429,7 @@ def check_public_artifacts(payload: dict[str, Any]) -> None:
 
 
 def check_gemma_launcher_states() -> None:
-    base_url = "http://127.0.0.1:8794"
+    base_url = "http://127.0.0.1:9999"
     now = datetime(2026, 7, 30, 12, 0, tzinfo=timezone.utc)
     with tempfile.TemporaryDirectory() as temporary_directory:
         path = Path(temporary_directory) / "gemma-state.json"
@@ -462,7 +462,7 @@ def check_gemma_launcher_states() -> None:
             read_gemma_launcher_state(path, base_url, now) == {"state": "failed"},
             "failed Gemma launcher state should remain failed",
         )
-        write_state("ready", now, "http://127.0.0.1:9999")
+        write_state("ready", now, "http://127.0.0.1:8794")
         require(
             read_gemma_launcher_state(path, base_url, now) == {},
             "Gemma launcher state for another base URL should be ignored",

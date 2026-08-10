@@ -250,7 +250,7 @@ The artifact list also includes the local source-target index:
 
 ```json
 {
-  "base_url": "http://127.0.0.1:8794",
+  "base_url": "http://127.0.0.1:9999",
   "reachable": true,
   "model_count": 1,
   "models": ["gemma-4-26B-A4B-it-Q4_K_M.gguf"],
@@ -541,7 +541,7 @@ Response:
 }
 ```
 
-If the llama.cpp sidecar is not running at `127.0.0.1:8794`, the endpoint returns `503` with `{"ok": false, "error": "번역 준비가 필요합니다."}`. Generated JSONL files under `data/ai/` are local-only and ignored by Git.
+If the shared llama.cpp runtime is not running at `127.0.0.1:9999`, the endpoint returns `503` with `{"ok": false, "error": "번역 준비가 필요합니다."}`. Generated JSONL files under `data/ai/` are local-only and ignored by Git.
 
 ## `PUT /api/sentence-translations/<record_id>`
 

@@ -10,10 +10,10 @@ This project runs the reader and local Gemma runtime through a user-logon Schedu
 - Working directory: `<reader_site>`
 - Run level: limited user privileges
 - Reader port: `8793`
-- Gemma sidecar: `127.0.0.1:8794`
+- Shared Gemma runtime: `127.0.0.1:9999`
 - Runtime logs: `reader_site\data\runtime.local\`
 
-The task intentionally avoids `ExecutionPolicy Bypass` and administrator run level. Both the reader and llama.cpp sidecar remain bound to `127.0.0.1`.
+The task intentionally avoids `ExecutionPolicy Bypass` and administrator run level. Both the reader and shared llama.cpp runtime remain bound to `127.0.0.1`. The shared runtime remains available when the Reader exits unless the launcher is explicitly run with `-StopGemmaWithReader`.
 
 ## Register
 
@@ -47,7 +47,7 @@ Open Philo Archive:
 
 ```powershell
 Invoke-WebRequest -UseBasicParsing http://127.0.0.1:8793/api/health
-Invoke-WebRequest -UseBasicParsing http://127.0.0.1:8794/v1/models
+Invoke-WebRequest -UseBasicParsing http://127.0.0.1:9999/v1/models
 ```
 
 `/api/health` includes a redacted `gemma` object with `reachable` and `model_count`. Model names, local paths, and detailed artifact inventory are not returned by the HTTP diagnostics.

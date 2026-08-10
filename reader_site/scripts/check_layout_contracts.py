@@ -1,9 +1,18 @@
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 
 SITE = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(SITE))
+
+from corpora.display_policy import (  # noqa: E402
+    category_display_label,
+    ordered_variants,
+    preferred_variant_ids,
+    variant_display_label,
+)
 
 TOKEN_FILE = "assets/design-tokens.css"
 HTML_ENTRYPOINTS = [
@@ -94,6 +103,38 @@ def check_tokens() -> None:
         '--header-portrait-image: url("/assets/nietzsche-header-left.png?v=1882");',
     ]:
         require_contains(tokens, needle, TOKEN_FILE)
+
+
+def check_corpus_display_policy() -> None:
+    require(category_display_label("bible", "hebrew_bible") == "히브리어 성경", "Bible category policy drift")
+    require(category_display_label("bible", "lxx_deuterocanon") == "칠십인역(LXX)·제2경전", "LXX category policy drift")
+    require(variant_display_label("kierkegaard", {"variant_id": "text", "label": "Text"}) == "본문", "Kierkegaard text label drift")
+    require(variant_display_label("kierkegaard", {"variant_id": "textual_account", "label": "Textual Account"}) == "텍스트 성립 자료", "Kierkegaard textual account label drift")
+    require(
+        preferred_variant_ids("wittgenstein")[0] == "source_transcription_normalized.full",
+        "Wittgenstein reading default drift",
+    )
+    shuffled = [
+        {"variant_id": "source_metadata", "label": "Metadata"},
+        {"variant_id": "source_transcription_diplomatic.full", "label": "Source diplomatic (full)"},
+        {"variant_id": "source_transcription_normalized.full", "label": "Source normalized (full)"},
+    ]
+    ordered = ordered_variants("wittgenstein", shuffled)
+    require(
+        [item["variant_id"] for item in ordered]
+        == [
+            "source_transcription_normalized.full",
+            "source_transcription_diplomatic.full",
+            "source_metadata",
+        ],
+        "Wittgenstein variant order drift",
+    )
+    work_models = read_site_file("corpora/work_models.py")
+    work_markup = read_site_file("rendering/work_markup.py")
+    for needle in ["category_display_label", "preferred_variant_ids", "variant_display_label"]:
+        require_contains(work_models, needle, "corpora/work_models.py display policy")
+    for needle in ["ordered_variants", "variant_display_label"]:
+        require_contains(work_markup, needle, "rendering/work_markup.py display policy")
 
 
 def check_html_entrypoints() -> None:
@@ -1380,15 +1421,33 @@ def check_work_source_bundle_ui() -> None:
 
     script = read_site_file("assets/reader-work.js")
     require_contains(script, "const readerWorkStorage = window.ReaderWorkStorage", "assets/reader-work.js")
+    require_contains(script, "const readerWorkVirtual = window.ReaderWorkVirtual", "assets/reader-work.js")
+    require_contains(script, "const virtualWork = readerWorkVirtual.create", "assets/reader-work.js")
+    virtual_script = read_site_file("assets/reader-work-virtual.js")
     for needle in [
-        "const virtualDocument = researchData.virtual_document?.enabled",
+        "(function (global)",
+        '"use strict"',
+        "function create(options = {})",
+        "async function ensureChunk",
+        "async function ensureTarget",
+        "function unmountChunk",
+        "function initialize",
+        'rootMargin: "1000px 0px"',
+        "Object.freeze",
+        "global.ReaderWorkVirtual",
+    ]:
+        require_contains(virtual_script, needle, "assets/reader-work-virtual.js")
+    for forbidden in ["/api/notes", "/api/sentence-translation", "localStorage", "sessionStorage"]:
+        require(
+            forbidden not in virtual_script,
+            f"assets/reader-work-virtual.js should own only virtual document loading without {forbidden!r}",
+        )
+    for needle in [
         "const sentenceIndexById = new Map()",
         "function refreshSentenceNodeIndex",
-        "async function ensureVirtualChunk",
-        "async function ensureVirtualTarget",
-        "function unmountVirtualChunk",
-        "function initializeVirtualWork",
-        'rootMargin: "1000px 0px"',
+        "virtualWork.ensureChunk",
+        "virtualWork.ensureTarget",
+        "virtualWork.initialize()",
         'if (!virtualDocument && "IntersectionObserver" in window)',
         "virtualDocument || prefersReducedMotion()",
     ]:
@@ -1975,11 +2034,19 @@ def check_work_source_bundle_ui() -> None:
         template,
         [
             "/assets/reader-work-storage.js?v=storage1",
-            "/assets/reader-work.js?v=common194",
+            "/assets/reader-work-virtual.js?v=virtual1",
+            "/assets/reader-work.js?v=common195",
         ],
         "templates/work.html reader script dependency order",
     )
-    require_contains(template, "/assets/reader-work.css?v=common147", "templates/work.html")
+    require_ordered_markers(
+        template,
+        [
+            "/assets/reader-work-document.css?v=document1",
+            "/assets/reader-work.css?v=common148",
+        ],
+        "templates/work.html reader stylesheet dependency order",
+    )
     for needle in [
         '<div class="meta-line">{{HEADER_META}}</div>',
         'aria-label="읽기 화면 이동"',
@@ -2135,14 +2202,19 @@ def check_work_source_bundle_ui() -> None:
     )
     require("작업</summary>" not in template, "templates/work.html should use reader-facing tool wording")
 
-    css = read_site_file("assets/reader-work.css")
+    css = "\n".join(
+        [
+            read_site_file("assets/reader-work-document.css"),
+            read_site_file("assets/reader-work.css"),
+        ]
+    )
     for needle in [
         ".reader-chunk-placeholder",
         "content-visibility: auto",
         ".reader-chunk-error",
         "body.virtual-work .reading-body::before",
     ]:
-        require_contains(css, needle, "assets/reader-work.css virtual work")
+        require_contains(css, needle, "reader work styles virtual work")
     work_markup = read_site_file("rendering/work_markup.py")
     require_contains(work_markup, '<details id="toc" class="toc"><summary>목차</summary>', "rendering/work_markup.py")
     require_contains(work_markup, 'concept.get("label_ko")', "rendering/work_markup.py")
@@ -2566,6 +2638,7 @@ def check_work_source_bundle_ui() -> None:
 
 def main() -> None:
     check_tokens()
+    check_corpus_display_policy()
     check_html_entrypoints()
     check_home_css()
     check_home_script()

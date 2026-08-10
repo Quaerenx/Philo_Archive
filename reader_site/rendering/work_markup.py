@@ -4,6 +4,8 @@ import html
 import json
 from urllib.parse import quote, urlencode
 
+from corpora.display_policy import ordered_variants, variant_display_label
+
 
 def work_href(corpus_id: str, work_id: str) -> str:
     return f"/work/{quote(corpus_id, safe='')}/{quote(work_id, safe='')}"
@@ -82,14 +84,14 @@ def source_notice_markup(title: str, lines: list[str]) -> str:
 
 def variant_tabs_for_work(corpus_id: str, work_id: str, variants: list[dict], active_variant_id: str) -> str:
     tabs = []
-    for variant in variants:
+    for variant in ordered_variants(corpus_id, variants):
         variant_id = variant.get("variant_id", "")
         href = work_href(corpus_id, work_id)
         if variant_id:
             href += "?variant=" + quote(variant_id, safe="")
         tabs.append(
             {
-                "label": variant.get("label") or variant_id,
+                "label": variant_display_label(corpus_id, variant),
                 "href": href,
                 "active": variant_id == active_variant_id,
             }

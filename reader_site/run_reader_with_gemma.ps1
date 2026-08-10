@@ -3,9 +3,10 @@ param(
     [string]$ReaderHost = "127.0.0.1",
     [int]$ReaderPort = 8793,
     [string]$GemmaHost = "127.0.0.1",
-    [int]$GemmaPort = 8794,
+    [int]$GemmaPort = 9999,
     [int]$ContextSize = 8192,
-    [string]$GpuLayers = "auto"
+    [string]$GpuLayers = "auto",
+    [switch]$StopGemmaWithReader
 )
 
 $ErrorActionPreference = "Stop"
@@ -56,6 +57,14 @@ function Test-PortListening {
     param([int]$Port)
     $connection = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue
     return $null -ne $connection
+}
+
+function Get-LegacyGemmaListenerPorts {
+    param([int]$FixedPort)
+    return @(
+        @(8081, 8794) |
+            Where-Object { $_ -ne $FixedPort -and (Test-PortListening -Port $_) }
+    )
 }
 
 function Test-PortLoopbackOnly {
@@ -310,8 +319,11 @@ try {
     }
     Write-ReaderOpenUrls -HostName $ReaderHost -Port $ReaderPort
 
+    $legacyGemmaPorts = @(Get-LegacyGemmaListenerPorts -FixedPort $GemmaPort)
     if (Test-PortListening -Port $GemmaPort) {
         Write-Host "Gemma runtime already listening at ${GemmaBaseUrl}"
+    } elseif ($legacyGemmaPorts.Count -gt 0) {
+        $gemmaSetupError = "Legacy Gemma port(s) $($legacyGemmaPorts -join ', ') are listening. Stop the legacy runtime before starting shared port ${GemmaPort}."
     } elseif (!(Test-Path -LiteralPath $ModelPath)) {
         $gemmaSetupError = "Model file not found: ${ModelPath}"
     } else {
@@ -399,9 +411,11 @@ try {
     }
 
     if ($ReaderAlreadyRunning -and $StartedGemma) {
-        Write-Host "Gemma runtime started for the existing reader. Keep this window open; press Ctrl+C to stop it."
+        Write-Host "Gemma runtime started for the existing reader. Keep this window open while monitoring it."
+        Write-Host "Press Ctrl+C to stop monitoring; the shared Gemma runtime remains running by default."
     } elseif ($StartedReader -or $StartedGemma) {
-        Write-Host "Keep this window open; press Ctrl+C to stop processes started by this launcher."
+        Write-Host "Keep this window open; press Ctrl+C to stop the Reader."
+        Write-Host "The shared Gemma runtime remains running unless -StopGemmaWithReader was specified."
     } else {
         return
     }
@@ -416,8 +430,12 @@ try {
         Stop-Process -Id $ReaderProcess.Id -ErrorAction SilentlyContinue
     }
     if ($StartedGemma -and $GemmaProcess -and !$GemmaProcess.HasExited) {
-        Write-Host "Stopping Gemma runtime process $($GemmaProcess.Id)"
-        Stop-Process -Id $GemmaProcess.Id -ErrorAction SilentlyContinue
-        Write-GemmaRuntimeState -State "stopped" -Detail "Gemma runtime stopped with the launcher."
+        if ($StopGemmaWithReader) {
+            Write-Host "Stopping Gemma runtime process $($GemmaProcess.Id)"
+            Stop-Process -Id $GemmaProcess.Id -ErrorAction SilentlyContinue
+            Write-GemmaRuntimeState -State "stopped" -Detail "Gemma runtime stopped with the launcher."
+        } else {
+            Write-Host "Leaving shared Gemma runtime process $($GemmaProcess.Id) running at ${GemmaBaseUrl}"
+        }
     }
 }

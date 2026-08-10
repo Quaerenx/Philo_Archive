@@ -4,6 +4,8 @@ This document defines the current common data contract for the Personal Archive 
 
 The goal is not to erase the differences between Nietzsche, Bible, Kierkegaard, and Wittgenstein. The goal is to give the reader, search, notes, and study layers a stable shared vocabulary.
 
+Reader-facing category labels and default variant ordering are defined separately in `corpus_display_policy.md`. Those display choices do not change the stable IDs in this schema.
+
 ## Core Terms
 
 - `corpus`: A major collection such as `nietzsche`, `bible`, `kierkegaard`, or `wittgenstein`.

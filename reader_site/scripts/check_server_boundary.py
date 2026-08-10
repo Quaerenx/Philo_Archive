@@ -194,7 +194,7 @@ def check_static_publication_boundary() -> None:
 def check_public_diagnostics_boundary() -> None:
     original_gemma_summary = runtime_status.gemma_runtime_summary
     runtime_status.gemma_runtime_summary = lambda: {
-        "base_url": "http://127.0.0.1:8794",
+        "base_url": "http://127.0.0.1:9999",
         "reachable": False,
         "model_count": 0,
         "models": [],

@@ -12,6 +12,12 @@ from corpora.catalogs import (
     resolve_metadata_work,
     resolve_nietzsche_work,
 )
+from corpora.display_policy import (
+    category_display_label,
+    ordered_variants,
+    preferred_variant_ids,
+    variant_display_label,
+)
 from path_config import CORPUS_ROOTS, ROOT, SITE
 from rendering.documents import (
     kierkegaard_extract_texts,
@@ -94,13 +100,18 @@ def build_nietzsche_work_model(work_id: str) -> dict:
     document = render_reading_document(text)
     rel_path = relative_source_path(target)
     title_raw = metadata.get("title") or record.get("label") or title_from_markdown(target)
+    section_label = category_display_label(
+        "nietzsche",
+        str(record.get("section_id") or metadata.get("category_id") or ""),
+        str(record.get("section_title") or metadata.get("category_title") or "Works"),
+    )
     research_payload = {
         "author": "Friedrich Nietzsche",
         "author_id": "nietzsche",
         "work_id": work_id,
         "title": title_raw,
         "meta": record.get("meta") or work_id,
-        "section": record.get("section_title") or "Works",
+        "section": section_label,
         "source_path": rel_path,
     }
     return {
@@ -109,8 +120,8 @@ def build_nietzsche_work_model(work_id: str) -> dict:
         "category_href": "/category/nietzsche",
         "title": title_raw,
         "work_id": work_id,
-        "header_meta": header_meta(record.get("section_title") or "Works", record.get("meta")),
-        "section": record.get("section_title") or "Works",
+        "header_meta": header_meta(section_label, record.get("meta")),
+        "section": section_label,
         "meta": record.get("meta") or work_id,
         "source_path": rel_path,
         "source_href": source_href(target),
@@ -133,8 +144,20 @@ def build_bible_work_model(work_id: str) -> dict:
         raise FileNotFoundError("segments not found")
     document = render_bible_work_document(work, segments)
     source_path = work.get("source_path", "")
+    category_label = category_display_label(
+        "bible",
+        str(work.get("category_id") or ""),
+        str(work.get("category_title") or "Bible"),
+    )
+    source_label = variant_display_label(
+        "bible",
+        {
+            "variant_id": work.get("variant_id") or work.get("source_id") or "",
+            "label": work.get("source_label") or work.get("source_id") or "",
+        },
+    )
     research_payload = {
-        "author": work.get("source_label") or work.get("source_id") or "Bible",
+        "author": source_label or "Bible",
         "author_id": "bible",
         "corpus_id": "bible",
         "corpus_title": "Bible",
@@ -142,7 +165,7 @@ def build_bible_work_model(work_id: str) -> dict:
         "variant_id": work.get("variant_id") or work.get("source_id") or "",
         "title": work.get("display_title") or work.get("title") or work_id,
         "citation_title": document["title_for_citation"],
-        "source_label": work.get("source_label") or work.get("source_id") or "",
+        "source_label": source_label,
         "default_target_type": "verse",
         "source_path": source_path,
     }
@@ -152,15 +175,15 @@ def build_bible_work_model(work_id: str) -> dict:
         "category_href": "/category/bible",
         "title": work.get("display_title") or work.get("title") or work_id,
         "work_id": work_id,
-        "header_meta": header_meta(work.get("category_title") or "Bible", work.get("source_label") or work.get("source_id")),
-        "section": work.get("category_title") or "Bible",
-        "meta": work.get("source_label") or work.get("source_id") or work_id,
+        "header_meta": header_meta(category_label, source_label),
+        "section": category_label,
+        "meta": source_label or work_id,
         "source_path": source_path,
         "source_href": work.get("source_url") or "#",
         "toc": toc_markup(document["toc"]),
         "concepts": "",
         "variant_tabs": variant_tabs_markup(
-            [{"id": work.get("variant_id"), "label": work.get("source_label") or work.get("source_id")}]
+            [{"id": work.get("variant_id"), "label": source_label}]
         ),
         "heading_count": str(int(document["heading_count"])),
         "segment_count": str(int(document["paragraph_count"])),
@@ -173,13 +196,19 @@ def build_bible_work_model(work_id: str) -> dict:
 
 def build_kierkegaard_work_model(work_id: str, variant_id: str = "") -> dict:
     work = resolve_metadata_work("kierkegaard", work_id)
-    variant = selected_variant(work, variant_id, ["text", "commentary", "textual_account"])
+    variant = selected_variant(work, variant_id, list(preferred_variant_ids("kierkegaard")))
     target = variant_source_path(variant)
     texts = kierkegaard_extract_texts(target)
     document = render_segments_from_texts(texts, "sks")
     active_variant_id = variant.get("variant_id", "")
     source_path = variant.get("source_path", "")
     title = work.get("display_title") or work.get("title") or work_id
+    variant_label = variant_display_label("kierkegaard", variant)
+    category_label = category_display_label(
+        "kierkegaard",
+        str(work.get("category_id") or ""),
+        str(work.get("category_title") or "Søren Kierkegaards Skrifter"),
+    )
     research_payload = {
         "author": work.get("author") or "Søren Kierkegaard",
         "author_id": "kierkegaard",
@@ -188,7 +217,7 @@ def build_kierkegaard_work_model(work_id: str, variant_id: str = "") -> dict:
         "work_id": work_id,
         "variant_id": active_variant_id,
         "title": title,
-        "source_label": variant.get("label") or active_variant_id,
+        "source_label": variant_label,
         "default_target_type": "paragraph",
         "source_path": source_path,
     }
@@ -196,7 +225,7 @@ def build_kierkegaard_work_model(work_id: str, variant_id: str = "") -> dict:
         "Source",
         [
             work.get("volume", ""),
-            variant.get("label", ""),
+            variant_label,
             work.get("license", ""),
             variant.get("source_xml", ""),
         ],
@@ -207,9 +236,9 @@ def build_kierkegaard_work_model(work_id: str, variant_id: str = "") -> dict:
         "category_href": "/category/kierkegaard",
         "title": title,
         "work_id": work_id,
-        "section": work.get("category_title") or "Søren Kierkegaards Skrifter",
-        "header_meta": header_meta(work.get("category_title"), variant.get("label") or active_variant_id),
-        "meta": variant.get("label") or active_variant_id,
+        "section": category_label,
+        "header_meta": header_meta(category_label, variant_label),
+        "meta": variant_label,
         "source_path": source_path,
         "source_href": variant.get("source_url") or source_href(target),
         "toc": toc_markup(document["toc"]),
@@ -232,16 +261,11 @@ def build_wittgenstein_work_model(
     initial_anchor: str = "",
 ) -> dict:
     work = resolve_metadata_work("wittgenstein", work_id)
+    variants = ordered_variants("wittgenstein", work.get("variants", []))
     variant = selected_variant(
-        work,
+        {**work, "variants": variants},
         variant_id,
-        [
-            "source_transcription_normalized",
-            "source_transcription_diplomatic",
-            "idp_transcription_linear",
-            "idp_transcription_diplomatic",
-            "source_metadata",
-        ],
+        list(preferred_variant_ids("wittgenstein")),
     )
     target = variant_source_path(variant)
     active_variant_id = variant.get("variant_id", "")
@@ -259,6 +283,12 @@ def build_wittgenstein_work_model(
     virtual_document = document.get("virtual_document")
     source_path = variant.get("source_path", "")
     title = work.get("display_title") or work.get("title") or work_id
+    variant_label = variant_display_label("wittgenstein", variant)
+    category_label = category_display_label(
+        "wittgenstein",
+        str(work.get("category_id") or ""),
+        str(work.get("category_title") or "Wittgenstein Archive"),
+    )
     research_payload = {
         "author": work.get("author") or "Ludwig Wittgenstein",
         "author_id": "wittgenstein",
@@ -267,7 +297,7 @@ def build_wittgenstein_work_model(
         "work_id": work_id,
         "variant_id": active_variant_id,
         "title": title,
-        "source_label": variant.get("label") or active_variant_id,
+        "source_label": variant_label,
         "default_target_type": "paragraph",
         "source_path": source_path,
         "virtual_document": virtual_document,
@@ -276,7 +306,7 @@ def build_wittgenstein_work_model(
     notice = source_notice_markup(
         "Rights",
         [
-            variant.get("label", ""),
+            variant_label,
             variant.get("license", ""),
             variant.get("rights_note", ""),
             variant.get("external_source_url", ""),
@@ -288,9 +318,9 @@ def build_wittgenstein_work_model(
         "category_href": "/category/wittgenstein",
         "title": title,
         "work_id": work_id,
-        "section": work.get("category_title") or "Wittgenstein Archive",
-        "header_meta": header_meta(work.get("category_title"), variant.get("label") or active_variant_id),
-        "meta": variant.get("label") or active_variant_id,
+        "section": category_label,
+        "header_meta": header_meta(category_label, variant_label),
+        "meta": variant_label,
         "source_path": source_path,
         "source_href": variant.get("source_url") or source_href(target),
         "toc": toc_markup(document["toc"]),

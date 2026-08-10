@@ -32,6 +32,10 @@ def load_cases(path: Path) -> list[dict[str, Any]]:
         require(case_id not in seen_ids, f"duplicate search evaluation id: {case_id}")
         seen_ids.add(case_id)
         require(str(case.get("query", "")).strip(), f"{case_id}: query is required")
+        case_type = str(case.get("case_type", "benchmark")).strip() or "benchmark"
+        require(case_type in {"benchmark", "research_question"}, f"{case_id}: invalid case_type")
+        if case_type == "research_question":
+            require(str(case.get("research_question", "")).strip(), f"{case_id}: research_question is required")
         for rank_key in ("expected_work_rank_max", "expected_segment_rank_max"):
             if rank_key in case:
                 require(int(case[rank_key]) > 0, f"{case_id}: {rank_key} must be positive")
@@ -49,6 +53,16 @@ def load_cases(path: Path) -> list[dict[str, Any]]:
                 )
             ),
             f"{case_id}: at least one result expectation is required",
+        )
+    research_corpora = {
+        str(case.get("corpus_id", ""))
+        for case in payload
+        if case.get("case_type") == "research_question"
+    }
+    if research_corpora:
+        require(
+            research_corpora == {"nietzsche", "bible", "kierkegaard", "wittgenstein"},
+            "research-question cases must cover all four corpora",
         )
     return payload
 
@@ -145,6 +159,8 @@ def evaluate_case(case: dict[str, Any]) -> dict[str, Any]:
     return {
         "id": case_id,
         "query": query,
+        "case_type": str(case.get("case_type", "benchmark")),
+        "research_question": str(case.get("research_question", "")),
         "passed": not errors,
         "target_kind": target_kind,
         "rank": target_rank,
@@ -165,6 +181,9 @@ def evaluate_cases(cases: list[dict[str, Any]]) -> dict[str, Any]:
 
     return {
         "case_count": len(results),
+        "research_question_count": sum(
+            1 for result in results if result["case_type"] == "research_question"
+        ),
         "passed_count": sum(1 for result in results if result["passed"]),
         "failed_count": sum(1 for result in results if not result["passed"]),
         "judged_count": len(judged),
@@ -181,6 +200,7 @@ def print_text_report(report: dict[str, Any]) -> None:
     print(
         "search relevance "
         f"{status} ({report['passed_count']}/{report['case_count']} cases; "
+        f"research={report['research_question_count']}; "
         f"MRR={report['mrr']:.4f}; "
         f"R@1={report['recall_at_1']:.4f}; "
         f"R@3={report['recall_at_3']:.4f}; "

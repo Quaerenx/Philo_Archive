@@ -3,6 +3,10 @@ const readerWorkStorage = window.ReaderWorkStorage;
 if (!readerWorkStorage) {
   throw new Error("Reader work storage module is required.");
 }
+const readerWorkVirtual = window.ReaderWorkVirtual;
+if (!readerWorkVirtual) {
+  throw new Error("Reader virtual work module is required.");
+}
 const citationPreview = document.getElementById("citationPreview");
 const noteForm = document.getElementById("noteForm");
 const noteStatus = document.getElementById("noteStatus");
@@ -55,21 +59,10 @@ const studyTabsContainer = document.querySelector(".study-tabs");
 const studyTabs = Array.from(document.querySelectorAll(".study-tab"));
 const studyPanels = Array.from(document.querySelectorAll(".study-panel"));
 const readingBody = document.querySelector(".reading-body");
-const virtualDocument = researchData.virtual_document?.enabled ? researchData.virtual_document : null;
 let sentenceNodes = [];
 const sentenceNodeById = new Map();
 const sentenceIndexById = new Map();
 const sentenceNodeByPosition = new Map();
-const virtualChunkCache = new Map();
-const virtualChunkRequests = new Map();
-const virtualChunkDescriptors = Array.isArray(virtualDocument?.chunks) ? virtualDocument.chunks : [];
-const virtualChunkByIndex = new Map(
-  virtualChunkDescriptors.map((descriptor) => [Number(descriptor.index), descriptor])
-);
-let virtualChunkObserver = null;
-let virtualCleanupTimer = 0;
-let virtualViewportLoadHandle = 0;
-let activeVirtualChunkIndex = Number(virtualDocument?.initial_chunk || 0);
 const sourceBundleTargetTypes = new Set(["segment", "section", "paragraph", "verse"]);
 let selectedSentence = null;
 let selectedTranslationRecord = null;
@@ -123,6 +116,21 @@ const TRANSLATION_STATE_SHORT = {
   reviewed: "저장",
   rejected: "제외"
 };
+const virtualWork = readerWorkVirtual.create({
+  researchData,
+  readingBody,
+  getReadingCueTargetLine: readingCueTargetLine,
+  getSelectedSentenceNode: selectedSentenceNode,
+  onContentChanged: () => {
+    refreshSentenceNodeIndex();
+    if (selectedSentence) {
+      sentenceNodeById.get(selectedSentence.sentenceId)?.classList.add("selected");
+    }
+  },
+  onViewportChanged: scheduleReadingPositionRefresh,
+});
+const virtualDocument = virtualWork.document;
+const virtualChunkDescriptors = virtualWork.descriptors;
 const NOTE_DRAFT_STORAGE_KEY = readerWorkStorage.noteDraftStorageKey(researchData);
 
 function cleanText(value) {
@@ -166,277 +174,6 @@ function refreshSentenceNodeIndex() {
       applySentenceTranslationVisualState(node, storedState, false);
     }
   });
-}
-
-function virtualChunkElement(chunkIndex) {
-  return document.getElementById(`work-chunk-${chunkIndex}`);
-}
-
-function virtualChunkIndexForPosition(position) {
-  let low = 0;
-  let high = virtualChunkDescriptors.length - 1;
-  while (low <= high) {
-    const middle = Math.floor((low + high) / 2);
-    const descriptor = virtualChunkDescriptors[middle];
-    const start = Number(descriptor.sentence_start || 0);
-    const end = start + Number(descriptor.sentence_count || 0) - 1;
-    if (position < start) {
-      high = middle - 1;
-    } else if (position > end) {
-      low = middle + 1;
-    } else {
-      return Number(descriptor.index);
-    }
-  }
-  return -1;
-}
-
-function rememberVirtualChunk(payload) {
-  const chunkIndex = Number(payload?.chunk?.index);
-  if (!Number.isInteger(chunkIndex)) return;
-  virtualChunkCache.delete(chunkIndex);
-  virtualChunkCache.set(chunkIndex, payload);
-  while (virtualChunkCache.size > 8) {
-    const oldestIndex = virtualChunkCache.keys().next().value;
-    virtualChunkCache.delete(oldestIndex);
-  }
-}
-
-async function requestVirtualChunk({ chunkIndex = null, anchor = "" } = {}) {
-  if (!virtualDocument) return null;
-  const requestKey = anchor ? `anchor:${anchor}` : `chunk:${chunkIndex}`;
-  if (virtualChunkRequests.has(requestKey)) {
-    return virtualChunkRequests.get(requestKey);
-  }
-  const request = (async () => {
-    const url = new URL(virtualDocument.endpoint, location.origin);
-    url.searchParams.set("corpus_id", researchData.corpus_id || researchData.author_id || "");
-    url.searchParams.set("work_id", researchData.work_id || "");
-    if (researchData.variant_id) {
-      url.searchParams.set("variant_id", researchData.variant_id);
-    }
-    if (anchor) {
-      url.searchParams.set("anchor", anchor);
-      url.searchParams.delete("chunk");
-    } else {
-      url.searchParams.set("chunk", String(chunkIndex));
-      url.searchParams.delete("anchor");
-    }
-    const response = await fetch(url, { headers: { Accept: "application/json" } });
-    const payload = await response.json().catch(() => ({}));
-    if (!response.ok || !payload?.chunk) {
-      throw new Error(payload?.error || `청크를 불러오지 못했습니다 (${response.status})`);
-    }
-    rememberVirtualChunk(payload);
-    return payload;
-  })();
-  virtualChunkRequests.set(requestKey, request);
-  try {
-    return await request;
-  } finally {
-    virtualChunkRequests.delete(requestKey);
-  }
-}
-
-function applyVirtualScrollCorrection(chunk, beforeTop, beforeHeight) {
-  if (beforeTop >= 0) return;
-  const heightDelta = chunk.getBoundingClientRect().height - beforeHeight;
-  if (Math.abs(heightDelta) > 0.5) {
-    window.scrollBy({ top: heightDelta, left: 0, behavior: "auto" });
-  }
-}
-
-function mountVirtualChunk(payload, preserveScroll = true) {
-  const chunkData = payload?.chunk;
-  const chunkIndex = Number(chunkData?.index);
-  const chunk = virtualChunkElement(chunkIndex);
-  if (!chunk || !chunkData) return null;
-  const beforeRect = chunk.getBoundingClientRect();
-  chunk.innerHTML = String(chunkData.html || "");
-  chunk.style.removeProperty("min-height");
-  chunk.classList.add("is-loaded");
-  chunk.classList.remove("reader-chunk-placeholder", "is-load-error");
-  chunk.dataset.chunkState = "loaded";
-  chunk.removeAttribute("aria-hidden");
-  chunk.setAttribute("aria-busy", "false");
-  const measuredHeight = Math.ceil(chunk.getBoundingClientRect().height);
-  const descriptor = virtualChunkByIndex.get(chunkIndex);
-  if (descriptor && measuredHeight > 0) {
-    descriptor.measured_height = measuredHeight;
-  }
-  refreshSentenceNodeIndex();
-  if (selectedSentence) {
-    sentenceNodeById.get(selectedSentence.sentenceId)?.classList.add("selected");
-  }
-  if (preserveScroll) {
-    applyVirtualScrollCorrection(chunk, beforeRect.top, beforeRect.height);
-  }
-  scheduleReadingPositionRefresh();
-  queueVirtualChunkCleanup();
-  return chunk;
-}
-
-function renderVirtualChunkError(chunk, chunkIndex) {
-  chunk.style.removeProperty("min-height");
-  chunk.classList.remove("is-loaded");
-  chunk.classList.add("reader-chunk-placeholder", "is-load-error");
-  chunk.dataset.chunkState = "error";
-  chunk.removeAttribute("aria-hidden");
-  chunk.setAttribute("aria-busy", "false");
-  chunk.innerHTML = `<p class="reader-chunk-error" role="status">이 부분을 불러오지 못했습니다. <button type="button" data-load-work-chunk="${chunkIndex}">다시 시도</button></p>`;
-}
-
-async function ensureVirtualChunk(chunkIndex, { preserveScroll = true } = {}) {
-  if (!virtualDocument || chunkIndex < 0 || chunkIndex >= virtualChunkDescriptors.length) return null;
-  const chunk = virtualChunkElement(chunkIndex);
-  if (!chunk) return null;
-  if (chunk.dataset.chunkState === "loaded") return chunk;
-  chunk.dataset.chunkState = "loading";
-  chunk.setAttribute("aria-busy", "true");
-  try {
-    const cached = virtualChunkCache.get(chunkIndex);
-    const payload = cached || await requestVirtualChunk({ chunkIndex });
-    return mountVirtualChunk(payload, preserveScroll);
-  } catch (error) {
-    renderVirtualChunkError(chunk, chunkIndex);
-    throw error;
-  }
-}
-
-async function ensureVirtualTarget(targetId) {
-  if (!targetId) return null;
-  const existing = document.getElementById(targetId);
-  if (existing) return existing;
-  if (!virtualDocument) return null;
-  const payload = await requestVirtualChunk({ anchor: targetId });
-  const chunkIndex = Number(payload.chunk.index);
-  const chunk = mountVirtualChunk(payload, true);
-  activeVirtualChunkIndex = chunkIndex;
-  await Promise.all(
-    [chunkIndex - 1, chunkIndex + 1]
-      .filter((neighborIndex) => neighborIndex >= 0 && neighborIndex < virtualChunkDescriptors.length)
-      .map((neighborIndex) => ensureVirtualChunk(neighborIndex).catch(() => null))
-  );
-  return chunk ? document.getElementById(targetId) : null;
-}
-
-function warmVirtualChunks(chunkIndex) {
-  if (!virtualDocument) return;
-  [chunkIndex - 1, chunkIndex + 1].forEach((neighborIndex) => {
-    if (neighborIndex < 0 || neighborIndex >= virtualChunkDescriptors.length) return;
-    ensureVirtualChunk(neighborIndex).catch(() => {});
-  });
-}
-
-function virtualChunkForNode(node) {
-  const chunk = node?.closest?.(".reader-chunk");
-  const chunkIndex = Number(chunk?.dataset.chunkIndex);
-  return Number.isInteger(chunkIndex) ? chunkIndex : -1;
-}
-
-function unmountVirtualChunk(chunk) {
-  if (!chunk || chunk.dataset.chunkState !== "loaded") return false;
-  if (chunk.contains(document.activeElement)) return false;
-  const selectedNode = selectedSentenceNode();
-  if (selectedNode && chunk.contains(selectedNode)) return false;
-  const chunkIndex = Number(chunk.dataset.chunkIndex);
-  const descriptor = virtualChunkByIndex.get(chunkIndex);
-  const measuredHeight = Math.ceil(chunk.getBoundingClientRect().height);
-  if (descriptor && measuredHeight > 0) {
-    descriptor.measured_height = measuredHeight;
-  }
-  chunk.style.minHeight = `${Math.max(1, measuredHeight)}px`;
-  chunk.innerHTML = `<span class="visually-hidden">문서 청크 ${chunkIndex + 1}. 스크롤하면 다시 불러옵니다.</span>`;
-  chunk.classList.remove("is-loaded");
-  chunk.classList.add("reader-chunk-placeholder");
-  chunk.dataset.chunkState = "placeholder";
-  chunk.setAttribute("aria-hidden", "true");
-  return true;
-}
-
-function cleanupVirtualChunks() {
-  virtualCleanupTimer = 0;
-  if (!virtualDocument) return;
-  const keepIndexes = new Set([
-    activeVirtualChunkIndex - 1,
-    activeVirtualChunkIndex,
-    activeVirtualChunkIndex + 1
-  ]);
-  const selectedChunkIndex = virtualChunkForNode(selectedSentenceNode());
-  if (selectedChunkIndex >= 0) keepIndexes.add(selectedChunkIndex);
-  const focusedChunkIndex = virtualChunkForNode(document.activeElement);
-  if (focusedChunkIndex >= 0) keepIndexes.add(focusedChunkIndex);
-  let changed = false;
-  document.querySelectorAll(".reader-chunk.is-loaded").forEach((chunk) => {
-    const chunkIndex = Number(chunk.dataset.chunkIndex);
-    if (!keepIndexes.has(chunkIndex)) {
-      changed = unmountVirtualChunk(chunk) || changed;
-    }
-  });
-  if (changed) refreshSentenceNodeIndex();
-}
-
-function queueVirtualChunkCleanup() {
-  if (!virtualDocument) return;
-  window.clearTimeout(virtualCleanupTimer);
-  virtualCleanupTimer = window.setTimeout(cleanupVirtualChunks, 180);
-}
-
-function refreshVirtualViewportChunk() {
-  virtualViewportLoadHandle = 0;
-  if (!virtualDocument || !readingBody) return;
-  const bodyRect = readingBody.getBoundingClientRect();
-  const probeX = Math.max(1, Math.min(window.innerWidth - 1, bodyRect.left + Math.min(180, bodyRect.width / 2)));
-  const probeY = Math.max(1, Math.min(window.innerHeight - 1, readingCueTargetLine()));
-  const chunk = document.elementFromPoint(probeX, probeY)?.closest?.(".reader-chunk");
-  if (!chunk) return;
-  const chunkIndex = Number(chunk.dataset.chunkIndex);
-  if (!Number.isInteger(chunkIndex)) return;
-  activeVirtualChunkIndex = chunkIndex;
-  ensureVirtualChunk(chunkIndex).catch(() => {});
-  warmVirtualChunks(chunkIndex);
-  queueVirtualChunkCleanup();
-}
-
-function scheduleVirtualViewportChunkRefresh() {
-  if (!virtualDocument || virtualViewportLoadHandle) return;
-  virtualViewportLoadHandle = window.requestAnimationFrame(refreshVirtualViewportChunk);
-}
-
-function initializeVirtualWork() {
-  refreshSentenceNodeIndex();
-  if (!virtualDocument) return;
-  document.querySelectorAll(".reader-chunk.is-loaded").forEach((chunk) => {
-    const descriptor = virtualChunkByIndex.get(Number(chunk.dataset.chunkIndex));
-    if (descriptor) descriptor.measured_height = Math.ceil(chunk.getBoundingClientRect().height);
-  });
-  if ("IntersectionObserver" in window) {
-    virtualChunkObserver = new IntersectionObserver((entries) => {
-      let closestEntry = null;
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        const chunkIndex = Number(entry.target.dataset.chunkIndex);
-        ensureVirtualChunk(chunkIndex).catch(() => {});
-        if (!closestEntry || Math.abs(entry.boundingClientRect.top) < Math.abs(closestEntry.boundingClientRect.top)) {
-          closestEntry = entry;
-        }
-      });
-      if (closestEntry) {
-        activeVirtualChunkIndex = Number(closestEntry.target.dataset.chunkIndex);
-        warmVirtualChunks(activeVirtualChunkIndex);
-        queueVirtualChunkCleanup();
-      }
-    }, {
-      root: null,
-      rootMargin: "1000px 0px",
-      threshold: 0
-    });
-    document.querySelectorAll(".reader-chunk").forEach((chunk) => virtualChunkObserver.observe(chunk));
-  }
-  window.addEventListener("scroll", scheduleVirtualViewportChunkRefresh, { passive: true });
-  window.addEventListener("pageshow", scheduleVirtualViewportChunkRefresh);
-  warmVirtualChunks(activeVirtualChunkIndex);
-  scheduleVirtualViewportChunkRefresh();
 }
 
 function currentWorkHref() {
@@ -1755,7 +1492,7 @@ function sentenceFromNode(node) {
     label: cleanText(node.dataset.label || node.textContent),
     text: cleanText(node.textContent),
     position: sentencePosition(node),
-    chunkIndex: virtualChunkForNode(node)
+    chunkIndex: virtualWork.chunkForNode(node)
   };
 }
 
@@ -1778,11 +1515,11 @@ function selectSentence(node, updateHash = true) {
   updateStudyPanelToggleLabel();
   updateReadingPosition(node);
   if (virtualDocument) {
-    const chunkIndex = virtualChunkForNode(node);
+    const chunkIndex = virtualWork.chunkForNode(node);
     if (chunkIndex >= 0) {
-      activeVirtualChunkIndex = chunkIndex;
-      warmVirtualChunks(chunkIndex);
-      queueVirtualChunkCleanup();
+      virtualWork.setActiveChunkIndex(chunkIndex);
+      virtualWork.warmChunks(chunkIndex);
+      virtualWork.queueCleanup();
     }
   }
   if (updateHash) {
@@ -1798,7 +1535,7 @@ async function selectSentenceFromHash() {
   let node = document.getElementById(id);
   if (!node && virtualDocument) {
     try {
-      node = await ensureVirtualTarget(id);
+      node = await virtualWork.ensureTarget(id);
     } catch (error) {
       setTranslationStatus("요청한 원문 위치를 불러오지 못했습니다.", true);
       return;
@@ -1894,10 +1631,10 @@ async function navigateSentence(delta) {
   if (nextIndex === currentIndex) return;
   let nextNode = sentenceNodeByPosition.get(nextIndex + 1);
   if (!nextNode && virtualDocument) {
-    const chunkIndex = virtualChunkIndexForPosition(nextIndex + 1);
+    const chunkIndex = virtualWork.chunkIndexForPosition(nextIndex + 1);
     try {
-      await ensureVirtualChunk(chunkIndex);
-      activeVirtualChunkIndex = chunkIndex;
+      await virtualWork.ensureChunk(chunkIndex);
+      virtualWork.setActiveChunkIndex(chunkIndex);
       nextNode = sentenceNodeByPosition.get(nextIndex + 1);
     } catch (error) {
       setTranslationStatus("다음 문장 청크를 불러오지 못했습니다.", true);
@@ -1915,7 +1652,7 @@ async function navigateSentence(delta) {
   if (!wasSelected || !selectedTranslationRecord) {
     requestSentenceTranslation(false);
   }
-  warmVirtualChunks(virtualChunkForNode(nextNode));
+  virtualWork.warmChunks(virtualWork.chunkForNode(nextNode));
 }
 
 function activateSentenceForStudy(node) {
@@ -1931,18 +1668,18 @@ function activateSentenceForStudy(node) {
 
 async function nextVirtualUnstudiedSentenceNode() {
   if (!virtualDocument || !translationSentenceStatesLoaded) return null;
-  const selectedChunkIndex = virtualChunkForNode(selectedSentenceNode());
+  const selectedChunkIndex = virtualWork.chunkForNode(selectedSentenceNode());
   const startingChunk = Math.max(
     0,
     selectedChunkIndex >= 0
       ? selectedChunkIndex
-      : activeVirtualChunkIndex
+      : virtualWork.activeChunkIndex
   );
   for (let offset = 1; offset <= virtualChunkDescriptors.length; offset += 1) {
     const chunkIndex = (startingChunk + offset) % virtualChunkDescriptors.length;
     let chunk;
     try {
-      chunk = await ensureVirtualChunk(chunkIndex);
+      chunk = await virtualWork.ensureChunk(chunkIndex);
     } catch (error) {
       continue;
     }
@@ -1973,7 +1710,7 @@ async function nextVirtualReviewSentenceNode() {
   const sentenceId = nextGeneratedSentenceId();
   if (!sentenceId) return null;
   try {
-    return await ensureVirtualTarget(sentenceId);
+    return await virtualWork.ensureTarget(sentenceId);
   } catch (error) {
     return null;
   }
@@ -2440,7 +2177,7 @@ async function openSessionPreviewTarget(targetId) {
   let node = id ? document.getElementById(id) : null;
   if (!node && virtualDocument) {
     try {
-      node = await ensureVirtualTarget(id);
+      node = await virtualWork.ensureTarget(id);
     } catch (error) {
       node = null;
     }
@@ -3457,7 +3194,7 @@ readingBody.addEventListener("click", (event) => {
   const retryChunk = event.target.closest("[data-load-work-chunk]");
   if (retryChunk) {
     const chunkIndex = Number(retryChunk.dataset.loadWorkChunk);
-    ensureVirtualChunk(chunkIndex).catch(() => {});
+    virtualWork.ensureChunk(chunkIndex).catch(() => {});
     return;
   }
   const sentence = event.target.closest(".reader-sentence");
@@ -3702,7 +3439,7 @@ function syncConceptsPanelAvailability() {
 }
 
 if (!researchData.print_view) {
-  initializeVirtualWork();
+  virtualWork.initialize();
   initializeStudyCompanion();
   initializeReadingPositionTracker();
   loadNotes();

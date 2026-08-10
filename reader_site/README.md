@@ -16,7 +16,7 @@ Then open:
 http://127.0.0.1:8793/
 ```
 
-This starts Philo Archive on port `8793` and a local-only llama.cpp sidecar at `http://127.0.0.1:8794`. The default model path is `C:\Users\PP\Downloads\gemma-4-26B-A4B-it-Q4_K_M.gguf`.
+This starts Philo Archive on port `8793` and reuses or starts the shared local-only llama.cpp runtime at `http://127.0.0.1:9999`. The default model path is `C:\Users\PP\Downloads\gemma-4-26B-A4B-it-Q4_K_M.gguf`. The shared runtime remains running when the Reader stops; pass `-StopGemmaWithReader` only for an explicitly isolated run.
 
 If you only need the reader without local translation:
 
@@ -60,7 +60,6 @@ Nietzsche research data lives in:
 
 - `data/nietzsche_metadata.json`
 - `data/nietzsche_concepts.json`
-- `data/nietzsche_notes_schema.json`
 - `data/notes/nietzsche_notes.jsonl` after the first saved note
 
 Regenerate Nietzsche metadata with:
@@ -192,16 +191,8 @@ Use `--check` when you only want to validate manifest generation and any existin
 
 The HTTP server accepts loopback bind addresses only. Its APIs can read local source material and mutate notes, so direct unauthenticated LAN exposure is deliberately unsupported.
 
-Security remediation handoff:
-
-- `docs/external_security_revalidation_prompt_ko.md`: reusable Korean prompt for independent revalidation of SEC-01, SEC-02, DATA-01, and PRIV-01.
-- `docs/security_validation/2026-07-30/`: local working-tree validation summary and one receipt per remediated finding.
-
-Codebase review and optimization evidence:
-
-- `docs/codebase_review_2026-07-30.md`: reviewed scope, implemented feature/efficiency changes, benchmark evidence, validation, and deliberately deferred recommendations.
-- `docs/next_search_quality_prompt_ko.md`: reusable Korean prompt for evidence-based search evaluation and ranking work.
-- `docs/search_quality_calibration_2026-07-30.md`: expanded evaluation set, before/after metrics, implementation rationale, and remaining search-quality limits.
+Current documentation is indexed in `docs/README.md`. Superseded roadmaps, completed execution reviews, and dated security-validation receipts are preserved under `../OLD/`; see `../OLD/README.md` for the archive inventory and reasons.
+Corpus-facing Korean labels and the default Bible, Kierkegaard, and Wittgenstein representation order are fixed in `docs/corpus_display_policy.md` and enforced by the layout contracts.
 
 Check the release/Git handoff policy with:
 
@@ -246,6 +237,8 @@ python .\scripts\check_search_contracts.py
 python .\scripts\check_search_relevance.py
 python .\scripts\check_search_artifact_integrity.py
 ```
+
+The relevance suite includes stable lookup benchmarks plus 12 manually curated research questions across all four corpora. It does not collect live user searches; see `docs/search_quality_policy.md`.
 
 Check notes storage, filtering, update, delete, and export behavior with:
 
@@ -302,11 +295,7 @@ Check the static pages, representative work page, `/api/health`, and `/api/study
 python .\scripts\check_static_routes.py
 ```
 
-The current Nietzsche research model is documented in `docs/nietzsche_research_model.md`.
-
-Cross-corpus standardization review is documented in `docs/corpus_standardization_review.md`.
-
-Expert handoff document: `docs/project_handoff_for_expert.md`.
+Current documentation index: `docs/README.md`.
 
 Runtime/API schema reference: `docs/api_reference.md`.
 
@@ -314,13 +303,11 @@ Common corpus/work/variant/segment schema contract: `docs/corpus_schema.md`.
 
 AI/Gemma interpretation provenance policy: `docs/ai_interpretation_policy.md`.
 
-Upgrade completion audit: `docs/upgrade_completion_audit.md`.
-
-Current usability/upgrade review: `docs/project_usability_upgrade_review_2026-06-17.md`.
-
 Local Windows autostart: `docs/local_windows_autostart.md`.
 
 Release handoff and Git upload policy: `docs/release_handoff.md`.
+
+Historical planning, handoff, review, and validation material: `../OLD/README.md`.
 
 Layout vocabulary is centralized in `assets/design-tokens.css`; use "page frame" for the 1000px outer archive frame and "reader column" for the 764px white content column.
 

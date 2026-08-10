@@ -189,4 +189,4 @@ Before implementing an AI endpoint or UI control, complete these gates:
 7. Add visible UI labels that distinguish original source, personal notes, and generated interpretation.
 8. Verify release checks still exclude generated AI output.
 
-Gates 1-3 now have pre-AI code-level contracts through `data/ai_prompt_templates.json`, `services/source_targets.py`, `services/interpretation_prompts.py`, `check_source_target_contracts.py`, and `check_prompt_template_contracts.py`. Until storage, UI labels, review/export behavior, and model-runtime checks are complete, the site should keep AI/Gemma interpretation as a documented future layer, not an active reader feature.
+The bounded sentence-translation path now implements local model invocation, local JSONL storage, visible generated-output labels, review/export behavior, and runtime checks. The general segment-interpretation route remains unimplemented: `services/interpretation_prompts.py` and its contracts are still a model-free provenance foundation, not an active `/api/interpret` endpoint.
