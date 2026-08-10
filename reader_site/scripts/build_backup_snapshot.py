@@ -24,6 +24,7 @@ from path_config import REPO, ROOT, SITE, SOURCE_ROOT_NAMES  # noqa: E402
 
 SCHEMA_VERSION = 1
 HASH_CHUNK_BYTES = 1024 * 1024
+SQLITE_MAGIC = b"SQLite format 3\x00"
 REPARSE_ATTRIBUTE = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
 ROLES = {
     "corpus",
@@ -380,10 +381,23 @@ def sqlite_facts(path: Path) -> dict[str, Any]:
     return {"quick_check": "ok", "table_counts": counts, "sidecars": sidecars_after}
 
 
+def has_sqlite_header(path: Path) -> bool:
+    path = logical_absolute(path)
+    before = file_signature(path)
+    with open(native_io_path(path), "rb") as handle:
+        header = handle.read(len(SQLITE_MAGIC))
+    after = file_signature(path)
+    if before != after:
+        raise SnapshotError(f"database candidate changed while inspecting: {path}")
+    return header == SQLITE_MAGIC
+
+
 def classify_facts(path: Path) -> dict[str, Any]:
     if path.suffix.lower() == ".jsonl":
         return {"jsonl": jsonl_facts(path)}
-    if path.suffix.lower() in {".sqlite", ".sqlite3", ".db"}:
+    if path.suffix.lower() in {".sqlite", ".sqlite3"}:
+        return {"sqlite": sqlite_facts(path)}
+    if path.suffix.lower() == ".db" and has_sqlite_header(path):
         return {"sqlite": sqlite_facts(path)}
     return {}
 

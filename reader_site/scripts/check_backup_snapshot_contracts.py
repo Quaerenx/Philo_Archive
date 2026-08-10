@@ -68,6 +68,7 @@ def build_sqlite(path: Path, rows: tuple[str, ...]) -> None:
 def build_repo(repo: Path) -> None:
     for index, root_name in enumerate(snapshot.SOURCE_ROOT_NAMES):
         write(repo / root_name / "source" / f"item-{index}.txt", f"corpus-{index}\n")
+    write(repo / snapshot.SOURCE_ROOT_NAMES[0] / "source" / "Thumbs.db", b"opaque Windows thumbnail cache\n")
 
     data = repo / "reader_site" / "data"
     for index, name in enumerate(snapshot.MUTABLE_NAMES):
@@ -197,6 +198,8 @@ def check_manifest_contract(snapshot_dir: Path, expected_consistency: str) -> No
     search = next(record for record in records if record["path"].endswith("search_index.sqlite"))
     require(search["sqlite"]["quick_check"] == "ok", "SQLite quick_check missing")
     require(search["sqlite"]["table_counts"] == {"records": 2}, "SQLite row counts are wrong")
+    opaque_db = next(record for record in records if record["path"].endswith("Thumbs.db"))
+    require("sqlite" not in opaque_db, "opaque .db file was misclassified as SQLite")
     serialized = snapshot_dir.joinpath("manifest.json").read_text(encoding="utf-8")
     require("temp" not in manifest.get("path_semantics", "").lower(), "unexpected path disclosure")
     require(str(snapshot_dir) not in serialized, "manifest leaked an absolute output path")
