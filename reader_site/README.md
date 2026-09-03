@@ -48,7 +48,7 @@ The server builds `/api/archive` from the existing corpus folders without editin
 - Bible Markdown and inventory exports
 - Kierkegaard SKS JSON exports
 
-The home page uses the lightweight `/api/archive/summary` response and the bounded `/api/archive/titles?q=...` title-autocomplete response. Category and archive consumers keep the compatible full `/api/archive` payload. `build_archive_catalog.py` writes an ignored, versioned local catalog whose input signature covers the relevant metadata and source files; runtime use falls back to a live rebuild when the catalog is missing, corrupt, or stale.
+The home page uses the lightweight `/api/archive/summary` response and the bounded `/api/archive/titles?q=...` title-autocomplete response. Autocomplete searches a stale-safe in-memory title index and does not revalidate the source tree per query. Category and archive consumers keep the compatible full `/api/archive` payload. `build_archive_catalog.py` writes an ignored, versioned local catalog whose input signature covers the relevant metadata and source files; runtime use falls back to a live rebuild when the catalog is missing, corrupt, or stale.
 
 Nietzsche works are grouped for reading through `data/nietzsche_catalog.json`; the original Markdown export files are left unchanged.
 

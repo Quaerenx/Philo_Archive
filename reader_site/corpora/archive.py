@@ -28,7 +28,7 @@ from path_config import (
 from rendering.documents import title_from_markdown
 
 
-ARCHIVE_SCHEMA_VERSION = 1
+ARCHIVE_SCHEMA_VERSION = 2
 ARCHIVE_CATALOG = SITE / "data" / "archive_catalog.local.json"
 ARCHIVE_CACHE_CHECK_TTL_SECONDS = 5.0
 ARCHIVE_TITLE_SEARCH_LIMIT = 8
@@ -57,23 +57,6 @@ ROOT_PATH_PREFIX = ROOT_PATH_VALUE.rstrip("\\/") + os.sep
 ROOT_PATH_PREFIX_CASEFOLD = ROOT_PATH_PREFIX.casefold()
 ArchiveInputSignature = tuple[tuple[str, str, int, int, int, int], ...]
 
-PREFERRED_WORK_TITLES = {
-    ("nietzsche", "M"): "Morgenröthe / 아침놀",
-    ("nietzsche", "FW"): "Die fröhliche Wissenschaft / 즐거운 학문",
-    ("nietzsche", "JGB"): "Jenseits von Gut und Böse / 선악의 저편",
-    ("nietzsche", "GM"): "Zur Genealogie der Moral / 도덕의 계보",
-    ("nietzsche", "GD"): "Götzen-Dämmerung / 우상의 황혼",
-    ("kierkegaard", "ee1"): "Enten - Eller I",
-    ("kierkegaard", "ee2"): "Enten - Eller II",
-    ("wittgenstein", "Group_Notebooks"): "Notebooks",
-    ("wittgenstein", "Group_BigTypescriptCorpus"): "Big Typescript",
-    ("wittgenstein", "Group_BrownBookCorpus"): "Brown Book",
-    ("wittgenstein", "Group_PICorpus"): "Philosophical Investigations",
-    ("wittgenstein", "Group_RFMCorpus"): "Remarks on Mathematics",
-    ("wittgenstein", "Group_RPPCorpus"): "Remarks on Psychology",
-}
-
-
 @dataclass(frozen=True)
 class ArchiveInputSnapshot:
     signature: ArchiveInputSignature
@@ -84,6 +67,7 @@ class ArchiveInputSnapshot:
 class ArchiveCacheState:
     payload: dict
     signature: ArchiveInputSignature
+    title_index: tuple[dict, ...]
     validate_after: float
 
 
@@ -152,14 +136,12 @@ def korean_title_alias(meta: str) -> str:
 
 
 def work_display_title(corpus_id: str, link: dict) -> str:
-    preferred = PREFERRED_WORK_TITLES.get((corpus_id, clean_text(link.get("work_id"))))
-    if preferred:
-        return preferred
     label = clean_text(link.get("label"))
+    display_title = clean_text(link.get("display_title")) or label
     alias = korean_title_alias(link.get("meta", ""))
-    if alias and normalized_title(alias) not in normalized_title(label):
-        return f"{label} / {alias}"
-    return label
+    if alias and normalized_title(alias) not in normalized_title(display_title):
+        return f"{display_title} / {alias}"
+    return display_title
 
 
 def decorate_archive_display_titles(payload: dict) -> dict:
@@ -181,17 +163,10 @@ def title_search_candidates(link: dict) -> list[str]:
     return list(dict.fromkeys(value for value in [display_title, label, *label_parts, alias] if value))
 
 
-def archive_title_search(query: str, limit: int = ARCHIVE_TITLE_SEARCH_LIMIT) -> dict:
-    query = clean_text(query)
-    if not isinstance(limit, int) or isinstance(limit, bool) or not 1 <= limit <= ARCHIVE_TITLE_SEARCH_MAX_LIMIT:
-        raise ValueError(f"limit must be between 1 and {ARCHIVE_TITLE_SEARCH_MAX_LIMIT}")
-    normalized_query = normalized_title(query)
-    if not normalized_query:
-        return {"schema_version": ARCHIVE_SCHEMA_VERSION, "query": query, "count": 0, "results": []}
-
-    ranked_results: list[tuple[tuple, dict]] = []
+def build_archive_title_index(payload: dict) -> tuple[dict, ...]:
+    records = []
     seen: set[tuple[str, str]] = set()
-    for corpus_order, corpus in enumerate(build_archive().get("corpora", [])):
+    for corpus_order, corpus in enumerate(payload.get("corpora", [])):
         corpus_id = clean_text(corpus.get("id"))
         corpus_title = clean_text(corpus.get("title")) or corpus_id
         for section_order, section in enumerate(corpus.get("sections", [])):
@@ -201,32 +176,55 @@ def archive_title_search(query: str, limit: int = ARCHIVE_TITLE_SEARCH_LIMIT) ->
                 identity = (corpus_id, clean_text(link.get("work_id")) or href)
                 if not href or identity in seen:
                     continue
-                candidates = title_search_candidates(link)
-                matches = [candidate for candidate in candidates if normalized_query in normalized_title(candidate)]
-                if not matches:
-                    continue
                 seen.add(identity)
-                best_match = min(
-                    matches,
-                    key=lambda candidate: (
-                        0 if normalized_title(candidate) == normalized_query else 1 if normalized_title(candidate).startswith(normalized_query) else 2,
-                        len(candidate),
-                        candidate.casefold(),
-                    ),
+                candidates = tuple(
+                    (candidate, normalized_title(candidate))
+                    for candidate in title_search_candidates(link)
+                    if normalized_title(candidate)
                 )
-                match_value = normalized_title(best_match)
-                rank = 0 if match_value == normalized_query else 1 if match_value.startswith(normalized_query) else 2
-                result = {
-                    "corpus_id": corpus_id,
-                    "corpus_title": corpus_title,
-                    "section_title": section_title,
-                    "work_id": clean_text(link.get("work_id")),
-                    "href": href,
-                    "display_title": clean_text(link.get("display_title")) or clean_text(link.get("label")),
-                }
-                ranked_results.append(
-                    ((rank, len(best_match), best_match.casefold(), corpus_order, section_order, link_order), result)
+                records.append(
+                    {
+                        "candidates": candidates,
+                        "order": (corpus_order, section_order, link_order),
+                        "result": {
+                            "corpus_id": corpus_id,
+                            "corpus_title": corpus_title,
+                            "section_title": section_title,
+                            "work_id": clean_text(link.get("work_id")),
+                            "href": href,
+                            "display_title": clean_text(link.get("display_title")) or clean_text(link.get("label")),
+                        },
+                    }
                 )
+    return tuple(records)
+
+
+def archive_title_search(query: str, limit: int = ARCHIVE_TITLE_SEARCH_LIMIT) -> dict:
+    query = clean_text(query)
+    if not isinstance(limit, int) or isinstance(limit, bool) or not 1 <= limit <= ARCHIVE_TITLE_SEARCH_MAX_LIMIT:
+        raise ValueError(f"limit must be between 1 and {ARCHIVE_TITLE_SEARCH_MAX_LIMIT}")
+    normalized_query = normalized_title(query)
+    if not normalized_query:
+        return {"schema_version": ARCHIVE_SCHEMA_VERSION, "query": query, "count": 0, "results": []}
+
+    ranked_results: list[tuple[tuple, dict]] = []
+    archive = build_archive(revalidate=False)
+    state = _ARCHIVE_CACHE_STATE
+    title_index = state.title_index if state is not None and state.payload is archive else build_archive_title_index(archive)
+    for record in title_index:
+        matches = [candidate for candidate in record["candidates"] if normalized_query in candidate[1]]
+        if not matches:
+            continue
+        best_match, match_value = min(
+            matches,
+            key=lambda candidate: (
+                0 if candidate[1] == normalized_query else 1 if candidate[1].startswith(normalized_query) else 2,
+                len(candidate[0]),
+                candidate[0].casefold(),
+            ),
+        )
+        rank = 0 if match_value == normalized_query else 1 if match_value.startswith(normalized_query) else 2
+        ranked_results.append(((rank, len(best_match), best_match.casefold(), *record["order"]), record["result"]))
 
     ranked_results.sort(key=lambda item: item[0])
     return {
@@ -677,7 +675,27 @@ def build_archive_catalog(initial_snapshot: ArchiveInputSnapshot | None = None) 
     raise RuntimeError("archive inputs changed repeatedly while building the catalog")
 
 
-def load_archive_catalog(snapshot: ArchiveInputSnapshot) -> dict | None:
+def archive_has_display_titles(archive: dict) -> bool:
+    corpora = archive.get("corpora")
+    if not isinstance(corpora, list):
+        return False
+    for corpus in corpora:
+        if not isinstance(corpus, dict) or not isinstance(corpus.get("links", []), list):
+            return False
+        sections = corpus.get("sections", [])
+        if not isinstance(sections, list):
+            return False
+        links = list(corpus.get("links", []))
+        for section in sections:
+            if not isinstance(section, dict) or not isinstance(section.get("links", []), list):
+                return False
+            links.extend(section.get("links", []))
+        if any(not isinstance(link, dict) or not clean_text(link.get("display_title")) for link in links):
+            return False
+    return True
+
+
+def read_archive_catalog() -> tuple[dict, ArchiveInputSignature] | None:
     if not ARCHIVE_CATALOG.is_file():
         return None
     try:
@@ -688,12 +706,19 @@ def load_archive_catalog(snapshot: ArchiveInputSnapshot) -> dict | None:
     archive = catalog.get("archive")
     if (
         catalog.get("schema_version") != ARCHIVE_SCHEMA_VERSION
-        or stored_signature != snapshot.signature
         or not isinstance(archive, dict)
-        or not isinstance(archive.get("corpora"), list)
+        or not archive_has_display_titles(archive)
     ):
         return None
-    return archive
+    return archive, stored_signature
+
+
+def load_archive_catalog(snapshot: ArchiveInputSnapshot) -> dict | None:
+    cached = read_archive_catalog()
+    if cached is None:
+        return None
+    archive, stored_signature = cached
+    return archive if stored_signature == snapshot.signature else None
 
 
 def build_archive_summary() -> dict:
@@ -709,18 +734,36 @@ def build_archive_summary() -> dict:
     }
 
 
-def build_archive() -> dict:
+def cache_archive(payload: dict, signature: ArchiveInputSignature, validate_after: float) -> dict:
     global ARCHIVE_CACHE, _ARCHIVE_CACHE_STATE
+    state = ArchiveCacheState(
+        payload=payload,
+        signature=signature,
+        title_index=build_archive_title_index(payload),
+        validate_after=validate_after,
+    )
+    ARCHIVE_CACHE = payload
+    _ARCHIVE_CACHE_STATE = state
+    return payload
+
+
+def build_archive(*, revalidate: bool = True) -> dict:
     now = monotonic()
     state = _ARCHIVE_CACHE_STATE if ARCHIVE_CACHE is not None else None
-    if state is not None and now < state.validate_after:
+    if state is not None and (not revalidate or now < state.validate_after):
         return state.payload
 
     with _ARCHIVE_CACHE_LOCK:
         now = monotonic()
         state = _ARCHIVE_CACHE_STATE if ARCHIVE_CACHE is not None else None
-        if state is not None and now < state.validate_after:
+        if state is not None and (not revalidate or now < state.validate_after):
             return state.payload
+
+        if state is None and not revalidate:
+            cached = read_archive_catalog()
+            if cached is not None:
+                payload, stored_signature = cached
+                return cache_archive(payload, stored_signature, validate_after=0.0)
 
         snapshot = archive_input_snapshot()
         active_signature = snapshot.signature
@@ -734,11 +777,8 @@ def build_archive() -> dict:
                 active_signature = tuple(tuple(item) for item in catalog["input_signature"])
             else:
                 decorate_archive_display_titles(payload)
-        state = ArchiveCacheState(
-            payload=payload,
-            signature=active_signature,
+        return cache_archive(
+            payload,
+            active_signature,
             validate_after=monotonic() + ARCHIVE_CACHE_CHECK_TTL_SECONDS,
         )
-        ARCHIVE_CACHE = payload
-        _ARCHIVE_CACHE_STATE = state
-        return payload

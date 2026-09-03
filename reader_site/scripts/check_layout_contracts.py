@@ -144,8 +144,8 @@ def check_html_entrypoints() -> None:
         require_contains(html, "/assets/design-tokens.css", relative_path)
         require_contains(html, 'class="page"', relative_path)
         if relative_path == "index.html":
-            require_contains(html, "/styles.css?v=home12", relative_path)
-            require_contains(html, "/app.js?v=home18", relative_path)
+            require_contains(html, "/styles.css?v=home13", relative_path)
+            require_contains(html, "/app.js?v=home19", relative_path)
             require('class="site-tools"' not in html, "index.html should not expose the retired tool navigation")
             for retired_link in ['href="/search"', 'href="/notes"', 'href="/study"', 'href="/translations"']:
                 require(retired_link not in html, f"index.html should not expose retired home tool link {retired_link!r}")

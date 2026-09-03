@@ -234,7 +234,7 @@ def check_route_markup(route: str, html: str) -> None:
             require(noisy_text not in html, f"{route} should avoid static source header text {noisy_text!r}")
         require("javascript:;" not in html, f"{route} should avoid inert markdown javascript links")
     if route == "/":
-        require("app.js?v=home18" in html, f"{route} missing current home script")
+        require("app.js?v=home19" in html, f"{route} missing current home script")
         require('class="site-tools"' not in html, f"{route} should not expose the retired tool navigation")
         for retired_link in ['href="/search"', 'href="/notes"', 'href="/study"', 'href="/translations"']:
             require(retired_link not in html, f"{route} should not expose retired home tool link {retired_link!r}")
@@ -577,6 +577,11 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       const preview = document.querySelector('#corpusSearchPreview');
       const firstResult = document.querySelector('.corpus-search-result');
       const grid = document.querySelector('.root-link-list');
+      const fullTextLink = document.querySelector('.corpus-text-search');
+      const inputBox = input?.getBoundingClientRect();
+      const previewBox = preview?.getBoundingClientRect();
+      const fullTextBox = fullTextLink?.getBoundingClientRect();
+      const fullTextStyle = fullTextLink ? window.getComputedStyle(fullTextLink) : null;
       return {
         expanded: input?.getAttribute('aria-expanded') || '',
         previewHidden: Boolean(preview?.hidden),
@@ -587,7 +592,11 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         highlighted: firstResult?.querySelector('mark')?.textContent || '',
         gridTop: grid?.getBoundingClientRect().top || 0,
         status: document.querySelector('#corpusSearchStatus')?.textContent.trim() || '',
-        statusHasInteractive: Boolean(document.querySelector('#corpusSearchStatus a, #corpusSearchStatus button'))
+        statusHasInteractive: Boolean(document.querySelector('#corpusSearchStatus a, #corpusSearchStatus button')),
+        fullTextHref: fullTextLink?.getAttribute('href') || '',
+        fullTextDecoration: fullTextStyle?.textDecorationLine || '',
+        fullTextAboveInput: Boolean(fullTextBox && inputBox && fullTextBox.bottom <= inputBox.top + 1),
+        previewGap: inputBox && previewBox ? previewBox.top - inputBox.bottom : -1
       };
     });
     if (workSearchState.expanded !== 'true' || workSearchState.previewHidden) {
@@ -599,12 +608,27 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (!workSearchState.firstResultContext.includes('니체') || workSearchState.highlighted !== '아침') {
       throw new Error(`home work search should retain stable title and corpus context: ${JSON.stringify(workSearchState)}`);
     }
+    if (workSearchState.fullTextHref !== '/search?q=%EC%95%84%EC%B9%A8' || !workSearchState.fullTextDecoration.includes('underline')) {
+      throw new Error(`home full-text escape link should retain the query and read visually as a link: ${JSON.stringify(workSearchState)}`);
+    }
+    if (!workSearchState.fullTextAboveInput || workSearchState.previewGap < 3 || workSearchState.previewGap > 6) {
+      throw new Error(`title suggestions should sit directly below the input without the full-text link in between: ${JSON.stringify(workSearchState)}`);
+    }
     if (workSearchState.firstResultRole !== 'option' || !workSearchState.status.includes('작품') || workSearchState.statusHasInteractive) {
       throw new Error(`home work search should expose accessible result context: ${JSON.stringify(workSearchState)}`);
     }
     if (Math.abs(workSearchState.gridTop - homeState.gridTop) > 1) {
       throw new Error(`home work search preview should overlay rather than shift the Corpus list: ${JSON.stringify({ homeState, workSearchState })}`);
     }
+
+    await page.fill('#corpusSearchInput', 'Morgenrothe');
+    await waitForTitleSearch();
+    const normalizedHighlight = await page.locator('.corpus-search-title mark').first().textContent();
+    if (normalizedHighlight !== 'Morgenröthe') {
+      throw new Error(`diacritic-insensitive title matches should highlight the original title text: ${normalizedHighlight}`);
+    }
+    await page.fill('#corpusSearchInput', '아침');
+    await waitForTitleSearch();
 
     const beforeIme = await page.evaluate(() => ({
       path: window.location.pathname,
@@ -633,6 +657,15 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (escapeState.value !== '아침' || escapeState.expanded !== 'false' || !escapeState.previewHidden) {
       throw new Error(`Escape should close title suggestions without deleting the query: ${JSON.stringify(escapeState)}`);
     }
+    await page.click('#corpusSearchInput');
+    const clickReopenState = await page.evaluate(() => ({
+      expanded: document.querySelector('#corpusSearchInput')?.getAttribute('aria-expanded') || '',
+      previewHidden: Boolean(document.querySelector('#corpusSearchPreview')?.hidden)
+    }));
+    if (clickReopenState.expanded !== 'true' || clickReopenState.previewHidden) {
+      throw new Error(`clicking a focused title input should reopen suggestions after Escape: ${JSON.stringify(clickReopenState)}`);
+    }
+    await page.press('#corpusSearchInput', 'Escape');
     await page.press('#corpusSearchInput', 'Enter');
     if (new URL(page.url()).pathname !== '/') {
       throw new Error(`Enter should not navigate while title suggestions are closed: ${page.url()}`);
@@ -680,9 +713,10 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     await waitForTitleSearch();
     const emptySearchState = await page.evaluate(() => ({
       status: document.querySelector('#corpusSearchStatus')?.textContent.trim() || '',
-      href: document.querySelector('#corpusSearchActions a')?.getAttribute('href') || ''
+      href: document.querySelector('#corpusSearchActions a')?.getAttribute('href') || '',
+      decoration: window.getComputedStyle(document.querySelector('#corpusSearchActions a')).textDecorationLine
     }));
-    if (emptySearchState.status !== '일치하는 작품이 없습니다.' || emptySearchState.href !== '/search?q=unlikelytitle0000') {
+    if (emptySearchState.status !== '일치하는 작품이 없습니다.' || emptySearchState.href !== '/search?q=unlikelytitle0000' || !emptySearchState.decoration.includes('underline')) {
       throw new Error(`empty title search should lead into full-text search: ${JSON.stringify(emptySearchState)}`);
     }
 
@@ -770,6 +804,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         secondaryReadText: secondaryRead?.textContent.trim() || '',
         secondaryReadColor: secondaryReadStyle?.color || '',
         firstWorkLinkText: firstWork?.textContent.trim() || '',
+        morningWorkTitle: document.querySelector('.work-link[href="/work/nietzsche/M"] .work-title')?.textContent.trim() || '',
         firstWorkLinkHeight: firstWork?.getBoundingClientRect().height || 0,
         firstWorkLinkColor: firstWorkStyle?.color || '',
         visibleInventoryMeta
@@ -781,6 +816,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (initialCategoryToolsState.categoryId === 'nietzsche') {
       if (!initialCategoryToolsState.headerPortraitImage.includes('nietzsche-header-left')) {
         throw new Error(`nietzsche category should keep the author portrait: ${JSON.stringify(initialCategoryToolsState)}`);
+      }
+      if (initialCategoryToolsState.morningWorkTitle !== 'Morgenröthe / 아침놀') {
+        throw new Error(`category work lists should use the same stable display titles as search: ${JSON.stringify(initialCategoryToolsState)}`);
       }
     } else if (initialCategoryToolsState.headerPortraitImage !== 'none') {
       throw new Error(`non-nietzsche categories should not show the Nietzsche portrait: ${JSON.stringify(initialCategoryToolsState)}`);

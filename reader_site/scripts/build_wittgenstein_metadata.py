@@ -33,6 +33,23 @@ KIND_ORDER = {
     "idp_transcription_diplomatic": 40,
     "source_metadata": 50,
 }
+DISPLAY_TITLES = {
+    "Group_Notebooks": "Notebooks",
+    "Group_BigTypescriptCorpus": "Big Typescript",
+    "Group_BrownBookCorpus": "Brown Book",
+    "Group_CodedRemarks": "Coded Remarks",
+    "Group_Dictations": "Dictations",
+    "Group_ItemsInEnglish": "Items in English",
+    "Group_LWCorpus": "LW Corpus",
+    "Group_PICorpus": "Philosophical Investigations",
+    "Group_RFMCorpus": "Remarks on Mathematics",
+    "Group_RPPCorpus": "Remarks on Psychology",
+    "Group_SeriesI": "Series I",
+    "Group_SeriesII": "Series II",
+    "Group_TLPCorpus": "TLP Corpus",
+    "Group_Typescripts": "Typescripts",
+    "Group_Works": "Works",
+}
 
 
 def read_json(path: Path) -> dict:
@@ -140,7 +157,7 @@ def build_metadata() -> dict:
             "corpus_id": "wittgenstein",
             "work_id": work_id,
             "title": siglum,
-            "display_title": siglum.replace("_", " "),
+            "display_title": DISPLAY_TITLES.get(work_id, siglum.replace("_", " ")),
             "author": "Ludwig Wittgenstein",
             "category_id": category_id,
             "category_title": category_title,

@@ -17,6 +17,7 @@ const WORK_SEARCH_RESULT_LIMIT = 8;
 const WORK_SEARCH_DEBOUNCE_MS = 140;
 let workSearchTimer = 0;
 let activeWorkSearchController = null;
+let removeHomeSearchOutsideListener = () => {};
 const START_READING_WORK_IDS = {
   nietzsche: ["M", "FW", "Za-I", "JGB", "GM", "GD"],
   bible: ["oshb.Gen", "oshb.Ps", "oshb.Isa", "sblgnt.Matt", "sblgnt.John", "sblgnt.Rom"],
@@ -68,7 +69,7 @@ function cleanText(value) {
 function normalize(value) {
   return String(value ?? "")
     .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\p{M}/gu, "")
     .toLowerCase();
 }
 
@@ -142,23 +143,49 @@ function normalizedContains(value, query) {
 
 function homeSearchMarkup() {
   return `<div class="corpus-search">
-    <label class="corpus-search-label" for="corpusSearchInput">전체 작품명 검색</label>
-    <input id="corpusSearchInput" class="corpus-search-input" type="search" autocomplete="off" spellcheck="false" placeholder="예: 아침놀, Genesis" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-controls="corpusSearchResults" aria-expanded="false">
-    <a class="corpus-text-search" href="/search">작품 본문에서 찾기</a>
-    <div id="corpusSearchPreview" class="corpus-search-preview" hidden>
-      <div id="corpusSearchStatus" class="corpus-search-status" role="status" aria-live="polite"></div>
-      <div id="corpusSearchResults" class="corpus-search-results" role="listbox" aria-label="작품명 검색 결과"></div>
-      <div id="corpusSearchActions" class="corpus-search-actions"></div>
+    <div class="corpus-search-heading">
+      <label class="corpus-search-label" for="corpusSearchInput">전체 작품명 검색</label>
+      <a class="corpus-text-search" href="/search">작품 본문에서 찾기</a>
+    </div>
+    <div class="corpus-search-control">
+      <input id="corpusSearchInput" class="corpus-search-input" type="search" autocomplete="off" spellcheck="false" placeholder="예: 아침놀, Genesis" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-controls="corpusSearchResults" aria-expanded="false">
+      <div id="corpusSearchPreview" class="corpus-search-preview" hidden>
+        <div id="corpusSearchStatus" class="corpus-search-status" role="status" aria-live="polite"></div>
+        <div id="corpusSearchResults" class="corpus-search-results" role="listbox" aria-label="작품명 검색 결과"></div>
+        <div id="corpusSearchActions" class="corpus-search-actions"></div>
+      </div>
     </div>
   </div>`;
 }
 
+function normalizedMatchRange(value, query) {
+  const cleanValue = cleanText(value);
+  const normalizedQuery = normalize(cleanText(query));
+  if (!normalizedQuery) return null;
+
+  let normalizedValue = "";
+  const sourceRanges = [];
+  let sourceOffset = 0;
+  for (const character of cleanValue) {
+    const sourceEnd = sourceOffset + character.length;
+    const normalizedCharacter = normalize(character);
+    normalizedValue += normalizedCharacter;
+    for (let index = 0; index < normalizedCharacter.length; index += 1) {
+      sourceRanges.push([sourceOffset, sourceEnd]);
+    }
+    sourceOffset = sourceEnd;
+  }
+  const matchIndex = normalizedValue.indexOf(normalizedQuery);
+  if (matchIndex < 0 || !sourceRanges[matchIndex] || !sourceRanges[matchIndex + normalizedQuery.length - 1]) return null;
+  return [sourceRanges[matchIndex][0], sourceRanges[matchIndex + normalizedQuery.length - 1][1]];
+}
+
 function highlightedTitle(title, query) {
   const cleanTitle = cleanText(title);
-  const cleanQuery = cleanText(query);
-  const index = cleanTitle.toLocaleLowerCase("ko").indexOf(cleanQuery.toLocaleLowerCase("ko"));
-  if (!cleanQuery || index < 0) return escapeHtml(cleanTitle);
-  return `${escapeHtml(cleanTitle.slice(0, index))}<mark>${escapeHtml(cleanTitle.slice(index, index + cleanQuery.length))}</mark>${escapeHtml(cleanTitle.slice(index + cleanQuery.length))}`;
+  const matchRange = normalizedMatchRange(cleanTitle, query);
+  if (!matchRange) return escapeHtml(cleanTitle);
+  const [start, end] = matchRange;
+  return `${escapeHtml(cleanTitle.slice(0, start))}<mark>${escapeHtml(cleanTitle.slice(start, end))}</mark>${escapeHtml(cleanTitle.slice(end))}`;
 }
 
 function workSearchResultMarkup(work, index) {
@@ -185,8 +212,10 @@ function renderWorkSearchPreview() {
   const status = document.querySelector("#corpusSearchStatus");
   const results = document.querySelector("#corpusSearchResults");
   const actions = document.querySelector("#corpusSearchActions");
-  if (!input || !preview || !status || !results || !actions) return;
+  const fullTextLink = document.querySelector(".corpus-text-search");
+  if (!input || !preview || !status || !results || !actions || !fullTextLink) return;
 
+  fullTextLink.setAttribute("href", fullTextSearchHref(state.workQuery));
   input.removeAttribute("aria-activedescendant");
   if (!state.workQuery || !state.workSearchOpen) {
     preview.hidden = true;
@@ -299,13 +328,16 @@ function bindHomeSearch() {
   const input = document.querySelector("#corpusSearchInput");
   const search = input?.closest(".corpus-search");
   if (!input) return;
+  removeHomeSearchOutsideListener();
   input.value = state.workQuery;
-  input.addEventListener("focus", () => {
+  const openSearch = () => {
     if (!state.workQuery) return;
     state.workSearchOpen = true;
     renderWorkSearchPreview();
     if (state.workResultQuery !== state.workQuery) scheduleWorkSearch();
-  });
+  };
+  input.addEventListener("focus", openSearch);
+  input.addEventListener("click", openSearch);
   input.addEventListener("input", () => {
     state.workQuery = input.value.trim();
     state.workSearchOpen = Boolean(state.workQuery);
@@ -335,9 +367,11 @@ function bindHomeSearch() {
       closeWorkSearch();
     }
   });
-  document.addEventListener("pointerdown", (event) => {
+  const handleOutsidePointer = (event) => {
     if (state.workSearchOpen && search && !search.contains(event.target)) closeWorkSearch();
-  });
+  };
+  document.addEventListener("pointerdown", handleOutsidePointer);
+  removeHomeSearchOutsideListener = () => document.removeEventListener("pointerdown", handleOutsidePointer);
 }
 
 function filteredCategorySections(corpus) {
@@ -480,7 +514,7 @@ function renderCategory(categoryId) {
           .map((link) => {
             const metaText = archiveDisplayMeta(link.meta);
             const meta = metaText ? `<span class="work-meta">${escapeHtml(metaText)}</span>` : "";
-            return `<a class="work-link" href="${escapeHtml(link.href)}"><span class="work-title">${escapeHtml(link.label)}</span>${meta}</a>`;
+            return `<a class="work-link" href="${escapeHtml(link.href)}"><span class="work-title">${escapeHtml(link.display_title || link.label)}</span>${meta}</a>`;
           })
           .join("");
         return `<section class="category-section"><h2>${escapeHtml(section.title)}</h2>${sectionMeta}<div class="work-links">${links}</div></section>`;

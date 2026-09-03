@@ -62,6 +62,12 @@ def title_from_document(document: dict, fallback: str) -> str:
     )
 
 
+def display_title(work_id: str, title: str, document_type: str) -> str:
+    if document_type == "volume":
+        return f"{work_id.upper()} · {title}"
+    return title
+
+
 def extract_count(document: dict) -> int:
     count = 0
     for key in ("prose_extract_tesim", "verse_extract_tesim", "performance_extract_tesim", "text_tesim"):
@@ -87,6 +93,7 @@ def build_metadata() -> dict:
     for work_dir in sorted([path for path in KIERKEGAARD_TEXTS.iterdir() if path.is_dir()], key=lambda item: item.name.lower()):
         variants = []
         title = ""
+        document_type = ""
         copyright_note = ""
         volume = ""
         for variant_id, label in VARIANTS:
@@ -98,6 +105,7 @@ def build_metadata() -> dict:
             payload = read_json(path)
             document = payload.get("response", {}).get("document", {})
             title = title or title_from_document(document, work_dir.name)
+            document_type = document_type or str(document.get("type_ssi", ""))
             copyright_note = copyright_note or document.get("copyright_ssi", "")
             volume = volume or first_value(document.get("volume_title_tesim"))
             variants.append(
@@ -119,7 +127,7 @@ def build_metadata() -> dict:
             "corpus_id": "kierkegaard",
             "work_id": work_id,
             "title": title,
-            "display_title": title,
+            "display_title": display_title(work_id, title, document_type),
             "author": "Søren Kierkegaard",
             "category_id": "sks",
             "category_title": "Søren Kierkegaards Skrifter",

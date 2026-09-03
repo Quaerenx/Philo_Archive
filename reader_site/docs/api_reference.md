@@ -83,7 +83,7 @@ Notes:
 
 ```json
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "query": "아침",
   "count": 1,
   "results": [
@@ -99,7 +99,9 @@ Notes:
 }
 ```
 
-같은 제목이 여러 판본에 존재하면 `section_title`로 출처를 구분한다. 원본 경로나 전체 archive 메타데이터는 이 응답에 포함하지 않는다.
+같은 제목이 여러 판본에 존재하면 `section_title`로 출처를 구분한다. 원본 경로나 전체 archive 메타데이터는 이 응답에 포함하지 않는다. 자동완성은 마지막으로 구성된 메모리 제목 index를 사용하며, 입력할 때마다 archive 원본 트리를 재검사하지 않는다.
+
+홈의 제목 자동완성과 `/search`의 본문 FTS는 의도적으로 분리한다. 제목 자동완성은 짧은 동기식 탐색을 유지하고, 본문 검색이 필요하면 현재 검색어를 `/search?q=...`로 그대로 전달한다. 두 결과를 한 목록으로 합치는 방식은 본문 검색의 지연·필터·순위 정책을 함께 설계할 때 다시 검토한다.
 
 ## `GET /api/archive/summary`
 
@@ -107,7 +109,7 @@ The home page uses this lightweight response for the four corpus links. Title au
 
 ```json
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "generated_at": "2026-07-30T12:00:00",
   "corpora": [
     {

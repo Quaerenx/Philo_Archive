@@ -302,17 +302,26 @@ img {
 }
 
 .corpus-search {
-  position: relative;
   z-index: 2;
   margin: 2px 0 4px;
 }
 
-.corpus-search-label {
-  display: block;
+.corpus-search-heading {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  justify-content: space-between;
   margin-bottom: 4px;
+}
+
+.corpus-search-label {
   color: #555;
   font-size: 11px;
   line-height: 1.35;
+}
+
+.corpus-search-control {
+  position: relative;
 }
 
 .corpus-search-input {
@@ -338,18 +347,21 @@ img {
 }
 
 .corpus-text-search {
-  display: inline-block;
-  margin-top: 5px;
-  color: #555;
+  flex: 0 0 auto;
+  color: #7d0000;
   font-size: 11px;
   line-height: 1.35;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .corpus-text-search:visited,
 .corpus-text-search:active,
 .corpus-text-search:hover,
 .corpus-text-search:focus-visible {
-  color: #333;
+  color: #b00000;
+  outline: 1px solid #888;
+  outline-offset: 2px;
 }
 
 .corpus-search-preview {
@@ -453,6 +465,17 @@ img {
   line-height: 1.4;
   background: transparent;
   border: 0;
+}
+
+.corpus-search-actions a {
+  color: #333;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.corpus-search-actions a:focus-visible {
+  outline: 1px solid #888;
+  outline-offset: 2px;
 }
 
 .corpus-search-actions button {

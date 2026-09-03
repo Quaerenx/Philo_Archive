@@ -26,7 +26,17 @@ CORPORA = [
 ]
 
 METADATA_TOP_LEVEL_KEYS = {"schema_version", "corpus_id", "generated_at", "works"}
-WORK_KEYS = {"corpus_id", "work_id", "title", "work_url", "language", "segment_scheme", "variant_ids", "concept_ids"}
+WORK_KEYS = {
+    "corpus_id",
+    "work_id",
+    "title",
+    "display_title",
+    "work_url",
+    "language",
+    "segment_scheme",
+    "variant_ids",
+    "concept_ids",
+}
 SEGMENT_KEYS = {
     "schema_version",
     "corpus_id",
@@ -93,14 +103,20 @@ def validate_metadata(check: SchemaCheck, corpus: CorpusFiles) -> dict[str, dict
 
     works = normalize_works(metadata.get("works"))
     check.require(bool(works), f"{corpus.corpus_id}: metadata.works must be a non-empty object")
+    display_title_owners: dict[str, str] = {}
     for key, work in works.items():
         context = f"{corpus.corpus_id}.{key}"
-        required_keys = set(WORK_KEYS)
-        if not is_non_empty_string(work.get("title")):
-            required_keys.discard("title")
-            check.require(is_non_empty_string(work.get("display_title")), f"{context}: title or display_title required")
-        missing_work_keys = sorted(required_keys - set(work))
+        missing_work_keys = sorted(WORK_KEYS - set(work))
         check.require(not missing_work_keys, f"{context}: work missing {missing_work_keys}")
+        check.require(is_non_empty_string(work.get("title")), f"{context}: title required")
+        check.require(is_non_empty_string(work.get("display_title")), f"{context}: display_title required")
+        display_title = str(work.get("display_title", "")).strip()
+        if corpus.corpus_id != "bible" and display_title:
+            owner = display_title_owners.get(display_title.casefold())
+            check.require(owner is None, f"{context}: display_title duplicates {owner}: {display_title!r}")
+            display_title_owners.setdefault(display_title.casefold(), key)
+        if corpus.corpus_id == "wittgenstein" and key.startswith("Group_"):
+            check.require(not display_title.startswith("Group "), f"{context}: machine-style Group prefix in display_title")
         check.require(work.get("corpus_id") == corpus.corpus_id, f"{context}: work.corpus_id mismatch")
         check.require(work.get("work_id") == key, f"{context}: work_id must match works key")
         check.require(str(work.get("work_url", "")).startswith(f"/work/{corpus.corpus_id}/"), f"{context}: invalid work_url")

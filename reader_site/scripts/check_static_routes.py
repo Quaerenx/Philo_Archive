@@ -83,7 +83,7 @@ def request_bytes(
 
 def check_static_cache_contracts(base_url: str) -> None:
     for path, expected_type in (
-        ("/app.js?v=home18", "javascript"),
+        ("/app.js?v=home19", "javascript"),
         ("/assets/reader-work.css?v=common149", "text/css"),
     ):
         identity_body, identity_headers = request_bytes(
@@ -311,7 +311,7 @@ def check_routes(base_url: str) -> None:
     )
     archive_summary = fetch_json(base_url, "/api/archive/summary")
     require(
-        archive_summary.get("schema_version") == 1 and len(archive_summary.get("corpora", [])) == 4,
+        archive_summary.get("schema_version") == 2 and len(archive_summary.get("corpora", [])) == 4,
         "archive summary shape invalid",
     )
     morning_titles = fetch_json(base_url, "/api/archive/titles?q=%EC%95%84%EC%B9%A8&limit=8")

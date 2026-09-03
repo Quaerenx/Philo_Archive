@@ -118,6 +118,10 @@ def check_archive(payload: dict[str, Any]) -> None:
 
 def check_archive_title_search() -> None:
     morning = archive_title_search("아침")
+    require(
+        morning["schema_version"] == archive_service.ARCHIVE_SCHEMA_VERSION,
+        "archive title search schema_version mismatch",
+    )
     require(morning["count"] == 1, "archive title search should resolve the Korean Morning alias")
     require(morning["results"][0]["href"] == "/work/nietzsche/M", "Morning title search resolved the wrong work")
     require(
@@ -148,7 +152,10 @@ def check_archive_title_search() -> None:
 
 def check_archive_summary(payload: dict[str, Any]) -> None:
     require_keys(payload, {"schema_version", "generated_at", "corpora"}, "archive summary")
-    require(payload["schema_version"] == 1, "archive summary schema_version must be 1")
+    require(
+        payload["schema_version"] == archive_service.ARCHIVE_SCHEMA_VERSION,
+        "archive summary schema_version mismatch",
+    )
     require(len(payload["corpora"]) == 4, "archive summary must list four corpora")
     for index, corpus in enumerate(payload["corpora"]):
         require(
@@ -448,6 +455,96 @@ def check_archive_cache_contracts() -> None:
         archive_service._ARCHIVE_CACHE_STATE = original_cache_state
 
 
+def check_archive_title_search_cache_contract() -> None:
+    archive_service.build_archive()
+    original_snapshot_builder = archive_service.archive_input_snapshot
+    original_cache = archive_service.ARCHIVE_CACHE
+    original_cache_state = archive_service._ARCHIVE_CACHE_STATE
+    require(original_cache_state is not None, "archive title search cache was not initialized")
+    archive_service._ARCHIVE_CACHE_STATE = archive_service.ArchiveCacheState(
+        payload=original_cache_state.payload,
+        signature=original_cache_state.signature,
+        title_index=original_cache_state.title_index,
+        validate_after=0.0,
+    )
+
+    def fail_snapshot() -> archive_service.ArchiveInputSnapshot:
+        raise AssertionError("title autocomplete revalidated the archive input tree")
+
+    archive_service.archive_input_snapshot = fail_snapshot
+    try:
+        started_at = time.perf_counter()
+        result = archive_service.archive_title_search("아침")
+        elapsed = time.perf_counter() - started_at
+    finally:
+        archive_service.archive_input_snapshot = original_snapshot_builder
+        archive_service.ARCHIVE_CACHE = original_cache
+        archive_service._ARCHIVE_CACHE_STATE = original_cache_state
+
+    require(result["count"] == 1, "stale archive title index returned the wrong result")
+    require(elapsed < 0.25, f"archive title search exceeded 250ms latency budget: {elapsed:.3f}s")
+
+
+def check_archive_title_search_cold_catalog_contract() -> None:
+    with tempfile.TemporaryDirectory(prefix="philo_archive_title_contract_") as temporary_directory:
+        catalog_path = Path(temporary_directory) / "archive_catalog.local.json"
+        catalog_path.write_text(
+            json.dumps(
+                {
+                    "schema_version": archive_service.ARCHIVE_SCHEMA_VERSION,
+                    "input_signature": [],
+                    "archive": {
+                        "generated_at": "contract",
+                        "corpora": [
+                            {
+                                "id": "contract",
+                                "title": "Contract",
+                                "links": [],
+                                "sections": [
+                                    {
+                                        "title": "Works",
+                                        "links": [
+                                            {
+                                                "label": "Morgenröthe",
+                                                "display_title": "Morgenröthe / 아침놀",
+                                                "href": "/work/contract/M",
+                                                "work_id": "M",
+                                                "meta": "아침놀",
+                                            }
+                                        ],
+                                    }
+                                ],
+                            }
+                        ],
+                    },
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        original_catalog_path = archive_service.ARCHIVE_CATALOG
+        original_snapshot_builder = archive_service.archive_input_snapshot
+        original_cache = archive_service.ARCHIVE_CACHE
+        original_cache_state = archive_service._ARCHIVE_CACHE_STATE
+        archive_service.ARCHIVE_CATALOG = catalog_path
+        archive_service.ARCHIVE_CACHE = None
+        archive_service._ARCHIVE_CACHE_STATE = None
+
+        def fail_snapshot() -> archive_service.ArchiveInputSnapshot:
+            raise AssertionError("cold title autocomplete scanned the archive input tree")
+
+        archive_service.archive_input_snapshot = fail_snapshot
+        try:
+            result = archive_service.archive_title_search("아침")
+        finally:
+            archive_service.ARCHIVE_CATALOG = original_catalog_path
+            archive_service.archive_input_snapshot = original_snapshot_builder
+            archive_service.ARCHIVE_CACHE = original_cache
+            archive_service._ARCHIVE_CACHE_STATE = original_cache_state
+
+    require(result["count"] == 1, "cold archive catalog title search returned the wrong result")
+
+
 def check_public_artifacts(payload: dict[str, Any]) -> None:
     require_keys(payload, {"schema_version", "generated_at", "corpora", "artifacts", "search"}, "public artifacts")
     require(payload["schema_version"] == 1, "public artifacts.schema_version must be 1")
@@ -632,6 +729,8 @@ def main() -> None:
     check_archive_summary(build_archive_summary())
     check_archive_title_search()
     check_archive_cache_contracts()
+    check_archive_title_search_cache_contract()
+    check_archive_title_search_cold_catalog_contract()
     check_health(build_runtime_health())
     check_artifacts(build_artifact_manifest())
     check_public_health(build_public_runtime_health())
