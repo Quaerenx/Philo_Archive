@@ -1563,11 +1563,11 @@ function prefersReducedMotion() {
 }
 
 function sentenceScrollBlock() {
-  return window.matchMedia && window.matchMedia("(max-width: 860px)").matches ? "start" : "center";
+  return window.matchMedia && window.matchMedia("(max-width: 1040px)").matches ? "start" : "center";
 }
 
 function isMobileStudyLayout() {
-  return Boolean(window.matchMedia && window.matchMedia("(max-width: 860px)").matches);
+  return Boolean(window.matchMedia && window.matchMedia("(max-width: 1040px)").matches);
 }
 
 function visibleViewportTop() {

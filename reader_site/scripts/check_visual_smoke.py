@@ -376,10 +376,10 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work-document.css?v=document1",
-            "reader-work.css?v=common148",
+            "reader-work.css?v=common149",
             "reader-work-storage.js?v=storage1",
             "reader-work-virtual.js?v=virtual1",
-            "reader-work.js?v=common195",
+            "reader-work.js?v=common196",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         require("Contents (" not in html, f"{route} should not expose TOC inventory counts")
@@ -1774,6 +1774,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       const outputVisibleText = output ? output.innerText : '';
       const translationHeading = document.querySelector('.translation-section-primary h3');
       const translationHeadingBox = translationHeading?.getBoundingClientRect();
+      const translationBody = document.querySelector('#translationOutput .translation-primary');
+      const translationBodyStyle = translationBody ? window.getComputedStyle(translationBody) : null;
       const commentaryHeading = document.querySelector('#translationOutput .translation-commentary h3');
       const commentaryHeadingBox = commentaryHeading?.getBoundingClientRect();
       const commentaryBody = document.querySelector('#translationOutput .translation-commentary p');
@@ -1794,6 +1796,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         .filter((node) => window.getComputedStyle(node).display !== 'none')
         .map((node) => node.dataset.translationSection || '');
       const studyPageBox = studyPage?.getBoundingClientRect();
+      const pageBox = document.querySelector('.page')?.getBoundingClientRect();
       const selectedSentenceNode = document.querySelector('.reader-sentence.selected');
       const selectedSentenceStyle = selectedSentenceNode ? window.getComputedStyle(selectedSentenceNode) : null;
       const quietMarkedSentence = Array.from(document.querySelectorAll('.reader-sentence.has-translation-state'))
@@ -1804,8 +1807,10 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         : null;
       const recentWork = JSON.parse(window.localStorage.getItem('philo.reader.recentWork') || 'null');
       return {
-        isMobile: window.innerWidth <= 860,
+        isMobile: window.innerWidth <= 1040,
         viewportHeight: window.innerHeight,
+        pageWidth: pageBox?.width || 0,
+        studyPageWidth: studyPageBox?.width || 0,
         studyPageHeight: studyPageBox?.height || 0,
         selectedSentence: Boolean(selectedSentenceNode),
         outputVisible: Boolean(output && !output.hidden),
@@ -1839,9 +1844,14 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         translationHeadingWidth: translationHeadingBox?.width || 0,
         translationHeadingHeight: translationHeadingBox?.height || 0,
         translationHeadingText: translationHeading?.textContent.trim() || '',
+        translationBodyFontFamily: translationBodyStyle?.fontFamily || '',
+        translationBodyFontSize: translationBodyStyle?.fontSize || '',
+        translationBodyLineHeight: translationBodyStyle?.lineHeight || '',
         commentaryHeadingWidth: commentaryHeadingBox?.width || 0,
         commentaryHeadingHeight: commentaryHeadingBox?.height || 0,
         commentaryHeadingText: commentaryHeading?.textContent.trim() || '',
+        commentaryFontFamily: commentaryBodyStyle?.fontFamily || '',
+        commentaryFontSize: commentaryBodyStyle?.fontSize || '',
         commentaryLineHeight: commentaryBodyStyle?.lineHeight || '',
         readingSaveLabel: readingSave ? readingSave.getAttribute('aria-label') || '' : '',
         readingNoteLabel: readingNote ? readingNote.getAttribute('aria-label') || '' : '',
@@ -1930,8 +1940,17 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (state.commentaryHeadingText !== '해설') {
       throw new Error(`reading mode should label commentary in the reader language: ${JSON.stringify(state)}`);
     }
-    if (state.commentaryLineHeight && parseFloat(state.commentaryLineHeight) > 24) {
-      throw new Error(`reading mode commentary should stay compact enough for the study panel: ${JSON.stringify(state)}`);
+    if (parseFloat(state.translationBodyFontSize || '0') < 17 || parseFloat(state.translationBodyLineHeight || '0') < 29) {
+      throw new Error(`reading mode translation should use the enlarged Korean reading type: ${JSON.stringify(state)}`);
+    }
+    if (parseFloat(state.commentaryFontSize || '0') < 16 || parseFloat(state.commentaryLineHeight || '0') < 27) {
+      throw new Error(`reading mode commentary should use the enlarged Korean reading type: ${JSON.stringify(state)}`);
+    }
+    if (/Georgia|Times New Roman/i.test(`${state.translationBodyFontFamily} ${state.commentaryFontFamily}`)) {
+      throw new Error(`Korean study prose should use the dedicated sans-serif stack: ${JSON.stringify(state)}`);
+    }
+    if (!state.isMobile && (state.pageWidth < 1160 || state.studyPageWidth < 410)) {
+      throw new Error(`desktop work pages should provide the wider study reading surface: ${JSON.stringify(state)}`);
     }
     if (state.sectionOrder[0] !== 'translation' || state.sectionOrder[1] !== 'commentary') {
       throw new Error(`reading mode should keep translation and commentary as the first visible result sections: ${JSON.stringify(state)}`);
@@ -1956,8 +1975,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (state.inactiveSecondaryTabs.length !== 2 || state.inactiveSecondaryTabs.some((tab) => tab.background !== 'rgba(0, 0, 0, 0)' || tab.border !== 'rgba(0, 0, 0, 0)')) {
       throw new Error(`secondary study tabs should stay visually quieter than translation and notes: ${JSON.stringify(state)}`);
     }
-    if (state.inactiveSecondaryTabs.some((tab) => tab.fontSize !== '9px' || tab.justifySelf !== 'end')) {
-      throw new Error(`secondary study tabs should read as compact right-aligned utility links: ${JSON.stringify(state)}`);
+    if (state.inactiveSecondaryTabs.some((tab) => tab.fontSize !== '11px' || tab.justifySelf !== 'end')) {
+      throw new Error(`secondary study tabs should remain compact but Korean-readable utility links: ${JSON.stringify(state)}`);
     }
     if (state.isMobile) {
       const primaryMinWidth = Math.min(...state.primaryStudyTabs.map((tab) => tab.width).filter(Boolean));
@@ -1987,8 +2006,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (/Sentence\s+\d+\s+of\s+\d+/i.test(`${state.studyPanelToggleSummary} ${state.studyPanelToggleLabel}`)) {
       throw new Error(`mobile study toggle should hide sentence count metadata from the primary reading handle: ${JSON.stringify(state)}`);
     }
-    if (state.isMobile && state.studyPageHeight > Math.ceil(state.viewportHeight * 0.66)) {
-      throw new Error(`mobile study panel should leave source text visible above it: ${JSON.stringify(state)}`);
+    if (state.isMobile && state.studyPageHeight > Math.ceil(state.viewportHeight * 0.80)) {
+      throw new Error(`mobile study panel should leave a source-text cue visible above it: ${JSON.stringify(state)}`);
     }
     if (state.isMobile && (state.studyPanelToggleDisplay !== 'grid' || state.studyPanelToggleHeight > 42)) {
       throw new Error(`mobile study toggle should stay compact as a handle: ${JSON.stringify(state)}`);
@@ -2204,6 +2223,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     ) {
       throw new Error(`Add note should preserve the existing session draft payload: ${JSON.stringify(draftState)}`);
     }
+      await page.mouse.move(0, 0);
       const notesState = await page.evaluate(() => {
         const targetTools = document.querySelector('.note-target-tools');
         if (targetTools) targetTools.open = false;
@@ -2531,7 +2551,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
           reviewFooterDisplay: footerStyle?.display || '',
           reviewFooterBottom: footerStyle?.bottom || '',
           nonTargetFooterDisplay: nonTargetFooter ? window.getComputedStyle(nonTargetFooter).display : '',
-          isDesktopLayout: window.innerWidth > 860,
+          isDesktopLayout: window.innerWidth > 1040,
           sourceOpen: Boolean(source?.open),
           sourceSummaryText: sourceSummary?.textContent.trim() || '',
           sourceText: source?.textContent.trim() || '',

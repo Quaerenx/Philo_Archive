@@ -171,11 +171,12 @@ def check_page_frame_css(relative_path: str, css: str) -> None:
 
 
 def check_reader_css(relative_path: str, css: str) -> None:
+    responsive_breakpoint = "@media (max-width: 1040px)" if relative_path == "assets/reader-work.css" else "@media (max-width: 860px)"
     common_needles = [
         ".reader {",
         "background: var(--reader-background",
         "border: 1px solid var(--reader-border",
-        "@media (max-width: 860px)",
+        responsive_breakpoint,
         "width: auto;",
         "margin: 0 10px 24px;",
     ]
@@ -183,7 +184,7 @@ def check_reader_css(relative_path: str, css: str) -> None:
         require_contains(css, needle, relative_path)
     if relative_path == "assets/reader-work.css":
         require_contains(css, "width: calc(100% - 64px);", relative_path)
-        require_contains(css, "grid-template-columns: minmax(0, 1fr) 340px;", relative_path)
+        require_contains(css, "grid-template-columns: minmax(0, 1fr) var(--study-panel-width, 420px);", relative_path)
     elif relative_path == "assets/static-reader.css":
         for needle in [
             ".source-links",
@@ -195,7 +196,7 @@ def check_reader_css(relative_path: str, css: str) -> None:
     else:
         require_contains(css, "width: var(--reader-column-width", relative_path)
     if relative_path in {"assets/reader-work.css", "assets/static-reader.css"}:
-        mobile_css = css.split("@media (max-width: 860px)", maxsplit=1)[1]
+        mobile_css = css.split(responsive_breakpoint, maxsplit=1)[1]
         require_contains(
             mobile_css,
             "background-size: auto var(--mobile-header-strip-height",
@@ -2069,7 +2070,7 @@ def check_work_source_bundle_ui() -> None:
         [
             "/assets/reader-work-storage.js?v=storage1",
             "/assets/reader-work-virtual.js?v=virtual1",
-            "/assets/reader-work.js?v=common195",
+            "/assets/reader-work.js?v=common196",
         ],
         "templates/work.html reader script dependency order",
     )
@@ -2077,7 +2078,7 @@ def check_work_source_bundle_ui() -> None:
         template,
         [
             "/assets/reader-work-document.css?v=document1",
-            "/assets/reader-work.css?v=common148",
+            "/assets/reader-work.css?v=common149",
         ],
         "templates/work.html reader stylesheet dependency order",
     )
@@ -2264,7 +2265,7 @@ def check_work_source_bundle_ui() -> None:
     require_contains(work_markup, '"TOC_LINK": toc_link', "rendering/work_markup.py")
     require("Contents (" not in work_markup, "rendering/work_markup.py should keep TOC summary quiet")
     require("Concepts</h2>" not in work_markup, "rendering/work_markup.py should keep concept panel localized")
-    mobile_css = css.split("@media (max-width: 860px)", maxsplit=1)[1]
+    mobile_css = css.split("@media (max-width: 1040px)", maxsplit=1)[1]
     mobile_page_before = css_rule_block(mobile_css, ".page::before", "assets/reader-work.css mobile block")
     for needle in [
         "width: 100%;",
@@ -2291,10 +2292,10 @@ def check_work_source_bundle_ui() -> None:
         ".toolbar-more[open] .toolbar-more-links",
         ".toolbar-more[open] .toolbar-more-links a",
         ".visually-hidden",
-        "grid-template-columns: minmax(0, 1fr) 340px",
-        "gap: 20px",
+        "grid-template-columns: minmax(0, 1fr) var(--study-panel-width, 420px)",
+        "gap: 24px",
         ".source-page",
-        "padding-right: 20px",
+        "padding-right: 24px",
         ".study-page",
         ".page::before",
         "background-size: auto var(--header-portrait-height, 128px)",
@@ -2558,6 +2559,14 @@ def check_work_source_bundle_ui() -> None:
         ".note-danger-actions[open] summary::after",
         ".note-danger-actions button",
         ".study-panel-toggle",
+        "--page-frame-width: 1180px",
+        "--study-panel-width: 420px",
+        '"Noto Sans KR"',
+        '"Malgun Gothic"',
+        "grid-template-columns: minmax(0, 1fr) var(--study-panel-width, 420px)",
+        "font-size: 17px",
+        "font-size: 16px",
+        "word-break: keep-all",
         ".study-panel-toggle::before",
         ".study-panel-toggle-action",
         ".study-panel-toggle-summary",
@@ -2582,7 +2591,7 @@ def check_work_source_bundle_ui() -> None:
         "touch-action: none",
         "user-select: none",
         "max(10px, env(safe-area-inset-right, 0px))",
-        "max-height: min(64vh, calc(100dvh - 56px))",
+        "max-height: min(78vh, calc(100dvh - 24px))",
         "scroll-margin-block",
         ".sentence-context",
         ".reading-position",
@@ -2633,7 +2642,7 @@ def check_work_source_bundle_ui() -> None:
         ".research-card .sentence-context-item",
         "overscroll-behavior: contain",
         "scrollbar-gutter: stable",
-        "@media (min-width: 861px)",
+        "@media (min-width: 1041px)",
         ".study-page .translation-output",
         "overflow: visible",
         ".translation-output.reading-mode .translation-reading-actions",

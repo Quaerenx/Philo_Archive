@@ -2,6 +2,12 @@
   box-sizing: border-box;
 }
 
+:root {
+  --page-frame-width: 1180px;
+  --study-panel-width: 420px;
+  --study-ui-font: "Pretendard Variable", Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "Segoe UI", sans-serif;
+}
+
 body {
   margin: 0;
   padding: 0;
@@ -202,8 +208,8 @@ h1 {
 
 .reading-desk {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 340px;
-  gap: 20px;
+  grid-template-columns: minmax(0, 1fr) var(--study-panel-width, 420px);
+  gap: 24px;
   align-items: start;
 }
 
@@ -213,7 +219,7 @@ h1 {
 }
 
 .source-page {
-  padding-right: 20px;
+  padding-right: 24px;
   border-right: 1px solid #d4d4d4;
 }
 
@@ -226,6 +232,9 @@ h1 {
   overflow: auto;
   scrollbar-gutter: stable;
   scroll-padding-top: 8px;
+  font-family: var(--study-ui-font);
+  font-size: 13px;
+  line-height: 1.55;
   will-change: transform;
 }
 
@@ -244,12 +253,12 @@ h1 {
 .study-tab,
 .mode-toggle button {
   min-width: 0;
-  min-height: 24px;
-  padding: 2px 6px;
+  min-height: 30px;
+  padding: 4px 7px;
   color: #555;
   font-family: Verdana, Arial, Helvetica, sans-serif;
-  font-size: 10px;
-  line-height: 1.25;
+  font-size: 12px;
+  line-height: 1.4;
   background: #f6f6f6;
   border: 1px solid #d4d4d4;
   cursor: pointer;
@@ -263,11 +272,11 @@ h1 {
 }
 
 .study-tab-secondary {
-  min-height: 20px;
+  min-height: 26px;
   justify-self: end;
   padding: 1px 4px;
   color: #888;
-  font-size: 9px;
+  font-size: 11px;
   background: transparent;
   border-color: transparent;
 }
@@ -318,7 +327,7 @@ h1 {
 .research-card h2 {
   margin: 0 0 9px;
   font-family: Verdana, Arial, Helvetica, sans-serif;
-  font-size: 11px;
+  font-size: 14px;
   line-height: 1.35;
 }
 
@@ -329,7 +338,7 @@ h1 {
   padding: 2px 8px;
   color: #000;
   font-family: Verdana, Arial, Helvetica, sans-serif;
-  font-size: 10px;
+  font-size: 12px;
   background: #fff;
   border: 1px solid #bdbdbd;
   cursor: pointer;
@@ -2495,6 +2504,82 @@ h1 {
   margin: 0 0 1em;
 }
 
+.study-page :is(
+  button,
+  input,
+  textarea,
+  select,
+  summary,
+  label,
+  p,
+  li,
+  span,
+  a,
+  strong,
+  small,
+  h2,
+  h3,
+  .translation-primary,
+  .translation-commentary,
+  .translation-source-detail,
+  .translation-result-target,
+  .translation-target-excerpt,
+  .reading-position-excerpt,
+  .sentence-context-text
+) {
+  font-family: var(--study-ui-font);
+}
+
+.study-page :is(input, textarea, select) {
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.study-page .translation-section h3 {
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.study-page .translation-output .translation-primary {
+  font-size: 17px;
+  line-height: 1.75;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+.study-page .translation-commentary p {
+  font-size: 16px;
+  line-height: 1.75;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+.study-page .translation-output.reading-mode .translation-commentary p {
+  line-height: 1.75;
+}
+
+.study-page :is(
+  .translation-target-label,
+  .translation-target-status,
+  .translation-result-kicker,
+  .sentence-context-label,
+  .study-session-preview-header span
+) {
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.study-page :is(
+  .translation-status,
+  .reading-position,
+  .study-progress,
+  .study-session-summary,
+  .translation-records-summary
+) {
+  font-size: 12px;
+  line-height: 1.55;
+}
+
 .print-work .reading-desk {
   grid-template-columns: minmax(0, 1fr);
 }
@@ -2684,7 +2769,7 @@ h1 {
   }
 }
 
-@media (min-width: 861px) {
+@media (min-width: 1041px) {
   .study-page .translation-card {
     max-height: none;
   }
@@ -2704,7 +2789,7 @@ h1 {
   }
 }
 
-@media (max-width: 860px) {
+@media (max-width: 1040px) {
   .page {
     margin: 0 auto;
     background-size: auto var(--mobile-header-strip-height, 112px);
@@ -2832,8 +2917,8 @@ h1 {
   }
 
   .study-page.is-expanded {
-    max-height: 64vh;
-    max-height: min(64vh, calc(100dvh - 56px));
+    max-height: 78vh;
+    max-height: min(78vh, calc(100dvh - 24px));
     padding: 10px 10px 0;
     padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
     overflow: auto;
@@ -2857,8 +2942,8 @@ h1 {
     padding: 5px 10px 6px;
     color: #000;
     font-family: Verdana, Arial, Helvetica, sans-serif;
-    font-size: 10px;
-    line-height: 1.25;
+    font-size: 13px;
+    line-height: 1.4;
     text-align: left;
     background: #fff;
     border: 1px solid #bdbdbd;
@@ -2897,7 +2982,7 @@ h1 {
     grid-column: 2;
     margin-top: 0;
     color: #555;
-    font-size: 9px;
+    font-size: 12px;
   }
 
   .study-page.is-expanded .study-panel-toggle {
@@ -2957,7 +3042,7 @@ h1 {
   }
 
   .translation-card {
-    max-height: calc(64vh - 24px);
+    max-height: calc(78vh - 24px);
     padding: 10px 11px 12px;
   }
 
