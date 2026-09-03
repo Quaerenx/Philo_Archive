@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import sqlite3
 import sys
 import tempfile
 import threading
@@ -90,6 +91,134 @@ def check_query_payload_helper() -> None:
 
     limited = search_payload_from_query({"q": ["John"], "corpus_id": ["bible"], "limit": ["0"]})
     require(len(limited.get("work_results", [])) <= 1, "search query limit clamp failed")
+
+    clamped = search_payload_from_query(
+        {"q": ["the"], "corpus_id": ["wittgenstein"], "limit": ["1000"], "page": ["2"]}
+    )
+    require(
+        clamped["limit"] == 100 and clamped["offset"] == 100 and clamped["page"] == 2,
+        "search page offset must use the clamped limit",
+    )
+
+    stale_page = search_payload_from_query(
+        {"q": ["ressentiment"], "corpus_id": ["nietzsche"], "limit": ["40"], "page": ["999"]}
+    )
+    require(stale_page["page"] == stale_page["total_pages"] == 1, "out-of-range search page was not normalized")
+    require(stale_page["offset"] == 0 and stale_page["results"], "normalized search page should return the last page")
+
+
+def check_segment_pagination() -> None:
+    first = search_records("the", corpus_id="wittgenstein", limit=5, offset=0)
+    require(first["count"] > 5, "pagination fixture requires more than one page")
+    require(first["page"] == 1 and first["total_pages"] >= 2, "first search page metadata failed")
+    require(not first["has_previous"] and first["has_next"], "first search page navigation state failed")
+
+    second = search_records("the", corpus_id="wittgenstein", limit=5, offset=5)
+    require(second["page"] == 2, "second search page number failed")
+    require(second["has_previous"], "second search page should expose previous navigation")
+    first_ids = {(item.get("work_id"), item.get("variant_id"), item.get("segment_id")) for item in first["results"]}
+    second_ids = {(item.get("work_id"), item.get("variant_id"), item.get("segment_id")) for item in second["results"]}
+    require(first_ids.isdisjoint(second_ids), "adjacent search pages repeated segment results")
+
+    query_page = search_payload_from_query(
+        {"q": ["the"], "corpus_id": ["wittgenstein"], "limit": ["5"], "page": ["2"]}
+    )
+    require(query_page["offset"] == 5 and query_page["page"] == 2, "search page query parsing failed")
+    require(not query_page["work_results"] and not query_page["note_results"], "related results should stay on page one")
+
+    page_size = 40
+    seen_ids: set[tuple[str, str, str]] = set()
+    page_count = min(15, (first["count"] + page_size - 1) // page_size)
+    for page_index in range(page_count):
+        page_offset = page_index * page_size
+        payload = search_records("the", corpus_id="wittgenstein", limit=page_size, offset=page_offset)
+        expected_count = min(page_size, payload["count"] - page_offset)
+        require(len(payload["results"]) == expected_count, f"deep search page {page_index + 1} was incomplete")
+        page_ids = {
+            (str(item.get("work_id", "")), str(item.get("variant_id", "")), str(item.get("segment_id", "")))
+            for item in payload["results"]
+        }
+        require(len(page_ids) == len(payload["results"]), f"deep search page {page_index + 1} repeated a segment")
+        require(seen_ids.isdisjoint(page_ids), f"deep search page {page_index + 1} repeated an earlier result")
+        seen_ids.update(page_ids)
+
+    boundary_page = search_records(
+        "the",
+        corpus_id="wittgenstein",
+        limit=page_size,
+        offset=(page_count - 1) * page_size,
+    )
+    require(boundary_page["results"] == payload["results"], "repeating a deep search page changed its ordering")
+
+
+def check_like_pagination_boundary() -> None:
+    connection = sqlite3.connect(":memory:")
+    connection.row_factory = sqlite3.Row
+    connection.execute(
+        """
+        CREATE TABLE search_segments (
+          id INTEGER PRIMARY KEY,
+          corpus_id TEXT,
+          work_id TEXT,
+          variant_id TEXT,
+          segment_id TEXT,
+          segment_type TEXT,
+          label TEXT,
+          title TEXT,
+          url TEXT,
+          snippet TEXT,
+          search_text TEXT
+        )
+        """
+    )
+    connection.executemany(
+        """
+        INSERT INTO search_segments (
+          corpus_id, work_id, variant_id, segment_id, segment_type,
+          label, title, url, snippet, search_text
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        [
+            (
+                "test",
+                "work",
+                "",
+                f"segment-{index:04d}",
+                "paragraph",
+                f"Paragraph {index}",
+                "Test",
+                f"/work/test/work#segment-{index:04d}",
+                f"needle text {index}",
+                f"needle text {index}",
+            )
+            for index in range(search_service.SQLITE_LIKE_RERANK_WINDOW + 80)
+        ],
+    )
+    try:
+        before = search_service.search_records_sqlite_like(
+            connection,
+            ["needle"],
+            "test",
+            "",
+            "",
+            40,
+            search_service.SQLITE_LIKE_RERANK_WINDOW - 40,
+        )
+        after = search_service.search_records_sqlite_like(
+            connection,
+            ["needle"],
+            "test",
+            "",
+            "",
+            40,
+            search_service.SQLITE_LIKE_RERANK_WINDOW,
+        )
+        before_ids = {item["segment_id"] for item in before["results"]}
+        after_ids = {item["segment_id"] for item in after["results"]}
+        require(len(before_ids) == len(after_ids) == 40, "LIKE pagination boundary returned an incomplete page")
+        require(before_ids.isdisjoint(after_ids), "LIKE pagination boundary repeated segment results")
+    finally:
+        connection.close()
 
 
 def check_work_alias_search() -> None:
@@ -434,6 +563,8 @@ def main() -> None:
     check_bible_direct_lookup()
     check_filters()
     check_query_payload_helper()
+    check_segment_pagination()
+    check_like_pagination_boundary()
     check_work_alias_search()
     check_work_search_index_equivalence()
     check_work_search_index_refresh_and_concurrency()

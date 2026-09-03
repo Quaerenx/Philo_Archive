@@ -10,7 +10,9 @@
   --reader-border: #d4d4d4;
   --archive-link-color: #ff0000;
   --archive-muted-color: #555555;
-  --archive-font: Verdana, Arial, Helvetica, sans-serif;
+  --archive-font: "Pretendard Variable", Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "Segoe UI", sans-serif;
+  --archive-ui-font-size: 12px;
+  --archive-mobile-control-height: 44px;
   --header-strip-image: url("/assets/header-strip.svg?v=archive2");
   --header-portrait-image: none;
   --header-portrait-width: 440px;

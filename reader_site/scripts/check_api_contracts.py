@@ -34,7 +34,7 @@ from services.sentence_translations import (  # noqa: E402
     sentence_translations_summary_from_query,
 )
 from services.source_targets import sha256_text, source_target_payload_from_query  # noqa: E402
-from services.study_sessions import study_session_export_from_query  # noqa: E402
+from services.study_sessions import export_study_session_markdown, study_session_export_from_query  # noqa: E402
 
 
 SOURCE_TARGET_BUNDLE_KEYS = {
@@ -706,6 +706,23 @@ def check_sentence_translation_export() -> None:
 
 
 def check_study_session_export() -> None:
+    confirmed_markdown = export_study_session_markdown(
+        {
+            "note_count": 0,
+            "translation_count": 1,
+            "notes": [],
+            "translations": [
+                {
+                    "work_id": "GM",
+                    "sentence_id": "p-0001.s001",
+                    "translation": "모델 원본 번역",
+                    "human_translation": "사람 확정 번역",
+                }
+            ],
+        }
+    )
+    require("확정 번역\n\n사람 확정 번역" in confirmed_markdown, "study export must prefer the human translation")
+    require("모델 원본\n\n모델 원본 번역" in confirmed_markdown, "study export must preserve the model original")
     markdown = study_session_export_from_query(
         {"corpus_id": ["nietzsche"], "work_id": ["GM"], "format": ["markdown"]}
     )

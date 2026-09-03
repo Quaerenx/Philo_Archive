@@ -236,6 +236,10 @@ def main() -> None:
 
     missing_names = sorted(REQUIRED_IMPORTED_NAMES - names)
     require(not missing_names, "server missing boundary helper imports: " + ", ".join(missing_names))
+    require(
+        "payload = self.read_json_payload(max_length=65536)" in source,
+        "human translation review payload limit must accommodate 12,000 UTF-8 characters",
+    )
 
     require("class Handler(BaseHTTPRequestHandler)" in source, "server should keep the HTTP handler")
     require("class LoopbackThreadingHTTPServer(ThreadingHTTPServer)" in source, "server should enforce loopback binding")

@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "description": "코퍼스별 번역 품질을 사람이 평가하기 위한 초기 표본입니다. pending 항목은 아직 골드 판정이 아닙니다.",
+  "rubric": {
+    "scale": {
+      "min": 1,
+      "max": 5
+    },
+    "dimensions": {
+      "fidelity": "원문의 의미와 논리 관계를 충실히 보존했는가",
+      "completeness": "누락이나 근거 없는 추가 없이 전체 내용을 옮겼는가",
+      "terminology": "철학·문헌 용어와 고유명사를 일관되게 처리했는가",
+      "korean_readability": "한국어 문장으로 정확하고 자연스럽게 읽히는가"
+    },
+    "passing_score_per_dimension": 4
+  },
+  "cases": [
+    {
+      "id": "bible-oshb-gen-1-1-s001",
+      "corpus_id": "bible",
+      "work_id": "oshb.Gen",
+      "variant_id": "oshb_morphhb",
+      "segment_id": "Gen.1.1",
+      "sentence_id": "Gen.1.1.s001",
+      "source_text": "בְּ/רֵאשִׁ֖ית בָּרָ֣א אֱלֹהִ֑ים אֵ֥ת הַ/שָּׁמַ֖יִם וְ/אֵ֥ת הָ/אָֽרֶץ׃",
+      "candidate_translation": "태초에 하나님이 천지를 창조하시니라.",
+      "reference_translation": "",
+      "human_evaluation": {
+        "status": "pending",
+        "evaluator": "",
+        "evaluated_at": "",
+        "scores": {},
+        "notes": ""
+      }
+    },
+    {
+      "id": "kierkegaard-aas-sks-0003-s001",
+      "corpus_id": "kierkegaard",
+      "work_id": "aas",
+      "variant_id": "text",
+      "segment_id": "sks-0003",
+      "sentence_id": "sks-0003.s001",
+      "source_text": "Dit Liv vilde da ei være blevet overgivet til fortient Glemsel, thi din Virksomhed vilde have gjort det uforglemmeligt, og ei blot dette, men det vilde maaskee være blevet beskrevet, opstillet som Mønster, maaskee i »Folkebladet« eller i »Naturen, Mennesket og Borgeren;« det vilde være blevet sagt om Dig:",
+      "candidate_translation": "그렇다면 당신의 삶은 마땅히 잊혀져야 할 망각에 넘겨지지 않았을 것입니다. 왜냐하면 당신의 활동이 그것을 잊을 수 없게 만들었을 것이기 때문입니다. 그리고 단지 이것뿐만 아니라, 아마도 그것은 묘사되어, 본보기로서 제시되었을 것입니다. 아마도 «Folkebladet»나 «Naturen, Mennesket og Borgeren»에서 말입니다. 당신에 대해 다음과 같이 말해졌을 것입니다:",
+      "reference_translation": "",
+      "human_evaluation": {
+        "status": "pending",
+        "evaluator": "",
+        "evaluated_at": "",
+        "scores": {},
+        "notes": ""
+      }
+    },
+    {
+      "id": "nietzsche-gm-p-0004-s001",
+      "corpus_id": "nietzsche",
+      "work_id": "GM",
+      "variant_id": "",
+      "segment_id": "p-0004",
+      "sentence_id": "p-0004.s001",
+      "source_text": "Wir sind uns unbekannt, wir Erkennenden, wir selbst uns selbst:",
+      "candidate_translation": "우리 인식하는 자들은 우리 자신에게 낯선 존재다, 우리 자신에게 우리 스스로가:",
+      "reference_translation": "",
+      "human_evaluation": {
+        "status": "pending",
+        "evaluator": "",
+        "evaluated_at": "",
+        "scores": {},
+        "notes": ""
+      }
+    },
+    {
+      "id": "wittgenstein-10-7-10-p-0001-s001",
+      "corpus_id": "wittgenstein",
+      "work_id": "10.7.10",
+      "variant_id": "source_metadata",
+      "segment_id": "p-0001",
+      "sentence_id": "p-0001.s001",
+      "source_text": "Archival note F Information about the term covered on each page of notes is provided in a systematic way as part of the filename for each facsimile.",
+      "candidate_translation": "아카이브 노트 F: 각 노트 페이지에서 다루는 용어에 관한 정보는 각 파시밀리(facsimile)의 파일 이름 일부로서 체계적인 방식으로 제공됩니다.",
+      "reference_translation": "",
+      "human_evaluation": {
+        "status": "pending",
+        "evaluator": "",
+        "evaluated_at": "",
+        "scores": {},
+        "notes": ""
+      }
+    }
+  ]
+}

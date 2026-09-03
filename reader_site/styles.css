@@ -9,7 +9,7 @@ a:hover { color: var(--archive-link-color, #FF0000); text-decoration: underline;
 .default {
   color: #000000;
   font-family: var(--archive-font, Verdana, Arial, Helvetica, sans-serif);
-  font-size: 10px;
+  font-size: var(--archive-ui-font-size, 12px);
 }
 
 * {
@@ -295,7 +295,7 @@ img {
 
 .root-links h2 {
   color: #333;
-  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-family: var(--archive-font);
   font-size: 12px;
   font-weight: bold;
   line-height: 1.35;
@@ -523,7 +523,7 @@ img {
 
 .category-section h2 {
   margin-bottom: 6px;
-  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-family: var(--archive-font);
   font-size: 12px;
   line-height: 1.25;
 }
@@ -637,27 +637,35 @@ img {
   }
 
   .root-link {
-    min-height: 42px;
+    min-height: var(--archive-mobile-control-height, 44px);
   }
 
   .corpus-search-input,
   .corpus-search-result {
-    min-height: 42px;
+    min-height: var(--archive-mobile-control-height, 44px);
   }
 
   .reading-path-link.primary {
-    min-height: 42px;
+    min-height: var(--archive-mobile-control-height, 44px);
   }
 
   .work-link {
     grid-template-columns: 1fr;
     gap: 1px;
-    min-height: 34px;
+    min-height: var(--archive-mobile-control-height, 44px);
     align-content: center;
     padding: 5px 0;
   }
 
   .work-meta {
     white-space: normal;
+  }
+
+  input,
+  select,
+  textarea,
+  button {
+    min-height: var(--archive-mobile-control-height, 44px);
+    font-size: 16px;
   }
 }

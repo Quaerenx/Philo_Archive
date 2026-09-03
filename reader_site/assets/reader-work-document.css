@@ -24,7 +24,7 @@
   padding: 18px;
   margin: 24px auto;
   color: #5f1f1f;
-  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-family: var(--archive-font);
   font-size: 13px;
   text-align: center;
   border: 1px solid #d8b7b7;

@@ -97,8 +97,14 @@ def export_study_session_markdown(payload: dict[str, Any]) -> str:
             if item
         )
         lines.extend([f"### {title or '문장 번역'}", ""])
-        if record.get("translation"):
-            lines.extend(["번역", "", str(record["translation"]), ""])
+        human_translation = str(record.get("human_translation") or "").strip()
+        model_translation = str(record.get("translation") or "").strip()
+        if human_translation:
+            lines.extend(["확정 번역", "", human_translation, ""])
+            if model_translation and model_translation != human_translation:
+                lines.extend(["모델 원본", "", model_translation, ""])
+        elif model_translation:
+            lines.extend(["번역", "", model_translation, ""])
         if record.get("commentary"):
             lines.extend(["해설", "", str(record["commentary"]), ""])
         if record.get("source_text_excerpt"):

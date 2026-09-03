@@ -52,7 +52,7 @@ ROUTES = [
     ("nietzsche-work-selected", "/work/nietzsche/GM#p-0023.s001", True),
     ("concept-tab", "/work/nietzsche/GM#p-0023.s001", True),
     ("search", "/search", True),
-    ("search-results", "/search?q=ressentiment&corpus_id=nietzsche", True),
+    ("search-results", "/search?q=the&corpus_id=wittgenstein", True),
     ("concept-search", "/search?q=Genealogie&corpus_id=nietzsche&from=/work/nietzsche/GM%23p-0023.s001&from_label=Zur%20Genealogie%20der%20Moral", True),
     ("search-empty", "/search?q=unlikelyarchivequery0000", True),
     ("notes", "/notes", True),
@@ -248,9 +248,9 @@ def check_route_markup(route: str, html: str) -> None:
             "저장한 번역</a>",
             "studyStatus",
             "aria-busy=\"false\"",
-            "study.css?v=study30",
+            "study.css?v=study31",
             "study.js?v=study53",
-            'href="/study" aria-current="page">학습</a>',
+            'href="/translations">번역</a>',
             "studyListTools",
             "학습 기록 찾기</summary>",
             "filter-panel",
@@ -258,6 +258,7 @@ def check_route_markup(route: str, html: str) -> None:
             "export-tools",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
+        require('href="/notes"' not in html and 'href="/study"' not in html, f"{route} should hide notes and study navigation")
     if route == "/notes":
         for needle in [
             "notesSubmit",
@@ -265,15 +266,16 @@ def check_route_markup(route: str, html: str) -> None:
             "notesActiveFilters",
             "notesStatus",
             "aria-busy=\"false\"",
-            "notes.css?v=notes28",
+            "notes.css?v=notes29",
             "notes.js?v=notes41",
-            'href="/notes" aria-current="page">노트</a>',
+            'href="/translations">번역</a>',
             "filter-panel",
             "범위</summary>",
             "export-tools",
             "내보내기</summary>",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
+        require('href="/notes"' not in html and 'href="/study"' not in html, f"{route} should hide notes and study navigation")
     if route.startswith("/translations"):
         for needle in [
             "translationsSubmit",
@@ -283,9 +285,9 @@ def check_route_markup(route: str, html: str) -> None:
             "translationsResults",
             "translationsReviewQueue",
             "aria-busy=\"false\"",
-            "notes.css?v=notes28",
-            "translations.css?v=trans35",
-            "translations.js?v=trans89",
+            "notes.css?v=notes29",
+            "translations.css?v=trans36",
+            "translations.js?v=trans92",
             'href="/translations" aria-current="page">번역</a>',
             "번역 찾기",
             "translationsListTools",
@@ -295,6 +297,7 @@ def check_route_markup(route: str, html: str) -> None:
             "내보내기</summary>",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
+        require('href="/notes"' not in html and 'href="/study"' not in html, f"{route} should hide notes and study navigation")
         require("Filters</summary>" not in html, f"{route} should avoid nested filter disclosures")
     if route.startswith("/search"):
         for needle in [
@@ -303,8 +306,8 @@ def check_route_markup(route: str, html: str) -> None:
             "searchActiveFilters",
             "searchStatus",
             "aria-busy=\"false\"",
-            "search.css?v=phase32",
-            "search.js?v=phase43",
+            "search.css?v=phase34",
+            "search.js?v=phase48",
             'href="/search" aria-current="page">검색</a>',
             "번역",
             "filter-panel",
@@ -312,6 +315,7 @@ def check_route_markup(route: str, html: str) -> None:
             'placeholder="예: ressentiment, John 3:16, 아침놀"',
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
+        require('href="/notes"' not in html and 'href="/study"' not in html, f"{route} should hide notes and study navigation")
         require('placeholder="예: GM, ressentiment, John 3:16"' not in html, f"{route} should avoid internal work-id examples")
     if route.startswith("/work/"):
         for needle in [
@@ -319,8 +323,6 @@ def check_route_markup(route: str, html: str) -> None:
             "toolbar-more",
             "읽기 메뉴</summary>",
             'href="#toc">목차</a>',
-            "/notes?corpus_id=",
-            "/study?corpus_id=",
             "/translations?corpus_id=",
             "원본</a>",
             "study-tabs",
@@ -375,11 +377,23 @@ def check_route_markup(route: str, html: str) -> None:
             "목차</summary>",
             "translation-output",
             "reader-sentence",
-            "reader-work-document.css?v=document1",
-            "reader-work.css?v=common149",
+            "reader-work-document.css?v=document2",
+            "reader-work.css?v=common152",
+            "reader-work-study.css?v=study2",
+            "reader-work-controls.css?v=controls2",
+            "reader-work-translation.css?v=translation2",
+            "reader-work-notes.css?v=notes2",
+            "reader-work-source.css?v=source2",
+            "reader-work-responsive.css?v=responsive3",
             "reader-work-storage.js?v=storage1",
             "reader-work-virtual.js?v=virtual1",
-            "reader-work.js?v=common196",
+            "reader-work.js?v=common197",
+            "reader-work-panel.js?v=panel1",
+            "reader-work-runtime.js?v=runtime1",
+            "reader-work-sentences.js?v=sentences2",
+            "reader-work-translation.js?v=translation3",
+            "reader-work-notes.js?v=notes2",
+            "reader-work-app.js?v=app1",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         require("Contents (" not in html, f"{route} should not expose TOC inventory counts")
@@ -924,14 +938,14 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (readerToolsState.summary !== '읽기 메뉴') {
       throw new Error(`reader tools menu should use reader-facing wording: ${JSON.stringify(readerToolsState)}`);
     }
-    if (readerToolsState.linkText !== '목차 / 원본 / 노트 / 학습 / 번역') {
+    if (readerToolsState.linkText !== '목차 / 원본 / 번역') {
       throw new Error(`reader tools should prioritize document navigation before study actions: ${JSON.stringify(readerToolsState)}`);
     }
     if (readerToolsState.toolbarLinkColor === 'rgb(255, 0, 0)' || readerToolsState.summaryColor === 'rgb(176, 0, 0)') {
       throw new Error(`reader header navigation should stay visually secondary, not red like source emphasis: ${JSON.stringify(readerToolsState)}`);
     }
-    if (readerToolsState.linkCount !== 5 || !['flex', 'inline-flex'].includes(readerToolsState.firstLinkDisplay)) {
-      throw new Error(`reader tools menu should expose five readable link targets: ${JSON.stringify(readerToolsState)}`);
+    if (readerToolsState.linkCount !== 3 || !['flex', 'inline-flex'].includes(readerToolsState.firstLinkDisplay)) {
+      throw new Error(`reader tools menu should expose three readable link targets: ${JSON.stringify(readerToolsState)}`);
     }
     if (Number(widthText) <= 420) {
       if (readerToolsState.linksDisplay !== 'grid' || readerToolsState.firstLinkHeight < 32) {
@@ -1091,10 +1105,10 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         firstLinkHeight: firstLinkBox?.height || 0
       };
     });
-    if (toolbarState.linkCount !== 5) {
-      throw new Error(`mobile toolbar should keep the five primary destinations: ${JSON.stringify(toolbarState)}`);
+    if (toolbarState.linkCount !== 3) {
+      throw new Error(`mobile toolbar should keep the three primary destinations: ${JSON.stringify(toolbarState)}`);
     }
-    if (toolbarState.firstLinkHeight < 22) {
+    if (toolbarState.firstLinkHeight < 44) {
       throw new Error(`mobile toolbar links should keep a stable tap height: ${JSON.stringify(toolbarState)}`);
     }
     if (toolbarState.toolbarHeight > 56) {
@@ -1117,13 +1131,13 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         workspaceRowOffset: Math.abs((workspaceBox?.top || 0) - (firstLinkBox?.top || 0))
       };
     });
-    if (readerToolbarState.workspaceHeight < 22 || readerToolbarState.firstLinkHeight < 22) {
+    if (readerToolbarState.workspaceHeight < 44 || readerToolbarState.firstLinkHeight < 44) {
       throw new Error(`mobile reader toolbar links should keep stable tap height: ${JSON.stringify(readerToolbarState)}`);
     }
     if (readerToolbarState.workspaceRowOffset > 4) {
       throw new Error(`closed Workspace should stay on the primary mobile toolbar row: ${JSON.stringify(readerToolbarState)}`);
     }
-    if (readerToolbarState.toolbarHeight > 32) {
+    if (readerToolbarState.toolbarHeight > 56) {
       throw new Error(`mobile reader toolbar should stay compact above the text: ${JSON.stringify(readerToolbarState)}`);
     }
   }
@@ -1239,8 +1253,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (searchPageState.noteSourceReadCount > 0 && searchPageState.firstNoteSourceReadBorderColor !== 'rgb(176, 0, 0)') {
       throw new Error(`note source Read action should use the archive primary color: ${JSON.stringify(searchPageState)}`);
     }
-    if (searchPageState.hasResults && searchPageState.groupCountText) {
-      throw new Error(`search result group headers should not repeat count summaries: ${JSON.stringify(searchPageState)}`);
+    if (searchPageState.hasResults && !/\d+건/.test(searchPageState.groupCountText)) {
+      throw new Error(`search result group headers should expose the current range and total: ${JSON.stringify(searchPageState)}`);
     }
     if (searchPageState.hasResults && searchPageState.summaryLinkTexts.some((text) => /\d/.test(text))) {
       throw new Error(`search result summary should hide visible counts from the reading flow: ${JSON.stringify(searchPageState)}`);
@@ -1256,6 +1270,32 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (searchPageState.hasResults && searchPageState.activeFilterText.includes('자료: 니체') && /\b니체\b/.test(searchPageState.resultMetaText)) {
       throw new Error(`search results should not repeat corpus metadata already shown in filters: ${JSON.stringify(searchPageState)}`);
+    }
+    if (outputPath.includes('search-results') && searchPageState.hasResults) {
+      const firstPageHref = await page.locator('#search-results-segments .segment-result .result-title a').first().getAttribute('href');
+      const nextButton = page.locator('#search-results-segments button[data-search-page]').last();
+      if (!(await nextButton.count()) || await nextButton.isDisabled()) {
+        throw new Error('search results fixture should expose an enabled next-page button');
+      }
+      await nextButton.click();
+      await page.waitForFunction(() => (
+        new URL(window.location.href).searchParams.get('page') === '2' &&
+        /^41-80\b/.test(document.querySelector('#search-results-segments .result-group-count')?.textContent.trim() || '')
+      ), null, { timeout: 7000 });
+      const secondPageState = await page.evaluate(() => ({
+        urlPage: new URL(window.location.href).searchParams.get('page') || '',
+        range: document.querySelector('#search-results-segments .result-group-count')?.textContent.trim() || '',
+        firstHref: document.querySelector('#search-results-segments .segment-result .result-title a')?.getAttribute('href') || '',
+        previousDisabled: Boolean(document.querySelector('#search-results-segments button[data-search-page]')?.disabled)
+      }));
+      if (secondPageState.urlPage !== '2' || !/^41-80\b/.test(secondPageState.range) || secondPageState.previousDisabled || secondPageState.firstHref === firstPageHref) {
+        throw new Error('search next-page interaction failed: ' + JSON.stringify(secondPageState));
+      }
+      await page.locator('#search-results-segments button[data-search-page]').first().click();
+      await page.waitForFunction(() => (
+        !new URL(window.location.href).searchParams.has('page') &&
+        /^1-40\b/.test(document.querySelector('#search-results-segments .result-group-count')?.textContent.trim() || '')
+      ), null, { timeout: 7000 });
     }
   }
   if (parsed.pathname === '/search' && !parsed.search) {
@@ -2020,8 +2060,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       const primaryMinWidth = Math.min(...state.primaryStudyTabs.map((tab) => tab.width).filter(Boolean));
       const secondaryMaxWidth = Math.max(...state.inactiveSecondaryTabs.map((tab) => tab.width).filter(Boolean));
       const secondaryMaxHeight = Math.max(...state.inactiveSecondaryTabs.map((tab) => tab.height).filter(Boolean));
-      if (!primaryMinWidth || !secondaryMaxWidth || secondaryMaxWidth >= primaryMinWidth * 0.58 || secondaryMaxHeight > 30) {
-        throw new Error(`mobile secondary study tabs should stay compact beside primary reading tabs: ${JSON.stringify(state)}`);
+      if (!primaryMinWidth || !secondaryMaxWidth || secondaryMaxWidth >= primaryMinWidth * 0.58 || secondaryMaxHeight < 44 || secondaryMaxHeight > 48) {
+        throw new Error(`mobile secondary study tabs should keep compact widths and touch-safe heights: ${JSON.stringify(state)}`);
       }
     }
     if (state.studyToolsOpen) throw new Error(`study tools should stay collapsed in default reading mode: ${JSON.stringify(state)}`);
@@ -2029,8 +2069,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (/저장|노트|이동|번역기|진행/.test(state.studyToolsSummary)) {
       throw new Error(`study tools summary should not enumerate hidden management actions in reading mode: ${JSON.stringify(state)}`);
     }
-    if (state.studyToolsSummaryHeight > 24 || state.studyToolsSummaryWidth > 64 || parseFloat(state.studyToolsSummaryFontSize || '99') > 10) {
-      throw new Error(`reading mode study tools summary should stay visually secondary: ${JSON.stringify(state)}`);
+    if ((state.isMobile && (state.studyToolsSummaryHeight < 44 || state.studyToolsSummaryHeight > 48)) || (!state.isMobile && state.studyToolsSummaryHeight > 24) || state.studyToolsSummaryWidth > 64 || parseFloat(state.studyToolsSummaryFontSize || '99') > 10) {
+      throw new Error(`reading mode study tools summary should stay visually secondary with a touch-safe target: ${JSON.stringify(state)}`);
     }
     if (!['rgba(0, 0, 0, 0)', 'transparent'].includes(state.studyToolsBorderTopColor)) {
       throw new Error(`reading mode study tools should not add another visible divider below the reading actions: ${JSON.stringify(state)}`);
@@ -2047,8 +2087,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (state.isMobile && state.studyPageHeight > Math.ceil(state.viewportHeight * 0.80)) {
       throw new Error(`mobile study panel should leave a source-text cue visible above it: ${JSON.stringify(state)}`);
     }
-    if (state.isMobile && (state.studyPanelToggleDisplay !== 'grid' || state.studyPanelToggleHeight > 42)) {
-      throw new Error(`mobile study toggle should stay compact as a handle: ${JSON.stringify(state)}`);
+    if (state.isMobile && (state.studyPanelToggleDisplay !== 'grid' || state.studyPanelToggleHeight < 44 || state.studyPanelToggleHeight > 48)) {
+      throw new Error(`mobile study toggle should stay compact and touch-safe as a handle: ${JSON.stringify(state)}`);
     }
     const utilityState = await page.evaluate(() => {
       const utility = document.querySelector('.translation-utility');

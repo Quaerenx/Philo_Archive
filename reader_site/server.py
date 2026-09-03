@@ -371,7 +371,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def handle_sentence_translation_review_put(self, record_id: str) -> None:
         try:
-            payload = self.read_json_payload(max_length=8192)
+            payload = self.read_json_payload(max_length=65536)
         except ValueError as exc:
             self.send_json({"ok": False, "error": str(exc)}, status=400)
             return

@@ -11,8 +11,10 @@ const statusEl = document.getElementById("searchStatus");
 const resultsEl = document.getElementById("results");
 const initialParams = new URLSearchParams(location.search);
 const metadataCache = {};
+const SEARCH_PAGE_SIZE = 40;
 let activeSearchController = null;
 let activeSearchRequest = 0;
+let currentSearchPage = Math.max(1, Number.parseInt(initialParams.get("page") || "1", 10) || 1);
 const metadataEndpoints = {
   nietzsche: "/api/nietzsche/metadata",
   bible: "/api/bible/metadata",
@@ -95,12 +97,13 @@ function resultCorpusMeta(corpusId) {
   return corpusSelect.value ? "" : corpusLabel(corpusId);
 }
 
-function updateUrl(query, corpusId, workId, variantId) {
+function updateUrl(query, corpusId, workId, variantId, page = currentSearchPage) {
   const params = new URLSearchParams();
   if (query) params.set("q", query);
   if (corpusId) params.set("corpus_id", corpusId);
   if (workId) params.set("work_id", workId);
   if (variantId) params.set("variant_id", variantId);
+  if (page > 1) params.set("page", String(page));
   if (searchReturnHref) params.set("from", searchReturnHref);
   if (searchReturnHref && searchReturnLabel) params.set("from_label", searchReturnLabel);
   history.replaceState(null, "", params.toString() ? `/search?${params}` : "/search");
@@ -201,6 +204,7 @@ async function clearSearchFilters() {
   corpusSelect.value = "";
   workSelect.value = "";
   variantSelect.value = "";
+  currentSearchPage = 1;
   await populateFilters();
   updateUrl("", "", "", "");
   statusEl.textContent = "";
@@ -218,9 +222,13 @@ function notesHref(result) {
   return `/notes?${params}`;
 }
 
-function resultGroupHeader(label) {
+function resultGroupHeader(label, total = 0, range = "") {
+  const count = Number(total || 0);
+  const countLabel = count ? `${count.toLocaleString()}건` : "";
+  const detail = [range, countLabel].filter(Boolean).join(" / ");
   return `<div class="result-group-header">
     <h2>${escapeHtml(label)}</h2>
+    ${detail ? `<span class="result-group-count">${escapeHtml(detail)}</span>` : ""}
   </div>`;
 }
 
@@ -251,6 +259,19 @@ function resultSummaryNav(groups) {
     })
     .join("");
   return `<nav class="result-summary-nav" aria-label="검색 결과 묶음">${links}</nav>`;
+}
+
+function renderSearchPagination(payload) {
+  const page = Math.max(1, Number(payload.page || 1));
+  const totalPages = Math.max(0, Number(payload.total_pages || 0));
+  if (totalPages <= 1) return "";
+  const previousPage = Math.max(1, page - 1);
+  const nextPage = Math.min(totalPages, page + 1);
+  return `<nav class="search-pagination" aria-label="본문 검색 페이지">
+    <button type="button" data-search-page="${previousPage}"${payload.has_previous ? "" : " disabled"}>이전</button>
+    <span aria-current="page">${page.toLocaleString()} / ${totalPages.toLocaleString()}쪽</span>
+    <button type="button" data-search-page="${nextPage}"${payload.has_next ? "" : " disabled"}>다음</button>
+  </nav>`;
 }
 
 function setSearchBusy(isBusy) {
@@ -297,6 +318,19 @@ function renderResults(payload, query) {
   const workResults = payload.work_results || [];
   const segmentResults = payload.results || [];
   const noteResults = payload.note_results || [];
+  const page = Math.max(1, Number(payload.page || 1));
+  const segmentTotal = Math.max(0, Number(payload.count || 0));
+  const segmentStart = segmentResults.length ? Number(payload.offset || 0) + 1 : 0;
+  const segmentEnd = segmentResults.length ? Number(payload.offset || 0) + segmentResults.length : 0;
+  const segmentRange = segmentResults.length ? `${segmentStart.toLocaleString()}-${segmentEnd.toLocaleString()}` : "";
+  currentSearchPage = page;
+  updateUrl(
+    query,
+    corpusSelect.value,
+    workSelect.disabled ? "" : workSelect.value,
+    variantSelect.disabled ? "" : variantSelect.value,
+    currentSearchPage
+  );
   statusEl.textContent = "";
   const workMarkup = (payload.work_results || [])
     .map((result) => {
@@ -365,15 +399,15 @@ function renderResults(payload, query) {
       id: "search-results-works",
       label: "문서",
       count: workResults.length,
-      markup: `<section id="search-results-works" class="result-group">${resultGroupHeader("문서")}${workMarkup}</section>`
+      markup: `<section id="search-results-works" class="result-group">${resultGroupHeader("문서", payload.work_count || workResults.length)}${workMarkup}</section>`
     });
   }
-  if (segmentMarkup) {
+  if (segmentMarkup || segmentTotal) {
     groups.push({
       id: "search-results-segments",
       label: "본문",
-      count: segmentResults.length,
-      markup: `<section id="search-results-segments" class="result-group">${resultGroupHeader("본문")}${segmentMarkup}</section>`
+      count: segmentTotal,
+      markup: `<section id="search-results-segments" class="result-group">${resultGroupHeader("본문", segmentTotal, segmentRange)}${segmentMarkup}${renderSearchPagination(payload)}</section>`
     });
   }
   if (noteMarkup) {
@@ -381,7 +415,7 @@ function renderResults(payload, query) {
       id: "search-results-notes",
       label: "노트",
       count: noteResults.length,
-      markup: `<section id="search-results-notes" class="result-group">${resultGroupHeader("노트")}${noteMarkup}</section>`
+      markup: `<section id="search-results-notes" class="result-group">${resultGroupHeader("노트", payload.note_count || noteResults.length)}${noteMarkup}</section>`
     });
   }
   resultsEl.innerHTML = groups.length
@@ -466,18 +500,19 @@ async function removeSearchFilter(filterName) {
   runSearch();
 }
 
-async function runSearch() {
+async function runSearch(page = 1, focusResults = false) {
   const query = queryInput.value.trim();
   const corpusId = corpusSelect.value;
   const workId = workSelect.disabled ? "" : workSelect.value;
   const variantId = variantSelect.disabled ? "" : variantSelect.value;
+  currentSearchPage = Math.max(1, Number(page || 1));
   const requestId = activeSearchRequest + 1;
   activeSearchRequest = requestId;
   if (activeSearchController) {
     activeSearchController.abort();
     activeSearchController = null;
   }
-  updateUrl(query, corpusId, workId, variantId);
+  updateUrl(query, corpusId, workId, variantId, currentSearchPage);
   updateSearchClearState();
   if (!query) {
     statusEl.textContent = "";
@@ -488,7 +523,12 @@ async function runSearch() {
   const controller = new AbortController();
   activeSearchController = controller;
   renderSearchPending(query);
-  const params = new URLSearchParams({ q: query, limit: "40" });
+  const params = new URLSearchParams({
+    q: query,
+    limit: String(SEARCH_PAGE_SIZE),
+    page: String(currentSearchPage),
+    offset: String((currentSearchPage - 1) * SEARCH_PAGE_SIZE)
+  });
   if (corpusId) params.set("corpus_id", corpusId);
   if (workId) params.set("work_id", workId);
   if (variantId) params.set("variant_id", variantId);
@@ -501,6 +541,9 @@ async function runSearch() {
       return;
     }
     renderResults(await response.json(), query);
+    if (focusResults) {
+      document.getElementById("search-results-segments")?.scrollIntoView({ block: "start" });
+    }
   } catch (error) {
     if (error && error.name === "AbortError") {
       return;
@@ -519,7 +562,7 @@ async function runSearch() {
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
-  runSearch();
+  runSearch(1);
 });
 
 if (searchClear) {
@@ -535,6 +578,11 @@ if (activeFiltersEl) {
 }
 
 resultsEl.addEventListener("click", async (event) => {
+  const pageButton = event.target.closest("button[data-search-page]");
+  if (pageButton && !pageButton.disabled) {
+    await runSearch(Number(pageButton.dataset.searchPage || 1), true);
+    return;
+  }
   const emptyAction = event.target.closest("[data-empty-action]");
   if (!emptyAction) return;
   if (emptyAction.dataset.emptyAction === "clear-search") {
@@ -544,11 +592,11 @@ resultsEl.addEventListener("click", async (event) => {
 
 corpusSelect.addEventListener("change", async () => {
   await populateFilters();
-  runSearch();
+  runSearch(1);
 });
 
-workSelect.addEventListener("change", runSearch);
-variantSelect.addEventListener("change", runSearch);
+workSelect.addEventListener("change", () => runSearch(1));
+variantSelect.addEventListener("change", () => runSearch(1));
 queryInput.addEventListener("input", updateSearchClearState);
 
 queryInput.value = initialParams.get("q") || "";
@@ -559,7 +607,7 @@ renderSearchReturn();
 populateFilters(initialWorkId, initialVariantId).then(() => {
   updateSearchClearState();
   if (queryInput.value) {
-    runSearch();
+    runSearch(currentSearchPage);
   } else {
     resultsEl.innerHTML = renderSearchStart();
   }

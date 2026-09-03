@@ -114,6 +114,7 @@ python .\scripts\check_search_artifact_integrity.py
 python .\scripts\check_notes_contracts.py
 python .\scripts\check_note_target_integrity.py
 python .\scripts\check_ai_records_contracts.py
+python .\scripts\check_translation_goldset.py
 python .\scripts\check_static_routes.py
 python .\scripts\build_search_db.py --check
 git diff --check

@@ -13,6 +13,7 @@ SITE = Path(__file__).resolve().parents[1]
 REPO = SITE.parent
 POLICY = SITE / "docs" / "source_publication_policy.md"
 GITIGNORE = REPO / ".gitignore"
+TRANSLATION_GOLDSET = SITE / "data" / "translation_quality_goldset.json"
 sys.path.insert(0, str(SITE))
 
 from path_config import SOURCE_ROOT_NAMES  # noqa: E402
@@ -41,6 +42,7 @@ FORBIDDEN_TRACKED_PATTERNS = [
 REQUIRED_POLICY_SECTIONS = [
     "## Publication Boundary",
     "## Metadata Rule",
+    "## Evaluation Fixture Exception",
     "## Local Restore Rule",
     "## Verification",
 ]
@@ -52,6 +54,7 @@ REQUIRED_POLICY_PHRASES = [
     "generated segment JSONL files",
     "personal notes",
     "generated AI interpretations",
+    "sentence-sized",
     "PHILOSOPHY_CRAWL_ROOT",
 ]
 
@@ -81,6 +84,21 @@ FORBIDDEN_TEXT_KEYS = {
 }
 
 ABSOLUTE_WINDOWS_PATH = re.compile(r"^[A-Za-z]:[\\/]")
+MAX_GOLDSET_BYTES = 64 * 1024
+MAX_GOLDSET_CASES = 64
+MAX_GOLDSET_SOURCE_CHARS = 1000
+MAX_GOLDSET_TOTAL_SOURCE_CHARS = 20_000
+MAX_GOLDSET_TRANSLATION_CHARS = 4000
+FORBIDDEN_GOLDSET_KEYS = {
+    "model",
+    "model_id",
+    "model_name",
+    "path",
+    "runtime",
+    "runtime_id",
+    "source_path",
+    "source_root",
+}
 
 
 def require(condition: bool, message: str) -> None:
@@ -153,6 +171,47 @@ def check_metadata_json() -> None:
                 require(not ABSOLUTE_WINDOWS_PATH.match(value), f"{path.relative_to(REPO)} contains absolute local path at {pointer}")
 
 
+def check_translation_goldset_fixture() -> None:
+    require(TRANSLATION_GOLDSET.exists(), "missing bounded translation quality fixture")
+    require(TRANSLATION_GOLDSET.stat().st_size <= MAX_GOLDSET_BYTES, "translation quality fixture exceeds 64 KiB")
+    payload = json.loads(TRANSLATION_GOLDSET.read_text(encoding="utf-8"))
+    cases = payload.get("cases") if isinstance(payload, dict) else None
+    require(isinstance(cases, list) and 0 < len(cases) <= MAX_GOLDSET_CASES, "invalid translation quality fixture size")
+
+    for pointer, _ in walk_json(payload):
+        key = pointer.rsplit(".", maxsplit=1)[-1]
+        if "[" in key:
+            key = key.split("[", maxsplit=1)[0]
+        allowed_source_text = key == "source_text" and re.fullmatch(r"cases\[\d+\]\.source_text", pointer)
+        require(
+            key not in FORBIDDEN_TEXT_KEYS or bool(allowed_source_text),
+            f"{TRANSLATION_GOLDSET.relative_to(REPO)} contains an unbounded source-text key {pointer}",
+        )
+        normalized_key = key.lower()
+        require(
+            normalized_key not in FORBIDDEN_GOLDSET_KEYS
+            and "prompt" not in normalized_key
+            and "runtime" not in normalized_key,
+            f"translation quality fixture contains forbidden runtime metadata at {pointer}",
+        )
+
+    total_source_chars = 0
+    for index, case in enumerate(cases, start=1):
+        require(isinstance(case, dict), f"translation quality fixture case {index} must be an object")
+        source_text = case.get("source_text")
+        require(isinstance(source_text, str) and bool(source_text.strip()), f"translation quality fixture case {index} needs source_text")
+        require(len(source_text) <= MAX_GOLDSET_SOURCE_CHARS, f"translation quality fixture case {index} source_text is too long")
+        total_source_chars += len(source_text)
+        for field in ("candidate_translation", "reference_translation"):
+            value = case.get(field, "")
+            require(isinstance(value, str), f"translation quality fixture case {index}.{field} must be text")
+            require(len(value) <= MAX_GOLDSET_TRANSLATION_CHARS, f"translation quality fixture case {index}.{field} is too long")
+    require(
+        total_source_chars <= MAX_GOLDSET_TOTAL_SOURCE_CHARS,
+        "translation quality fixture exceeds its aggregate source-text limit",
+    )
+
+
 def check_docs_reference_policy() -> None:
     required_docs = [
         REPO / "README.md",
@@ -171,6 +230,7 @@ def main() -> None:
     check_gitignore()
     check_tracked_paths()
     check_metadata_json()
+    check_translation_goldset_fixture()
     check_docs_reference_policy()
     print("source publication contracts ok")
 

@@ -353,6 +353,7 @@ function recordMatchesQuery(record) {
     record.sentence_id,
     record.source_text_excerpt,
     record.translation,
+    record.human_translation,
     record.commentary
   ].map(cleanText).join(" ").toLowerCase();
   return haystack.includes(query);
@@ -468,9 +469,28 @@ function recordGroupKey(record) {
   ].join("\u001f");
 }
 
+function recordSentenceKey(record) {
+  return [
+    cleanText(record.corpus_id || ""),
+    cleanText(record.work_id || ""),
+    cleanText(record.variant_id || ""),
+    cleanText(record.segment_id || ""),
+    cleanText(record.sentence_id || record.target_id || record.source_text_sha256 || record.id || "")
+  ].join("\u001f");
+}
+
+function recordSortTime(record) {
+  for (const value of [record.generated_at, record.created_at, record.updated_at, record.human_translation_updated_at, record.reviewed_at]) {
+    const timestamp = Date.parse(cleanText(value || ""));
+    if (Number.isFinite(timestamp)) return timestamp;
+  }
+  return 0;
+}
+
 function groupedTranslationRecords(records) {
   const groups = [];
   const indexes = new Map();
+  const recordIndexes = new Map(records.map((record, index) => [record, index]));
   for (const record of records) {
     const key = recordGroupKey(record);
     let group = indexes.get(key);
@@ -480,7 +500,8 @@ function groupedTranslationRecords(records) {
         corpusId: cleanText(record.corpus_id || ""),
         workId: cleanText(record.work_id || ""),
         label: recordContext(record) || corpusDisplayName(record.corpus_id) || "번역",
-        records: [],
+        sentences: [],
+        sentenceIndexes: new Map(),
         reviewedCount: 0
       };
       indexes.set(key, group);
@@ -489,7 +510,23 @@ function groupedTranslationRecords(records) {
     if (normalizedReviewState(record) === "reviewed") {
       group.reviewedCount += 1;
     }
-    group.records.push(record);
+    const sentenceKey = recordSentenceKey(record);
+    let sentence = group.sentenceIndexes.get(sentenceKey);
+    if (!sentence) {
+      sentence = { key: sentenceKey, records: [] };
+      group.sentenceIndexes.set(sentenceKey, sentence);
+      group.sentences.push(sentence);
+    }
+    sentence.records.push(record);
+  }
+  for (const group of groups) {
+    for (const sentence of group.sentences) {
+      sentence.records.sort((left, right) => (
+        recordSortTime(right) - recordSortTime(left) ||
+        (recordIndexes.get(right) ?? 0) - (recordIndexes.get(left) ?? 0)
+      ));
+    }
+    delete group.sentenceIndexes;
   }
   return groups;
 }
@@ -532,10 +569,15 @@ function renderRecord(record, options) {
   const title = recordTitle(record) || "번역";
   const context = recordContext(record);
   const source = cleanText(record.source_text_excerpt || "");
-  const translation = cleanText(record.translation || "");
+  const rawModelTranslation = String(record.translation || "").trim();
+  const rawHumanTranslation = String(record.human_translation || "").trim();
+  const modelTranslation = cleanText(rawModelTranslation);
+  const humanTranslation = cleanText(rawHumanTranslation);
+  const translation = humanTranslation || modelTranslation;
   const commentary = cleanText(record.commentary || record.interpretation || "");
   const targetUrl = cleanText(record.target_url || "");
   const isRecent = record.id === recentlyChangedRecordId;
+  const hasHumanTranslation = Boolean(humanTranslation);
   const reviewLabel = REVIEW_LABELS[reviewState] || reviewState;
   const qualityState = cleanText(record.quality_state || "");
   const qualityLabel = QUALITY_LABELS[qualityState] || "";
@@ -548,16 +590,20 @@ function renderRecord(record, options) {
   const showContext = options.showContext !== false;
   const showSourceDetail = options.showSourceDetail === true;
   const openCommentary = options.openCommentary === true;
-  const reviewKicker = showReviewBadge || qualityBadge
+  const confirmedBadge = hasHumanTranslation
+    ? '<span class="human-translation-badge">사람 확정</span>'
+    : "";
+  const reviewKicker = showReviewBadge || qualityBadge || confirmedBadge
     ? `<div class="translation-record-kicker">
         ${showReviewBadge ? `<span class="review-badge" aria-label="검토 상태: ${escapeHtml(reviewLabel)}">${escapeHtml(reviewLabel)}</span>` : ""}
+        ${confirmedBadge}
         ${qualityBadge}
       </div>`
     : "";
-  const resetAction = reviewState !== "generated"
+  const resetAction = !hasHumanTranslation && reviewState !== "generated"
     ? '<button type="button" data-review-state="generated" aria-keyshortcuts="G" title="검토할 번역으로 되돌리기" aria-label="검토할 번역으로 되돌리기">검토로 되돌리기</button>'
     : "";
-  const rejectAction = reviewState !== "rejected"
+  const rejectAction = !hasHumanTranslation && reviewState !== "rejected"
     ? `<details class="translation-danger-actions">
         <summary>제외</summary>
         <button type="button" data-review-state="rejected" aria-keyshortcuts="X" title="이 번역 제외하기" aria-label="이 번역 제외하기">제외하기</button>
@@ -586,6 +632,21 @@ function renderRecord(record, options) {
     sourceAction,
     moreAction
   ].filter(Boolean).join("") : "";
+  const modelOriginal = hasHumanTranslation && modelTranslation && modelTranslation !== humanTranslation
+    ? `<details class="translation-model-original"><summary>모델 원본</summary><p>${escapeHtml(modelTranslation)}</p></details>`
+    : "";
+  const humanEditor = showReviewActions
+    ? `<details class="translation-human-editor">
+        <summary>${hasHumanTranslation ? "확정 번역 수정" : "번역 직접 교정"}</summary>
+        <form data-human-translation-form>
+          <label>
+            <span>사람 확정 번역</span>
+            <textarea name="human_translation" maxlength="12000" required>${escapeHtml(rawHumanTranslation || rawModelTranslation)}</textarea>
+          </label>
+          <button type="submit">확정 저장</button>
+        </form>
+      </details>`
+    : "";
   return `<article class="translation-record-card${isRecent ? " is-recent" : ""}" tabindex="-1" data-record-id="${escapeHtml(record.id)}" data-corpus-id="${escapeHtml(record.corpus_id)}" data-review-state="${escapeHtml(reviewState)}">
     <header class="translation-record-heading">
       <h2 class="translation-record-title">${targetUrl ? `<a href="${escapeHtml(targetUrl)}" data-open-source aria-keyshortcuts="O" title="원문으로 이동">${escapeHtml(title)}</a>` : escapeHtml(title)}</h2>
@@ -593,14 +654,39 @@ function renderRecord(record, options) {
       ${showContext && context ? `<div class="translation-record-context">${escapeHtml(context)}</div>` : ""}
     </header>
     ${translation ? `<p class="translation-text">${escapeHtml(translation)}</p>` : ""}
+    ${modelOriginal}
     ${commentary ? `<details class="translation-commentary"${openCommentary ? " open" : ""} aria-label="해설"><summary>해설</summary><p>${escapeHtml(commentary)}</p></details>` : ""}
     ${source && showSourceDetail ? `<details class="translation-source"><summary>선택 문장</summary><blockquote>${escapeHtml(source)}</blockquote></details>` : ""}
+    ${humanEditor}
     ${actions ? `<footer class="translation-record-footer">
       <div class="translation-actions">
         ${actions}
       </div>
     </footer>` : ""}
   </article>`;
+}
+
+function renderSentenceRecords(sentence, options, groupIndex, sentenceIndex) {
+  const [latest, ...older] = sentence.records;
+  if (!latest) return "";
+  const current = renderRecord(latest, {
+    ...options,
+    showContext: false,
+    openCommentary: options.openFirstCommentary === true && groupIndex === 0 && sentenceIndex === 0
+  });
+  const history = older.length
+    ? `<details class="translation-version-history">
+        <summary>이전 번역 ${older.length.toLocaleString()}개</summary>
+        <div class="translation-version-history-body">
+          ${older.map((record) => renderRecord(record, {
+            ...options,
+            showContext: false,
+            openCommentary: false
+          })).join("")}
+        </div>
+      </details>`
+    : "";
+  return `<div class="translation-sentence-records">${current}${history}</div>`;
 }
 
 function renderRecordGroups(records, options) {
@@ -612,11 +698,7 @@ function renderRecordGroups(records, options) {
         <span>${escapeHtml(group.label)}</span>
         ${showGroupActions ? renderGroupActions(group) : ""}
       </div>
-      ${group.records.map((record, recordIndex) => renderRecord(record, {
-        ...options,
-        showContext: false,
-        openCommentary: options.openFirstCommentary === true && groupIndex === 0 && recordIndex === 0
-      })).join("")}
+      ${group.sentences.map((sentence, sentenceIndex) => renderSentenceRecords(sentence, options, groupIndex, sentenceIndex)).join("")}
     </section>`).join("");
 }
 
@@ -673,7 +755,8 @@ function openReviewQueue() {
 }
 
 function visibleRecordCards() {
-  return Array.from(resultsEl.querySelectorAll(".translation-record-card:not(.notes-skeleton)"));
+  return Array.from(resultsEl.querySelectorAll(".translation-record-card:not(.notes-skeleton)"))
+    .filter((card) => !card.closest("details:not([open])"));
 }
 
 function focusedRecordCard() {
@@ -776,6 +859,21 @@ async function updateRecordReview(recordId, corpusId, reviewState) {
     body: JSON.stringify({ corpus_id: corpusId, review_state: reviewState })
   });
   return response.ok;
+}
+
+async function updateHumanTranslation(recordId, corpusId, humanTranslation) {
+  const response = await fetch(`/api/sentence-translations/${encodeURIComponent(recordId)}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      corpus_id: corpusId,
+      review_state: "reviewed",
+      human_translation: humanTranslation
+    })
+  });
+  if (!response.ok) return null;
+  const payload = await response.json();
+  return payload.record || null;
 }
 
 async function deleteTranslationRecord(recordId, corpusId) {
@@ -901,6 +999,39 @@ activeFiltersEl.addEventListener("click", (event) => {
   const button = event.target.closest("button[data-filter]");
   if (!button) return;
   removeFilter(button.dataset.filter || "");
+});
+
+resultsEl.addEventListener("submit", async (event) => {
+  const humanForm = event.target.closest("form[data-human-translation-form]");
+  if (!humanForm) return;
+  event.preventDefault();
+  const card = humanForm.closest(".translation-record-card");
+  const submitButton = humanForm.querySelector('button[type="submit"]');
+  const textarea = humanForm.elements.human_translation;
+  if (!card || !submitButton || !textarea) return;
+  const humanTranslation = textarea.value.trim();
+  if (!humanTranslation) {
+    textarea.focus();
+    statusEl.textContent = "확정 번역을 입력해주세요.";
+    return;
+  }
+  const recordId = card.dataset.recordId || "";
+  const corpusId = card.dataset.corpusId || corpusSelect.value || DEFAULT_CORPUS;
+  setActionButtonBusy(submitButton, true);
+  try {
+    const updated = await updateHumanTranslation(recordId, corpusId, humanTranslation);
+    if (!updated) {
+      statusEl.textContent = "확정 번역을 저장하지 못했습니다.";
+      return;
+    }
+    recentlyChangedRecordId = recordId;
+    await loadRecords();
+    statusEl.textContent = "사람 확정 번역을 저장했습니다. 모델 원본은 그대로 보존됩니다.";
+  } catch {
+    statusEl.textContent = "확정 번역을 저장하지 못했습니다.";
+  } finally {
+    setActionButtonBusy(submitButton, false);
+  }
 });
 
 resultsEl.addEventListener("click", async (event) => {

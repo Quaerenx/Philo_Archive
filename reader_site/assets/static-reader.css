@@ -8,7 +8,7 @@ body {
   background: var(--page-background, #d9d9d9);
   color: #000;
   font-family: var(--archive-font, Verdana, Arial, Helvetica, sans-serif);
-  font-size: 10px;
+  font-size: var(--archive-ui-font-size, 12px);
   letter-spacing: 0;
 }
 
@@ -245,6 +245,11 @@ pre {
 
   .reading-body {
     font-size: 15px;
+  }
+
+  .toolbar a,
+  .toolbar summary {
+    min-height: var(--archive-mobile-control-height, 44px);
   }
 
   .segment-anchor {

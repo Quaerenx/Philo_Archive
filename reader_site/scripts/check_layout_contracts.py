@@ -31,6 +31,24 @@ READER_CSS_FILES = [
     "assets/notes.css",
     "assets/study.css",
 ]
+READER_WORK_CSS_FILES = [
+    "assets/reader-work.css",
+    "assets/reader-work-study.css",
+    "assets/reader-work-controls.css",
+    "assets/reader-work-translation.css",
+    "assets/reader-work-notes.css",
+    "assets/reader-work-source.css",
+    "assets/reader-work-responsive.css",
+]
+READER_WORK_JS_FILES = [
+    "assets/reader-work.js",
+    "assets/reader-work-panel.js",
+    "assets/reader-work-runtime.js",
+    "assets/reader-work-sentences.js",
+    "assets/reader-work-translation.js",
+    "assets/reader-work-notes.js",
+    "assets/reader-work-app.js",
+]
 
 
 def require(condition: bool, message: str) -> None:
@@ -42,6 +60,14 @@ def read_site_file(relative_path: str) -> str:
     return (SITE / relative_path).read_text(encoding="utf-8")
 
 
+def read_reader_work_css() -> str:
+    return "\n".join(read_site_file(path) for path in READER_WORK_CSS_FILES)
+
+
+def read_reader_work_js() -> str:
+    return "\n".join(read_site_file(path) for path in READER_WORK_JS_FILES)
+
+
 def require_contains(text: str, needle: str, label: str) -> None:
     require(needle in text, f"{label} missing {needle!r}")
 
@@ -49,9 +75,9 @@ def require_contains(text: str, needle: str, label: str) -> None:
 def js_function_body(script: str, function_name: str) -> str:
     signature = f"function {function_name}"
     start = script.find(signature)
-    require(start >= 0, f"assets/reader-work.js missing {signature}")
+    require(start >= 0, f"reader work script bundle missing {signature}")
     open_brace = script.find("{", start)
-    require(open_brace >= 0, f"assets/reader-work.js malformed {signature}")
+    require(open_brace >= 0, f"reader work script bundle malformed {signature}")
     depth = 0
     for index in range(open_brace, len(script)):
         char = script[index]
@@ -61,7 +87,7 @@ def js_function_body(script: str, function_name: str) -> str:
             depth -= 1
             if depth == 0:
                 return script[open_brace + 1:index]
-    raise AssertionError(f"assets/reader-work.js unterminated {signature}")
+    raise AssertionError(f"reader work script bundle unterminated {signature}")
 
 
 def require_ordered_markers(text: str, markers: list[str], label: str) -> None:
@@ -95,10 +121,13 @@ def check_tokens() -> None:
         "--mobile-header-strip-height": "112px",
         "--mobile-header-spacer-height": "84px",
         "--mobile-portrait-spacer-height": "112px",
+        "--archive-ui-font-size": "12px",
+        "--archive-mobile-control-height": "44px",
     }
     for name, value in expected_tokens.items():
         require_contains(tokens, f"{name}: {value};", TOKEN_FILE)
     for needle in [
+        '"Pretendard Variable", Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic"',
         "body.category-nietzsche",
         "body.nietzsche-work",
         '--header-portrait-image: url("/assets/nietzsche-header-left.png?v=1882");',
@@ -141,16 +170,16 @@ def check_corpus_display_policy() -> None:
 def check_html_entrypoints() -> None:
     for relative_path in HTML_ENTRYPOINTS:
         html = read_site_file(relative_path)
-        require_contains(html, "/assets/design-tokens.css", relative_path)
+        require_contains(html, "/assets/design-tokens.css?v=frame5", relative_path)
         require_contains(html, 'class="page"', relative_path)
         if relative_path == "index.html":
-            require_contains(html, "/styles.css?v=home13", relative_path)
+            require_contains(html, "/styles.css?v=home14", relative_path)
             require_contains(html, "/app.js?v=home19", relative_path)
             require('class="site-tools"' not in html, "index.html should not expose the retired tool navigation")
             for retired_link in ['href="/search"', 'href="/notes"', 'href="/study"', 'href="/translations"']:
                 require(retired_link not in html, f"index.html should not expose retired home tool link {retired_link!r}")
         if relative_path in {"templates/reading.html", "templates/source.html"}:
-            require_contains(html, "/assets/static-reader.css?v=static3", relative_path)
+            require_contains(html, "/assets/static-reader.css?v=static4", relative_path)
             require_contains(html, "파일 정보</summary>", relative_path)
             require("Path</summary>" not in html, f"{relative_path} should avoid tool-oriented path text")
             require("자료 위치</summary>" not in html, f"{relative_path} should avoid storage-oriented source detail text")
@@ -184,7 +213,7 @@ def check_reader_css(relative_path: str, css: str) -> None:
         require_contains(css, needle, relative_path)
     if relative_path == "assets/reader-work.css":
         require_contains(css, "width: calc(100% - 64px);", relative_path)
-        require_contains(css, "grid-template-columns: minmax(0, 1fr) var(--study-panel-width, 420px);", relative_path)
+        require_contains(css, "grid-template-columns: minmax(0, 1fr) var(--study-panel-width, 460px);", relative_path)
     elif relative_path == "assets/static-reader.css":
         for needle in [
             ".source-links",
@@ -268,11 +297,11 @@ def check_home_css() -> None:
         "width: 100%;",
         "padding: 0 10px 24px;",
         ".reading-path-link.primary",
-        "min-height: 42px;",
+        "min-height: var(--archive-mobile-control-height, 44px);",
         ".corpus-search-input",
         ".corpus-search-result",
         ".work-link",
-        "min-height: 34px;",
+        "font-size: 16px;",
         "align-content: center;",
     ]:
         require_contains(responsive, needle, f"{relative_path} responsive block")
@@ -358,7 +387,7 @@ def check_home_script() -> None:
 
 def check_reader_pages_css() -> None:
     for relative_path in READER_CSS_FILES:
-        css = read_site_file(relative_path)
+        css = read_reader_work_css() if relative_path == "assets/reader-work.css" else read_site_file(relative_path)
         check_page_frame_css(relative_path, css)
         check_reader_css(relative_path, css)
 
@@ -388,8 +417,8 @@ def check_search_ui() -> None:
     script = read_site_file("assets/search.js")
     css = read_site_file("assets/search.css")
     for needle in [
-        "/assets/search.css?v=phase32",
-        "/assets/search.js?v=phase43",
+        "/assets/search.css?v=phase34",
+        "/assets/search.js?v=phase48",
         'href="/search" aria-current="page">검색</a>',
         'href="/translations"',
         "본문 찾기",
@@ -408,6 +437,7 @@ def check_search_ui() -> None:
         'aria-busy="false"',
     ]:
         require_contains(html, needle, "search.html")
+    require('href="/notes"' not in html and 'href="/study"' not in html, "search navigation should hide notes and study")
     require('placeholder="예: GM, ressentiment, John 3:16"' not in html, "search.html should avoid internal work-id examples in the primary search prompt")
     for needle in [
         "activeSearchController",
@@ -429,6 +459,13 @@ def check_search_ui() -> None:
         "function updateSearchFilterSummary",
         "function safeReturnHref",
         "function renderSearchReturn",
+        "SEARCH_PAGE_SIZE",
+        "currentSearchPage",
+        "function renderSearchPagination",
+        "data-search-page",
+        "payload.has_previous",
+        "payload.has_next",
+        "offset: String((currentSearchPage - 1) * SEARCH_PAGE_SIZE)",
         "searchReturnHref",
         "읽던 문서로 돌아가기",
         "active-filters-label\">조건</span>",
@@ -489,9 +526,10 @@ def check_search_ui() -> None:
         "function pluralize",
         "function compactCount",
         "function searchStatusText",
-        "result-group-count",
+
     ]:
         require(noisy_action not in script, f"assets/search.js should not expose redundant search action {noisy_action!r}")
+    require_contains(script, "result-group-count", "assets/search.js paginated result count")
     require("검색 범위</summary>" not in html, "search.html should keep filter summary compact")
     for needle in [
         ".search-form.is-searching",
@@ -501,7 +539,7 @@ def check_search_ui() -> None:
         '.toolbar a[aria-current="page"]',
         ".toolbar a:hover",
         "gap: 4px 10px",
-        "min-height: 24px",
+        "min-height: var(--archive-mobile-control-height, 44px)",
         "margin-bottom: 16px",
         "padding-bottom: 10px",
         ".form-actions",
@@ -514,11 +552,15 @@ def check_search_ui() -> None:
         ".search-return",
         ".search-return[hidden]",
         ".search-return a",
+        ".search-pagination",
+        ".search-pagination button",
+        ".search-pagination button:active",
         ".filter-chip",
         "min-height: 28px",
         ".result-summary-nav",
         ".result-summary-link",
         ".result-group-header",
+        ".result-group-count",
         ".result-kind",
         ".result-kind.work",
         ".result-kind.segment",
@@ -539,7 +581,7 @@ def check_search_ui() -> None:
         ".empty-state",
         ".search-start",
         ".search-start-links",
-        "min-height: 42px",
+        "font-size: 16px",
         ".empty-actions",
         ".empty-actions a",
         ".search-skeleton-line",
@@ -548,7 +590,7 @@ def check_search_ui() -> None:
         "@media (prefers-reduced-motion: reduce)",
     ]:
         require_contains(css, needle, "assets/search.css")
-    require("result-group-count" not in css, "assets/search.css should avoid duplicate search group counts")
+
     require(
         "<strong>${Number(group.count || 0).toLocaleString()}</strong>" not in script,
         "assets/search.js should keep group counts out of visible search summary links",
@@ -564,10 +606,10 @@ def check_notes_ui() -> None:
     script = read_site_file("assets/notes.js")
     css = read_site_file("assets/notes.css")
     for needle in [
-        "/assets/notes.css?v=notes28",
+        "/assets/notes.css?v=notes29",
         "/assets/notes.js?v=notes41",
         '<h1 id="notesPageTitle">노트</h1>',
-        'href="/notes" aria-current="page">노트</a>',
+        'href="/translations">번역</a>',
         "노트 찾기",
         "범위</summary>",
         '<button id="notesSubmit" type="submit">적용</button>',
@@ -592,6 +634,7 @@ def check_notes_ui() -> None:
         'aria-busy="false"',
     ]:
         require_contains(html, needle, "notes.html")
+    require('href="/notes"' not in html and 'href="/study"' not in html, "notes page navigation should hide notes and study")
     require("노트 찾기</summary>" not in html, "notes.html should avoid repeating the query label as the filter summary")
     require_ordered_markers(
         html,
@@ -791,9 +834,9 @@ def check_translations_ui() -> None:
     base_css = read_site_file("assets/notes.css")
     css = read_site_file("assets/translations.css")
     for needle in [
-        "/assets/notes.css?v=notes28",
-        "/assets/translations.css?v=trans35",
-        "/assets/translations.js?v=trans89",
+        "/assets/notes.css?v=notes29",
+        "/assets/translations.css?v=trans36",
+        "/assets/translations.js?v=trans92",
         "<title>번역 목록 / Personal Archive of Literature</title>",
         '<h1 id="translationsPageTitle">번역 목록</h1>',
         'aria-label="번역 이동"',
@@ -831,6 +874,7 @@ def check_translations_ui() -> None:
         'aria-busy="false"',
     ]:
         require_contains(html, needle, "translations.html")
+    require('href="/notes"' not in html and 'href="/study"' not in html, "translations navigation should hide notes and study")
     require_ordered_markers(
         html,
         [
@@ -916,7 +960,11 @@ def check_translations_ui() -> None:
         "function renderRecord",
         "function recordContext",
         "function recordGroupKey",
+        "function recordSentenceKey",
+        "function recordSortTime",
         "function groupedTranslationRecords",
+        "const recordIndexes = new Map",
+        "const rawHumanTranslation = String",
         "reviewedCount",
         "function groupWorkUrl",
         "function groupSavedExportUrl",
@@ -926,6 +974,8 @@ def check_translations_ui() -> None:
         ">원문 읽기</a>",
         ">저장본</a>",
         "function renderRecordGroups",
+        "function renderSentenceRecords",
+        "이전 번역 ${older.length.toLocaleString()}개",
         "const showGroupActions = options.showGroupActions !== false",
         "showGroupActions ? renderGroupActions(group) :",
         "showContext",
@@ -946,6 +996,8 @@ def check_translations_ui() -> None:
         "workDisplayName(record.corpus_id, record.work_id)",
         "translation-record-heading",
         "translation-record-kicker",
+        "human-translation-badge",
+        "사람 확정",
         "translation-record-context",
         "검토 상태:",
         "review-badge",
@@ -971,6 +1023,7 @@ def check_translations_ui() -> None:
         "function clearReviewTargetHighlight",
         "function openReviewQueue",
         "function visibleRecordCards",
+        '.filter((card) => !card.closest("details:not([open])"))',
         "function focusedRecordCard",
         "function focusRecordCard",
         "function navigateRecordFocus",
@@ -990,6 +1043,12 @@ def check_translations_ui() -> None:
         "저장한 번역으로 표시했습니다.",
         "모든 번역을 검토했습니다.",
         "function updateRecordReview",
+        "function updateHumanTranslation",
+        "const humanTranslation = textarea.value.trim()",
+        "data-human-translation-form",
+        "사람 확정 번역",
+        "모델 원본",
+        "모델 원본은 그대로 보존됩니다.",
         "function deleteTranslationRecord",
         "data-delete-translation",
         'method: "DELETE"',
@@ -1073,6 +1132,7 @@ def check_translations_ui() -> None:
         "justify-self: end",
         ".translation-record-context",
         ".translation-record-kicker .review-badge",
+        ".translation-record-kicker .human-translation-badge",
         ".translation-record-title",
         "-webkit-line-clamp: 2",
         ".translation-record-title a",
@@ -1085,6 +1145,10 @@ def check_translations_ui() -> None:
         ".translation-commentary summary",
         ".translation-commentary summary::after",
         ".translation-commentary[open] summary::after",
+        ".translation-model-original",
+        ".translation-human-editor",
+        ".translation-version-history",
+        ".translation-version-history-body",
         "min-height: 24px",
         ".translation-actions",
         ".translation-more-actions",
@@ -1125,7 +1189,7 @@ def check_translations_ui() -> None:
         "max-height: 6.4em",
         "display: block;",
         "width: 100%;",
-        "min-height: 34px;",
+        "min-height: 44px;",
         "justify-content: center",
     ]:
         require_contains(css, needle, "assets/translations.css")
@@ -1172,9 +1236,9 @@ def check_study_ui() -> None:
     script = read_site_file("assets/study.js")
     css = read_site_file("assets/study.css")
     for needle in [
-        "/assets/study.css?v=study30",
+        "/assets/study.css?v=study31",
         "/assets/study.js?v=study53",
-        'href="/study" aria-current="page">학습</a>',
+        'href="/translations">번역</a>',
         "학습 기록 찾기",
         'id="studyListTools"',
         'class="list-tools"',
@@ -1202,6 +1266,7 @@ def check_study_ui() -> None:
         'aria-busy="false"',
     ]:
         require_contains(html, needle, "study.html")
+    require('href="/notes"' not in html and 'href="/study"' not in html, "study page navigation should hide notes and study")
     require_ordered_markers(
         html,
         [
@@ -1454,10 +1519,11 @@ def check_work_source_bundle_ui() -> None:
             f"assets/reader-work-storage.js should stay independent of UI and server APIs without {forbidden!r}",
         )
 
-    script = read_site_file("assets/reader-work.js")
+    script = read_reader_work_js()
     require_contains(script, "const readerWorkStorage = window.ReaderWorkStorage", "assets/reader-work.js")
     require_contains(script, "const readerWorkVirtual = window.ReaderWorkVirtual", "assets/reader-work.js")
-    require_contains(script, "const virtualWork = readerWorkVirtual.create", "assets/reader-work.js")
+    require_contains(script, "function initializeVirtualWork", "assets/reader-work.js")
+    require_contains(script, "virtualWork = readerWorkVirtual.create", "assets/reader-work.js")
     virtual_script = read_site_file("assets/reader-work-virtual.js")
     for needle in [
         "(function (global)",
@@ -1583,6 +1649,7 @@ def check_work_source_bundle_ui() -> None:
         "preview-session",
         "function renderStudySessionPreviewPending",
         "function sessionPreviewItems",
+        "item.human_translation || item.translation",
         "function sessionPreviewTargetId",
         "function openSessionPreviewTarget",
         "data-session-preview-target",
@@ -2070,15 +2137,27 @@ def check_work_source_bundle_ui() -> None:
         [
             "/assets/reader-work-storage.js?v=storage1",
             "/assets/reader-work-virtual.js?v=virtual1",
-            "/assets/reader-work.js?v=common196",
+            "/assets/reader-work.js?v=common197",
+            "/assets/reader-work-panel.js?v=panel1",
+            "/assets/reader-work-runtime.js?v=runtime1",
+            "/assets/reader-work-sentences.js?v=sentences2",
+            "/assets/reader-work-translation.js?v=translation3",
+            "/assets/reader-work-notes.js?v=notes2",
+            "/assets/reader-work-app.js?v=app1",
         ],
         "templates/work.html reader script dependency order",
     )
     require_ordered_markers(
         template,
         [
-            "/assets/reader-work-document.css?v=document1",
-            "/assets/reader-work.css?v=common149",
+            "/assets/reader-work-document.css?v=document2",
+            "/assets/reader-work.css?v=common152",
+            "/assets/reader-work-study.css?v=study2",
+            "/assets/reader-work-controls.css?v=controls2",
+            "/assets/reader-work-translation.css?v=translation2",
+            "/assets/reader-work-notes.css?v=notes2",
+            "/assets/reader-work-source.css?v=source2",
+            "/assets/reader-work-responsive.css?v=responsive3",
         ],
         "templates/work.html reader stylesheet dependency order",
     )
@@ -2091,8 +2170,6 @@ def check_work_source_bundle_ui() -> None:
             "읽기 메뉴</summary>",
             "{{TOC_LINK}}",
             "{{PRINT_LINK}}",
-        'href="/notes?corpus_id={{CORPUS_ID}}&work_id={{WORK_ID}}">노트</a>',
-        'href="/study?corpus_id={{CORPUS_ID}}&work_id={{WORK_ID}}">학습</a>',
         'href="/translations?corpus_id={{CORPUS_ID}}&work_id={{WORK_ID}}">번역</a>',
         'href="{{SOURCE_HREF}}">원본</a>',
         "source-page",
@@ -2207,6 +2284,7 @@ def check_work_source_bundle_ui() -> None:
         'aria-label="번역으로 메모 추가"',
     ]:
         require_contains(template, needle, "templates/work.html")
+    require('href="/notes?' not in template and 'href="/study?' not in template, "reader toolbar should hide notes and study links")
     for noisy_marker in ["학습 옵션", "<span>학습 설정</span>", "<span>저장 · 노트 · 이동</span>", "저장/내보내기</summary>"]:
         require(noisy_marker not in template, f"templates/work.html should keep reading utility labels light without {noisy_marker!r}")
     require_ordered_markers(
@@ -2214,8 +2292,6 @@ def check_work_source_bundle_ui() -> None:
         [
             "{{TOC_LINK}}",
             'href="{{SOURCE_HREF}}">원본</a>',
-            'href="/notes?corpus_id={{CORPUS_ID}}&work_id={{WORK_ID}}">노트</a>',
-            'href="/study?corpus_id={{CORPUS_ID}}&work_id={{WORK_ID}}">학습</a>',
             'href="/translations?corpus_id={{CORPUS_ID}}&work_id={{WORK_ID}}">번역</a>',
         ],
         "templates/work.html reader tools order",
@@ -2240,7 +2316,7 @@ def check_work_source_bundle_ui() -> None:
     css = "\n".join(
         [
             read_site_file("assets/reader-work-document.css"),
-            read_site_file("assets/reader-work.css"),
+            read_reader_work_css(),
         ]
     )
     for needle in [
@@ -2292,7 +2368,7 @@ def check_work_source_bundle_ui() -> None:
         ".toolbar-more[open] .toolbar-more-links",
         ".toolbar-more[open] .toolbar-more-links a",
         ".visually-hidden",
-        "grid-template-columns: minmax(0, 1fr) var(--study-panel-width, 420px)",
+        "grid-template-columns: minmax(0, 1fr) var(--study-panel-width, 460px)",
         "gap: 24px",
         ".source-page",
         "padding-right: 24px",
@@ -2560,10 +2636,10 @@ def check_work_source_bundle_ui() -> None:
         ".note-danger-actions button",
         ".study-panel-toggle",
         "--page-frame-width: 1180px",
-        "--study-panel-width: 420px",
+        "--study-panel-width: 460px",
         '"Noto Sans KR"',
         '"Malgun Gothic"',
-        "grid-template-columns: minmax(0, 1fr) var(--study-panel-width, 420px)",
+        "grid-template-columns: minmax(0, 1fr) var(--study-panel-width, 460px)",
         "font-size: 17px",
         "font-size: 16px",
         "word-break: keep-all",
@@ -2679,6 +2755,41 @@ def check_work_source_bundle_ui() -> None:
         require(noisy_marker not in script, f"assets/reader-work.js should avoid ambiguous note UI text {noisy_marker!r}")
 
 
+def check_reader_asset_modules() -> None:
+    js_markers = {
+        "assets/reader-work.js": "function initializeVirtualWork",
+        "assets/reader-work-panel.js": "function setStudyPanel",
+        "assets/reader-work-runtime.js": "async function checkGemmaRuntimeStatus",
+        "assets/reader-work-sentences.js": "function selectSentence",
+        "assets/reader-work-translation.js": "async function requestSentenceTranslation",
+        "assets/reader-work-notes.js": "async function loadNotes",
+        "assets/reader-work-app.js": "async function initializeStudyCompanion",
+    }
+    css_markers = {
+        "assets/reader-work.css": ".reading-desk {",
+        "assets/reader-work-study.css": ".study-tabs {",
+        "assets/reader-work-controls.css": ".translation-card {",
+        "assets/reader-work-translation.css": ".translation-output {",
+        "assets/reader-work-notes.css": ".citation-preview,",
+        "assets/reader-work-source.css": ".toc {",
+        "assets/reader-work-responsive.css": "@media (prefers-reduced-motion: reduce)",
+    }
+    for relative_path, marker in {**js_markers, **css_markers}.items():
+        source = read_site_file(relative_path)
+        require_contains(source, marker, f"{relative_path} feature boundary")
+        require(
+            len(source.splitlines()) <= 900,
+            f"{relative_path} exceeded the 900-line reader module budget",
+        )
+
+    app_script = read_site_file("assets/reader-work-app.js")
+    require_ordered_markers(
+        app_script,
+        ["initializeVirtualWork();", "virtualWork.initialize();", "initializeStudyCompanion();"],
+        "reader app bootstrap order",
+    )
+
+
 def main() -> None:
     check_tokens()
     check_corpus_display_policy()
@@ -2692,6 +2803,7 @@ def main() -> None:
     check_translations_ui()
     check_study_ui()
     check_work_source_bundle_ui()
+    check_reader_asset_modules()
     print("layout contracts ok")
 
 

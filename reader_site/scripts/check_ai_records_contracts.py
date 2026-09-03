@@ -14,6 +14,7 @@ AI_DIR = SITE / "data" / "ai"
 sys.path.insert(0, str(SITE))
 
 from services.interpretation_prompts import prompt_template_ids  # noqa: E402
+from services.source_targets import sha256_text  # noqa: E402
 
 HEX_SHA256 = re.compile(r"^[0-9a-f]{64}$")
 ALLOWED_REVIEW_STATES = {"generated", "reviewed", "rejected"}
@@ -195,6 +196,25 @@ def validate_record(record: Any, path: Path, line_number: int) -> None:
     require_iso_timestamp(record["created_at"], path, line_number, "created_at")
     require_iso_timestamp(record["generated_at"], path, line_number, "generated_at")
 
+    human_fields = {
+        "human_translation",
+        "human_translation_updated_at",
+        "human_translation_base_sha256",
+    }
+    present_human_fields = human_fields.intersection(record)
+    if present_human_fields:
+        require(present_human_fields == human_fields, context(path, line_number, "human translation audit fields must be complete"))
+        require(
+            isinstance(record["human_translation"], str) and record["human_translation"].strip(),
+            context(path, line_number, "human_translation must be a non-empty string"),
+        )
+        require(record["review_state"] == "reviewed", context(path, line_number, "human translation must be reviewed"))
+        require_iso_timestamp(record["human_translation_updated_at"], path, line_number, "human_translation_updated_at")
+        require(
+            HEX_SHA256.fullmatch(record["human_translation_base_sha256"]) is not None,
+            context(path, line_number, "human_translation_base_sha256 must be a SHA-256 hex digest"),
+        )
+
     if record["record_type"] == "ai_interpretation":
         require(isinstance(record.get("interpretation"), str) and record["interpretation"].strip(), context(path, line_number, "ai_interpretation record requires interpretation"))
 
@@ -218,6 +238,11 @@ def validate_record(record: Any, path: Path, line_number: int) -> None:
             require(isinstance(record[field], str) and record[field].strip(), context(path, line_number, f"{field} must be a non-empty string"))
         for field in ("translation", "commentary"):
             require(isinstance(record[field], str), context(path, line_number, f"{field} must be a string"))
+        if present_human_fields:
+            require(
+                record["human_translation_base_sha256"] == sha256_text(record["translation"]),
+                context(path, line_number, "human translation base hash must match the preserved model translation"),
+            )
         if record["schema_version"] == 1:
             require(isinstance(record["literal_gloss"], str), context(path, line_number, "literal_gloss must be a string"))
         require(HEX_SHA256.fullmatch(record["sentence_text_sha256"]) is not None, context(path, line_number, "sentence_text_sha256 must be a SHA-256 hex digest"))

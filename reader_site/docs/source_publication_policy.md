@@ -43,6 +43,12 @@ Disallowed tracked metadata examples:
 - `content`
 - large generated JSONL segment rows
 
+## Evaluation Fixture Exception
+
+The sole bounded exception is `reader_site/data/translation_quality_goldset.json`. It may contain manually selected, sentence-sized `source_text` excerpts and candidate/reference translations only for reproducible human evaluation; it is not runtime history and is not evidence that translation quality has already been validated.
+
+The fixture is limited to 64 cases, 1,000 source characters per case, 20,000 source characters in total, 4,000 characters per candidate/reference translation, and 64 KiB for the whole file. It must not contain local paths, prompts, model/runtime identifiers, full segments, or corpus exports. `check_source_publication_contracts.py` enforces these limits.
+
 ## Local Restore Rule
 
 Full reading/search behavior is restored locally by placing the source corpora under `PHILOSOPHY_CRAWL_ROOT` and running:

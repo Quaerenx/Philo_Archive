@@ -1,0 +1,310 @@
+/* Source text, table of contents, virtual chunks, print, and animations. */
+.toc {
+  margin: 0 0 24px;
+  padding: 12px 0 14px;
+  border-bottom: 1px solid #d4d4d4;
+}
+
+.toc summary {
+  font-family: var(--archive-font);
+  font-size: 11px;
+  line-height: 1.35;
+  cursor: pointer;
+}
+
+.toc-links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 18px;
+  max-height: 360px;
+  padding-right: 8px;
+  margin-top: 12px;
+  overflow: auto;
+}
+
+.toc-link {
+  overflow: hidden;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.toc-link.level-1 {
+  font-weight: bold;
+}
+
+.toc-link.level-3,
+.toc-link.level-4 {
+  padding-left: 10px;
+}
+
+.reading-body {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 16px;
+  line-height: 1.72;
+}
+
+.reading-body h1,
+.reading-body h2,
+.reading-body h3,
+.reading-body h4 {
+  position: relative;
+  margin: 28px 0 10px;
+  font-family: var(--archive-font);
+  line-height: 1.35;
+}
+
+.reading-body h1 {
+  font-size: 18px;
+}
+
+.reading-body h2 {
+  font-size: 16px;
+}
+
+.reading-body h3,
+.reading-body h4 {
+  font-size: 13px;
+}
+
+.reading-body p {
+  position: relative;
+  margin: 0 0 1em;
+}
+
+.study-page :is(
+  button,
+  input,
+  textarea,
+  select,
+  summary,
+  label,
+  p,
+  li,
+  span,
+  a,
+  strong,
+  small,
+  h2,
+  h3,
+  .translation-primary,
+  .translation-commentary,
+  .translation-source-detail,
+  .translation-result-target,
+  .translation-target-excerpt,
+  .reading-position-excerpt,
+  .sentence-context-text
+) {
+  font-family: var(--study-ui-font);
+}
+
+.study-page :is(input, textarea, select) {
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.study-page .translation-section h3 {
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.study-page .translation-output .translation-primary {
+  font-size: 17px;
+  line-height: 1.75;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+.study-page .translation-commentary p {
+  font-size: 16px;
+  line-height: 1.75;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+.study-page .translation-output.reading-mode .translation-commentary p {
+  line-height: 1.75;
+}
+
+.study-page :is(
+  .translation-target-label,
+  .translation-target-status,
+  .translation-result-kicker,
+  .sentence-context-label,
+  .study-session-preview-header span
+) {
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.study-page :is(
+  .translation-status,
+  .reading-position,
+  .study-progress,
+  .study-session-summary,
+  .translation-records-summary
+) {
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.print-work .reading-desk {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.print-work .source-page {
+  padding-right: 0;
+  border-right: 0;
+}
+
+.print-work .study-page,
+.print-work .study-panel-scrim {
+  display: none;
+}
+
+@keyframes archive-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes archive-skeleton {
+  0% {
+    background-position: 120% 0;
+  }
+  100% {
+    background-position: -120% 0;
+  }
+}
+
+@keyframes archive-loading-rail {
+  0% {
+    transform: translateX(-110%);
+  }
+  55% {
+    transform: translateX(132%);
+  }
+  100% {
+    transform: translateX(132%);
+  }
+}
+
+@keyframes archive-translation-arrival {
+  0% {
+    background-color: #fff7d8;
+    box-shadow: inset 2px 0 0 #b00000;
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 transparent;
+  }
+}
+
+@keyframes archive-review-confirm {
+  0% {
+    background-color: #eff8f0;
+    box-shadow: inset 3px 0 0 #5a9a68;
+  }
+  100% {
+    background-color: #fff;
+    box-shadow: inset 3px 0 0 #5a9a68;
+  }
+}
+
+@keyframes archive-review-reject {
+  0% {
+    background-color: #fff1f1;
+    box-shadow: inset 3px 0 0 #b00000;
+  }
+  100% {
+    background-color: #fff;
+    box-shadow: inset 3px 0 0 #b00000;
+  }
+}
+
+@keyframes archive-panel-in {
+  0% {
+    opacity: 0.65;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.segment-anchor {
+  position: absolute;
+  width: 18px;
+  margin-left: -22px;
+  color: #999;
+  text-align: right;
+  opacity: 0;
+}
+
+.reading-body :hover > .segment-anchor,
+.segment-anchor:focus {
+  opacity: 0.7;
+}
+
+.reading-body blockquote {
+  padding-left: 14px;
+  margin: 0 0 1em 18px;
+  color: #333;
+  border-left: 2px solid #d4d4d4;
+}
+
+.reading-body hr {
+  margin: 28px 0;
+  border: 0;
+  border-top: 1px solid #d4d4d4;
+}
+
+.verse {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  column-gap: 14px;
+  align-items: baseline;
+}
+
+.verse-label {
+  color: #555;
+  font-family: var(--archive-font);
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.verse-text {
+  display: block;
+  unicode-bidi: isolate;
+}
+
+.bible-work .reading-body {
+  font-size: 17px;
+  line-height: 1.78;
+}
+
+.bible-work .reading-body h2 {
+  margin-top: 34px;
+}
+
+@media print {
+  .print-work .reader-header .toolbar,
+  .print-work .variant-tabs,
+  .print-work .study-page,
+  .print-work .study-panel-scrim {
+    display: none;
+  }
+
+  body.virtual-work .reading-body::before {
+    display: block;
+    padding: 12px;
+    margin-bottom: 18px;
+    content: "이 화면은 점진 로딩 보기입니다. 읽기 메뉴의 ‘전체 인쇄 보기’에서 완전한 문서를 인쇄하세요.";
+    color: #000;
+    font: 12pt/1.5 Arial, sans-serif;
+    border: 1px solid #000;
+  }
+
+  body.virtual-work .reader-chunk-placeholder {
+    display: none;
+  }
+}

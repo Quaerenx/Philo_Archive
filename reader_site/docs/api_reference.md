@@ -389,6 +389,8 @@ corpus_id=<optional corpus id>
 work_id=<optional work id>
 variant_id=<optional variant id>
 limit=<1-100, default 30>
+page=<1-based page, default 1>
+offset=<optional zero-based result offset; takes precedence over page>
 ```
 
 General response:
@@ -399,6 +401,12 @@ General response:
   "count": 20,
   "engine": "sqlite-fts5",
   "results": [],
+  "limit": 40,
+  "offset": 0,
+  "page": 1,
+  "total_pages": 1,
+  "has_previous": false,
+  "has_next": false,
   "work_count": 0,
   "work_results": [],
   "note_count": 0,
@@ -608,6 +616,16 @@ Request:
 ```
 
 Allowed `review_state` values are `generated`, `reviewed`, and `rejected`.
+
+To save a direct human correction, send `review_state: "reviewed"` with a non-empty `human_translation` string of at most 12,000 characters. Internal paragraph breaks and spacing are preserved. The service stores it as `human_translation`, records `human_translation_updated_at`, and fingerprints the preserved model output in `human_translation_base_sha256`. It never overwrites `translation`. A human-confirmed record must remain reviewed; the client omits reset and rejection actions for it.
+
+```json
+{
+  "corpus_id": "nietzsche",
+  "review_state": "reviewed",
+  "human_translation": "사람이 직접 교정하고 확정한 번역"
+}
+```
 
 ## `DELETE /api/sentence-translations/<record_id>`
 

@@ -8,7 +8,7 @@ body {
   background: var(--page-background, #d9d9d9);
   color: #000;
   font-family: var(--archive-font, Verdana, Arial, Helvetica, sans-serif);
-  font-size: 10px;
+  font-size: var(--archive-ui-font-size, 12px);
   letter-spacing: 0;
 }
 
@@ -149,7 +149,7 @@ h1 {
 .note-edit-actions button {
   min-height: 28px;
   color: #000;
-  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-family: var(--archive-font);
   font-size: 10px;
   background: #fff;
   border: 1px solid #bdbdbd;
@@ -259,7 +259,7 @@ h1 {
   gap: 5px;
   padding: 2px 7px;
   color: #000;
-  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-family: var(--archive-font);
   font-size: 10px;
   background: #fafafa;
   border: 1px solid #d4d4d4;
@@ -398,7 +398,7 @@ h1 {
   min-height: 28px;
   padding: 4px 12px;
   color: #000;
-  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-family: var(--archive-font);
   font-size: 10px;
   background: #fff;
   border: 1px solid #bdbdbd;
@@ -428,7 +428,7 @@ h1 {
   gap: 5px;
   padding: 3px 7px;
   color: #333;
-  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-family: var(--archive-font);
   font-size: 10px;
   background: #fff;
   border: 1px solid #d4d4d4;
@@ -574,7 +574,7 @@ h1 {
   align-items: center;
   padding: 4px 12px;
   color: #555;
-  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-family: var(--archive-font);
   font-size: 10px;
   background: #fff;
   border: 1px solid #bdbdbd;
@@ -725,7 +725,7 @@ h1 {
 
   .toolbar a {
     display: inline-flex;
-    min-height: 24px;
+    min-height: var(--archive-mobile-control-height, 44px);
     align-items: center;
   }
 
@@ -737,12 +737,12 @@ h1 {
   }
 
   .form-actions button {
-    min-height: 32px;
+    min-height: var(--archive-mobile-control-height, 44px);
   }
 
   .filter-panel summary,
   .export-tools summary {
-    min-height: 32px;
+    min-height: var(--archive-mobile-control-height, 44px);
   }
 
   .empty-actions {
@@ -751,7 +751,15 @@ h1 {
 
   .empty-actions button,
   .empty-actions a {
-    min-height: 32px;
+    min-height: var(--archive-mobile-control-height, 44px);
+  }
+
+  input,
+  select,
+  textarea,
+  button {
+    min-height: var(--archive-mobile-control-height, 44px);
+    font-size: 16px;
   }
 
   .note-footer {

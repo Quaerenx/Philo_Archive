@@ -25,6 +25,7 @@ CRITIC_PROMPT_TEMPLATE_ID = "sentence_translation_critic_v1"
 REVISION_PROMPT_TEMPLATE_ID = "sentence_translation_revision_v1"
 QUALITY_PIPELINE_VERSION = 1
 MAX_REVISION_COUNT = 1
+MAX_HUMAN_TRANSLATION_CHARS = 12_000
 MODEL_NAME = os.environ.get("PHILO_GEMMA_MODEL_NAME", "gemma-4-26B-A4B-it-Q4_K_M")
 MODEL_RUNTIME = os.environ.get("PHILO_GEMMA_RUNTIME", "llama.cpp b9371-f12cc6d0f")
 MODEL_FILE_SHA256 = os.environ.get("PHILO_GEMMA_MODEL_SHA256", "")
@@ -782,6 +783,19 @@ def update_sentence_translation_review(payload: dict[str, Any], record_id: str) 
     corpus_id = safe_corpus_id(str(payload.get("corpus_id", "")))
     review_state = str(payload.get("review_state", "")).strip().lower()
     require(review_state in {"reviewed", "rejected", "generated"}, "invalid review_state")
+    has_human_translation = "human_translation" in payload
+    human_translation = ""
+    if has_human_translation:
+        raw_human_translation = payload.get("human_translation")
+        require(isinstance(raw_human_translation, str), "human_translation must be a string")
+        human_translation = raw_human_translation.strip()
+        require(review_state == "reviewed", "human translation must be reviewed")
+        require(bool(human_translation), "human_translation is required")
+        require("\x00" not in human_translation, "human_translation contains invalid characters")
+        require(
+            len(human_translation) <= MAX_HUMAN_TRANSLATION_CHARS,
+            "human_translation exceeds its character limit",
+        )
     record_id = clean_id(record_id)
     path = ai_record_path(corpus_id)
     with locked_jsonl(path):
@@ -791,11 +805,19 @@ def update_sentence_translation_review(payload: dict[str, Any], record_id: str) 
         for index, record in enumerate(records):
             if public_record_id(record) != record_id:
                 continue
+            require(
+                not record.get("human_translation") or review_state == "reviewed",
+                "a human-confirmed translation must remain reviewed",
+            )
             next_record = dict(record)
             if not valid_record_id(next_record.get("id")):
                 next_record["id"] = record_id
             next_record["review_state"] = review_state
             next_record["reviewed_at"] = now if review_state == "reviewed" else ""
+            if has_human_translation:
+                next_record["human_translation"] = human_translation
+                next_record["human_translation_updated_at"] = now
+                next_record["human_translation_base_sha256"] = sha256_text(str(record.get("translation") or ""))
             next_record["updated_at"] = now
             records[index] = next_record
             updated = next_record
@@ -844,6 +866,7 @@ def translation_record_matches_text_query(record: dict[str, Any], text_query: st
             "sentence_id",
             "source_text_excerpt",
             "translation",
+            "human_translation",
             "commentary",
         )
     ).lower()
@@ -952,8 +975,14 @@ def export_sentence_translations_markdown(records: list[dict[str, Any]]) -> str:
             if item
         )
         lines.extend([f"## {label or '문장 번역'}", ""])
-        if record.get("translation"):
-            lines.extend(["번역", "", str(record["translation"]), ""])
+        human_translation = str(record.get("human_translation") or "").strip()
+        model_translation = str(record.get("translation") or "").strip()
+        if human_translation:
+            lines.extend(["확정 번역", "", human_translation, ""])
+            if model_translation and model_translation != human_translation:
+                lines.extend(["모델 원본", "", model_translation, ""])
+        elif model_translation:
+            lines.extend(["번역", "", model_translation, ""])
         if record.get("commentary"):
             lines.extend(["해설", "", str(record["commentary"]), ""])
         if record.get("source_text_excerpt"):

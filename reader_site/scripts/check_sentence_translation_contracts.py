@@ -451,6 +451,61 @@ def check_cache_and_review_compatibility(target: dict) -> None:
             require(all_summary["count"] == 3, "sentence translation summary without corpus_id should count all corpora")
             require(all_summary["review_state_counts"]["generated"] == 2, "all-corpus summary generated count failed")
             require(all_summary["review_state_counts"]["reviewed"] == 1, "all-corpus summary reviewed count failed")
+            for invalid_human_translation in (None, {"text": "not a string"}):
+                try:
+                    update_sentence_translation_review(
+                        {
+                            "corpus_id": target["corpus_id"],
+                            "review_state": "reviewed",
+                            "human_translation": invalid_human_translation,
+                        },
+                        public_legacy["id"],
+                    )
+                except ValueError:
+                    pass
+                else:
+                    require(False, "human_translation must reject non-string JSON values")
+            confirmed_text = "사람이 직접 교정하고 확정한 번역\n\n둘째 문단"
+            human_confirmed = update_sentence_translation_review(
+                {
+                    "corpus_id": target["corpus_id"],
+                    "review_state": "reviewed",
+                    "human_translation": confirmed_text,
+                },
+                public_legacy["id"],
+            )["record"]
+            require(
+                human_confirmed["translation"] == "newest translation",
+                "human confirmation must preserve the original model translation",
+            )
+            require(
+                human_confirmed["human_translation"] == confirmed_text,
+                "human-confirmed translation was not stored separately with its paragraph breaks",
+            )
+            require(
+                human_confirmed["human_translation_base_sha256"] == sha256_text("newest translation"),
+                "human-confirmed translation must fingerprint its model base",
+            )
+            confirmed_markdown = export_sentence_translations_markdown([human_confirmed])
+            require("확정 번역" in confirmed_markdown, "confirmed export is missing the human translation label")
+            require("모델 원본" in confirmed_markdown, "confirmed export is missing the preserved model original")
+            human_filtered_records = sentence_translations_for_export(
+                {"review_state": ["all"], "q": ["둘째 문단"]}
+            )
+            require(
+                len(human_filtered_records) == 1 and human_filtered_records[0]["id"] == human_confirmed["id"],
+                "sentence translation export q filter must search the human-confirmed translation",
+            )
+            require(validate_file(path) == 1, "human-confirmed record failed validation")
+            try:
+                update_sentence_translation_review(
+                    {"corpus_id": target["corpus_id"], "review_state": "rejected"},
+                    public_legacy["id"],
+                )
+            except ValueError:
+                pass
+            else:
+                require(False, "a human-confirmed translation must not be silently rejected")
             deleted = delete_sentence_translation_from_query(
                 public_legacy["id"],
                 {"corpus_id": [target["corpus_id"]]},

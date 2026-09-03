@@ -55,6 +55,7 @@ CHECK_STEPS = [
     Step("Notes contracts", "check_notes_contracts.py"),
     Step("Note target integrity", "check_note_target_integrity.py"),
     Step("AI record contracts", "check_ai_records_contracts.py"),
+    Step("Translation human goldset", "check_translation_goldset.py"),
     Step("Static route contracts", "check_static_routes.py"),
 ]
 

@@ -75,7 +75,7 @@
   min-height: 24px;
   padding: 2px 7px;
   color: #333;
-  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-family: var(--archive-font);
   font-size: 10px;
   background: #fff;
   border: 1px solid #d4d4d4;
@@ -96,7 +96,7 @@
   min-height: 24px;
   padding: 2px 9px;
   color: #000;
-  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-family: var(--archive-font);
   font-size: 10px;
   background: #fff;
   border: 1px solid #bdbdbd;
@@ -241,16 +241,27 @@
 
 .translation-record-kicker .review-badge {
   width: fit-content;
-  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-family: var(--archive-font);
   font-size: 9px;
   line-height: 1.35;
+}
+
+.translation-record-kicker .human-translation-badge {
+  width: fit-content;
+  padding: 1px 5px;
+  color: #24523a;
+  font-family: var(--archive-font);
+  font-size: 9px;
+  line-height: 1.35;
+  background: #edf7ef;
+  border: 1px solid #9fcaa8;
 }
 
 .translation-record-kicker .quality-badge {
   width: fit-content;
   padding: 1px 5px;
   color: #35543f;
-  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-family: var(--archive-font);
   font-size: 9px;
   line-height: 1.35;
   background: #f1f7f2;
@@ -278,7 +289,7 @@
   margin: 0;
   overflow: hidden;
   color: #222;
-  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-family: var(--archive-font);
   font-size: 11px;
   font-weight: normal;
   line-height: 1.35;
@@ -293,9 +304,98 @@
 
 .translation-text {
   margin: 8px 0 0;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--archive-font);
   font-size: 14px;
   line-height: 1.55;
+}
+
+.translation-sentence-records + .translation-sentence-records {
+  margin-top: 12px;
+}
+
+.translation-model-original,
+.translation-human-editor,
+.translation-version-history {
+  margin-top: 8px;
+}
+
+.translation-model-original > summary,
+.translation-human-editor > summary,
+.translation-version-history > summary {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  color: #555;
+  font-family: var(--archive-font);
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.translation-model-original p {
+  margin: 5px 0 0;
+  padding-left: 10px;
+  color: #555;
+  border-left: 2px solid #d4d4d4;
+  line-height: 1.55;
+}
+
+.translation-human-editor form {
+  display: grid;
+  gap: 8px;
+  margin-top: 5px;
+  padding: 10px;
+  background: #f7f7f7;
+  border: 1px solid #d4d4d4;
+}
+
+.translation-human-editor label {
+  display: grid;
+  gap: 5px;
+  color: #444;
+  font-size: 10px;
+}
+
+.translation-human-editor textarea {
+  width: 100%;
+  min-height: 112px;
+  padding: 8px;
+  color: #222;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.55;
+  resize: vertical;
+  background: #fff;
+  border: 1px solid #aaa;
+}
+
+.translation-human-editor button {
+  justify-self: end;
+  min-height: 32px;
+  padding: 5px 12px;
+  color: #9a0000;
+  font-family: var(--archive-font);
+  font-size: 10px;
+  background: #fffafa;
+  border: 1px solid #b00000;
+  cursor: pointer;
+}
+
+.translation-human-editor button:active,
+.translation-actions button:active {
+  transform: translateY(1px);
+}
+
+.translation-version-history {
+  padding: 0 10px 10px;
+  border-left: 2px solid #e2e2e2;
+}
+
+.translation-version-history-body {
+  margin-top: 4px;
+}
+
+.translation-version-history .translation-record-card {
+  opacity: 0.84;
 }
 
 .translation-commentary {
@@ -311,7 +411,7 @@
   align-items: center;
   gap: 5px;
   color: #555;
-  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-family: var(--archive-font);
   font-size: 10px;
   line-height: 1.35;
   cursor: pointer;
@@ -343,7 +443,7 @@
 
 .translation-source summary {
   color: #555;
-  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-family: var(--archive-font);
   font-size: 10px;
   cursor: pointer;
 }
@@ -375,7 +475,7 @@
   min-height: 28px;
   padding: 4px 10px;
   color: #000;
-  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-family: var(--archive-font);
   font-size: 10px;
   background: #fff;
   border: 1px solid #bdbdbd;
@@ -440,7 +540,7 @@
   align-items: center;
   padding: 4px 6px;
   color: #666;
-  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-family: var(--archive-font);
   font-size: 10px;
   background: transparent;
   border: 1px solid transparent;
@@ -586,9 +686,21 @@
   .translation-danger-actions summary,
   .translation-review-queue {
     width: 100%;
-    min-height: 34px;
+    min-height: 44px;
     min-width: 0;
     justify-content: center;
     text-align: center;
+  }
+
+  .translation-model-original > summary,
+  .translation-human-editor > summary,
+  .translation-version-history > summary,
+  .translation-human-editor button {
+    min-height: 44px;
+  }
+
+  .translation-human-editor textarea {
+    min-height: 144px;
+    font-size: 16px;
   }
 }

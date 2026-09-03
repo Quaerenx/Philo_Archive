@@ -84,7 +84,9 @@ def request_bytes(
 def check_static_cache_contracts(base_url: str) -> None:
     for path, expected_type in (
         ("/app.js?v=home19", "javascript"),
-        ("/assets/reader-work.css?v=common149", "text/css"),
+        ("/assets/reader-work.css?v=common152", "text/css"),
+        ("/assets/reader-work-translation.css?v=translation2", "text/css"),
+        ("/assets/reader-work-app.js?v=app1", "javascript"),
     ):
         identity_body, identity_headers = request_bytes(
             base_url,

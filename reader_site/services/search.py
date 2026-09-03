@@ -18,6 +18,8 @@ SITE = Path(__file__).resolve().parents[1]
 DATA = SITE / "data"
 SEARCH_INDEX = DATA / "search_index.jsonl"
 SEARCH_DB = DATA / "search_index.sqlite"
+SQLITE_FTS_RERANK_WINDOW = 500
+SQLITE_LIKE_RERANK_WINDOW = 1200
 BIBLE_METADATA = DATA / "bible_metadata.json"
 METADATA_FILES = {
     "nietzsche": DATA / "nietzsche_metadata.json",
@@ -772,6 +774,7 @@ def search_records_sqlite_direct_bible(
     work_id: str,
     variant_id: str,
     limit: int,
+    offset: int,
 ) -> dict | None:
     if corpus_id and corpus_id != "bible":
         return None
@@ -815,8 +818,27 @@ def search_records_sqlite_direct_bible(
 
     if not rows:
         return None
-    rows = sorted(rows, key=lambda item: item[0])[:limit]
-    results = [direct_bible_result_from_row(row, 10000 - index) for index, (_, row) in enumerate(rows)]
+    rows = sorted(
+        rows,
+        key=lambda item: (
+            item[0],
+            str(item[1]["work_id"]),
+            str(item[1]["variant_id"]),
+            str(item[1]["segment_id"]),
+        ),
+    )
+    page_rows = rows[offset:offset + limit]
+    results = [
+        direct_bible_result_from_row(row, 10000 - offset - index)
+        for index, (_, row) in enumerate(page_rows)
+    ]
+    if not results:
+        return {
+            "query": query,
+            "count": len(rows),
+            "results": [],
+            "engine": "sqlite-direct-bible",
+        }
     first = results[0]
     return {
         "query": query,
@@ -839,6 +861,7 @@ def search_records_sqlite_fts(
     work_id: str,
     variant_id: str,
     limit: int,
+    offset: int,
 ) -> dict:
     clauses = ["search_segments_fts MATCH ?"]
     params: list[str] = [fts5_query(terms)]
@@ -852,8 +875,6 @@ def search_records_sqlite_fts(
         clauses.append("s.variant_id = ?")
         params.append(variant_id)
     where = " AND ".join(clauses)
-    scan_limit = max(limit * 5, 100)
-
     total = connection.execute(
         f"""
         SELECT COUNT(*)
@@ -863,26 +884,52 @@ def search_records_sqlite_fts(
         """,
         params,
     ).fetchone()[0]
-    rows = connection.execute(
-        f"""
-        SELECT
-          s.corpus_id, s.work_id, s.variant_id, s.segment_id, s.segment_type,
-          s.label, s.title, s.url, s.snippet, s.search_text,
-          bm25(search_segments_fts) AS rank
-        FROM search_segments_fts
-        JOIN search_segments AS s ON s.id = search_segments_fts.rowid
-        WHERE {where}
-        ORDER BY rank
-        LIMIT ?
-        """,
-        [*params, scan_limit],
-    ).fetchall()
+    # Use one fixed re-ranking head for every page. A page-dependent candidate
+    # window changes the global ordering and can repeat or omit results.
+    rerank_count = min(total, SQLITE_FTS_RERANK_WINDOW)
+    results: list[dict] = []
+    if offset < rerank_count:
+        rows = connection.execute(
+            f"""
+            SELECT
+              s.corpus_id, s.work_id, s.variant_id, s.segment_id, s.segment_type,
+              s.label, s.title, s.url, s.snippet, s.search_text,
+              bm25(search_segments_fts) AS rank
+            FROM search_segments_fts
+            JOIN search_segments AS s ON s.id = search_segments_fts.rowid
+            WHERE {where}
+            ORDER BY rank, s.id
+            LIMIT ?
+            """,
+            [*params, rerank_count],
+        ).fetchall()
+        ranked = []
+        for index, row in enumerate(rows):
+            score = score_sqlite_segment_row(row, terms, index)
+            ranked.append((score, -index, search_result_from_row(row, terms, score)))
+        ordered = [item[2] for item in sorted(ranked, reverse=True)]
+        results.extend(ordered[offset:min(offset + limit, rerank_count)])
 
-    ranked = []
-    for index, row in enumerate(rows):
-        score = score_sqlite_segment_row(row, terms, index)
-        ranked.append((score, -index, search_result_from_row(row, terms, score)))
-    results = [item[2] for item in sorted(ranked, reverse=True)[:limit]]
+    tail_offset = max(offset, rerank_count)
+    tail_limit = limit - len(results)
+    if tail_limit > 0 and tail_offset < total:
+        tail_rows = connection.execute(
+            f"""
+            SELECT
+              s.corpus_id, s.work_id, s.variant_id, s.segment_id, s.segment_type,
+              s.label, s.title, s.url, s.snippet, s.search_text,
+              bm25(search_segments_fts) AS rank
+            FROM search_segments_fts
+            JOIN search_segments AS s ON s.id = search_segments_fts.rowid
+            WHERE {where}
+            ORDER BY rank, s.id
+            LIMIT ? OFFSET ?
+            """,
+            [*params, tail_limit, tail_offset],
+        ).fetchall()
+        for index, row in enumerate(tail_rows, start=tail_offset):
+            score = score_sqlite_segment_row(row, terms, index)
+            results.append(search_result_from_row(row, terms, score))
     return {"query": " ".join(terms), "count": total, "results": results, "engine": "sqlite-fts5"}
 
 
@@ -893,6 +940,7 @@ def search_records_sqlite_like(
     work_id: str,
     variant_id: str,
     limit: int,
+    offset: int,
 ) -> dict:
     clauses = ["search_text LIKE ?"]
     params: list[str] = [f"%{terms[0]}%"]
@@ -909,48 +957,90 @@ def search_records_sqlite_like(
         clauses.append("variant_id = ?")
         params.append(variant_id)
     where = " AND ".join(clauses)
-    scan_limit = max(limit * 30, 500)
-
     total = connection.execute(f"SELECT COUNT(*) FROM search_segments WHERE {where}", params).fetchone()[0]
-    rows = connection.execute(
-        f"""
-        SELECT corpus_id, work_id, variant_id, segment_id, segment_type, label, title, url, snippet, search_text
-        FROM search_segments
-        WHERE {where}
-        LIMIT ?
-        """,
-        [*params, scan_limit],
-    ).fetchall()
+    rerank_count = min(total, SQLITE_LIKE_RERANK_WINDOW)
+    results: list[dict] = []
+    if offset < rerank_count:
+        rows = connection.execute(
+            f"""
+            SELECT corpus_id, work_id, variant_id, segment_id, segment_type, label, title, url, snippet, search_text
+            FROM search_segments
+            WHERE {where}
+            ORDER BY id
+            LIMIT ?
+            """,
+            [*params, rerank_count],
+        ).fetchall()
+        ranked = []
+        for index, row in enumerate(rows):
+            score = score_sqlite_segment_row(row, terms, index)
+            ranked.append((score, -index, search_result_from_row(row, terms, score)))
+        ordered = [item[2] for item in sorted(ranked, reverse=True)]
+        results.extend(ordered[offset:min(offset + limit, rerank_count)])
 
-    ranked = []
-    for index, row in enumerate(rows):
-        score = score_sqlite_segment_row(row, terms, index)
-        ranked.append((score, -index, search_result_from_row(row, terms, score)))
-    results = [item[2] for item in sorted(ranked, reverse=True)[:limit]]
+    tail_offset = max(offset, rerank_count)
+    tail_limit = limit - len(results)
+    if tail_limit > 0 and tail_offset < total:
+        tail_rows = connection.execute(
+            f"""
+            SELECT corpus_id, work_id, variant_id, segment_id, segment_type, label, title, url, snippet, search_text
+            FROM search_segments
+            WHERE {where}
+            ORDER BY id
+            LIMIT ? OFFSET ?
+            """,
+            [*params, tail_limit, tail_offset],
+        ).fetchall()
+        for index, row in enumerate(tail_rows, start=tail_offset):
+            score = score_sqlite_segment_row(row, terms, index)
+            results.append(search_result_from_row(row, terms, score))
     return {"query": " ".join(terms), "count": total, "results": results, "engine": "sqlite-like"}
 
 
-def search_records_sqlite(query: str, corpus_id: str, work_id: str, variant_id: str, limit: int) -> dict:
+def search_records_sqlite(
+    query: str,
+    corpus_id: str,
+    work_id: str,
+    variant_id: str,
+    limit: int,
+    offset: int,
+) -> dict:
     terms = [term for term in normalize_search_text(query).split(" ") if term]
     if not terms:
         return {"query": normalize_search_text(query), "count": 0, "results": []}
     connection = sqlite3.connect(SEARCH_DB)
     connection.row_factory = sqlite3.Row
     try:
-        direct_result = search_records_sqlite_direct_bible(connection, query, corpus_id, work_id, variant_id, limit)
+        direct_result = search_records_sqlite_direct_bible(
+            connection,
+            query,
+            corpus_id,
+            work_id,
+            variant_id,
+            limit,
+            offset,
+        )
         if direct_result is not None:
             return direct_result
         if sqlite_search_has_fts(connection):
             try:
-                return search_records_sqlite_fts(connection, terms, corpus_id, work_id, variant_id, limit)
+                return search_records_sqlite_fts(connection, terms, corpus_id, work_id, variant_id, limit, offset)
             except sqlite3.Error:
-                return search_records_sqlite_like(connection, terms, corpus_id, work_id, variant_id, limit)
-        return search_records_sqlite_like(connection, terms, corpus_id, work_id, variant_id, limit)
+                return search_records_sqlite_like(connection, terms, corpus_id, work_id, variant_id, limit, offset)
+        return search_records_sqlite_like(connection, terms, corpus_id, work_id, variant_id, limit, offset)
     finally:
         connection.close()
 
 
-def search_records_jsonl(query: str, terms: list[str], corpus_id: str, work_id: str, variant_id: str, limit: int) -> dict:
+def search_records_jsonl(
+    query: str,
+    terms: list[str],
+    corpus_id: str,
+    work_id: str,
+    variant_id: str,
+    limit: int,
+    offset: int,
+) -> dict:
     total_matches = 0
     heap: list[tuple[int, int, dict]] = []
     order = 0
@@ -996,12 +1086,14 @@ def search_records_jsonl(query: str, terms: list[str], corpus_id: str, work_id: 
                 "score": score,
             }
             item = (score, -order, result)
-            if len(heap) < limit:
+            page_window = offset + limit
+            if len(heap) < page_window:
                 heapq.heappush(heap, item)
             elif item > heap[0]:
                 heapq.heapreplace(heap, item)
 
-    results = [item[2] for item in sorted(heap, reverse=True)]
+    ordered = [item[2] for item in sorted(heap, reverse=True)]
+    results = ordered[offset:offset + limit]
     return {"query": query, "count": total_matches, "results": results, "engine": "jsonl"}
 
 
@@ -1021,24 +1113,36 @@ def search_payload_from_query(query: dict[str, list[str]]) -> dict:
         limit = int(first_query_value(query, "limit", "30"))
     except ValueError:
         limit = 30
+    limit = max(1, min(limit, 100))
+    try:
+        page = max(1, int(first_query_value(query, "page", "1")))
+    except ValueError:
+        page = 1
+    try:
+        offset = int(first_query_value(query, "offset", str((page - 1) * max(1, limit))))
+    except ValueError:
+        offset = (page - 1) * max(1, limit)
     return search_records(
         first_query_value(query, "q"),
         safe_search_slug(first_query_value(query, "corpus_id")),
         first_query_value(query, "work_id"),
         first_query_value(query, "variant_id"),
         limit,
+        offset,
     )
 
 
-def search_records(query: str, corpus_id: str = "", work_id: str = "", variant_id: str = "", limit: int = 30) -> dict:
+def search_records(
+    query: str,
+    corpus_id: str = "",
+    work_id: str = "",
+    variant_id: str = "",
+    limit: int = 30,
+    offset: int = 0,
+) -> dict:
     query = normalize_search_text(query)
     terms = [term for term in query.split(" ") if term]
     if not terms:
-        return {"query": query, "count": 0, "results": [], "work_count": 0, "work_results": [], "note_count": 0, "note_results": []}
-    limit = max(1, min(int(limit), 100))
-    if SEARCH_DB.exists():
-        return attach_related_results(search_records_sqlite(query, corpus_id, work_id, variant_id, limit), query, corpus_id, work_id, variant_id, limit)
-    if not SEARCH_INDEX.exists():
         return {
             "query": query,
             "count": 0,
@@ -1047,6 +1151,50 @@ def search_records(query: str, corpus_id: str = "", work_id: str = "", variant_i
             "work_results": [],
             "note_count": 0,
             "note_results": [],
-            "error": "search index not found",
+            "limit": 0,
+            "offset": 0,
+            "page": 1,
+            "total_pages": 0,
+            "has_previous": False,
+            "has_next": False,
         }
-    return attach_related_results(search_records_jsonl(query, terms, corpus_id, work_id, variant_id, limit), query, corpus_id, work_id, variant_id, limit)
+    limit = max(1, min(int(limit), 100))
+    offset = max(0, min(int(offset), 100_000))
+
+    def load_segment_page(current_offset: int) -> dict:
+        if SEARCH_DB.exists():
+            return search_records_sqlite(query, corpus_id, work_id, variant_id, limit, current_offset)
+        if not SEARCH_INDEX.exists():
+            return {
+                "query": query,
+                "count": 0,
+                "results": [],
+                "error": "search index not found",
+            }
+        return search_records_jsonl(query, terms, corpus_id, work_id, variant_id, limit, current_offset)
+
+    payload = load_segment_page(offset)
+    total = max(0, int(payload.get("count", 0)))
+    total_pages = (total + limit - 1) // limit if total else 0
+    last_offset = (total_pages - 1) * limit if total_pages else 0
+    if offset > last_offset:
+        offset = last_offset
+        if total:
+            payload = load_segment_page(offset)
+
+    if offset == 0:
+        attach_related_results(payload, query, corpus_id, work_id, variant_id, limit)
+    else:
+        payload.update({"work_count": 0, "work_results": [], "note_count": 0, "note_results": []})
+    page = offset // limit + 1
+    payload.update(
+        {
+            "limit": limit,
+            "offset": offset,
+            "page": page,
+            "total_pages": total_pages,
+            "has_previous": offset > 0,
+            "has_next": offset + len(payload.get("results", [])) < total,
+        }
+    )
+    return payload
