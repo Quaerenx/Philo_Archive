@@ -16,7 +16,7 @@
 
 This compatible endpoint remains the full archive index for `/category/<corpus_id>` and existing archive consumers. The response may come from the versioned local archive catalog when its input signature matches; a missing, corrupt, or stale catalog is rebuilt safely in memory.
 
-루트 페이지와 `/category/<corpus_id>` 페이지가 사용하는 archive index이다.
+`/category/<corpus_id>` 페이지와 기존 archive 소비자가 사용하는 전체 index이다.
 
 최상위 필드:
 
@@ -60,6 +60,7 @@ This compatible endpoint remains the full archive index for `/category/<corpus_i
 ```json
 {
   "label": "Morgenröthe",
+  "display_title": "Morgenröthe / 아침놀",
   "href": "/work/nietzsche/M",
   "source_href": "/source?path=...",
   "path": "니체_원서수집/nietzsche/nietzsche/output/works/M.md",
@@ -74,10 +75,35 @@ Notes:
 - `sections[].links` is the authoritative category listing.
 - `href` may point to `/work/...` for catalogued works or `/read?path=...` for raw Markdown-style reading pages.
 - `source_href` points to the raw source viewer when available.
+- `display_title` is the stable reader-facing title used by homepage search and reading recommendations.
+
+## `GET /api/archive/titles?q=<query>&limit=8`
+
+홈의 작품명 자동완성용 경량 API이다. 전체 `/api/archive`를 브라우저로 내려받지 않고 제목과 한국어 별칭만 검색한다. `limit`은 1부터 25까지이며 기본값은 8이다.
+
+```json
+{
+  "schema_version": 1,
+  "query": "아침",
+  "count": 1,
+  "results": [
+    {
+      "corpus_id": "nietzsche",
+      "corpus_title": "니체",
+      "section_title": "주요 발간 저작",
+      "work_id": "M",
+      "href": "/work/nietzsche/M",
+      "display_title": "Morgenröthe / 아침놀"
+    }
+  ]
+}
+```
+
+같은 제목이 여러 판본에 존재하면 `section_title`로 출처를 구분한다. 원본 경로나 전체 archive 메타데이터는 이 응답에 포함하지 않는다.
 
 ## `GET /api/archive/summary`
 
-The home page uses this lightweight response instead of downloading every section and work link:
+The home page uses this lightweight response for the four corpus links. Title autocomplete uses `/api/archive/titles` instead of downloading every section and work link:
 
 ```json
 {

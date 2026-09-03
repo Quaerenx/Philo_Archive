@@ -1,20 +1,10 @@
-P {}
+a { color: var(--archive-link-color, #FF0000); text-decoration: none; }
 
-H1 { color: #000000; font-family: Verdana, Arial; font-size: 12px; }
+a:visited { color: var(--archive-link-color, #FF0000); }
 
-H2 {}
+a:active { color: var(--archive-link-color, #FF0000); }
 
-H3 {}
-
-A { color: var(--archive-link-color, #FF0000); text-decoration: none; }
-
-A:visited { color: var(--archive-link-color, #FF0000); }
-
-A:active { color: var(--archive-link-color, #FF0000); }
-
-A:hover { color: var(--archive-link-color, #FF0000); text-decoration: underline; }
-
-BODY { background-color: var(--page-frame-background, #eeeeee); }
+a:hover { color: var(--archive-link-color, #FF0000); text-decoration: underline; }
 
 .default {
   color: #000000;
@@ -105,14 +95,6 @@ p {
   margin-bottom: 0.75em;
   color: #333;
   font-weight: normal;
-}
-
-.site-tools {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 1.5em;
-  line-height: 1.35;
 }
 
 img {
@@ -312,11 +294,170 @@ img {
 }
 
 .root-links h2 {
-  color: #555;
+  color: #333;
   font-family: Verdana, Arial, Helvetica, sans-serif;
-  font-size: 11px;
-  font-weight: normal;
+  font-size: 12px;
+  font-weight: bold;
   line-height: 1.35;
+}
+
+.corpus-search {
+  position: relative;
+  z-index: 2;
+  margin: 2px 0 4px;
+}
+
+.corpus-search-label {
+  display: block;
+  margin-bottom: 4px;
+  color: #555;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.corpus-search-input {
+  width: 100%;
+  min-height: 36px;
+  padding: 6px 8px;
+  color: #111;
+  font-family: var(--archive-font, Verdana, Arial, Helvetica, sans-serif);
+  font-size: 12px;
+  background: #fff;
+  border: 1px solid #bdbdbd;
+  border-radius: 0;
+}
+
+.corpus-search-input::placeholder {
+  color: #6f6f6f;
+}
+
+.corpus-search-input:focus {
+  border-color: #888;
+  outline: 1px solid #b00000;
+  outline-offset: 1px;
+}
+
+.corpus-text-search {
+  display: inline-block;
+  margin-top: 5px;
+  color: #555;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.corpus-text-search:visited,
+.corpus-text-search:active,
+.corpus-text-search:hover,
+.corpus-text-search:focus-visible {
+  color: #333;
+}
+
+.corpus-search-preview {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  left: 0;
+  z-index: 3;
+  background: #fff;
+  border: 1px solid #cfcfcf;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.corpus-search-preview[hidden] {
+  display: none;
+}
+
+.corpus-search-status {
+  min-height: 27px;
+  padding: 6px 8px;
+  color: #555;
+  line-height: 1.4;
+  background: #f6f6f6;
+}
+
+.corpus-search-results {
+  max-height: 264px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.corpus-search-result {
+  display: grid;
+  gap: 2px;
+  min-height: 42px;
+  align-content: center;
+  padding: 6px 8px;
+  color: #111;
+  line-height: 1.35;
+  border-top: 1px solid #e2e2e2;
+}
+
+.corpus-search-result:visited,
+.corpus-search-result:active,
+.corpus-search-result:hover,
+.corpus-search-result:focus-visible {
+  color: #111;
+  text-decoration: none;
+}
+
+.corpus-search-result:hover,
+.corpus-search-result:focus-visible,
+.corpus-search-result.is-active {
+  background: #f1f1f1;
+  box-shadow: inset 3px 0 0 #b00000;
+}
+
+.corpus-search-result:focus-visible {
+  outline: 1px solid #888;
+  outline-offset: -2px;
+}
+
+.corpus-search-context {
+  color: #555;
+  font-size: 10px;
+  overflow-wrap: anywhere;
+}
+
+.corpus-search-title {
+  min-width: 0;
+  font-size: 11px;
+  font-weight: bold;
+  overflow-wrap: anywhere;
+}
+
+.corpus-search-title mark {
+  color: inherit;
+  background: #fff0a6;
+}
+
+.corpus-search-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  min-height: 29px;
+  align-items: center;
+  padding: 5px 8px;
+  border-top: 1px solid #e2e2e2;
+}
+
+.corpus-search-actions:empty {
+  display: none;
+}
+
+.corpus-search-actions a,
+.corpus-search-actions button {
+  padding: 0;
+  color: #555;
+  font-family: inherit;
+  font-size: 10px;
+  line-height: 1.4;
+  background: transparent;
+  border: 0;
+}
+
+.corpus-search-actions button {
+  cursor: pointer;
+  text-decoration: underline;
 }
 
 .root-link-list {
@@ -425,13 +566,10 @@ img {
   border-color: #999;
 }
 
-.clear-dot {
-  opacity: 0;
-}
-
 @media (max-width: 860px) {
   .page {
     margin: 0 auto;
+    background-position: center top;
     background-size: auto var(--mobile-header-strip-height, 112px);
     border-right: 0;
     border-left: 0;
@@ -476,6 +614,11 @@ img {
   }
 
   .root-link {
+    min-height: 42px;
+  }
+
+  .corpus-search-input,
+  .corpus-search-result {
     min-height: 42px;
   }
 

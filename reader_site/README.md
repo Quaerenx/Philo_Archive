@@ -48,7 +48,7 @@ The server builds `/api/archive` from the existing corpus folders without editin
 - Bible Markdown and inventory exports
 - Kierkegaard SKS JSON exports
 
-The home page uses the lightweight `/api/archive/summary` response. Category and archive consumers keep the compatible full `/api/archive` payload. `build_archive_catalog.py` writes an ignored, versioned local catalog whose input signature covers the relevant metadata and source files; runtime use falls back to a live rebuild when the catalog is missing, corrupt, or stale.
+The home page uses the lightweight `/api/archive/summary` response and the bounded `/api/archive/titles?q=...` title-autocomplete response. Category and archive consumers keep the compatible full `/api/archive` payload. `build_archive_catalog.py` writes an ignored, versioned local catalog whose input signature covers the relevant metadata and source files; runtime use falls back to a live rebuild when the catalog is missing, corrupt, or stale.
 
 Nietzsche works are grouped for reading through `data/nietzsche_catalog.json`; the original Markdown export files are left unchanged.
 
@@ -158,7 +158,7 @@ Search results link back into `/notes` by work and segment target. Notes storage
 Source path validation plus `/read` and `/source` response assembly live in `services/sources.py`; `server.py` only maps errors to HTTP responses and sends the returned HTML or inline file.
 Shared source-root and primary-output path constants live in `path_config.py`; runtime diagnostics, source serving, builders, and release checks use that file as the path baseline.
 Static entrypoint resolution and file response metadata live in `services/static_files.py`; only named pages, top-level `app.js`/`styles.css`, and approved web assets under `/assets/` are publishable. Versioned JS/CSS responses use immutable browser caching, representation-specific ETags, Last-Modified validation, conditional `304` responses, and gzip negotiation. HTML is revalidated and API responses remain `no-store`. Code, templates, local data, logs, and configuration remain private even though they share the site directory.
-Archive index construction for `/api/archive` and `/api/archive/summary` lives in `corpora/archive.py`; it turns the local corpus folders and generated metadata into category-page links while keeping the home response lightweight.
+Archive index construction for `/api/archive`, `/api/archive/summary`, and `/api/archive/titles` lives in `corpora/archive.py`; it turns the local corpus folders and generated metadata into category-page links while keeping the home response lightweight.
 Corpus catalog, metadata, work resolution, Bible segment lookup, and `/api/bible/segments` payload assembly live in `corpora/catalogs.py`.
 Corpus-specific work-page model builders live in `corpora/work_models.py`; they adapt Nietzsche, Bible, Kierkegaard, and Wittgenstein into the common work-page shape.
 Work page HTML assembly lives in `services/work_pages.py`; it selects the corpus-specific work model and applies the common `templates/work.html` markup.

@@ -4,8 +4,10 @@ import csv
 import fnmatch
 import json
 import os
+import re
 import stat as stat_module
 import threading
+import unicodedata
 from datetime import datetime
 from dataclasses import dataclass
 from pathlib import Path
@@ -29,6 +31,8 @@ from rendering.documents import title_from_markdown
 ARCHIVE_SCHEMA_VERSION = 1
 ARCHIVE_CATALOG = SITE / "data" / "archive_catalog.local.json"
 ARCHIVE_CACHE_CHECK_TTL_SECONDS = 5.0
+ARCHIVE_TITLE_SEARCH_LIMIT = 8
+ARCHIVE_TITLE_SEARCH_MAX_LIMIT = 25
 ROOT_RESOLVED = ROOT
 WITTGENSTEIN_METADATA_PATH = SITE / "data" / "wittgenstein_metadata.json"
 ARCHIVE_METADATA_FILES = (
@@ -52,6 +56,22 @@ ROOT_PATH_VALUE = os.fspath(ROOT_RESOLVED)
 ROOT_PATH_PREFIX = ROOT_PATH_VALUE.rstrip("\\/") + os.sep
 ROOT_PATH_PREFIX_CASEFOLD = ROOT_PATH_PREFIX.casefold()
 ArchiveInputSignature = tuple[tuple[str, str, int, int, int, int], ...]
+
+PREFERRED_WORK_TITLES = {
+    ("nietzsche", "M"): "Morgenröthe / 아침놀",
+    ("nietzsche", "FW"): "Die fröhliche Wissenschaft / 즐거운 학문",
+    ("nietzsche", "JGB"): "Jenseits von Gut und Böse / 선악의 저편",
+    ("nietzsche", "GM"): "Zur Genealogie der Moral / 도덕의 계보",
+    ("nietzsche", "GD"): "Götzen-Dämmerung / 우상의 황혼",
+    ("kierkegaard", "ee1"): "Enten - Eller I",
+    ("kierkegaard", "ee2"): "Enten - Eller II",
+    ("wittgenstein", "Group_Notebooks"): "Notebooks",
+    ("wittgenstein", "Group_BigTypescriptCorpus"): "Big Typescript",
+    ("wittgenstein", "Group_BrownBookCorpus"): "Brown Book",
+    ("wittgenstein", "Group_PICorpus"): "Philosophical Investigations",
+    ("wittgenstein", "Group_RFMCorpus"): "Remarks on Mathematics",
+    ("wittgenstein", "Group_RPPCorpus"): "Remarks on Psychology",
+}
 
 
 @dataclass(frozen=True)
@@ -113,6 +133,117 @@ def first_value(value) -> str:
     if value:
         return str(value)
     return ""
+
+
+def clean_text(value) -> str:
+    return re.sub(r"\s+", " ", str(value or "")).strip()
+
+
+def normalized_title(value) -> str:
+    decomposed = unicodedata.normalize("NFKD", clean_text(value)).casefold()
+    return "".join(character for character in decomposed if not unicodedata.combining(character))
+
+
+def korean_title_alias(meta: str) -> str:
+    for part in re.split(r"\s*·\s*", clean_text(meta)):
+        if re.search(r"[가-힣]", part):
+            return part
+    return ""
+
+
+def work_display_title(corpus_id: str, link: dict) -> str:
+    preferred = PREFERRED_WORK_TITLES.get((corpus_id, clean_text(link.get("work_id"))))
+    if preferred:
+        return preferred
+    label = clean_text(link.get("label"))
+    alias = korean_title_alias(link.get("meta", ""))
+    if alias and normalized_title(alias) not in normalized_title(label):
+        return f"{label} / {alias}"
+    return label
+
+
+def decorate_archive_display_titles(payload: dict) -> dict:
+    for corpus in payload.get("corpora", []):
+        corpus_id = clean_text(corpus.get("id"))
+        for section in corpus.get("sections", []):
+            for link in section.get("links", []):
+                link["display_title"] = work_display_title(corpus_id, link)
+        for link in corpus.get("links", []):
+            link["display_title"] = work_display_title(corpus_id, link)
+    return payload
+
+
+def title_search_candidates(link: dict) -> list[str]:
+    label = clean_text(link.get("label"))
+    display_title = clean_text(link.get("display_title")) or label
+    label_parts = [clean_text(part) for part in re.split(r"\s+/\s+", label)]
+    alias = korean_title_alias(link.get("meta", ""))
+    return list(dict.fromkeys(value for value in [display_title, label, *label_parts, alias] if value))
+
+
+def archive_title_search(query: str, limit: int = ARCHIVE_TITLE_SEARCH_LIMIT) -> dict:
+    query = clean_text(query)
+    if not isinstance(limit, int) or isinstance(limit, bool) or not 1 <= limit <= ARCHIVE_TITLE_SEARCH_MAX_LIMIT:
+        raise ValueError(f"limit must be between 1 and {ARCHIVE_TITLE_SEARCH_MAX_LIMIT}")
+    normalized_query = normalized_title(query)
+    if not normalized_query:
+        return {"schema_version": ARCHIVE_SCHEMA_VERSION, "query": query, "count": 0, "results": []}
+
+    ranked_results: list[tuple[tuple, dict]] = []
+    seen: set[tuple[str, str]] = set()
+    for corpus_order, corpus in enumerate(build_archive().get("corpora", [])):
+        corpus_id = clean_text(corpus.get("id"))
+        corpus_title = clean_text(corpus.get("title")) or corpus_id
+        for section_order, section in enumerate(corpus.get("sections", [])):
+            section_title = clean_text(section.get("title"))
+            for link_order, link in enumerate(section.get("links", [])):
+                href = clean_text(link.get("href"))
+                identity = (corpus_id, clean_text(link.get("work_id")) or href)
+                if not href or identity in seen:
+                    continue
+                candidates = title_search_candidates(link)
+                matches = [candidate for candidate in candidates if normalized_query in normalized_title(candidate)]
+                if not matches:
+                    continue
+                seen.add(identity)
+                best_match = min(
+                    matches,
+                    key=lambda candidate: (
+                        0 if normalized_title(candidate) == normalized_query else 1 if normalized_title(candidate).startswith(normalized_query) else 2,
+                        len(candidate),
+                        candidate.casefold(),
+                    ),
+                )
+                match_value = normalized_title(best_match)
+                rank = 0 if match_value == normalized_query else 1 if match_value.startswith(normalized_query) else 2
+                result = {
+                    "corpus_id": corpus_id,
+                    "corpus_title": corpus_title,
+                    "section_title": section_title,
+                    "work_id": clean_text(link.get("work_id")),
+                    "href": href,
+                    "display_title": clean_text(link.get("display_title")) or clean_text(link.get("label")),
+                }
+                ranked_results.append(
+                    ((rank, len(best_match), best_match.casefold(), corpus_order, section_order, link_order), result)
+                )
+
+    ranked_results.sort(key=lambda item: item[0])
+    return {
+        "schema_version": ARCHIVE_SCHEMA_VERSION,
+        "query": query,
+        "count": len(ranked_results),
+        "results": [result for _rank, result in ranked_results[:limit]],
+    }
+
+
+def archive_title_search_from_query(query: Mapping[str, list[str]]) -> dict:
+    limit_value = first_value(query.get("limit", [str(ARCHIVE_TITLE_SEARCH_LIMIT)]))
+    try:
+        limit = int(limit_value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("limit must be an integer") from exc
+    return archive_title_search(first_value(query.get("q", [""])), limit)
 
 
 def file_link(path: Path, label: str | None = None, meta: str | None = None) -> dict:
@@ -519,7 +650,7 @@ def build_kierkegaard_archive(file_sizes: Mapping[str, int] | None = None) -> di
 
 
 def build_archive_payload(file_sizes: Mapping[str, int] | None = None) -> dict:
-    return {
+    return decorate_archive_display_titles({
         "generated_at": datetime.now().isoformat(timespec="seconds"),
         "corpora": [
             build_nietzsche_archive(file_sizes),
@@ -527,7 +658,7 @@ def build_archive_payload(file_sizes: Mapping[str, int] | None = None) -> dict:
             build_kierkegaard_archive(file_sizes),
             build_wittgenstein_archive(file_sizes),
         ],
-    }
+    })
 
 
 def build_archive_catalog(initial_snapshot: ArchiveInputSnapshot | None = None) -> dict:
@@ -601,6 +732,8 @@ def build_archive() -> dict:
                 catalog = build_archive_catalog(snapshot)
                 payload = catalog["archive"]
                 active_signature = tuple(tuple(item) for item in catalog["input_signature"])
+            else:
+                decorate_archive_display_titles(payload)
         state = ArchiveCacheState(
             payload=payload,
             signature=active_signature,

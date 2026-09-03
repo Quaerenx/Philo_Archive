@@ -16,7 +16,7 @@ SITE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SITE))
 
 from corpora import archive as archive_service  # noqa: E402
-from corpora.archive import build_archive, build_archive_summary  # noqa: E402
+from corpora.archive import archive_title_search, build_archive, build_archive_summary  # noqa: E402
 from corpora.catalogs import bible_segments_payload_from_query  # noqa: E402
 import runtime_status  # noqa: E402
 from runtime_status import (  # noqa: E402
@@ -113,7 +113,37 @@ def check_archive(payload: dict[str, Any]) -> None:
             require(isinstance(section["links"], list), f"{section_context}.links must be list")
             for link_index, link in enumerate(section["links"]):
                 link_context = f"{section_context}.links[{link_index}]"
-                require_keys(link, {"label", "href", "source_href", "path", "meta"}, link_context)
+                require_keys(link, {"label", "display_title", "href", "source_href", "path", "meta"}, link_context)
+
+
+def check_archive_title_search() -> None:
+    morning = archive_title_search("아침")
+    require(morning["count"] == 1, "archive title search should resolve the Korean Morning alias")
+    require(morning["results"][0]["href"] == "/work/nietzsche/M", "Morning title search resolved the wrong work")
+    require(
+        morning["results"][0]["display_title"] == "Morgenröthe / 아침놀",
+        "archive title search must return a stable display title",
+    )
+
+    genesis = archive_title_search("Genesis")
+    require(genesis["count"] == 2, "duplicate Genesis editions should remain separate title results")
+    require(
+        {result["section_title"] for result in genesis["results"]} == {"Hebrew Bible", "LXX / Deuterocanon"},
+        "duplicate Genesis results must identify their source sections",
+    )
+    for result in genesis["results"]:
+        require(
+            not ({"path", "source_href"} & set(result)),
+            "archive title search should not expose full archive source fields",
+        )
+
+    require(len(archive_title_search("a", limit=3)["results"]) <= 3, "archive title search ignored its limit")
+    try:
+        archive_title_search("a", limit=0)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("archive title search should reject an out-of-range limit")
 
 
 def check_archive_summary(payload: dict[str, Any]) -> None:
@@ -600,6 +630,7 @@ def check_study_session_export() -> None:
 def main() -> None:
     check_archive(build_archive())
     check_archive_summary(build_archive_summary())
+    check_archive_title_search()
     check_archive_cache_contracts()
     check_health(build_runtime_health())
     check_artifacts(build_artifact_manifest())

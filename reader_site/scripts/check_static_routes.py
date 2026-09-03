@@ -83,7 +83,7 @@ def request_bytes(
 
 def check_static_cache_contracts(base_url: str) -> None:
     for path, expected_type in (
-        ("/app.js?v=home16", "javascript"),
+        ("/app.js?v=home18", "javascript"),
         ("/assets/reader-work.css?v=common148", "text/css"),
     ):
         identity_body, identity_headers = request_bytes(
@@ -314,6 +314,19 @@ def check_routes(base_url: str) -> None:
         archive_summary.get("schema_version") == 1 and len(archive_summary.get("corpora", [])) == 4,
         "archive summary shape invalid",
     )
+    morning_titles = fetch_json(base_url, "/api/archive/titles?q=%EC%95%84%EC%B9%A8&limit=8")
+    require(morning_titles.get("count") == 1, "archive title route did not resolve the Korean title alias")
+    require(
+        (morning_titles.get("results") or [{}])[0].get("href") == "/work/nietzsche/M",
+        "archive title route resolved the wrong work",
+    )
+    genesis_titles = fetch_json(base_url, "/api/archive/titles?q=Genesis&limit=8")
+    require(
+        {result.get("section_title") for result in genesis_titles.get("results", [])}
+        == {"Hebrew Bible", "LXX / Deuterocanon"},
+        "archive title route did not distinguish duplicate Bible editions",
+    )
+    require(fetch_status(base_url, "/api/archive/titles?q=a&limit=0") == 400, "invalid title search limit should return 400")
     artifacts = fetch_json(base_url, "/api/artifacts")
     forbidden_diagnostic_keys = {
         "base_url",

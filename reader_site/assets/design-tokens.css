@@ -11,11 +11,11 @@
   --archive-link-color: #ff0000;
   --archive-muted-color: #555555;
   --archive-font: Verdana, Arial, Helvetica, sans-serif;
-  --header-strip-image: url("/assets/header-strip.svg?v=archive");
+  --header-strip-image: url("/assets/header-strip.svg?v=archive2");
   --header-portrait-image: none;
   --header-portrait-width: 440px;
   --header-portrait-height: 128px;
-  --header-spacer-height: 160px;
+  --header-spacer-height: 136px;
   --mobile-header-strip-height: 112px;
   --mobile-header-spacer-height: 84px;
   --mobile-portrait-spacer-height: 112px;
@@ -23,6 +23,6 @@
 
 body.category-nietzsche,
 body.nietzsche-work {
-  --header-strip-image: url("/assets/header-strip.svg?v=nietzsche-portrait");
+  --header-strip-image: url("/assets/header-strip.svg?v=nietzsche-portrait2");
   --header-portrait-image: url("/assets/nietzsche-header-left.png?v=1882");
 }

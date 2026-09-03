@@ -2,10 +2,21 @@ const state = {
   archive: null,
   categoryQuery: "",
   activeSection: "all",
+  workSearchResults: [],
+  workSearchCount: 0,
+  workSearchState: "idle",
+  workQuery: "",
+  workResultQuery: "",
+  workSearchOpen: false,
+  activeWorkResult: -1,
 };
 
 const RECENT_WORK_STORAGE_KEY = "philo.reader.recentWork";
 const START_READING_LIMIT = 6;
+const WORK_SEARCH_RESULT_LIMIT = 8;
+const WORK_SEARCH_DEBOUNCE_MS = 140;
+let workSearchTimer = 0;
+let activeWorkSearchController = null;
 const START_READING_WORK_IDS = {
   nietzsche: ["M", "FW", "Za-I", "JGB", "GM", "GD"],
   bible: ["oshb.Gen", "oshb.Ps", "oshb.Isa", "sblgnt.Matt", "sblgnt.John", "sblgnt.Rom"],
@@ -18,22 +29,6 @@ const START_READING_WORK_IDS = {
     "Group_RFMCorpus",
     "Group_RPPCorpus"
   ],
-};
-
-const START_READING_LABELS = {
-  M: "Morgenröthe / 아침놀",
-  FW: "Die fröhliche Wissenschaft / 즐거운 학문",
-  JGB: "Jenseits von Gut und Böse / 선악의 저편",
-  GM: "Zur Genealogie der Moral / 도덕의 계보",
-  GD: "Götzen-Dämmerung / 우상의 황혼",
-  ee1: "Enten - Eller I",
-  ee2: "Enten - Eller II",
-  Group_Notebooks: "Notebooks",
-  Group_BigTypescriptCorpus: "Big Typescript",
-  Group_BrownBookCorpus: "Brown Book",
-  Group_PICorpus: "Philosophical Investigations",
-  Group_RFMCorpus: "Remarks on Mathematics",
-  Group_RPPCorpus: "Remarks on Psychology",
 };
 
 const ROOT_LINK_LABELS = {
@@ -71,7 +66,10 @@ function cleanText(value) {
 }
 
 function normalize(value) {
-  return String(value ?? "").toLowerCase();
+  return String(value ?? "")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
 }
 
 function storedRecentWork() {
@@ -121,7 +119,7 @@ function syncCategoryBodyClass(categoryId = "") {
 }
 
 function filteredSections(corpus) {
-  return corpus.sections.filter((section) => section.links.length || section.count);
+  return (corpus.sections || []).filter((section) => section.links.length || section.count);
 }
 
 function corpusLinks(corpus) {
@@ -140,6 +138,206 @@ function uniqueLinks(links) {
 
 function normalizedContains(value, query) {
   return normalize(value).includes(normalize(query));
+}
+
+function homeSearchMarkup() {
+  return `<div class="corpus-search">
+    <label class="corpus-search-label" for="corpusSearchInput">전체 작품명 검색</label>
+    <input id="corpusSearchInput" class="corpus-search-input" type="search" autocomplete="off" spellcheck="false" placeholder="예: 아침놀, Genesis" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-controls="corpusSearchResults" aria-expanded="false">
+    <a class="corpus-text-search" href="/search">작품 본문에서 찾기</a>
+    <div id="corpusSearchPreview" class="corpus-search-preview" hidden>
+      <div id="corpusSearchStatus" class="corpus-search-status" role="status" aria-live="polite"></div>
+      <div id="corpusSearchResults" class="corpus-search-results" role="listbox" aria-label="작품명 검색 결과"></div>
+      <div id="corpusSearchActions" class="corpus-search-actions"></div>
+    </div>
+  </div>`;
+}
+
+function highlightedTitle(title, query) {
+  const cleanTitle = cleanText(title);
+  const cleanQuery = cleanText(query);
+  const index = cleanTitle.toLocaleLowerCase("ko").indexOf(cleanQuery.toLocaleLowerCase("ko"));
+  if (!cleanQuery || index < 0) return escapeHtml(cleanTitle);
+  return `${escapeHtml(cleanTitle.slice(0, index))}<mark>${escapeHtml(cleanTitle.slice(index, index + cleanQuery.length))}</mark>${escapeHtml(cleanTitle.slice(index + cleanQuery.length))}`;
+}
+
+function workSearchResultMarkup(work, index) {
+  const active = index === state.activeWorkResult;
+  const context = [work.corpus_title, work.section_title].filter(Boolean).join(" · ");
+  return `<a id="corpusSearchResult-${index}" class="corpus-search-result${active ? " is-active" : ""}" href="${escapeHtml(work.href)}" role="option" aria-selected="${active}" aria-label="${escapeHtml(`${context}: ${work.display_title}`)}">
+    <span class="corpus-search-context">${escapeHtml(context)}</span>
+    <span class="corpus-search-title">${highlightedTitle(work.display_title, state.workQuery)}</span>
+  </a>`;
+}
+
+function fullTextSearchHref(query = "") {
+  return query ? `/search?q=${encodeURIComponent(query)}` : "/search";
+}
+
+function bindWorkSearchActions() {
+  const retry = document.querySelector("[data-work-search-retry]");
+  if (retry) retry.addEventListener("click", () => requestWorkSearch(state.workQuery));
+}
+
+function renderWorkSearchPreview() {
+  const input = document.querySelector("#corpusSearchInput");
+  const preview = document.querySelector("#corpusSearchPreview");
+  const status = document.querySelector("#corpusSearchStatus");
+  const results = document.querySelector("#corpusSearchResults");
+  const actions = document.querySelector("#corpusSearchActions");
+  if (!input || !preview || !status || !results || !actions) return;
+
+  input.removeAttribute("aria-activedescendant");
+  if (!state.workQuery || !state.workSearchOpen) {
+    preview.hidden = true;
+    input.setAttribute("aria-expanded", "false");
+    status.textContent = "";
+    results.innerHTML = "";
+    actions.innerHTML = "";
+    return;
+  }
+
+  preview.hidden = false;
+  input.setAttribute("aria-expanded", "true");
+  actions.innerHTML = "";
+  if (state.workSearchState === "loading" || state.workSearchState === "idle") {
+    status.textContent = "작품명을 찾는 중...";
+    results.innerHTML = "";
+    return;
+  }
+  if (state.workSearchState === "error") {
+    status.textContent = "작품명 검색을 불러오지 못했습니다.";
+    results.innerHTML = "";
+    actions.innerHTML = `<button type="button" data-work-search-retry>다시 시도</button><a href="${escapeHtml(fullTextSearchHref(state.workQuery))}">본문 검색으로 이동</a>`;
+    bindWorkSearchActions();
+    return;
+  }
+
+  if (state.workResultQuery !== state.workQuery) {
+    status.textContent = "작품명을 찾는 중...";
+    results.innerHTML = "";
+    return;
+  }
+  if (!state.workSearchResults.length) {
+    status.textContent = "일치하는 작품이 없습니다.";
+    results.innerHTML = "";
+    actions.innerHTML = `<a href="${escapeHtml(fullTextSearchHref(state.workQuery))}">이 검색어를 본문에서 찾기</a>`;
+    return;
+  }
+
+  const resultNote = state.workSearchCount > state.workSearchResults.length ? `, ${state.workSearchResults.length}개 미리보기` : "";
+  status.textContent = `${state.workSearchCount.toLocaleString("ko-KR")}개 작품${resultNote}`;
+  results.innerHTML = state.workSearchResults.map(workSearchResultMarkup).join("");
+  if (state.workSearchCount > state.workSearchResults.length) {
+    actions.innerHTML = `<a href="${escapeHtml(fullTextSearchHref(state.workQuery))}">전체 검색에서 더 보기</a>`;
+  }
+  if (state.activeWorkResult >= 0 && state.activeWorkResult < state.workSearchResults.length) {
+    input.setAttribute("aria-activedescendant", `corpusSearchResult-${state.activeWorkResult}`);
+  }
+}
+
+function setActiveWorkResult(index) {
+  const visibleCount = state.workSearchResults.length;
+  if (!visibleCount) return;
+  state.activeWorkResult = (index + visibleCount) % visibleCount;
+  renderWorkSearchPreview();
+  document.querySelector(`#corpusSearchResult-${state.activeWorkResult}`)?.scrollIntoView({ block: "nearest" });
+}
+
+async function requestWorkSearch(query) {
+  const requestedQuery = cleanText(query);
+  if (!requestedQuery) return;
+  activeWorkSearchController?.abort();
+  const controller = new AbortController();
+  activeWorkSearchController = controller;
+  state.workSearchState = "loading";
+  renderWorkSearchPreview();
+  try {
+    const response = await fetch(`/api/archive/titles?q=${encodeURIComponent(requestedQuery)}&limit=${WORK_SEARCH_RESULT_LIMIT}`, { signal: controller.signal });
+    if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+    const payload = await response.json();
+    if (requestedQuery !== state.workQuery) return;
+    state.workSearchResults = Array.isArray(payload.results) ? payload.results : [];
+    state.workSearchCount = Number(payload.count) || 0;
+    state.workResultQuery = requestedQuery;
+    state.workSearchState = "ready";
+  } catch (error) {
+    if (error.name === "AbortError" || requestedQuery !== state.workQuery) return;
+    state.workSearchResults = [];
+    state.workSearchCount = 0;
+    state.workResultQuery = requestedQuery;
+    state.workSearchState = "error";
+  } finally {
+    if (activeWorkSearchController === controller) activeWorkSearchController = null;
+  }
+  renderWorkSearchPreview();
+}
+
+function scheduleWorkSearch() {
+  window.clearTimeout(workSearchTimer);
+  activeWorkSearchController?.abort();
+  state.workSearchResults = [];
+  state.workSearchCount = 0;
+  state.workResultQuery = "";
+  if (!state.workQuery) {
+    state.workSearchState = "idle";
+    renderWorkSearchPreview();
+    return;
+  }
+  state.workSearchState = "loading";
+  renderWorkSearchPreview();
+  workSearchTimer = window.setTimeout(() => requestWorkSearch(state.workQuery), WORK_SEARCH_DEBOUNCE_MS);
+}
+
+function closeWorkSearch() {
+  state.workSearchOpen = false;
+  state.activeWorkResult = -1;
+  renderWorkSearchPreview();
+}
+
+function bindHomeSearch() {
+  const input = document.querySelector("#corpusSearchInput");
+  const search = input?.closest(".corpus-search");
+  if (!input) return;
+  input.value = state.workQuery;
+  input.addEventListener("focus", () => {
+    if (!state.workQuery) return;
+    state.workSearchOpen = true;
+    renderWorkSearchPreview();
+    if (state.workResultQuery !== state.workQuery) scheduleWorkSearch();
+  });
+  input.addEventListener("input", () => {
+    state.workQuery = input.value.trim();
+    state.workSearchOpen = Boolean(state.workQuery);
+    state.activeWorkResult = -1;
+    scheduleWorkSearch();
+  });
+  input.addEventListener("keydown", (event) => {
+    if (event.isComposing || event.keyCode === 229) return;
+    if ((event.key === "ArrowDown" || event.key === "ArrowUp") && state.workQuery && !state.workSearchOpen) {
+      state.workSearchOpen = true;
+      renderWorkSearchPreview();
+    }
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setActiveWorkResult(state.activeWorkResult + 1);
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setActiveWorkResult(state.activeWorkResult < 0 ? -1 : state.activeWorkResult - 1);
+    } else if (event.key === "Enter" && state.workSearchOpen) {
+      const target = state.workSearchResults[state.activeWorkResult < 0 ? 0 : state.activeWorkResult];
+      if (target) {
+        event.preventDefault();
+        window.location.assign(target.href);
+      }
+    } else if (event.key === "Escape" && state.workSearchOpen) {
+      event.preventDefault();
+      closeWorkSearch();
+    }
+  });
+  document.addEventListener("pointerdown", (event) => {
+    if (state.workSearchOpen && search && !search.contains(event.target)) closeWorkSearch();
+  });
 }
 
 function filteredCategorySections(corpus) {
@@ -174,7 +372,7 @@ function readingPathLinks(corpus) {
 }
 
 function startReadingLabel(link) {
-  return START_READING_LABELS[link.work_id] || link.label;
+  return link.display_title || link.label;
 }
 
 function startReadingTitle(link) {
@@ -230,8 +428,9 @@ function renderArchive() {
 
   el.archiveLinks.innerHTML = [
     recentWorkMarkup(),
-    `<section class="root-links" aria-label="자료 선택">
-      <h2>읽기 시작</h2>
+    `<section class="root-links" aria-label="Corpus 목록">
+      <h2>Corpus 목록</h2>
+      ${homeSearchMarkup()}
       <div class="root-link-list">
         ${visibleCorpora
           .map((corpus) => `<a class="root-link" href="/category/${encodeURIComponent(corpus.id)}">${escapeHtml(rootLinkLabel(corpus))}</a>`)
@@ -239,6 +438,7 @@ function renderArchive() {
       </div>
     </section>`
   ].join("");
+  bindHomeSearch();
 }
 
 function renderCategory(categoryId) {

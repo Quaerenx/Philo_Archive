@@ -8,7 +8,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
 
-from corpora.archive import build_archive, build_archive_summary
+from corpora.archive import archive_title_search_from_query, build_archive, build_archive_summary
 from corpora.catalogs import (
     bible_segments_payload_from_query,
     load_bible_metadata,
@@ -102,6 +102,9 @@ class Handler(BaseHTTPRequestHandler):
             return
         if parsed.path == "/api/archive/summary":
             self.send_json(build_archive_summary())
+            return
+        if parsed.path == "/api/archive/titles":
+            self.handle_archive_title_search_get(parse_qs(parsed.query))
             return
         if parsed.path == "/api/nietzsche/metadata":
             self.send_json(load_nietzsche_metadata())
@@ -324,6 +327,14 @@ class Handler(BaseHTTPRequestHandler):
 
     def handle_search_get(self, query: dict[str, list[str]]) -> None:
         self.send_json(search_payload_from_query(query))
+
+    def handle_archive_title_search_get(self, query: dict[str, list[str]]) -> None:
+        try:
+            payload = archive_title_search_from_query(query)
+        except ValueError as exc:
+            self.send_json({"ok": False, "error": str(exc)}, status=400)
+            return
+        self.send_json(payload)
 
     def handle_source_target_get(self, query: dict[str, list[str]]) -> None:
         try:

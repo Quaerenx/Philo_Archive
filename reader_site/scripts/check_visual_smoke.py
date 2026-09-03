@@ -234,14 +234,10 @@ def check_route_markup(route: str, html: str) -> None:
             require(noisy_text not in html, f"{route} should avoid static source header text {noisy_text!r}")
         require("javascript:;" not in html, f"{route} should avoid inert markdown javascript links")
     if route == "/":
-        for needle in [
-            "검색",
-            "노트",
-            "학습",
-            "번역",
-            "app.js?v=home16",
-        ]:
-            require(needle in html, f"{route} missing visual smoke marker {needle!r}")
+        require("app.js?v=home18" in html, f"{route} missing current home script")
+        require('class="site-tools"' not in html, f"{route} should not expose the retired tool navigation")
+        for retired_link in ['href="/search"', 'href="/notes"', 'href="/study"', 'href="/translations"']:
+            require(retired_link not in html, f"{route} should not expose retired home tool link {retired_link!r}")
     if route == "/study":
         for needle in [
             "studySubmit",
@@ -460,8 +456,9 @@ def check_png_content(path: Path) -> None:
     width, height, color_type, pixels = decode_png_pixels(path)
     channels = {0: 1, 2: 3, 4: 2, 6: 4}[color_type]
     row_size = width * channels
-    x_step = max(1, width // 90)
-    y_step = max(1, height // 70)
+    # Sample densely enough that the archive's 10px text strokes are not skipped.
+    x_step = max(1, width // 180)
+    y_step = max(1, height // 140)
     buckets: set[tuple[int, int, int]] = set()
     min_luminance = 255
     max_luminance = 0
@@ -533,20 +530,29 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       const links = Array.from(section?.querySelectorAll('.root-link') || []);
       const grid = section?.querySelector('.root-link-list');
       const navColumn = document.querySelector('.nav-column');
+      const searchInput = document.querySelector('#corpusSearchInput');
       const gridStyle = grid ? window.getComputedStyle(grid) : null;
       const firstLinkBox = links[0]?.getBoundingClientRect();
+      const gridBox = grid?.getBoundingClientRect();
       const navColumnBox = navColumn?.getBoundingClientRect();
       return {
         heading: heading?.textContent.trim() || '',
         label: section?.getAttribute('aria-label') || '',
         linkCount: links.length,
+        hasSearchInput: Boolean(searchInput),
+        hasSiteTools: Boolean(document.querySelector('.site-tools')),
+        fullTextHref: section?.querySelector('.corpus-text-search')?.getAttribute('href') || '',
         gridColumns: (gridStyle?.gridTemplateColumns || '').trim().split(/\s+/).filter(Boolean).length,
+        gridTop: gridBox?.top || 0,
         navColumnTop: navColumnBox?.top || 0,
         firstLinkHeight: firstLinkBox?.height || 0
       };
     });
-    if (homeState.heading !== '읽기 시작' || homeState.label !== '자료 선택') {
-      throw new Error(`home should frame root categories as a reading start area: ${JSON.stringify(homeState)}`);
+    if (homeState.heading !== 'Corpus 목록' || homeState.label !== 'Corpus 목록') {
+      throw new Error(`home should frame root categories as the Corpus list: ${JSON.stringify(homeState)}`);
+    }
+    if (!homeState.hasSearchInput || homeState.hasSiteTools || homeState.fullTextHref !== '/search') {
+      throw new Error(`home should replace the retired tool links with work-title search: ${JSON.stringify(homeState)}`);
     }
     if (homeState.linkCount !== 4) {
       throw new Error(`home should expose the four root categories: ${JSON.stringify(homeState)}`);
@@ -559,6 +565,136 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     }
     if (Number(widthText) > 420 && homeState.gridColumns < 2) {
       throw new Error(`desktop home root links should scan as a compact grid: ${JSON.stringify(homeState)}`);
+    }
+    const waitForTitleSearch = () => page.waitForFunction(() => {
+      const status = document.querySelector('#corpusSearchStatus')?.textContent || '';
+      return Boolean(document.querySelector('.corpus-search-result')) || /일치하는 작품이 없습니다|불러오지 못했습니다/.test(status);
+    }, { timeout: 15000 });
+    await page.fill('#corpusSearchInput', '아침');
+    await waitForTitleSearch();
+    const workSearchState = await page.evaluate(() => {
+      const input = document.querySelector('#corpusSearchInput');
+      const preview = document.querySelector('#corpusSearchPreview');
+      const firstResult = document.querySelector('.corpus-search-result');
+      const grid = document.querySelector('.root-link-list');
+      return {
+        expanded: input?.getAttribute('aria-expanded') || '',
+        previewHidden: Boolean(preview?.hidden),
+        firstResultContext: firstResult?.querySelector('.corpus-search-context')?.textContent.trim() || '',
+        firstResultTitle: firstResult?.querySelector('.corpus-search-title')?.textContent.trim() || '',
+        firstResultHref: firstResult?.getAttribute('href') || '',
+        firstResultRole: firstResult?.getAttribute('role') || '',
+        highlighted: firstResult?.querySelector('mark')?.textContent || '',
+        gridTop: grid?.getBoundingClientRect().top || 0,
+        status: document.querySelector('#corpusSearchStatus')?.textContent.trim() || '',
+        statusHasInteractive: Boolean(document.querySelector('#corpusSearchStatus a, #corpusSearchStatus button'))
+      };
+    });
+    if (workSearchState.expanded !== 'true' || workSearchState.previewHidden) {
+      throw new Error(`home work search preview should open for a query: ${JSON.stringify(workSearchState)}`);
+    }
+    if (workSearchState.firstResultTitle !== 'Morgenröthe / 아침놀' || workSearchState.firstResultHref !== '/work/nietzsche/M') {
+      throw new Error(`home work search should resolve Korean title aliases: ${JSON.stringify(workSearchState)}`);
+    }
+    if (!workSearchState.firstResultContext.includes('니체') || workSearchState.highlighted !== '아침') {
+      throw new Error(`home work search should retain stable title and corpus context: ${JSON.stringify(workSearchState)}`);
+    }
+    if (workSearchState.firstResultRole !== 'option' || !workSearchState.status.includes('작품') || workSearchState.statusHasInteractive) {
+      throw new Error(`home work search should expose accessible result context: ${JSON.stringify(workSearchState)}`);
+    }
+    if (Math.abs(workSearchState.gridTop - homeState.gridTop) > 1) {
+      throw new Error(`home work search preview should overlay rather than shift the Corpus list: ${JSON.stringify({ homeState, workSearchState })}`);
+    }
+
+    const beforeIme = await page.evaluate(() => ({
+      path: window.location.pathname,
+      active: document.querySelector('#corpusSearchInput')?.getAttribute('aria-activedescendant') || ''
+    }));
+    await page.dispatchEvent('#corpusSearchInput', 'keydown', { key: 'ArrowDown', code: 'ArrowDown', bubbles: true, isComposing: true });
+    await page.dispatchEvent('#corpusSearchInput', 'keydown', { key: 'Enter', code: 'Enter', bubbles: true, isComposing: true });
+    const afterIme = await page.evaluate(() => ({
+      path: window.location.pathname,
+      value: document.querySelector('#corpusSearchInput')?.value || '',
+      active: document.querySelector('#corpusSearchInput')?.getAttribute('aria-activedescendant') || ''
+    }));
+    if (afterIme.path !== beforeIme.path || afterIme.value !== '아침' || afterIme.active !== beforeIme.active) {
+      throw new Error(`home work search should ignore navigation keys during IME composition: ${JSON.stringify({ beforeIme, afterIme })}`);
+    }
+
+    await page.press('#corpusSearchInput', 'Escape');
+    const escapeState = await page.evaluate(() => {
+      const input = document.querySelector('#corpusSearchInput');
+      return {
+        value: input?.value || '',
+        expanded: input?.getAttribute('aria-expanded') || '',
+        previewHidden: Boolean(document.querySelector('#corpusSearchPreview')?.hidden)
+      };
+    });
+    if (escapeState.value !== '아침' || escapeState.expanded !== 'false' || !escapeState.previewHidden) {
+      throw new Error(`Escape should close title suggestions without deleting the query: ${JSON.stringify(escapeState)}`);
+    }
+    await page.press('#corpusSearchInput', 'Enter');
+    if (new URL(page.url()).pathname !== '/') {
+      throw new Error(`Enter should not navigate while title suggestions are closed: ${page.url()}`);
+    }
+
+    await page.fill('#corpusSearchInput', 'Genesis');
+    await waitForTitleSearch();
+    const genesisState = await page.evaluate(() => ({
+      titles: Array.from(document.querySelectorAll('.corpus-search-title')).map((node) => node.textContent.trim()),
+      contexts: Array.from(document.querySelectorAll('.corpus-search-context')).map((node) => node.textContent.trim()),
+      hrefs: Array.from(document.querySelectorAll('.corpus-search-result')).map((node) => node.getAttribute('href') || '')
+    }));
+    if (genesisState.titles.length !== 2 || !genesisState.titles.every((title) => title === 'Genesis / 창세기')) {
+      throw new Error(`duplicate Genesis titles should remain visible as separate works: ${JSON.stringify(genesisState)}`);
+    }
+    if (!genesisState.contexts.some((text) => text.includes('Hebrew Bible')) || !genesisState.contexts.some((text) => text.includes('LXX / Deuterocanon'))) {
+      throw new Error(`duplicate Genesis titles should identify their source sections: ${JSON.stringify(genesisState)}`);
+    }
+
+    await page.fill('#corpusSearchInput', 'a');
+    await waitForTitleSearch();
+    const broadResultCount = await page.locator('.corpus-search-result').count();
+    if (broadResultCount !== 8) {
+      throw new Error(`broad title search should return the bounded preview: ${broadResultCount}`);
+    }
+    for (let index = 0; index < broadResultCount; index += 1) {
+      await page.press('#corpusSearchInput', 'ArrowDown');
+    }
+    const keyboardState = await page.evaluate(() => {
+      const results = document.querySelector('#corpusSearchResults');
+      const active = document.querySelector('.corpus-search-result.is-active');
+      const resultsBox = results?.getBoundingClientRect();
+      const activeBox = active?.getBoundingClientRect();
+      return {
+        activeId: active?.id || '',
+        scrollTop: results?.scrollTop || 0,
+        activeVisible: Boolean(resultsBox && activeBox && activeBox.top >= resultsBox.top && activeBox.bottom <= resultsBox.bottom + 1)
+      };
+    });
+    if (keyboardState.activeId !== 'corpusSearchResult-7' || keyboardState.scrollTop <= 0 || !keyboardState.activeVisible) {
+      throw new Error(`keyboard navigation should keep the active title result visible: ${JSON.stringify(keyboardState)}`);
+    }
+
+    await page.fill('#corpusSearchInput', 'unlikelytitle0000');
+    await waitForTitleSearch();
+    const emptySearchState = await page.evaluate(() => ({
+      status: document.querySelector('#corpusSearchStatus')?.textContent.trim() || '',
+      href: document.querySelector('#corpusSearchActions a')?.getAttribute('href') || ''
+    }));
+    if (emptySearchState.status !== '일치하는 작품이 없습니다.' || emptySearchState.href !== '/search?q=unlikelytitle0000') {
+      throw new Error(`empty title search should lead into full-text search: ${JSON.stringify(emptySearchState)}`);
+    }
+
+    await page.fill('#corpusSearchInput', '아침');
+    await waitForTitleSearch();
+    await page.click('#pageTitle');
+    const outsideCloseState = await page.evaluate(() => ({
+      value: document.querySelector('#corpusSearchInput')?.value || '',
+      hidden: Boolean(document.querySelector('#corpusSearchPreview')?.hidden)
+    }));
+    if (outsideCloseState.value !== '아침' || !outsideCloseState.hidden) {
+      throw new Error(`outside click should close title suggestions without deleting the query: ${JSON.stringify(outsideCloseState)}`);
     }
     await page.evaluate(() => {
       window.localStorage.setItem('philo.reader.recentWork', JSON.stringify({
@@ -602,6 +738,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (recentWorkState.linkColor === 'rgb(255, 0, 0)' || recentWorkState.linkColor === 'rgb(176, 0, 0)') {
       throw new Error(`home recent work should stay visually secondary to the reading-start choices: ${JSON.stringify(recentWorkState)}`);
     }
+    await page.fill('#corpusSearchInput', 'Genesis');
+    await waitForTitleSearch();
   }
   if (parsed.pathname.startsWith('/category/')) {
     await page.waitForSelector('#categoryFilter', { timeout: 5000 }).catch(() => {});

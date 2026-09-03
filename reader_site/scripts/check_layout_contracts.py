@@ -91,6 +91,7 @@ def check_tokens() -> None:
         "--reader-column-width": "764px",
         "--reader-background": "#ffffff",
         "--header-portrait-image": "none",
+        "--header-spacer-height": "136px",
         "--mobile-header-strip-height": "112px",
         "--mobile-header-spacer-height": "84px",
         "--mobile-portrait-spacer-height": "112px",
@@ -143,9 +144,11 @@ def check_html_entrypoints() -> None:
         require_contains(html, "/assets/design-tokens.css", relative_path)
         require_contains(html, 'class="page"', relative_path)
         if relative_path == "index.html":
-            require_contains(html, "번역", relative_path)
-            require_contains(html, "/styles.css?v=home10", relative_path)
-            require_contains(html, "/app.js?v=home16", relative_path)
+            require_contains(html, "/styles.css?v=home12", relative_path)
+            require_contains(html, "/app.js?v=home18", relative_path)
+            require('class="site-tools"' not in html, "index.html should not expose the retired tool navigation")
+            for retired_link in ['href="/search"', 'href="/notes"', 'href="/study"', 'href="/translations"']:
+                require(retired_link not in html, f"index.html should not expose retired home tool link {retired_link!r}")
         if relative_path in {"templates/reading.html", "templates/source.html"}:
             require_contains(html, "/assets/static-reader.css?v=static3", relative_path)
             require_contains(html, "파일 정보</summary>", relative_path)
@@ -236,6 +239,17 @@ def check_home_css() -> None:
         ".recent-work-title",
         ".recent-work-meta",
         ".root-links",
+        ".corpus-search",
+        ".corpus-search-label",
+        ".corpus-search-input",
+        ".corpus-text-search",
+        ".corpus-search-preview[hidden]",
+        ".corpus-search-status",
+        ".corpus-search-results",
+        ".corpus-search-result.is-active",
+        ".corpus-search-context",
+        ".corpus-search-title",
+        ".corpus-search-actions",
         ".root-link-list",
         ".work-link:visited",
         ".category-empty-actions",
@@ -254,6 +268,8 @@ def check_home_css() -> None:
         "padding: 0 10px 24px;",
         ".reading-path-link.primary",
         "min-height: 42px;",
+        ".corpus-search-input",
+        ".corpus-search-result",
         ".work-link",
         "min-height: 34px;",
         "align-content: center;",
@@ -265,9 +281,10 @@ def check_home_script() -> None:
     script = read_site_file("app.js")
     for needle in [
         "START_READING_LIMIT",
+        "WORK_SEARCH_RESULT_LIMIT",
+        "WORK_SEARCH_DEBOUNCE_MS",
         "RECENT_WORK_STORAGE_KEY",
         "START_READING_WORK_IDS",
-        "START_READING_LABELS",
         "ROOT_LINK_LABELS",
         "CATEGORY_SUBTITLES",
         "CATEGORY_BODY_CLASSES",
@@ -278,11 +295,26 @@ def check_home_script() -> None:
         '"oshb.Gen", "oshb.Ps", "oshb.Isa", "sblgnt.Matt", "sblgnt.John", "sblgnt.Rom"',
         'kierkegaard: ["ee1", "ee2", "fb", "g", "ba", "ps"]',
         '"Group_Notebooks"',
-        "Morgenröthe / 아침놀",
-        "Big Typescript",
-        "Philosophical Investigations",
         "function corpusLinks",
         "function uniqueLinks",
+        "function homeSearchMarkup",
+        "function highlightedTitle",
+        "function renderWorkSearchPreview",
+        "function requestWorkSearch",
+        "function scheduleWorkSearch",
+        "function closeWorkSearch",
+        "function bindHomeSearch",
+        "/api/archive/titles?q=",
+        "event.isComposing",
+        'scrollIntoView({ block: "nearest" })',
+        'role="combobox"',
+        'role="listbox"',
+        "전체 작품명 검색",
+        "작품 본문에서 찾기",
+        "예: 아침놀, Genesis",
+        "일치하는 작품이 없습니다.",
+        "작품명 검색을 불러오지 못했습니다.",
+        "다시 시도",
         "function startReadingLabel",
         "function startReadingTitle",
         "function startReadingAriaLabel",
@@ -305,8 +337,8 @@ def check_home_script() -> None:
         'data-category-action="clear-filters"',
         "필터 지우기",
         "이어 읽기",
-        'aria-label="자료 선택"',
-        "읽기 시작",
+        'aria-label="Corpus 목록"',
+        "Corpus 목록",
         "root-link-list",
         "바로 읽기",
         "작품 찾기",
@@ -318,6 +350,8 @@ def check_home_script() -> None:
         "START_READING_LIMIT",
     ]:
         require_contains(script, needle, "app.js")
+    require('fetch("/api/archive")' not in script, "app.js home search should not download the full archive")
+    require("START_READING_LABELS" not in script, "app.js should use server-provided stable work titles")
     require("<strong>이어 읽기</strong>" not in script, "app.js should keep recent work as a compact inline link")
 
 
