@@ -1888,6 +1888,25 @@ h1 {
   border-color: #e0aaaa;
 }
 
+.translation-quality-summary {
+  width: fit-content;
+  margin: 7px 0 0;
+  padding: 2px 6px;
+  color: #35543f;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 9px;
+  line-height: 1.35;
+  background: #f1f7f2;
+  border: 1px solid #b8cfbd;
+}
+
+.translation-quality-summary[data-quality-state="needs_human_review"],
+.translation-quality-summary[data-quality-state="critic_error"] {
+  color: #70431d;
+  background: #fff7eb;
+  border-color: #dfbd8d;
+}
+
 .translation-card.review-state-changed {
   animation: archive-review-confirm 1.25s ease-out 1;
 }

@@ -246,6 +246,24 @@
   line-height: 1.35;
 }
 
+.translation-record-kicker .quality-badge {
+  width: fit-content;
+  padding: 1px 5px;
+  color: #35543f;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 9px;
+  line-height: 1.35;
+  background: #f1f7f2;
+  border: 1px solid #b8cfbd;
+}
+
+.translation-record-kicker .quality-badge[data-quality-state="needs_human_review"],
+.translation-record-kicker .quality-badge[data-quality-state="critic_error"] {
+  color: #70431d;
+  background: #fff7eb;
+  border-color: #dfbd8d;
+}
+
 .translation-record-context {
   grid-column: 1 / -1;
   color: #777;

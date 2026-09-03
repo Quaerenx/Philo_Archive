@@ -14,12 +14,22 @@ sys.path.insert(0, str(SITE))
 
 from sentence_units import render_sentence_spans, sentence_units  # noqa: E402
 from services.segment_offsets import SEGMENT_FILES  # noqa: E402
-from services.sentence_targets import sentence_target_bundle  # noqa: E402
+from services import sentence_targets as sentence_target_service  # noqa: E402
+from services.sentence_targets import (  # noqa: E402
+    MAX_CONTEXT_CHARS,
+    marked_target_segment,
+    sentence_target_bundle,
+    structural_source_context,
+)
 from services import sentence_translations as sentence_translation_service  # noqa: E402
 from services.sentence_translations import (  # noqa: E402
+    CRITIC_RESPONSE_SCHEMA,
     PROMPT_TEMPLATE_ID,
+    TRANSLATION_RESPONSE_SCHEMA,
+    TranslationModelResponseError,
     append_record,
     build_record,
+    build_critic_prompt_bundle,
     build_sentence_prompt_bundle,
     delete_sentence_translation,
     delete_sentence_translation_from_query,
@@ -27,13 +37,16 @@ from services.sentence_translations import (  # noqa: E402
     find_cached_record,
     iter_cached_records,
     normalized_model_output,
+    normalized_critic_output,
     public_record_id,
     public_translation_record,
     sentence_translations_for_export,
     sentence_translations_summary_from_query,
+    run_translation_pipeline,
     update_sentence_translation_review,
 )
 from services.source_targets import sha256_text  # noqa: E402
+from services.translation_profiles import translation_policy_bundle  # noqa: E402
 from scripts.check_ai_records_contracts import validate_file  # noqa: E402
 
 
@@ -158,6 +171,60 @@ def check_snapshot_read_cache() -> None:
         require(external_read[0]["id"] == "cache-record-2", "translation cache missed an external file change")
 
 
+def check_sentence_boundary_context_contract() -> None:
+    target_text = "Zielsatz bleibt vollständig."
+    target_segment = {
+        "corpus_id": "synthetic",
+        "work_id": "demo",
+        "variant_id": "",
+        "segment_id": "p-0002",
+        "text_raw": target_text,
+        "source_text_sha256": sha256_text(target_text),
+    }
+    previous_text = " ".join(
+        [
+            "P1 " + "eins " * 25 + ".",
+            "P2 " + "zwei " * 25 + ".",
+            "P3 " + "drei " * 25 + ".",
+        ]
+    )
+    next_text = " ".join(
+        [
+            "N1 " + "vier " * 25 + ".",
+            "N2 " + "fünf " * 25 + ".",
+            "N3 " + "sechs " * 25 + ".",
+        ]
+    )
+    locations = [
+        {"segment_id": "p-0001", "record_order": 1, "text_chars": len(previous_text)},
+        {"segment_id": "p-0002", "record_order": 2, "text_chars": len(target_text)},
+        {"segment_id": "p-0003", "record_order": 3, "text_chars": len(next_text)},
+    ]
+    neighbor_records = [
+        {"segment_id": "p-0001", "text_raw": previous_text},
+        {"segment_id": "p-0003", "text_raw": next_text},
+    ]
+    with (
+        patch.object(sentence_target_service, "indexed_work_segment_locations", return_value=locations),
+        patch.object(sentence_target_service, "read_indexed_segment_records", return_value=neighbor_records),
+    ):
+        context = structural_source_context(target_segment, target_text, max_chars=500)
+
+    source_context = context["source_context"]
+    previous_units = [str(unit["text_raw"]) for unit in sentence_units("previous", previous_text)]
+    next_units = [str(unit["text_raw"]) for unit in sentence_units("next", next_text)]
+    require(len(source_context) <= 500, "sentence-aware structural context exceeds its limit")
+    require(source_context.count("<TARGET_SENTENCE>") == 1, "sentence-aware context lost the target marker")
+    require(previous_units[-1] in source_context, "previous context should include its nearest complete sentence")
+    require(next_units[0] in source_context, "next context should include its nearest complete sentence")
+    require("… " + previous_units[-1] in source_context, "truncated previous context must expose an omission marker")
+    require(next_units[0] + " …" in source_context, "truncated next context must expose an omission marker")
+    require(
+        {item["position"] for item in context["context_segments"]} == {"previous", "target", "next"},
+        "sentence-aware context audit should record both partial neighbors",
+    )
+
+
 def synthetic_sentence_target() -> dict:
     source_text = "Das Leben ist Wille zur Macht. Dies ist ein zweiter Satz."
     sentence_text = "Das Leben ist Wille zur Macht."
@@ -183,12 +250,32 @@ def synthetic_sentence_target() -> dict:
     }
 
 
+def passing_pipeline_output(translation: str, commentary: str = "", cautions: list[str] | None = None) -> dict:
+    return {
+        "translation": translation,
+        "commentary": commentary,
+        "cautions": list(cautions or []),
+        "quality_state": "critic_pass",
+        "revision_count": 0,
+        "critic": {"initial": {"verdict": "pass", "issues": []}, "final": None},
+        "critic_prompt_sha256": {"initial": "a" * 64, "final": ""},
+        "revision_prompt_sha256": "",
+    }
+
+
 def check_sentence_units() -> None:
     units = sentence_units("p-0001", "One. Two.")
     require([unit["sentence_id"] for unit in units] == ["p-0001.s001", "p-0001.s002"], "sentence IDs are unstable")
     html = render_sentence_spans("p-0001", "One. Two.")
     require('id="p-0001.s001"' in html, "rendered sentence span missing id")
     require('data-target-type="sentence"' in html, "rendered sentence span missing target type")
+    repeated = marked_target_segment("One. One. Three.", "One.", sentence_index=2)
+    require("One. <TARGET_SENTENCE>One.</TARGET_SENTENCE> Three." in repeated, "target marker selected the wrong repeated sentence")
+    oversized = "Alpha " + "eins " * 20 + ". Target bleibt vollstaendig. Omega " + "drei " * 20 + "."
+    bounded = marked_target_segment(oversized, "Target bleibt vollstaendig.", max_chars=140, sentence_index=2)
+    require(len(bounded) <= 140, "oversized target segment context exceeds its limit")
+    require("… <TARGET_SENTENCE>Target bleibt vollstaendig.</TARGET_SENTENCE> …" in bounded, "oversized target segment should keep a whole selected sentence")
+    require("eins" not in bounded and "drei" not in bounded, "oversized target segment must not include neighboring sentence fragments")
 
 
 def check_prompt_and_record(target: dict) -> None:
@@ -197,21 +284,51 @@ def check_prompt_and_record(target: dict) -> None:
     require(prompt_bundle["prompt_template_id"] == PROMPT_TEMPLATE_ID, "unexpected sentence prompt template id")
     require(prompt_bundle["prompt_sha256"] == sha256_text(prompt), "prompt_sha256 mismatch")
     require(target["sentence_text"] in prompt, "prompt missing selected sentence")
-    for phrase in ["Generated interpretation", "Original source", "sentence_text_sha256", "Return only a valid JSON object"]:
+    for phrase in [
+        "Translate only the text inside <TARGET_SENTENCE>",
+        "Keep translation and interpretation strictly separate",
+        "Preserve logical relations",
+        "quoted source data",
+        "historical spelling",
+        "unsupported specialized term",
+        "Do not praise, defend, or justify",
+        "silently verify",
+        "Return exactly one JSON object",
+    ]:
         require(phrase in prompt, f"sentence prompt missing {phrase!r}")
+    for audit_value in [
+        target["corpus_id"],
+        target["segment_id"],
+        target["sentence_id"],
+        target["target_url"],
+        target["source_text_sha256"],
+        target["sentence_text_sha256"],
+    ]:
+        require(audit_value not in prompt, f"prompt should keep audit value outside model input: {audit_value!r}")
+    marked_sentence = f"<TARGET_SENTENCE>{target['sentence_text']}</TARGET_SENTENCE>"
+    require(prompt.count(marked_sentence) == 1, "prompt should mark the selected sentence exactly once")
+    require(prompt_bundle["temperature"] <= 0.1, "translation temperature should remain deterministic")
+    require(prompt_bundle["response_schema"] == TRANSLATION_RESPONSE_SCHEMA, "translation response schema drifted")
 
-    output = normalized_model_output(
-        json.dumps(
-            {
-                "translation": "삶은 힘에의 의지이다.",
-                "commentary": "선택 문장에 한정한 해설.",
-                "cautions": ["Generated translation"],
-            },
-            ensure_ascii=False,
-        )
+    output = passing_pipeline_output(
+        "삶은 힘에의 의지이다.",
+        "선택 문장에 한정한 해설.",
+        ["Generated translation"],
     )
     record = build_record(target, prompt_bundle, output)
-    require(record["schema_version"] == 2, "new sentence translation records should use schema v2")
+    require(record["schema_version"] == 5, "new sentence translation records should use schema v5")
+    require("interpretation" not in record, "sentence translation must not duplicate commentary as interpretation")
+    require(record["quality_state"] == "critic_pass", "record missing automatic quality state")
+    require(record["generation_parameters"] == prompt_bundle["generation_parameters"], "record missing generation parameters")
+    require(record["response_schema_name"] == "sentence_translation_response", "record missing response schema name")
+    require(len(record["translation_policy_sha256"]) == 64, "record missing translation policy fingerprint")
+    require(len(record["request_contract_sha256"]) == 64, "record missing full request contract fingerprint")
+    require(len(record["pipeline_contract_sha256"]) == 64, "record missing quality pipeline fingerprint")
+    require(len(record["source_context_sha256"]) == 64, "record missing structural context fingerprint")
+    citation = record["citations"][0]
+    require(citation["source_text_sha256"] == target["source_text_sha256"], "citation source hash is incorrect")
+    require(citation["sentence_text_sha256"] == target["sentence_text_sha256"], "citation sentence hash is incorrect")
+    require(citation["source_context_sha256"] == record["source_context_sha256"], "citation context hash is incorrect")
     public_record = public_translation_record(record)
     require("literal_gloss" not in public_record, "public sentence translation record should hide literal_gloss")
     require("key_terms" not in public_record, "public sentence translation record should hide key_terms")
@@ -235,30 +352,18 @@ def check_cache_and_review_compatibility(target: dict) -> None:
     older = build_record(
         target,
         prompt_bundle,
-        {
-            "translation": "older translation",
-            "commentary": "older commentary",
-            "cautions": [],
-        },
+        passing_pipeline_output("older translation", "older commentary"),
     )
     rejected = build_record(
         target,
         prompt_bundle,
-        {
-            "translation": "rejected translation",
-            "commentary": "rejected commentary",
-            "cautions": [],
-        },
+        passing_pipeline_output("rejected translation", "rejected commentary"),
     )
     rejected["review_state"] = "rejected"
     newest = build_record(
         target,
         prompt_bundle,
-        {
-            "translation": "newest translation",
-            "commentary": "newest commentary",
-            "cautions": [],
-        },
+        passing_pipeline_output("newest translation", "newest commentary"),
     )
     legacy = dict(newest)
     legacy.pop("id", None)
@@ -274,6 +379,14 @@ def check_cache_and_review_compatibility(target: dict) -> None:
         )
         cached = find_cached_record(path, target, prompt_bundle)
         require(cached and cached["translation"] == "newest translation", "cache should return newest non-rejected record")
+        stale_contract = dict(newest)
+        stale_contract["request_contract_sha256"] = "0" * 64
+        path.write_text(json.dumps(stale_contract, ensure_ascii=False) + "\n", encoding="utf-8")
+        require(find_cached_record(path, target, prompt_bundle) is None, "cache should reject a stale model request contract")
+        stale_pipeline = dict(newest)
+        stale_pipeline["pipeline_contract_sha256"] = "0" * 64
+        path.write_text(json.dumps(stale_pipeline, ensure_ascii=False) + "\n", encoding="utf-8")
+        require(find_cached_record(path, target, prompt_bundle) is None, "cache should reject a stale quality pipeline contract")
 
     with tempfile.TemporaryDirectory() as temp_dir:
         original_ai_dir = sentence_translation_service.AI_DIR
@@ -357,6 +470,10 @@ def check_cache_and_review_compatibility(target: dict) -> None:
 def check_restored_source_target() -> None:
     target = sentence_target_bundle("nietzsche", "GM", "p-0023", "p-0023.s001", "")
     require(target["sentence_id"] == "p-0023.s001", "restored sentence target id mismatch")
+    require(len(target["source_context"]) <= MAX_CONTEXT_CHARS, "restored structural context exceeds limit")
+    require(target["source_context"].count("<TARGET_SENTENCE>") == 1, "restored structural context missing target marker")
+    require(len(target["context_segments"]) >= 2, "restored structural context should include an adjacent paragraph")
+    require(any(item["position"] == "target" for item in target["context_segments"]), "context audit missing target paragraph")
     check_prompt_and_record(target)
     check_cache_and_review_compatibility(target)
 
@@ -393,14 +510,10 @@ def check_translation_cache_paths_use_bounded_source_reads() -> None:
             return TrackingReader(handle)
         return handle
 
-    def fake_model(_prompt_bundle: dict) -> dict:
+    def fake_pipeline(_prompt_bundle: dict) -> dict:
         nonlocal model_calls
         model_calls += 1
-        return {
-            "translation": "bounded lookup test translation",
-            "commentary": "bounded lookup test commentary",
-            "cautions": [],
-        }
+        return passing_pipeline_output("bounded lookup test translation", "bounded lookup test commentary")
 
     payload = {
         "corpus_id": "nietzsche",
@@ -415,7 +528,7 @@ def check_translation_cache_paths_use_bounded_source_reads() -> None:
         try:
             with (
                 patch.object(Path, "open", tracked_open),
-                patch.object(sentence_translation_service, "call_llama_server", fake_model),
+                patch.object(sentence_translation_service, "run_translation_pipeline", fake_pipeline),
             ):
                 generated = sentence_translation_service.sentence_translation_from_payload(payload)
                 cached = sentence_translation_service.sentence_translation_from_payload(payload)
@@ -425,8 +538,196 @@ def check_translation_cache_paths_use_bounded_source_reads() -> None:
     require(generated["cached"] is False, "first isolated translation request should be a cache miss")
     require(cached["cached"] is True, "second isolated translation request should be a cache hit")
     require(model_calls == 1, "cache hit should not call the model")
-    require(len(read_sizes) == 2, "cache miss and cache hit should each read one indexed source record")
+    require(len(read_sizes) >= 2, "cache miss and cache hit should resolve indexed source records")
+    require(len(read_sizes) < 64, "structural context lookup read an unreasonable number of source records")
     require(all(size < source_size for size in read_sizes), "translation request read the entire segment JSONL")
+
+
+def check_strict_model_output_contract() -> None:
+    invalid_outputs = [
+        "not json",
+        json.dumps({"translation": "번역", "commentary": ""}),
+        json.dumps({"translation": "번역", "commentary": "", "cautions": [], "extra": "no"}),
+        json.dumps({"translation": "", "commentary": "", "cautions": []}),
+        json.dumps({"translation": "번역", "commentary": "", "cautions": "none"}),
+        json.dumps({"translation": "번역", "commentary": [], "cautions": []}),
+    ]
+    for content in invalid_outputs:
+        try:
+            normalized_model_output(content)
+        except TranslationModelResponseError:
+            pass
+        else:
+            require(False, f"invalid model output should be rejected: {content}")
+
+
+def critic_issue(severity: str = "major") -> dict[str, str]:
+    return {
+        "source_span": "Vaterschaft dieses Buches",
+        "translation_span": "이 책의 저작권",
+        "category": "semantic_substitution",
+        "severity": severity,
+        "explanation": "부성의 비유가 근거 없는 법률 개념으로 치환되었다.",
+    }
+
+
+def check_strict_critic_output_contract() -> None:
+    valid = normalized_critic_output(
+        json.dumps({"verdict": "revise", "issues": [critic_issue()]}, ensure_ascii=False)
+    )
+    require(valid["issues"][0]["severity"] == "major", "valid critic issue was not preserved")
+    invalid_outputs = [
+        "not json",
+        json.dumps({"verdict": "pass", "issues": [critic_issue()]}),
+        json.dumps({"verdict": "revise", "issues": []}),
+        json.dumps({"verdict": "fail", "issues": []}),
+        json.dumps({"verdict": "revise", "issues": [{**critic_issue(), "category": "style"}]}),
+        json.dumps({"verdict": "revise", "issues": [{**critic_issue(), "extra": "no"}]}),
+    ]
+    for content in invalid_outputs:
+        try:
+            normalized_critic_output(content)
+        except TranslationModelResponseError:
+            pass
+        else:
+            require(False, f"invalid critic output should be rejected: {content}")
+
+
+def check_critic_prompt_boundary(target: dict) -> None:
+    prompt_bundle = build_sentence_prompt_bundle(target)
+    critic_bundle = build_critic_prompt_bundle(prompt_bundle, "이 책의 저작권을 얻은 사람")
+    require(critic_bundle["response_schema"] == CRITIC_RESPONSE_SCHEMA, "critic response schema drifted")
+    require(critic_bundle["generation_parameters"]["temperature"] == 0.0, "critic temperature must be zero")
+    require("이 책의 저작권을 얻은 사람" in critic_bundle["prompt"], "critic prompt missing draft translation")
+    require("translator's commentary is intentionally absent" in critic_bundle["prompt"], "critic prompt must declare commentary absent")
+
+
+def check_quality_pipeline_contract(target: dict) -> None:
+    prompt_bundle = build_sentence_prompt_bundle(target)
+    draft = {"translation": "초벌 번역", "commentary": "초벌 해설", "cautions": []}
+
+    with (
+        patch.object(sentence_translation_service, "call_llama_server", return_value=draft),
+        patch.object(sentence_translation_service, "call_critic_server", return_value={"verdict": "pass", "issues": []}),
+        patch.object(sentence_translation_service, "call_revision_server") as revision_call,
+    ):
+        passed = run_translation_pipeline(prompt_bundle)
+    require(passed["quality_state"] == "critic_pass", "passing draft quality state is incorrect")
+    require(passed["revision_count"] == 0, "passing draft should not be revised")
+    require(not revision_call.called, "passing draft should not call revision")
+
+    with (
+        patch.object(sentence_translation_service, "call_llama_server", return_value=draft),
+        patch.object(
+            sentence_translation_service,
+            "call_critic_server",
+            side_effect=[{"verdict": "revise", "issues": [critic_issue()]}, {"verdict": "pass", "issues": []}],
+        ),
+        patch.object(
+            sentence_translation_service,
+            "call_revision_server",
+            return_value={"translation": "이 책을 낳은 사상가", "commentary": "부성 비유를 보존했다.", "cautions": []},
+        ) as revision_call,
+    ):
+        revised = run_translation_pipeline(prompt_bundle)
+    require(revised["quality_state"] == "critic_pass_after_revision", "revised draft quality state is incorrect")
+    require(revised["revision_count"] == 1, "major issue should trigger one revision")
+    require(revision_call.call_count == 1, "major issue should trigger exactly one revision")
+
+    with (
+        patch.object(sentence_translation_service, "call_llama_server", return_value=draft),
+        patch.object(
+            sentence_translation_service,
+            "call_critic_server",
+            return_value={"verdict": "revise", "issues": [critic_issue("minor")]},
+        ),
+        patch.object(sentence_translation_service, "call_revision_server") as revision_call,
+    ):
+        minor = run_translation_pipeline(prompt_bundle)
+    require(minor["quality_state"] == "needs_human_review", "minor-only issues should require human review")
+    require(minor["revision_count"] == 0, "minor-only issues should not trigger revision")
+    require(not revision_call.called, "minor-only issues must not call revision")
+
+    with (
+        patch.object(sentence_translation_service, "call_llama_server", return_value=draft),
+        patch.object(
+            sentence_translation_service,
+            "call_critic_server",
+            side_effect=TranslationModelResponseError("critic failed"),
+        ),
+    ):
+        errored = run_translation_pipeline(prompt_bundle)
+    require(errored["quality_state"] == "critic_error", "critic failure quality state is incorrect")
+    require(any("인간 검토" in caution for caution in errored["cautions"]), "critic failure should add a caution")
+
+
+def check_llama_json_schema_contract(target: dict) -> None:
+    prompt_bundle = build_sentence_prompt_bundle(target)
+    captured: dict = {}
+
+    class FakeResponse:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def read(self):
+            output = {"translation": "삶은 의지다.", "commentary": "", "cautions": []}
+            payload = {"choices": [{"message": {"content": json.dumps(output, ensure_ascii=False)}}]}
+            return json.dumps(payload, ensure_ascii=False).encode("utf-8")
+
+    def fake_urlopen(request, timeout=0):
+        captured["body"] = json.loads(request.data.decode("utf-8"))
+        captured["timeout"] = timeout
+        return FakeResponse()
+
+    with patch.object(sentence_translation_service, "urlopen", fake_urlopen):
+        output = sentence_translation_service.call_llama_server(prompt_bundle)
+    require(output["translation"] == "삶은 의지다.", "schema-constrained response was not normalized")
+    body = captured["body"]
+    require(body["response_format"]["type"] == "json_schema", "llama request must use JSON Schema response format")
+    require(body["response_format"]["json_schema"] == TRANSLATION_RESPONSE_SCHEMA, "llama response schema drifted")
+    require(body["temperature"] <= 0.1, "llama request temperature is too high")
+    require(body["seed"] == 0, "llama request should record a deterministic seed")
+
+
+def check_human_approved_translation_profile_contract() -> None:
+    with tempfile.TemporaryDirectory(prefix="philo_translation_profile_") as temp_dir:
+        path = Path(temp_dir) / "translation_profiles.json"
+        path.write_text(
+            json.dumps(
+                {
+                    "schema_version": 1,
+                    "profiles": [
+                        {
+                            "profile_id": "nietzsche-demo-v1",
+                            "corpus_id": "nietzsche",
+                            "work_id": "demo",
+                            "variant_id": "",
+                            "approval_state": "approved",
+                            "terminology": [{"source": "Macht", "target": "힘", "note": "연구자 승인"}],
+                            "style_notes": ["반복을 보존한다."],
+                        }
+                    ],
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        policy = translation_policy_bundle("nietzsche", "demo", path=path)
+        require(policy["profile_id"] == "nietzsche-demo-v1", "approved translation profile was not selected")
+        require(policy["terminology"][0]["target"] == "힘", "approved terminology was not preserved")
+
+        rejected_payload = json.loads(path.read_text(encoding="utf-8"))
+        rejected_payload["profiles"][0]["approval_state"] = "generated"
+        path.write_text(json.dumps(rejected_payload, ensure_ascii=False), encoding="utf-8")
+        try:
+            translation_policy_bundle("nietzsche", "demo", path=path)
+        except ValueError:
+            pass
+        else:
+            require(False, "non-approved translation profile should be rejected")
 
 
 def check_runtime_error_copy(target: dict) -> None:
@@ -460,8 +761,15 @@ def main() -> None:
     check_concurrent_cache_writes()
     check_snapshot_read_cache()
     check_sentence_units()
+    check_sentence_boundary_context_contract()
+    check_strict_model_output_contract()
+    check_strict_critic_output_contract()
+    check_human_approved_translation_profile_contract()
     synthetic_target = synthetic_sentence_target()
     check_prompt_and_record(synthetic_target)
+    check_critic_prompt_boundary(synthetic_target)
+    check_quality_pipeline_contract(synthetic_target)
+    check_llama_json_schema_contract(synthetic_target)
     check_cache_and_review_compatibility(synthetic_target)
     check_runtime_error_copy(synthetic_target)
     if args.with_source_targets:

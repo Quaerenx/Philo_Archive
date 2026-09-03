@@ -55,6 +55,8 @@ DERIVED_NAMES = (
 )
 TRACKED_METADATA_NAMES = (
     "ai_prompt_templates.json",
+    "translation_profiles.json",
+    "translation_regression_cases.json",
     "bible_metadata.json",
     "kierkegaard_metadata.json",
     "nietzsche_catalog.json",

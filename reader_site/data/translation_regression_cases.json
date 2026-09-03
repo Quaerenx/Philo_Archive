@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "case_id": "nietzsche-gt-vaterschaft-semantic-substitution",
+      "corpus_id": "nietzsche",
+      "work_id": "GT",
+      "variant_id": "",
+      "segment_id": "p-0004",
+      "sentence_id": "p-0004.s003",
+      "source_features": {
+        "metaphor": [
+          "Vaterschaft dieses Buches"
+        ],
+        "word_family": [
+          "Grübler",
+          "vergrübelt",
+          "Räthselfreund",
+          "verräthselt"
+        ],
+        "morphological_contrast": [
+          "bekümmert",
+          "unbekümmert"
+        ]
+      },
+      "known_bad_translation": "뵈르트 전투의 천둥이 유럽 위로 지나가는 동안, 이 책의 저작권을 얻게 된 사색가이자 수수께끼의 벗은 알프스의 어느 구석에 앉아, 몹시 골똘히 생각하고 수수께끼에 싸인 채, 따라서 몹시 근심하면서 동시에 태평하게, 그리스인들에 관한 자신의 생각—이 뒤늦은 서문(또는 후기)이 바쳐질 기이하고 접근하기 어려운 책의 핵심—을 적어 내려갔다.",
+      "forbidden_unsupported_terms": [
+        "저작권"
+      ],
+      "expected_major_categories": [
+        "semantic_substitution",
+        "metaphor_or_rhetoric",
+        "terminology"
+      ]
+    }
+  ]
+}

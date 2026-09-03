@@ -142,6 +142,14 @@ def check_prompt_template_builder() -> None:
     require(isinstance(templates, list) and templates, "prompt template payload must include templates")
     template_ids = {record.get("prompt_template_id") for record in templates if isinstance(record, dict)}
     require("segment_interpretation_v1" in template_ids, "missing segment_interpretation_v1 prompt template")
+    require("segment_interpretation_v2" in template_ids, "missing segment_interpretation_v2 prompt template")
+    for template_id in [
+        "sentence_translation_study_v2",
+        "sentence_translation_study_v3",
+        "sentence_translation_critic_v1",
+        "sentence_translation_revision_v1",
+    ]:
+        require(template_id in template_ids, f"missing tracked prompt template {template_id}")
 
     require(PROMPT_BUILDER.exists(), "missing deterministic prompt builder")
     source = PROMPT_BUILDER.read_text(encoding="utf-8")
@@ -160,8 +168,9 @@ def check_prompt_template_builder() -> None:
     validator = PROMPT_VALIDATOR.read_text(encoding="utf-8")
     for phrase in [
         "--with-source-targets",
-        "Generated interpretation",
-        "Original source",
+        "Explicit statements",
+        "Reasoned inferences",
+        "quoted data",
         "prompt_sha256 mismatch",
         "source_text_sha256 mismatch",
     ]:

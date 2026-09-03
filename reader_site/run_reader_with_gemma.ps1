@@ -53,6 +53,45 @@ function Repair-DuplicateProcessPath {
     }
 }
 
+function Get-CachedModelSha256 {
+    param(
+        [string]$Path,
+        [string]$CachePath
+    )
+    $model = Get-Item -LiteralPath $Path -ErrorAction Stop
+    if (Test-Path -LiteralPath $CachePath) {
+        try {
+            $cached = Get-Content -LiteralPath $CachePath -Raw | ConvertFrom-Json -ErrorAction Stop
+            if (
+                $cached.path -eq $model.FullName -and
+                [int64]$cached.length -eq $model.Length -and
+                [int64]$cached.last_write_utc_ticks -eq $model.LastWriteTimeUtc.Ticks -and
+                [string]$cached.sha256 -match '^[a-f0-9]{64}$'
+            ) {
+                return [string]$cached.sha256
+            }
+        } catch {
+            # Ignore a stale or incomplete local cache and compute the fingerprint again.
+        }
+    }
+    Write-Host "Computing the model SHA-256 fingerprint (cached after the first run)..."
+    $sha256 = (Get-FileHash -LiteralPath $model.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+    $payload = [ordered]@{
+        path = $model.FullName
+        length = $model.Length
+        last_write_utc_ticks = $model.LastWriteTimeUtc.Ticks
+        sha256 = $sha256
+    }
+    $temporaryPath = "${CachePath}.tmp.${PID}"
+    [System.IO.File]::WriteAllText(
+        $temporaryPath,
+        ($payload | ConvertTo-Json -Compress),
+        (New-Object System.Text.UTF8Encoding($false))
+    )
+    Move-Item -LiteralPath $temporaryPath -Destination $CachePath -Force
+    return $sha256
+}
+
 function Test-PortListening {
     param([int]$Port)
     $connection = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue
@@ -291,6 +330,12 @@ $env:PHILO_GEMMA_BASE_URL = $GemmaBaseUrl
 $env:PHILO_GEMMA_MODEL_NAME = "gemma-4-26B-A4B-it-Q4_K_M"
 $env:PHILO_GEMMA_RUNTIME = "llama.cpp b9371-f12cc6d0f"
 $env:PHILO_GEMMA_STATE_PATH = $RuntimeStatePath
+if (Test-Path -LiteralPath $ModelPath) {
+    $modelFingerprintPath = Join-Path $RuntimeDir "model-sha256.json"
+    $env:PHILO_GEMMA_MODEL_SHA256 = Get-CachedModelSha256 -Path $ModelPath -CachePath $modelFingerprintPath
+} else {
+    Remove-Item Env:PHILO_GEMMA_MODEL_SHA256 -ErrorAction SilentlyContinue
+}
 
 Write-GemmaRuntimeState -State "starting" -Detail "Gemma startup requested."
 $startupClock = [System.Diagnostics.Stopwatch]::StartNew()

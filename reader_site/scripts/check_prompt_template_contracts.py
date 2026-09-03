@@ -68,12 +68,20 @@ def check_bundle(bundle: dict[str, Any], source_text: str) -> None:
     require(bundle.get("source_text_sha256") == sha256_text(source_text), "source_text_sha256 mismatch")
     require(source_text in prompt, "prompt does not include exact source text")
     for phrase in [
-        "Generated interpretation",
-        "Original source",
-        "source_text_sha256",
-        "target_url",
+        "Explicit statements",
+        "Reasoned inferences",
+        "Never present an inference",
+        "quoted data",
+        "<ORIGINAL_SOURCE>",
     ]:
         require(phrase in prompt, f"prompt missing required phrase {phrase!r}")
+    for audit_value in [
+        bundle["target_url"],
+        bundle["source_text_sha256"],
+        str(bundle["target"]["corpus_id"]),
+        str(bundle["target"]["target_id"]),
+    ]:
+        require(audit_value not in prompt, f"interpretation prompt should keep audit value outside model input: {audit_value!r}")
     serialized = json.dumps(bundle, ensure_ascii=False, sort_keys=True)
     for needle in FORBIDDEN_LOCAL_KEY_NEEDLES:
         require(needle not in serialized, f"prompt bundle contains local key {needle}")
@@ -83,17 +91,18 @@ def check_template_records() -> None:
     templates = iter_prompt_templates()
     ids = [record["prompt_template_id"] for record in templates]
     require(DEFAULT_PROMPT_TEMPLATE_ID in ids, f"missing default prompt template {DEFAULT_PROMPT_TEMPLATE_ID}")
+    require("segment_interpretation_v1" in ids, "legacy interpretation prompt must remain traceable")
+    for template_id in [
+        "sentence_translation_study_v2",
+        "sentence_translation_study_v3",
+        "sentence_translation_critic_v1",
+        "sentence_translation_revision_v1",
+    ]:
+        require(template_id in ids, f"missing tracked prompt template {template_id}")
     require(len(ids) == len(set(ids)), "duplicate prompt_template_id values")
-    for record in templates:
-        text = record["template"]
-        for phrase in [
-            "Do not replace",
-            "Do not use filesystem paths",
-            "Original source",
-            "Generated interpretation",
-            "source_text_sha256",
-        ]:
-            require(phrase in text, f"{record['prompt_template_id']} missing prompt safety phrase {phrase!r}")
+    default_record = next(record for record in templates if record["prompt_template_id"] == DEFAULT_PROMPT_TEMPLATE_ID)
+    for phrase in ["Do not replace", "filesystem paths", "Explicit statements", "Reasoned inferences", "quoted data"]:
+        require(phrase in default_record["template"], f"default interpretation prompt missing {phrase!r}")
 
 
 def check_source_light_render() -> None:

@@ -555,6 +555,7 @@ Response:
   "ok": true,
   "cached": false,
   "record": {
+    "schema_version": 5,
     "record_type": "ai_sentence_translation",
     "target_url": "/work/nietzsche/GM#p-0023.s001",
     "translation": "generated Korean translation",
@@ -562,10 +563,32 @@ Response:
     "cautions": ["caution"],
     "source_text_sha256": "64-char sha256",
     "sentence_text_sha256": "64-char sha256",
-    "prompt_sha256": "64-char sha256"
+    "source_context_sha256": "64-char sha256",
+    "prompt_sha256": "64-char sha256",
+    "generation_parameters": {
+      "temperature": 0.1,
+      "top_p": 0.95,
+      "max_tokens": 900,
+      "seed": 0
+    },
+    "response_schema_name": "sentence_translation_response",
+    "translation_policy_sha256": "64-char sha256",
+    "request_contract_sha256": "64-char sha256",
+    "pipeline_contract_sha256": "64-char sha256",
+    "quality_state": "critic_pass",
+    "revision_count": 0,
+    "max_revision_count": 1,
+    "critic": {
+      "initial": {"verdict": "pass", "issues": []},
+      "final": null
+    }
   }
 }
 ```
+
+The server supplies the selected structural segment plus adjacent source units, up to 6,000 characters, and marks the selected sentence inside that context. When a unit must be shortened, complete sentences are preferred over arbitrary character cuts. llama.cpp first receives a strict JSON Schema requiring `translation` and `commentary` strings plus a string-array `cautions`. A fresh critic request then receives the source context, approved policy, and draft translation—but not the translator commentary—and returns a strict `pass`/`revise` issue report. Major issues trigger at most one schema-constrained revision and one final critic; minor-only issues do not trigger an automatic rewrite. Therefore an uncached request normally uses two model calls and a major-error repair uses four. Invalid translator output is rejected with `502` and is not saved; critic or revision failure is saved explicitly as `quality_state: "critic_error"` with a caution. Automatically flagged records are not cache hits unless human-reviewed.
+
+`quality_state` is one of `critic_pass`, `critic_pass_after_revision`, `needs_human_review`, or `critic_error`. It is automated evidence and remains separate from the human-owned `review_state` (`generated`, `reviewed`, or `rejected`). The `pipeline_contract_sha256` changes when any translator, critic, or revision contract changes, so records from an older quality pipeline cannot silently satisfy the current cache. Citation hashes have distinct meanings: `source_text_sha256` hashes the exact selected source segment, `sentence_text_sha256` hashes the clicked sentence, and `source_context_sha256` hashes the bounded context sent to the model.
 
 If the shared llama.cpp runtime is not running at `127.0.0.1:9999`, the endpoint returns `503` with `{"ok": false, "error": "번역 준비가 필요합니다."}`. Generated JSONL files under `data/ai/` are local-only and ignored by Git.
 

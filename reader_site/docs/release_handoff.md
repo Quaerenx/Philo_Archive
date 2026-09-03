@@ -102,6 +102,7 @@ python .\scripts\check_server_boundary.py
 python .\scripts\check_provenance_contracts.py
 python .\scripts\check_prompt_template_contracts.py --with-source-targets
 python .\scripts\check_sentence_translation_contracts.py --with-source-targets
+python .\scripts\check_translation_quality_regressions.py
 python .\scripts\check_corpus_schema.py
 python .\scripts\check_segment_offset_contracts.py
 python .\scripts\check_restore_readiness.py
@@ -139,7 +140,9 @@ git status --short
 
 `check_prompt_template_contracts.py --with-source-targets` verifies that tracked AI prompt templates render deterministic prompt bundles from restored source targets, including `prompt_template_id`, `prompt_sha256`, `source_text_sha256`, and visible "Original source" / "Generated interpretation" labels. It does not call a model.
 
-`check_sentence_translation_contracts.py --with-source-targets` verifies the on-demand sentence translation boundary, sentence IDs such as `p-0023.s001`, prompt checksums, and local JSONL record shape. It does not call Gemma.
+`check_sentence_translation_contracts.py --with-source-targets` verifies the on-demand sentence translation boundary, sentence IDs such as `p-0023.s001`, prompt and quality-pipeline checksums, bounded one-pass revision behavior, and local schema-v5 JSONL record shape. It does not call Gemma.
+
+`check_translation_quality_regressions.py` verifies the tracked source/known-bad-translation fixtures without calling Gemma. Add `--with-model` for an explicit local-runtime check that the critic flags the `Vaterschaft` → `저작권` semantic substitution as a major issue.
 
 GitHub pull requests run `.github/workflows/reader-site-source-light.yml`, which executes the source-light clean clone checks without local corpora.
 

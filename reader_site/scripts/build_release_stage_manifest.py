@@ -87,6 +87,8 @@ ALLOWED_DATA_PATTERNS = [
     "reader_site/data/nietzsche_concepts.json",
     "reader_site/data/search_eval_queries.json",
     "reader_site/data/ai_prompt_templates.json",
+    "reader_site/data/translation_profiles.json",
+    "reader_site/data/translation_regression_cases.json",
 ]
 
 ARCHIVED_ORIGINAL_PATHS = {

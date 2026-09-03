@@ -106,6 +106,12 @@ const TRANSLATION_REVIEW_CHIP_LABELS = {
   reviewed: "저장됨",
   rejected: "제외됨"
 };
+const TRANSLATION_QUALITY_LABELS = {
+  critic_pass: "자동 검증 통과",
+  critic_pass_after_revision: "자동 수정 후 통과",
+  needs_human_review: "자동 검증: 확인 필요",
+  critic_error: "자동 검증 실패"
+};
 const TRANSLATION_REVIEW_CHIP_HINTS = {
   generated: "검토할 번역",
   reviewed: "저장된 번역",
@@ -1794,6 +1800,15 @@ function renderCommentary(commentary) {
     </section>`;
 }
 
+function renderTranslationQuality(record) {
+  const qualityState = cleanText(record.quality_state || "");
+  if (!qualityState || !TRANSLATION_QUALITY_LABELS[qualityState]) return "";
+  const revisionCount = Number(record.revision_count || 0);
+  const revisionLabel = revisionCount > 0 ? ` · 자동 수정 ${revisionCount}회` : "";
+  const label = `${TRANSLATION_QUALITY_LABELS[qualityState]}${revisionLabel}`;
+  return `<p class="translation-quality-summary" data-quality-state="${escapeHtml(qualityState)}">${escapeHtml(label)}</p>`;
+}
+
 function renderTranslationEmptyState() {
   if (!translationOutput || selectedSentence) return;
   setTranslationUtilityVisible(false);
@@ -2330,6 +2345,7 @@ function renderTranslationRecord(record, cached, reviewFlashState = "") {
       <section class="translation-section translation-section-primary" data-translation-section="translation">
         <h3>번역</h3>
         <p class="translation-primary">${escapeHtml(cleanText(record.translation || ""))}</p>
+        ${renderTranslationQuality(record)}
       </section>
       ${renderCommentary(record.commentary || record.interpretation || "")}
       ${translationQuickActions(reviewState)}

@@ -32,6 +32,12 @@ const REVIEW_LABELS = {
   reviewed: "저장한 번역",
   rejected: "제외한 번역"
 };
+const QUALITY_LABELS = {
+  critic_pass: "자동 검증 통과",
+  critic_pass_after_revision: "자동 수정 후 통과",
+  needs_human_review: "자동 검증 확인 필요",
+  critic_error: "자동 검증 실패"
+};
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -531,14 +537,21 @@ function renderRecord(record, options) {
   const targetUrl = cleanText(record.target_url || "");
   const isRecent = record.id === recentlyChangedRecordId;
   const reviewLabel = REVIEW_LABELS[reviewState] || reviewState;
+  const qualityState = cleanText(record.quality_state || "");
+  const qualityLabel = QUALITY_LABELS[qualityState] || "";
+  const revisionCount = Number(record.revision_count || 0);
+  const qualityBadge = qualityLabel
+    ? `<span class="quality-badge" data-quality-state="${escapeHtml(qualityState)}" aria-label="자동 품질 상태: ${escapeHtml(qualityLabel)}">${escapeHtml(qualityLabel)}${revisionCount > 0 ? ` · ${revisionCount}회` : ""}</span>`
+    : "";
   const showReviewBadge = options.showReviewBadge !== false;
   const showReviewActions = options.showReviewActions === true;
   const showContext = options.showContext !== false;
   const showSourceDetail = options.showSourceDetail === true;
   const openCommentary = options.openCommentary === true;
-  const reviewKicker = showReviewBadge
+  const reviewKicker = showReviewBadge || qualityBadge
     ? `<div class="translation-record-kicker">
-        <span class="review-badge" aria-label="검토 상태: ${escapeHtml(reviewLabel)}">${escapeHtml(reviewLabel)}</span>
+        ${showReviewBadge ? `<span class="review-badge" aria-label="검토 상태: ${escapeHtml(reviewLabel)}">${escapeHtml(reviewLabel)}</span>` : ""}
+        ${qualityBadge}
       </div>`
     : "";
   const resetAction = reviewState !== "generated"

@@ -31,6 +31,7 @@ def resolve_segment_target(corpus_id: str, work_id: str, segment_id: str, varian
         "segment_id": segment_id,
         "segment_type": record.get("segment_type", ""),
         "label": record.get("label", segment_id),
+        "title": record.get("title", work_id),
         "url": record.get("url", f"/work/{corpus_id}/{work_id}#{segment_id}"),
         "text_raw": text_raw,
         "text_preview": record.get("text_preview", text_raw[:220]),

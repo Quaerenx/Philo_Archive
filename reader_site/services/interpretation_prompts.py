@@ -10,7 +10,7 @@ from services.source_targets import sha256_text, source_target_bundle
 
 SITE = Path(__file__).resolve().parents[1]
 PROMPT_TEMPLATE_FILE = SITE / "data" / "ai_prompt_templates.json"
-DEFAULT_PROMPT_TEMPLATE_ID = "segment_interpretation_v1"
+DEFAULT_PROMPT_TEMPLATE_ID = "segment_interpretation_v2"
 PROMPT_BUNDLE_SCHEMA_VERSION = 1
 
 FORBIDDEN_LOCAL_KEYS = {

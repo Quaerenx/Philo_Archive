@@ -41,15 +41,15 @@ The AI request must use source text gathered from the current corpus segment rec
 
 The local `GET /api/source-target` endpoint is allowed before any AI runtime is enabled. It returns a bounded source target bundle for a single generated segment record: target URL, label, exact source text, source text preview, character count, and `source_text_sha256`. This endpoint does not call a model, does not store generated output, and must not be treated as an AI interpretation route.
 
-The local `POST /api/sentence-translation` endpoint is the first active AI runtime boundary. It accepts only a selected `corpus_id`, `work_id`, `variant_id`, `segment_id`, and `sentence_id`; it does not accept arbitrary user prompt text. The server resolves the sentence from local generated segment records, computes `source_text_sha256`, `sentence_text_sha256`, and `prompt_sha256`, then calls a local-only llama.cpp server. Both the reader and llama.cpp server must bind to loopback; unauthenticated LAN exposure is unsupported.
+The local `POST /api/sentence-translation` endpoint is the first active AI runtime boundary. It accepts only a selected `corpus_id`, `work_id`, `variant_id`, `segment_id`, and `sentence_id`; it does not accept arbitrary user prompt text. The server resolves the sentence from local generated segment records, marks it with `<TARGET_SENTENCE>`, and builds a structural context from the target segment and adjacent paragraphs, verses, or equivalent source units while enforcing a 6,000-character ceiling. Context truncation prefers complete sentences and falls back to a character excerpt only when no complete neighboring sentence fits. It computes separate hashes for the selected segment, sentence, structural context, translator prompt, approved translation policy, translator request contract, and complete quality-pipeline contract before calling a local-only llama.cpp server. Both the reader and llama.cpp server must bind to loopback; unauthenticated LAN exposure is unsupported.
 
 ## Record Schema
 
 Future AI records should be stored as JSONL objects under `reader_site/data/ai/`.
 
-Sentence translation records use `record_type: "ai_sentence_translation"` and add `segment_id`, `sentence_id`, `sentence_text_sha256`, `model_runtime`, `translation`, `commentary`, and `cautions`. New records use schema version 2 and do not store `literal_gloss` or `key_terms`. Legacy schema version 1 records may still include those fields, but the reader UI must not render them. These records remain generated study aids, not source text.
+Sentence translation records use `record_type: "ai_sentence_translation"`. New records use schema version 5. In addition to the version 4 translator request metadata, they record the quality-pipeline contract, critic and revision prompt metadata, critic audit, automatic `quality_state`, and bounded revision count. Versions 1 through 4 remain readable for compatibility. New records do not store `literal_gloss`, `key_terms`, or a duplicate `interpretation` copy of `commentary`, and the reader UI must not render those legacy fields. These records remain generated study aids, not source text.
 
-Sentence translation review state can be updated locally through `/api/sentence-translations/<record_id>`. Reviewed records can be exported through `/api/sentence-translations/export`; rejected records must not be returned as cached defaults for new reading sessions.
+Sentence translation review state can be updated locally through `/api/sentence-translations/<record_id>`. Human `review_state` and automated `quality_state` are independent: a critic pass is not a human review, and a user review does not rewrite the critic result. Reviewed records can be exported through `/api/sentence-translations/export`; rejected records and automatically flagged records must not be returned as cached defaults for new reading sessions unless the record was explicitly human-reviewed.
 
 Required fields:
 
@@ -140,13 +140,22 @@ Every saved AI record must preserve:
 - `prompt_template_id`;
 - `prompt_sha256`;
 - `temperature`;
+- all other generation parameters, including the decoding seed and token limit;
 - `generated_at`;
 - exact source target URLs;
-- `source_text_sha256`.
+- `source_text_sha256`;
+- the exact structural-context hash and ordered context segment hashes for sentence translation;
+- the enforced response-schema name and approved translation-policy hash.
+- a request-contract hash that covers the translator prompt, model identity, generation parameters, and response schema;
+- a pipeline-contract hash that additionally covers the critic and revision templates, parameters, schemas, version, and maximum revision count.
 
-If local Gemma is used, `model_version` should include the model tag and, when available, the local model file hash or runtime identifier.
+If local Gemma is used, `model_version` includes the model tag and runtime identifier. The bundled launcher computes and caches a SHA-256 for the configured GGUF file and exposes it to new translation records as `model_file_sha256`; direct server starts may leave that field empty unless `PHILO_GEMMA_MODEL_SHA256` is set.
 
-The tracked prompt template registry lives in `reader_site/data/ai_prompt_templates.json`. The current default template is `segment_interpretation_v1`.
+The tracked prompt template registry lives in `reader_site/data/ai_prompt_templates.json`. The current defaults are `segment_interpretation_v2` and `sentence_translation_study_v3`; the quality stages use `sentence_translation_critic_v1` and `sentence_translation_revision_v1`. The interpretation prompt labels direct textual claims separately from reasoned inference. The translation prompt keeps the Korean translation free of commentary, preserves logical relations, morphology, word families, imagery, unusual wording, and meaningful ambiguity before naturalness, and forbids unsupported technical, legal, theological, or philosophical substitution. Source excerpts are quoted data rather than instructions. Linguistic knowledge may help parse the supplied wording, but outside biography, doctrine, background facts, and prior translations may not be introduced as evidence.
+
+Every new draft receives a fresh critic request containing only the approved policy, source context, and draft translation; translator commentary is deliberately absent. A `pass` result is saved without revision. Minor-only issues are saved as `needs_human_review` without automatic rewriting. Any major issue permits exactly one schema-constrained revision followed by one final critic request. The system never enters an open-ended repair loop. Critic or revision failures are preserved explicitly as `critic_error` with a caution instead of being represented as a pass.
+
+Human-approved work terminology and style decisions live separately in `reader_site/data/translation_profiles.json`. The application only reads entries whose `approval_state` is `approved`; it has no code path that automatically accumulates model suggestions into this registry. An empty registry means that the model must not invent a fixed work-level terminology rule.
 
 Prompt rendering is deterministic and model-free in `reader_site/services/interpretation_prompts.py`: a selected `source_target_bundle` is rendered into an `interpretation_prompt_bundle` with `prompt_template_id`, `prompt_sha256`, `source_text_sha256`, `target_url`, and the full prompt text. This builder does not call Gemma, does not store generated output, and does not expose an interpretation API route.
 

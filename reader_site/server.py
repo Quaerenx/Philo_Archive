@@ -28,7 +28,7 @@ from services.notes import (
     update_note_from_payload,
 )
 from services.search import search_payload_from_query
-from services.sentence_translations import sentence_translation_from_payload
+from services.sentence_translations import TranslationModelResponseError, sentence_translation_from_payload
 from services.sentence_translations import (
     delete_sentence_translation_from_query,
     sentence_translations_export_from_query,
@@ -363,6 +363,9 @@ class Handler(BaseHTTPRequestHandler):
             return
         except ConnectionError as exc:
             self.send_json({"ok": False, "error": str(exc)}, status=503)
+            return
+        except TranslationModelResponseError as exc:
+            self.send_json({"ok": False, "error": str(exc)}, status=502)
             return
         self.send_json(result)
 
