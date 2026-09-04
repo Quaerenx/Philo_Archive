@@ -571,8 +571,8 @@ function renderRecord(record, options) {
   const source = cleanText(record.source_text_excerpt || "");
   const rawModelTranslation = String(record.translation || "").trim();
   const rawHumanTranslation = String(record.human_translation || "").trim();
-  const modelTranslation = cleanText(rawModelTranslation);
-  const humanTranslation = cleanText(rawHumanTranslation);
+  const modelTranslation = rawModelTranslation;
+  const humanTranslation = rawHumanTranslation;
   const translation = humanTranslation || modelTranslation;
   const commentary = cleanText(record.commentary || record.interpretation || "");
   const targetUrl = cleanText(record.target_url || "");

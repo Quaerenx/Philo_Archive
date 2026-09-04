@@ -7,6 +7,7 @@ import threading
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from urllib.error import HTTPError
+from urllib.parse import quote
 from urllib.request import Request, urlopen
 
 
@@ -188,34 +189,114 @@ def first_source_routes() -> tuple[str, str]:
     raise AssertionError("no read/source route pair found in archive")
 
 
-def check_translation_delete_route(base_url: str) -> None:
-    with TemporaryDirectory(prefix="philo_translation_delete_route_") as temp_dir:
+def check_translation_mutation_routes(base_url: str) -> None:
+    with TemporaryDirectory(prefix="philo_translation_mutation_routes_") as temp_dir:
         original_ai_dir = sentence_translation_service.AI_DIR
         sentence_translation_service.AI_DIR = Path(temp_dir)
         try:
-            path = sentence_translation_service.ai_record_path("contract")
+            path = sentence_translation_service.ai_record_path("nietzsche")
             sentence_translation_service.write_records(
                 path,
                 [
                     {
-                        "id": "delete-route-record",
+                        "id": "review-route-record",
                         "record_type": "ai_sentence_translation",
-                        "corpus_id": "contract",
-                        "work_id": "demo",
-                        "translation": "temporary route contract",
+                        "corpus_id": "nietzsche",
+                        "work_id": "GM",
+                        "variant_id": "",
+                        "segment_id": "p-9001",
+                        "sentence_id": "p-9001.s001",
+                        "target_url": "/work/nietzsche/GM#p-9001.s001",
+                        "source_text_excerpt": "Eine isolierte Vertragsprüfung.",
+                        "translation": "preserved model translation",
+                        "commentary": "isolated route contract",
                         "review_state": "generated",
                     }
                 ],
             )
+            suffix = "\n\n둘째  문단"
+            confirmed_text = "가" * (sentence_translation_service.MAX_HUMAN_TRANSLATION_CHARS - len(suffix)) + suffix
+            review_body = json.dumps(
+                {
+                    "corpus_id": "nietzsche",
+                    "review_state": "reviewed",
+                    "human_translation": confirmed_text,
+                },
+                ensure_ascii=False,
+            ).encode("utf-8")
+            require(len(review_body) > 32768, "long Korean translation fixture must cross the former request limit")
+            review_request = Request(
+                base_url + "/api/sentence-translations/review-route-record",
+                data=review_body,
+                headers={"Content-Type": "application/json"},
+                method="PUT",
+            )
+            with urlopen(review_request, timeout=15) as response:
+                review_status = response.status
+                review_payload = json.loads(response.read().decode("utf-8"))
+            require(review_status == 200, "long Korean sentence translation PUT should return 200")
+            require(
+                review_payload.get("record", {}).get("human_translation") == confirmed_text,
+                "sentence translation PUT changed human whitespace or line breaks",
+            )
+            stored_records = sentence_translation_service.iter_cached_records(path)
+            require(
+                len(stored_records) == 1 and stored_records[0].get("human_translation") == confirmed_text,
+                "sentence translation PUT did not persist the exact human translation",
+            )
+
+            search_export = fetch_json(
+                base_url,
+                "/api/sentence-translations/export?corpus_id=nietzsche&review_state=all&format=json&q="
+                + quote("둘째 문단"),
+            )
+            require(
+                [record.get("id") for record in search_export.get("records", [])] == ["review-route-record"],
+                "human-confirmed translation was missing from translation search",
+            )
+            markdown_export = fetch_text(
+                base_url,
+                "/api/sentence-translations/export?corpus_id=nietzsche&review_state=reviewed&format=markdown",
+            )
+            require(confirmed_text in markdown_export, "translation export changed the confirmed Korean text")
+            require("preserved model translation" in markdown_export, "translation export lost the model original")
+            study_export = fetch_text(
+                base_url,
+                "/api/study-session/export?corpus_id=nietzsche&work_id=GM&format=markdown",
+            )
+            require(confirmed_text in study_export, "study export omitted the human-confirmed translation")
+            require("preserved model translation" in study_export, "study export omitted the preserved model original")
+
+            oversized_body = json.dumps(
+                {
+                    "corpus_id": "nietzsche",
+                    "review_state": "reviewed",
+                    "human_translation": "나" * (sentence_translation_service.MAX_HUMAN_TRANSLATION_CHARS + 1),
+                },
+                ensure_ascii=False,
+            ).encode("utf-8")
+            oversized_request = Request(
+                base_url + "/api/sentence-translations/review-route-record",
+                data=oversized_body,
+                headers={"Content-Type": "application/json"},
+                method="PUT",
+            )
+            try:
+                urlopen(oversized_request, timeout=15)
+            except HTTPError as exc:
+                require(exc.code == 400, "oversized human translation should return 400")
+            else:
+                raise AssertionError("oversized human translation should fail")
+
             request = Request(
-                base_url + "/api/sentence-translations/delete-route-record?corpus_id=contract",
+                base_url + "/api/sentence-translations/review-route-record?corpus_id=nietzsche",
                 method="DELETE",
             )
             with urlopen(request, timeout=15) as response:
                 status = response.status
                 payload = json.loads(response.read().decode("utf-8"))
             require(status == 200, "sentence translation DELETE route should return 200")
-            require(payload.get("deleted", {}).get("id") == "delete-route-record", "DELETE response record mismatch")
+            require(payload.get("deleted", {}).get("id") == "review-route-record", "DELETE response record mismatch")
             require(sentence_translation_service.iter_cached_records(path) == [], "DELETE route left the record stored")
 
             try:
@@ -226,7 +307,7 @@ def check_translation_delete_route(base_url: str) -> None:
                 raise AssertionError("repeated sentence translation DELETE should fail")
 
             missing_corpus_request = Request(
-                base_url + "/api/sentence-translations/delete-route-record",
+                base_url + "/api/sentence-translations/review-route-record",
                 method="DELETE",
             )
             try:
@@ -404,7 +485,7 @@ def main() -> None:
         base_url = f"http://{host}:{port}"
         check_routes(base_url)
         check_static_cache_contracts(base_url)
-        check_translation_delete_route(base_url)
+        check_translation_mutation_routes(base_url)
     finally:
         httpd.shutdown()
         thread.join(timeout=5)

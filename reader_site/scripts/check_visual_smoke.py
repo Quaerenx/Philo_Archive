@@ -21,6 +21,8 @@ SITE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SITE))
 
 from services.sources import CORPUS_ROOTS, relative_source_path  # noqa: E402
+from services.sentence_targets import sentence_target_bundle  # noqa: E402
+from services.sentence_translations import build_record, build_sentence_prompt_bundle, pipeline_output  # noqa: E402
 
 DEFAULT_OUTPUT = SITE / "data" / "visual_qa.local"
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
@@ -41,6 +43,91 @@ VISUAL_NOTE_SEED = {
     "review_state": "reviewed",
     "url": "/work/nietzsche/GM#p-0023.s001",
 }
+VISUAL_TRANSLATION_SEED = [
+    {
+        "schema_version": 5,
+        "record_type": "ai_sentence_translation",
+        "id": "visual-translation-older",
+        "created_at": "2026-06-17T09:10:00Z",
+        "generated_at": "2026-06-17T09:10:00Z",
+        "corpus_id": "nietzsche",
+        "work_id": "GM",
+        "variant_id": "",
+        "target_id": "p-9001.s001",
+        "segment_id": "p-9001",
+        "sentence_id": "p-9001.s001",
+        "target_url": "/work/nietzsche/GM#p-9001.s001",
+        "source_text_excerpt": "Ältere visuelle Prüffassung.",
+        "translation": "이전 번역",
+        "commentary": "이전 생성본 해설입니다.",
+        "quality_state": "critic_pass",
+        "revision_count": 0,
+        "review_state": "generated",
+    },
+    {
+        "schema_version": 5,
+        "record_type": "ai_sentence_translation",
+        "id": "visual-translation-latest",
+        "created_at": "2026-06-17T09:10:00Z",
+        "generated_at": "2026-06-17T09:10:00Z",
+        "corpus_id": "nietzsche",
+        "work_id": "GM",
+        "variant_id": "",
+        "target_id": "p-9001.s001",
+        "segment_id": "p-9001",
+        "sentence_id": "p-9001.s001",
+        "target_url": "/work/nietzsche/GM#p-9001.s001",
+        "source_text_excerpt": "Neuere visuelle Prüffassung.",
+        "translation": "최신  번역\n둘째 줄",
+        "commentary": "같은 시각에 생성된 최신본입니다.",
+        "quality_state": "critic_pass",
+        "revision_count": 0,
+        "review_state": "generated",
+    },
+    {
+        "schema_version": 5,
+        "record_type": "ai_sentence_translation",
+        "id": "visual-translation-second",
+        "created_at": "2026-06-17T09:11:00Z",
+        "generated_at": "2026-06-17T09:11:00Z",
+        "corpus_id": "nietzsche",
+        "work_id": "GM",
+        "variant_id": "",
+        "target_id": "p-9002.s001",
+        "segment_id": "p-9002",
+        "sentence_id": "p-9002.s001",
+        "target_url": "/work/nietzsche/GM#p-9002.s001",
+        "source_text_excerpt": "Nächster visueller Prüfsatz.",
+        "translation": "다음 번역",
+        "commentary": "키보드 이동 대상입니다.",
+        "quality_state": "critic_pass",
+        "revision_count": 0,
+        "review_state": "generated",
+    },
+    {
+        "schema_version": 5,
+        "record_type": "ai_sentence_translation",
+        "id": "visual-translation-reviewed",
+        "created_at": "2026-06-17T09:12:00Z",
+        "generated_at": "2026-06-17T09:12:00Z",
+        "corpus_id": "nietzsche",
+        "work_id": "GM",
+        "variant_id": "",
+        "target_id": "p-9003.s001",
+        "segment_id": "p-9003",
+        "sentence_id": "p-9003.s001",
+        "target_url": "/work/nietzsche/GM#p-9003.s001",
+        "source_text_excerpt": "Bestätigte visuelle Prüffassung.",
+        "translation": "모델 원본\n두 번째 줄",
+        "human_translation": "첫째 줄\n\n둘째  줄",
+        "commentary": "사람 확정 번역 표시 검증입니다.",
+        "quality_state": "critic_pass",
+        "revision_count": 0,
+        "review_state": "reviewed",
+        "reviewed_at": "2026-06-17T09:13:00Z",
+        "updated_at": "2026-06-17T09:13:00Z",
+    },
+]
 ROUTES = [
     ("home", "/", True),
     ("nietzsche-category", "/category/nietzsche", True),
@@ -174,6 +261,42 @@ def seed_visual_notes(notes_dir: Path) -> None:
     path.write_text(json.dumps(VISUAL_NOTE_SEED, ensure_ascii=False, sort_keys=True) + "\n", encoding="utf-8")
 
 
+def seed_visual_translations(ai_dir: Path) -> None:
+    ai_dir.mkdir(parents=True, exist_ok=True)
+    path = ai_dir / "nietzsche_sentence_translations.jsonl"
+    selected_target = sentence_target_bundle("nietzsche", "GM", "p-0023", "p-0023.s001", "")
+    selected_prompt = build_sentence_prompt_bundle(selected_target)
+    selected_record = build_record(
+        selected_target,
+        selected_prompt,
+        pipeline_output(
+            {
+                "translation": "시각 검증용 저장 번역입니다.",
+                "commentary": "선택 문장의 읽기 상태를 외부 모델 없이 재현합니다.",
+                "cautions": [],
+            },
+            quality_state="critic_pass",
+            revision_count=0,
+            initial_critic={"verdict": "pass", "issues": []},
+            final_critic=None,
+            initial_critic_prompt_sha256="visual-smoke",
+        ),
+    )
+    selected_record.update(
+        {
+            "id": "visual-selected-translation",
+            "created_at": "2026-06-17T09:00:00Z",
+            "generated_at": "2026-06-17T09:00:00Z",
+            "review_state": "reviewed",
+            "reviewed_at": "2026-06-17T09:01:00Z",
+            "updated_at": "2026-06-17T09:01:00Z",
+        }
+    )
+    records = [selected_record, *VISUAL_TRANSLATION_SEED]
+    lines = [json.dumps(record, ensure_ascii=False, sort_keys=True) for record in records]
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
 def discover_source_routes() -> list[tuple[str, str, bool]]:
     for root in CORPUS_ROOTS:
         if not root.exists():
@@ -286,8 +409,8 @@ def check_route_markup(route: str, html: str) -> None:
             "translationsReviewQueue",
             "aria-busy=\"false\"",
             "notes.css?v=notes29",
-            "translations.css?v=trans36",
-            "translations.js?v=trans92",
+            "translations.css?v=trans37",
+            "translations.js?v=trans93",
             'href="/translations" aria-current="page">번역</a>',
             "번역 찾기",
             "translationsListTools",
@@ -1296,6 +1419,24 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         !new URL(window.location.href).searchParams.has('page') &&
         /^1-40\b/.test(document.querySelector('#search-results-segments .result-group-count')?.textContent.trim() || '')
       ), null, { timeout: 7000 });
+      const stalePageUrl = new URL(page.url());
+      stalePageUrl.searchParams.set('page', '999');
+      await page.goto(stalePageUrl.toString(), { waitUntil: 'domcontentloaded', timeout: 15000 });
+      await page.waitForSelector('#search-results-segments .segment-result', { timeout: 7000 });
+      const stalePageState = await page.evaluate(() => ({
+        urlPage: new URL(window.location.href).searchParams.get('page') || '',
+        hasResults: document.querySelectorAll('#search-results-segments .segment-result').length > 0,
+        nextDisabled: Boolean(Array.from(document.querySelectorAll('#search-results-segments button[data-search-page]')).at(-1)?.disabled),
+        emptyVisible: Boolean(document.querySelector('#results .empty-state'))
+      }));
+      if (!stalePageState.hasResults || stalePageState.emptyVisible || stalePageState.urlPage === '999' || !stalePageState.nextDisabled) {
+        throw new Error('out-of-range search page should normalize to the populated last page: ' + JSON.stringify(stalePageState));
+      }
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 15000 });
+      await page.waitForFunction(() => (
+        !new URL(window.location.href).searchParams.has('page') &&
+        /^1-40\b/.test(document.querySelector('#search-results-segments .result-group-count')?.textContent.trim() || '')
+      ), null, { timeout: 7000 });
     }
   }
   if (parsed.pathname === '/search' && !parsed.search) {
@@ -1637,6 +1778,10 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     const translationsPageState = await page.evaluate(() => {
       const empty = document.querySelector('#translationsResults .empty-state');
       const queryLabel = document.querySelector('#translationsQuery')?.closest('label');
+      const seededLatest = document.querySelector('[data-record-id="visual-translation-latest"]');
+      const seededLatestText = seededLatest?.querySelector('.translation-text');
+      const seededOlder = document.querySelector('[data-record-id="visual-translation-older"]');
+      const seededHistory = seededOlder?.closest('.translation-version-history');
         return {
           hasRecords: document.querySelectorAll('#translationsResults .translation-record-card:not(.notes-skeleton)').length > 0,
           formHidden: Boolean(document.querySelector('#translationsForm')?.hidden),
@@ -1665,7 +1810,12 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
           reviewQueueText: document.querySelector('#translationsReviewQueue')?.textContent.trim() || '',
           reviewQueueLabel: document.querySelector('#translationsReviewQueue')?.getAttribute('aria-label') || '',
           exportLabels: Array.from(document.querySelectorAll('#translationsExportTools .export-row a')).map((node) => node.textContent.trim()),
-          corpusOptions: Array.from(document.querySelectorAll('#translationsCorpus option')).map((node) => node.textContent.trim())
+          corpusOptions: Array.from(document.querySelectorAll('#translationsCorpus option')).map((node) => node.textContent.trim()),
+          seededLatestText: seededLatestText?.textContent || '',
+          seededLatestWhiteSpace: seededLatestText ? window.getComputedStyle(seededLatestText).whiteSpace : '',
+          seededOlderInsideHistory: Boolean(seededHistory),
+          seededHistoryOpen: Boolean(seededHistory?.open),
+          seededHistorySummary: seededHistory?.querySelector(':scope > summary')?.textContent.trim() || ''
         };
     });
     for (const expectedCorpusLabel of ['니체', '성경', '키르케고르', '비트겐슈타인']) {
@@ -1691,6 +1841,12 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         throw new Error(`empty translations page reading-start action should return to the archive home: ${JSON.stringify(translationsPageState)}`);
       }
     } else {
+      if (translationsPageState.seededLatestText !== '최신  번역\n둘째 줄' || translationsPageState.seededLatestWhiteSpace !== 'pre-wrap') {
+        throw new Error(`translation list should preserve meaningful line breaks and consecutive spaces: ${JSON.stringify(translationsPageState)}`);
+      }
+      if (!translationsPageState.seededOlderInsideHistory || translationsPageState.seededHistoryOpen || translationsPageState.seededHistorySummary !== '이전 번역 1개') {
+        throw new Error(`same-timestamp regeneration should keep the latest record current and collapse the older version: ${JSON.stringify(translationsPageState)}`);
+      }
       if (translationsPageState.reviewBadgeCount !== 0) {
         throw new Error(`default translations list should hide review-state badges: ${JSON.stringify(translationsPageState)}`);
       }
@@ -1758,6 +1914,9 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       const firstCommentary = firstCard?.querySelector('.translation-commentary');
       const activeFilters = document.querySelector('#translationsActiveFilters');
       const empty = document.querySelector('#translationsResults .empty-state');
+      const seededReviewed = document.querySelector('[data-record-id="visual-translation-reviewed"]');
+      const seededTranslation = seededReviewed?.querySelector('.translation-text');
+      const seededModelOriginal = seededReviewed?.querySelector('.translation-model-original p');
       return {
         cards: document.querySelectorAll('#translationsResults .translation-record-card:not(.notes-skeleton)').length,
         headingText: document.querySelector('#translationsPageTitle')?.textContent.trim() || '',
@@ -1772,7 +1931,12 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         commentarySummaryTexts: Array.from(document.querySelectorAll('#translationsResults .translation-commentary summary')).map((node) => node.textContent.trim()),
         openCommentaryCount: document.querySelectorAll('#translationsResults .translation-commentary[open]').length,
         sourceDisclosureCount: document.querySelectorAll('#translationsResults .translation-source').length,
-        outputText: document.querySelector('#translationsResults')?.textContent || ''
+        outputText: document.querySelector('#translationsResults')?.textContent || '',
+        seededTranslationText: seededTranslation?.textContent || '',
+        seededTranslationWhiteSpace: seededTranslation ? window.getComputedStyle(seededTranslation).whiteSpace : '',
+        seededEditorValue: seededReviewed?.querySelector('textarea[name="human_translation"]')?.value || '',
+        seededModelOriginalText: seededModelOriginal?.textContent || '',
+        seededModelOriginalWhiteSpace: seededModelOriginal ? window.getComputedStyle(seededModelOriginal).whiteSpace : ''
       };
     });
     if (savedState.headingText !== '저장한 번역' || !savedState.documentTitle.startsWith('저장한 번역 /')) {
@@ -1788,6 +1952,12 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       throw new Error(`saved translations empty state should read as a saved-translation view, not a failed search: ${JSON.stringify(savedState)}`);
     }
     if (savedState.cards > 0) {
+      if (savedState.seededTranslationText !== '첫째 줄\n\n둘째  줄' || savedState.seededEditorValue !== '첫째 줄\n\n둘째  줄' || savedState.seededTranslationWhiteSpace !== 'pre-wrap') {
+        throw new Error(`saved human translation should round-trip paragraphs and consecutive spaces into view and editor: ${JSON.stringify(savedState)}`);
+      }
+      if (savedState.seededModelOriginalText !== '모델 원본\n두 번째 줄' || savedState.seededModelOriginalWhiteSpace !== 'pre-wrap') {
+        throw new Error(`preserved model original should retain its line breaks: ${JSON.stringify(savedState)}`);
+      }
       if (!savedState.firstCommentaryOpen || savedState.openCommentaryCount < 1) {
         throw new Error(`saved translations page should open the first commentary for reading review: ${JSON.stringify(savedState)}`);
       }
@@ -2555,6 +2725,17 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (state.cards > 0) {
       await page.keyboard.press('q');
       await page.waitForSelector('#translationsResults .translation-record-card.is-review-target', { timeout: 3000 }).catch(() => {});
+      const initialFocusedRecord = await page.evaluate(() => document.activeElement?.closest('.translation-record-card')?.dataset.recordId || '');
+      await page.keyboard.press('j');
+      const nextFocusedRecord = await page.evaluate(() => document.activeElement?.closest('.translation-record-card')?.dataset.recordId || '');
+      await page.keyboard.press('k');
+      const previousFocusedRecord = await page.evaluate(() => document.activeElement?.closest('.translation-record-card')?.dataset.recordId || '');
+      const collapsedHistoryOpen = await page.evaluate(() => Boolean(document.querySelector('[data-record-id="visual-translation-older"]')?.closest('.translation-version-history')?.open));
+      if (initialFocusedRecord !== 'visual-translation-latest' || nextFocusedRecord !== 'visual-translation-second' || previousFocusedRecord !== 'visual-translation-latest' || collapsedHistoryOpen) {
+        throw new Error(`translation keyboard navigation should skip records inside collapsed version history: ${JSON.stringify({ initialFocusedRecord, nextFocusedRecord, previousFocusedRecord, collapsedHistoryOpen })}`);
+      }
+      await page.keyboard.press('q');
+      await page.waitForSelector('#translationsResults .translation-record-card.is-review-target', { timeout: 3000 }).catch(() => {});
       const reviewTargetState = await page.evaluate(() => {
         const card = document.querySelector('#translationsResults .translation-record-card.is-review-target');
         const cardStyle = card ? window.getComputedStyle(card) : null;
@@ -2898,10 +3079,15 @@ def main() -> None:
 
     port = free_port()
     base_url = f"http://127.0.0.1:{port}"
-    with tempfile.TemporaryDirectory(prefix="philo_visual_notes_") as notes_temp_dir:
+    with (
+        tempfile.TemporaryDirectory(prefix="philo_visual_notes_") as notes_temp_dir,
+        tempfile.TemporaryDirectory(prefix="philo_visual_ai_") as ai_temp_dir,
+    ):
         server_env = os.environ.copy()
         server_env["PHILO_NOTES_DIR"] = str(Path(notes_temp_dir))
+        server_env["PHILO_AI_DIR"] = str(Path(ai_temp_dir))
         seed_visual_notes(Path(notes_temp_dir))
+        seed_visual_translations(Path(ai_temp_dir))
         server = start_visual_server(port, server_env)
         try:
             wait_for_health(base_url, server)
