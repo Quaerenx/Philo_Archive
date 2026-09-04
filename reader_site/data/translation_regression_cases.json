@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "cases": [
     {
       "case_id": "nietzsche-gt-vaterschaft-semantic-substitution",
@@ -24,14 +24,78 @@
         ]
       },
       "known_bad_translation": "뵈르트 전투의 천둥이 유럽 위로 지나가는 동안, 이 책의 저작권을 얻게 된 사색가이자 수수께끼의 벗은 알프스의 어느 구석에 앉아, 몹시 골똘히 생각하고 수수께끼에 싸인 채, 따라서 몹시 근심하면서 동시에 태평하게, 그리스인들에 관한 자신의 생각—이 뒤늦은 서문(또는 후기)이 바쳐질 기이하고 접근하기 어려운 책의 핵심—을 적어 내려갔다.",
-      "forbidden_unsupported_terms": [
+      "known_bad_fragments": [
         "저작권"
       ],
-      "expected_major_categories": [
+      "expected_categories": [
         "semantic_substitution",
         "metaphor_or_rhetoric",
         "terminology"
-      ]
+      ],
+      "require_major_issue": true
+    },
+    {
+      "case_id": "kierkegaard-aas-opaque-referent-and-calque",
+      "corpus_id": "kierkegaard",
+      "work_id": "aas",
+      "variant_id": "text",
+      "segment_id": "sks-0003",
+      "sentence_id": "sks-0003.s001",
+      "source_features": {
+        "lexical_phrase": [
+          "fortient Glemsel"
+        ],
+        "referent": [
+          "Dit Liv",
+          "det"
+        ],
+        "conditional_structure": [
+          "vilde",
+          "maaskee"
+        ]
+      },
+      "known_bad_translation": "그렇다면 당신의 삶은 마땅히 잊혀져야 할 망각에 넘겨지지 않았을 것입니다. 왜냐하면 당신의 활동이 그것을 잊을 수 없게 만들었을 것이기 때문입니다. 그리고 단지 이것뿐만 아니라, 아마도 그것은 묘사되어, 본보기로서 제시되었을 것입니다. 아마도 «Folkebladet»나 «Naturen, Mennesket og Borgeren»에서 말입니다. 당신에 대해 다음과 같이 말해졌을 것입니다:",
+      "known_bad_fragments": [
+        "마땅히 잊혀져야 할 망각",
+        "그것",
+        "묘사되어, 본보기로서"
+      ],
+      "expected_categories": [
+        "terminology",
+        "referent",
+        "syntax_or_scope",
+        "korean_readability"
+      ],
+      "require_major_issue": false
+    },
+    {
+      "case_id": "nietzsche-gm-source-order-korean-fragment",
+      "corpus_id": "nietzsche",
+      "work_id": "GM",
+      "variant_id": "",
+      "segment_id": "p-0004",
+      "sentence_id": "p-0004.s001",
+      "source_features": {
+        "epistemic_predicate": [
+          "unbekannt"
+        ],
+        "rhetorical_repetition": [
+          "wir Erkennenden",
+          "wir selbst uns selbst"
+        ]
+      },
+      "known_bad_translation": "우리 인식하는 자들은 우리 자신에게 낯선 존재다, 우리 자신에게 우리 스스로가:",
+      "known_bad_fragments": [
+        "낯선 존재다",
+        "우리 자신에게 우리 스스로가"
+      ],
+      "expected_categories": [
+        "terminology",
+        "semantic_substitution",
+        "syntax_or_scope",
+        "korean_readability"
+      ],
+      "require_major_issue": false
     }
   ]
 }

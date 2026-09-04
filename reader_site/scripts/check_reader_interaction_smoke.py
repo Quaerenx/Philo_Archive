@@ -20,6 +20,7 @@ from check_visual_smoke import (  # noqa: E402
     find_playwright_node_path,
     free_port,
     playwright_is_available,
+    seed_visual_translations,
     wait_for_health,
 )
 
@@ -225,9 +226,14 @@ def main() -> None:
     use_playwright = playwright_is_available(node, node_path)
     port = free_port()
     base_url = f"http://127.0.0.1:{port}"
+    ai_temp_dir = tempfile.TemporaryDirectory(prefix="philo_reader_interaction_ai_")
+    server_env = os.environ.copy()
+    server_env["PHILO_AI_DIR"] = str(Path(ai_temp_dir.name))
+    seed_visual_translations(Path(ai_temp_dir.name))
     server = subprocess.Popen(
         [sys.executable, str(SITE / "server.py"), "--host", "127.0.0.1", "--port", str(port)],
         cwd=SITE,
+        env=server_env,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
@@ -262,6 +268,7 @@ def main() -> None:
             server.wait(timeout=5)
         except subprocess.TimeoutExpired:
             server.kill()
+        ai_temp_dir.cleanup()
 
 
 if __name__ == "__main__":

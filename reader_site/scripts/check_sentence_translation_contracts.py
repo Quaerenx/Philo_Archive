@@ -23,8 +23,12 @@ from services.sentence_targets import (  # noqa: E402
 )
 from services import sentence_translations as sentence_translation_service  # noqa: E402
 from services.sentence_translations import (  # noqa: E402
+    CRITIC_CATEGORIES,
+    CRITIC_PROMPT_TEMPLATE_ID,
     CRITIC_RESPONSE_SCHEMA,
     PROMPT_TEMPLATE_ID,
+    QUALITY_PIPELINE_VERSION,
+    REVISION_PROMPT_TEMPLATE_ID,
     TRANSLATION_RESPONSE_SCHEMA,
     TranslationModelResponseError,
     append_record,
@@ -36,6 +40,7 @@ from services.sentence_translations import (  # noqa: E402
     export_sentence_translations_markdown,
     find_cached_record,
     iter_cached_records,
+    merge_approved_policy_audit,
     normalized_model_output,
     normalized_critic_output,
     public_record_id,
@@ -282,6 +287,10 @@ def check_prompt_and_record(target: dict) -> None:
     prompt_bundle = build_sentence_prompt_bundle(target)
     prompt = prompt_bundle["prompt"]
     require(prompt_bundle["prompt_template_id"] == PROMPT_TEMPLATE_ID, "unexpected sentence prompt template id")
+    require(PROMPT_TEMPLATE_ID == "sentence_translation_study_v4", "current sentence translation prompt must be v4")
+    require(CRITIC_PROMPT_TEMPLATE_ID == "sentence_translation_critic_v2", "current sentence critic prompt must be v2")
+    require(REVISION_PROMPT_TEMPLATE_ID == "sentence_translation_revision_v2", "current sentence revision prompt must be v2")
+    require(prompt_bundle["quality_pipeline_version"] == QUALITY_PIPELINE_VERSION == 2, "quality pipeline must be v2")
     require(prompt_bundle["prompt_sha256"] == sha256_text(prompt), "prompt_sha256 mismatch")
     require(target["sentence_text"] in prompt, "prompt missing selected sentence")
     for phrase in [
@@ -291,6 +300,9 @@ def check_prompt_and_record(target: dict) -> None:
         "quoted source data",
         "historical spelling",
         "unsupported specialized term",
+        "opaque pronoun",
+        "source-language word order",
+        "grammatically complete",
         "Do not praise, defend, or justify",
         "silently verify",
         "Return exactly one JSON object",
@@ -606,6 +618,7 @@ def check_strict_model_output_contract() -> None:
         json.dumps({"translation": "", "commentary": "", "cautions": []}),
         json.dumps({"translation": "번역", "commentary": "", "cautions": "none"}),
         json.dumps({"translation": "번역", "commentary": [], "cautions": []}),
+        json.dumps({"translation": "번역", "commentary": "English commentary only.", "cautions": []}),
     ]
     for content in invalid_outputs:
         try:
@@ -631,6 +644,12 @@ def check_strict_critic_output_contract() -> None:
         json.dumps({"verdict": "revise", "issues": [critic_issue()]}, ensure_ascii=False)
     )
     require(valid["issues"][0]["severity"] == "major", "valid critic issue was not preserved")
+    require("korean_readability" in CRITIC_CATEGORIES, "critic schema must classify material Korean readability defects")
+    readable_issue = {**critic_issue("minor"), "category": "korean_readability"}
+    readable = normalized_critic_output(
+        json.dumps({"verdict": "revise", "issues": [readable_issue]}, ensure_ascii=False)
+    )
+    require(readable["issues"][0]["category"] == "korean_readability", "readability issue was not preserved")
     invalid_outputs = [
         "not json",
         json.dumps({"verdict": "pass", "issues": [critic_issue()]}),
@@ -761,6 +780,9 @@ def check_human_approved_translation_profile_contract() -> None:
                             "work_id": "demo",
                             "variant_id": "",
                             "approval_state": "approved",
+                            "approved_by": "LSCD",
+                            "approved_at": "2026-09-04T14:06:19+09:00",
+                            "source_case_ids": ["synthetic-profile-case"],
                             "terminology": [{"source": "Macht", "target": "힘", "note": "연구자 승인"}],
                             "style_notes": ["반복을 보존한다."],
                         }
@@ -774,7 +796,18 @@ def check_human_approved_translation_profile_contract() -> None:
         require(policy["profile_id"] == "nietzsche-demo-v1", "approved translation profile was not selected")
         require(policy["terminology"][0]["target"] == "힘", "approved terminology was not preserved")
 
-        rejected_payload = json.loads(path.read_text(encoding="utf-8"))
+        duplicate_payload = json.loads(path.read_text(encoding="utf-8"))
+        duplicate_payload["profiles"].append({**duplicate_payload["profiles"][0], "profile_id": "nietzsche-demo-v2"})
+        path.write_text(json.dumps(duplicate_payload, ensure_ascii=False), encoding="utf-8")
+        try:
+            translation_policy_bundle("nietzsche", "demo", path=path)
+        except ValueError:
+            pass
+        else:
+            require(False, "duplicate approved translation profile scopes should be rejected")
+
+        rejected_payload = duplicate_payload
+        rejected_payload["profiles"] = [rejected_payload["profiles"][0]]
         rejected_payload["profiles"][0]["approval_state"] = "generated"
         path.write_text(json.dumps(rejected_payload, ensure_ascii=False), encoding="utf-8")
         try:
@@ -783,6 +816,104 @@ def check_human_approved_translation_profile_contract() -> None:
             pass
         else:
             require(False, "non-approved translation profile should be rejected")
+
+    kierkegaard_policy = translation_policy_bundle("kierkegaard", "aas", "text", "sks-0003.s001")
+    require(kierkegaard_policy["profile_id"] == "kierkegaard-aas-lscd-v1", "tracked Kierkegaard profile was not selected")
+    require(kierkegaard_policy["terminology"][0]["target"] == "마땅한 망각", "tracked Kierkegaard term drifted")
+    require(kierkegaard_policy["sentence_rules"], "tracked Kierkegaard sentence rule was not selected")
+    nietzsche_policy = translation_policy_bundle("nietzsche", "GM", "", "p-0004.s001")
+    require(nietzsche_policy["profile_id"] == "nietzsche-gm-lscd-v1", "tracked Nietzsche profile was not selected")
+    require(nietzsche_policy["terminology"][0]["target"] == "우리 인식하는 자들", "tracked Nietzsche term drifted")
+    require(nietzsche_policy["sentence_rules"][0]["allowed_translation_fragments"], "tracked approved fragment was not selected")
+    policy_audit = merge_approved_policy_audit(
+        {
+            "source_context": "<TARGET_SENTENCE>fortient Glemsel</TARGET_SENTENCE>",
+            "approved_terminology": [
+                {"source": "fortient Glemsel", "target": "마땅한 망각", "note": "연구자 승인"}
+            ],
+            "approved_sentence_rules": [],
+        },
+        "마땅히 잊혀져야 할 망각",
+        {"verdict": "pass", "issues": []},
+    )
+    require(policy_audit["verdict"] == "revise", "missing an approved term must not pass the hybrid audit")
+    require(policy_audit["issues"][0]["category"] == "terminology", "approved term issue category drifted")
+    sentence_policy_audit = merge_approved_policy_audit(
+        {
+            "source_context": "<TARGET_SENTENCE>det</TARGET_SENTENCE>",
+            "approved_terminology": [],
+            "approved_sentence_rules": [
+                {
+                    "sentence_id": "sks-0003.s001",
+                    "forbidden_translation_fragments": [
+                        {
+                            "text": "그것",
+                            "category": "referent",
+                            "severity": "major",
+                            "explanation": "지시 대상을 밝혀야 한다.",
+                        }
+                    ],
+                }
+            ],
+        },
+        "그것은 남는다.",
+        {"verdict": "pass", "issues": []},
+    )
+    require(sentence_policy_audit["verdict"] == "revise", "sentence-specific approved rule must not pass")
+    require(sentence_policy_audit["issues"][0]["severity"] == "major", "sentence rule severity drifted")
+    approved_fragment_audit = merge_approved_policy_audit(
+        {
+            "source_context": "<TARGET_SENTENCE>wir selbst uns selbst</TARGET_SENTENCE>",
+            "approved_terminology": [],
+            "approved_sentence_rules": [
+                {
+                    "sentence_id": "p-0004.s001",
+                    "allowed_translation_fragments": ["우리 스스로가 우리 자신에게"],
+                    "forbidden_translation_fragments": [],
+                }
+            ],
+        },
+        "우리 스스로가 우리 자신에게 그러하다.",
+        {
+            "verdict": "revise",
+            "issues": [
+                {
+                    "source_span": "wir selbst uns selbst",
+                    "translation_span": "우리 스스로가 우리 자신에게",
+                    "category": "korean_readability",
+                    "severity": "minor",
+                    "explanation": "승인 구절과 비슷하다는 문체 오탐",
+                }
+            ],
+        },
+    )
+    require(
+        approved_fragment_audit == {"verdict": "pass", "issues": []},
+        "human-approved exact fragment should suppress a style false positive",
+    )
+    semantic_issue = {
+        "source_span": "wir selbst uns selbst",
+        "translation_span": "우리 스스로가 우리 자신에게",
+        "category": "semantic_substitution",
+        "severity": "major",
+        "explanation": "형태가 아니라 의미가 달라졌다.",
+    }
+    semantic_audit = merge_approved_policy_audit(
+        {
+            "source_context": "<TARGET_SENTENCE>wir selbst uns selbst</TARGET_SENTENCE>",
+            "approved_terminology": [],
+            "approved_sentence_rules": [
+                {
+                    "sentence_id": "p-0004.s001",
+                    "allowed_translation_fragments": ["우리 스스로가 우리 자신에게"],
+                    "forbidden_translation_fragments": [],
+                }
+            ],
+        },
+        "우리 스스로가 우리 자신에게 그러하다.",
+        {"verdict": "revise", "issues": [semantic_issue]},
+    )
+    require(semantic_audit["issues"] == [semantic_issue], "approved form must not suppress a semantic issue")
 
 
 def check_runtime_error_copy(target: dict) -> None:

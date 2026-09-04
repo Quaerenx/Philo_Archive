@@ -95,14 +95,23 @@ def check_template_records() -> None:
     for template_id in [
         "sentence_translation_study_v2",
         "sentence_translation_study_v3",
+        "sentence_translation_study_v4",
         "sentence_translation_critic_v1",
+        "sentence_translation_critic_v2",
         "sentence_translation_revision_v1",
+        "sentence_translation_revision_v2",
     ]:
         require(template_id in ids, f"missing tracked prompt template {template_id}")
     require(len(ids) == len(set(ids)), "duplicate prompt_template_id values")
     default_record = next(record for record in templates if record["prompt_template_id"] == DEFAULT_PROMPT_TEMPLATE_ID)
     for phrase in ["Do not replace", "filesystem paths", "Explicit statements", "Reasoned inferences", "quoted data"]:
         require(phrase in default_record["template"], f"default interpretation prompt missing {phrase!r}")
+    current_translation = next(record for record in templates if record["prompt_template_id"] == "sentence_translation_study_v4")
+    for phrase in ["opaque pronoun", "source-language word order", "grammatically complete", "genuinely ambiguous"]:
+        require(phrase in current_translation["template"], f"current translation prompt missing {phrase!r}")
+    current_critic = next(record for record in templates if record["prompt_template_id"] == "sentence_translation_critic_v2")
+    for phrase in ["Korean readability", "referentially opaque", "korean_readability", "part of the audit contract"]:
+        require(phrase in current_critic["template"], f"current critic prompt missing {phrase!r}")
 
 
 def check_source_light_render() -> None:

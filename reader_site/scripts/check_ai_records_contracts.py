@@ -30,6 +30,7 @@ ALLOWED_CRITIC_CATEGORIES = {
     "metaphor_or_rhetoric",
     "terminology",
     "register",
+    "korean_readability",
 }
 KNOWN_PROMPT_TEMPLATE_IDS = prompt_template_ids()
 REQUIRED_FIELDS = [
@@ -278,7 +279,11 @@ def validate_record(record: Any, path: Path, line_number: int) -> None:
             require("interpretation" not in record, context(path, line_number, "sentence translation v5 must not duplicate commentary as interpretation"))
             for field in ("pipeline_contract_sha256", "critic_prompt_template_sha256", "revision_prompt_template_sha256"):
                 require(HEX_SHA256.fullmatch(str(record[field])) is not None, context(path, line_number, f"{field} must be a SHA-256 hex digest"))
-            require(record["quality_pipeline_version"] == 1, context(path, line_number, "quality_pipeline_version must be 1"))
+            require(record["quality_pipeline_version"] in {1, 2}, context(path, line_number, "quality_pipeline_version must be 1 or 2"))
+            if record["quality_pipeline_version"] == 2:
+                require(record["prompt_template_id"] == "sentence_translation_study_v4", context(path, line_number, "pipeline v2 translator prompt is invalid"))
+                require(record["critic_prompt_template_id"] == "sentence_translation_critic_v2", context(path, line_number, "pipeline v2 critic prompt is invalid"))
+                require(record["revision_prompt_template_id"] == "sentence_translation_revision_v2", context(path, line_number, "pipeline v2 revision prompt is invalid"))
             require(record["critic_prompt_template_id"] in KNOWN_PROMPT_TEMPLATE_IDS, context(path, line_number, "critic prompt template is unknown"))
             require(record["revision_prompt_template_id"] in KNOWN_PROMPT_TEMPLATE_IDS, context(path, line_number, "revision prompt template is unknown"))
             require(record["critic_response_schema_name"] == "sentence_translation_critic_response", context(path, line_number, "critic_response_schema_name is invalid"))

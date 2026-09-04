@@ -143,7 +143,9 @@ git status --short
 
 `check_sentence_translation_contracts.py --with-source-targets` verifies the on-demand sentence translation boundary, sentence IDs such as `p-0023.s001`, prompt and quality-pipeline checksums, bounded one-pass revision behavior, and local schema-v5 JSONL record shape. It does not call Gemma.
 
-`check_translation_quality_regressions.py` verifies the tracked source/known-bad-translation fixtures without calling Gemma. Add `--with-model` for an explicit local-runtime check that the critic flags the `Vaterschaft` → `저작권` semantic substitution as a major issue.
+`check_translation_quality_regressions.py` verifies the tracked source/known-bad-translation fixtures without calling Gemma. The fixtures cover the `Vaterschaft` → `저작권` semantic substitution plus LSCD-reviewed Kierkegaard and Nietzsche source-order, referent, and Korean-readability failures. Add `--with-model` for an explicit local-runtime check that the critic rejects all three known-bad translations; the `Vaterschaft` case must still be classified as major.
+
+`check_translation_goldset.py` validates human evaluation structure and reports pending and below-threshold cases. Before claiming that translation quality itself is release-ready, run `check_translation_goldset.py --require-passing`; unlike the normal structural check, that gate fails for any pending case or rubric dimension below the configured threshold.
 
 GitHub pull requests run `.github/workflows/reader-site-source-light.yml`, which executes the source-light clean clone checks without local corpora.
 

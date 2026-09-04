@@ -43,6 +43,7 @@ CHECK_STEPS = [
     Step("AI provenance contracts", "check_provenance_contracts.py"),
     Step("Prompt template contracts", "check_prompt_template_contracts.py", ("--with-source-targets",)),
     Step("Sentence translation contracts", "check_sentence_translation_contracts.py", ("--with-source-targets",)),
+    Step("Translation quality regressions", "check_translation_quality_regressions.py"),
     Step("Corpus schema contracts", "check_corpus_schema.py"),
     Step("Segment offset contracts", "check_segment_offset_contracts.py"),
     Step("Large work chunk contracts", "check_work_chunk_contracts.py"),

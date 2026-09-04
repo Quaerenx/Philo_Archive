@@ -174,6 +174,8 @@ python .\scripts\check_translation_goldset.py
 python .\scripts\check_static_routes.py
 ```
 
+`check_translation_goldset.py --require-passing` is the strict release gate: it fails for pending human evaluations and for any evaluated rubric dimension below the configured threshold.
+
 GitHub pull requests run the source-light subset through `.github/workflows/reader-site-source-light.yml`. That workflow intentionally avoids full corpus rebuilds because the public repository does not include local source corpora or generated search artifacts.
 
 Before pushing to GitHub, read `reader_site/docs/release_handoff.md`, run `python .\scripts\build_release_stage_manifest.py --check`, `python .\scripts\check_clean_clone_contracts.py --run-source-light-checks`, `python .\scripts\check_ci_contracts.py`, `python .\scripts\check_encoding_contracts.py`, `python .\scripts\check_path_contracts.py`, `python .\scripts\check_source_publication_contracts.py`, `python .\scripts\check_restore_readiness.py`, `python .\scripts\check_source_target_contracts.py`, `python .\scripts\check_prompt_template_contracts.py --with-source-targets`, `python .\scripts\check_sentence_translation_contracts.py --with-source-targets`, `python .\scripts\check_note_target_integrity.py`, and `python .\scripts\check_release_contracts.py` to verify that local source corpora, large generated artifacts, personal notes, generated AI interpretations/translations, source target checksums, prompt checksums, clean-clone restore paths, GitHub Actions, source publication boundaries, restore readiness, shared path contracts, and Korean path names are handled correctly.

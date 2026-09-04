@@ -13,9 +13,11 @@ sys.path.insert(0, str(SITE))
 
 from services.sentence_targets import sentence_target_bundle  # noqa: E402
 from services.sentence_translations import (  # noqa: E402
+    CRITIC_CATEGORIES,
     build_critic_prompt_bundle,
     build_sentence_prompt_bundle,
     call_critic_server,
+    merge_approved_policy_audit,
 )
 
 
@@ -26,7 +28,7 @@ def require(condition: bool, message: str) -> None:
 
 def load_cases() -> list[dict[str, Any]]:
     payload = json.loads(CASES_PATH.read_text(encoding="utf-8"))
-    require(payload.get("schema_version") == 1, "translation regression schema_version must be 1")
+    require(payload.get("schema_version") == 2, "translation regression schema_version must be 2")
     cases = payload.get("cases")
     require(isinstance(cases, list) and cases, "translation regression cases must be a non-empty list")
     return cases
@@ -51,11 +53,20 @@ def validate_case(case: dict[str, Any], *, with_model: bool) -> None:
             require(isinstance(span, str) and span in source_text, f"{case_id}: source feature missing: {span}")
 
     bad_translation = str(case.get("known_bad_translation", ""))
-    forbidden_terms = case.get("forbidden_unsupported_terms")
+    bad_fragments = case.get("known_bad_fragments")
     require(bad_translation, f"{case_id}: known_bad_translation is required")
-    require(isinstance(forbidden_terms, list) and forbidden_terms, f"{case_id}: forbidden terms are required")
-    require(all(term in bad_translation for term in forbidden_terms), f"{case_id}: known bad translation must contain every forbidden term")
-    require(all(term not in source_text for term in forbidden_terms), f"{case_id}: forbidden Korean term unexpectedly appears in source")
+    require(isinstance(bad_fragments, list) and bad_fragments, f"{case_id}: known bad fragments are required")
+    require(
+        all(isinstance(fragment, str) and fragment and fragment in bad_translation for fragment in bad_fragments),
+        f"{case_id}: known bad translation must contain every bad fragment",
+    )
+    expected_categories = set(case.get("expected_categories", []))
+    require(expected_categories, f"{case_id}: expected critic categories are required")
+    require(
+        expected_categories <= set(CRITIC_CATEGORIES),
+        f"{case_id}: expected critic category is unknown",
+    )
+    require(isinstance(case.get("require_major_issue"), bool), f"{case_id}: require_major_issue must be boolean")
 
     prompt_bundle = build_sentence_prompt_bundle(target)
     critic_bundle = build_critic_prompt_bundle(prompt_bundle, bad_translation)
@@ -64,22 +75,45 @@ def validate_case(case: dict[str, Any], *, with_model: bool) -> None:
     if not with_model:
         return
 
-    critic = call_critic_server(critic_bundle)
+    critic = merge_approved_policy_audit(
+        prompt_bundle,
+        bad_translation,
+        call_critic_server(critic_bundle),
+    )
+    print(
+        f"{case_id}: "
+        + json.dumps(
+            {
+                "verdict": critic["verdict"],
+                "issues": [
+                    {"category": issue["category"], "severity": issue["severity"]}
+                    for issue in critic["issues"]
+                ],
+            },
+            ensure_ascii=False,
+        ),
+        flush=True,
+    )
     require(critic["verdict"] == "revise", f"{case_id}: critic failed to reject known bad translation")
-    major_issues = [issue for issue in critic["issues"] if issue["severity"] == "major"]
-    require(major_issues, f"{case_id}: critic did not report a major issue")
-    expected_categories = set(case.get("expected_major_categories", []))
+    issues = list(critic["issues"])
+    require(issues, f"{case_id}: critic rejected the draft without reporting an issue")
+    if case["require_major_issue"]:
+        require(any(issue["severity"] == "major" for issue in issues), f"{case_id}: critic did not report a major issue")
     require(
-        any(issue["category"] in expected_categories for issue in major_issues),
-        f"{case_id}: critic major issue used an unexpected category",
+        any(issue["category"] in expected_categories for issue in issues),
+        f"{case_id}: critic issue used an unexpected category",
     )
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Validate permanent sentence translation quality regressions.", allow_abbrev=False)
     parser.add_argument("--with-model", action="store_true", help="Also ask the local Gemma critic to reject each known-bad translation.")
+    parser.add_argument("--case-id", help="Run one tracked regression case by exact id.")
     args = parser.parse_args()
     cases = load_cases()
+    if args.case_id:
+        cases = [case for case in cases if case["case_id"] == args.case_id]
+        require(cases, f"unknown translation regression case: {args.case_id}")
     for case in cases:
         validate_case(case, with_model=args.with_model)
     suffix = " with local model" if args.with_model else ""

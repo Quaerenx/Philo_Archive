@@ -30,7 +30,11 @@ def require_iso_timestamp(value: Any, label: str) -> None:
         raise AssertionError(f"{label} must be an ISO-8601 timestamp") from error
 
 
-def validate(path: Path, require_complete: bool = False) -> dict[str, Any]:
+def validate(
+    path: Path,
+    require_complete: bool = False,
+    require_passing: bool = False,
+) -> dict[str, Any]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     require(payload.get("schema_version") == 1, "unsupported goldset schema_version")
     rubric = payload.get("rubric")
@@ -59,6 +63,15 @@ def validate(path: Path, require_complete: bool = False) -> dict[str, Any]:
         covered_corpora.add(case["corpus_id"])
         evaluation = case.get("human_evaluation")
         require(isinstance(evaluation, dict), f"{label}.human_evaluation must be an object")
+        adjudication_context = case.get("adjudication_context")
+        if adjudication_context is not None:
+            require(isinstance(adjudication_context, dict), f"{label}.adjudication_context must be an object")
+            require(
+                adjudication_context.get("status") == "source_context_resolved",
+                f"{label}.adjudication_context has an invalid status",
+            )
+            for field in ("resolved_sense", "evidence", "proposed_reference_translation", "source_url"):
+                require_text(adjudication_context.get(field), f"{label}.adjudication_context.{field}")
         status = evaluation.get("status")
         require(status in {"pending", "evaluated"}, f"{label} has an invalid evaluation status")
         if status == "pending":
@@ -77,22 +90,40 @@ def validate(path: Path, require_complete: bool = False) -> dict[str, Any]:
         evaluated.append(case)
 
     require(covered_corpora == REQUIRED_CORPORA, "goldset must cover every supported corpus")
-    if require_complete:
-        require(not pending, f"{len(pending)} goldset cases still need human evaluation")
-
     dimension_means = {
         dimension: round(sum(case["human_evaluation"]["scores"][dimension] for case in evaluated) / len(evaluated), 2)
         for dimension in sorted(REQUIRED_DIMENSIONS)
     } if evaluated else {}
-    passing_cases = sum(
-        all(score >= passing_score for score in case["human_evaluation"]["scores"].values())
+    failing = [
+        {
+            "id": case["id"],
+            "dimensions": sorted(
+                dimension
+                for dimension, score in case["human_evaluation"]["scores"].items()
+                if score < passing_score
+            ),
+        }
         for case in evaluated
-    )
+        if any(score < passing_score for score in case["human_evaluation"]["scores"].values())
+    ]
+    passing_cases = len(evaluated) - len(failing)
+    if require_complete:
+        require(not pending, f"{len(pending)} goldset cases still need human evaluation")
+    if require_passing:
+        blockers: list[str] = []
+        if pending:
+            blockers.append(f"pending: {', '.join(case['id'] for case in pending)}")
+        if failing:
+            failed = ", ".join(f"{case['id']} ({'/'.join(case['dimensions'])})" for case in failing)
+            blockers.append(f"below threshold: {failed}")
+        require(not blockers, "translation quality gate failed; " + "; ".join(blockers))
     return {
         "total": len(cases),
         "evaluated": len(evaluated),
         "pending": len(pending),
         "passing": passing_cases,
+        "failing": len(failing),
+        "failing_cases": failing,
         "dimension_means": dimension_means,
     }
 
@@ -100,13 +131,22 @@ def validate(path: Path, require_complete: bool = False) -> dict[str, Any]:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Validate and summarize the human translation goldset.")
     parser.add_argument("--path", type=Path, default=DEFAULT_PATH)
-    parser.add_argument("--require-complete", action="store_true")
+    parser.add_argument("--require-complete", action="store_true", help="Fail while any case is pending human evaluation.")
+    parser.add_argument(
+        "--require-passing",
+        action="store_true",
+        help="Release gate: fail while any case is pending or any evaluated dimension is below the rubric threshold.",
+    )
     args = parser.parse_args()
-    summary = validate(args.path, require_complete=args.require_complete)
+    summary = validate(
+        args.path,
+        require_complete=args.require_complete,
+        require_passing=args.require_passing,
+    )
     print(
         "translation goldset ok: "
         f"{summary['evaluated']}/{summary['total']} evaluated, "
-        f"{summary['pending']} pending, {summary['passing']} passing"
+        f"{summary['pending']} pending, {summary['passing']} passing, {summary['failing']} below threshold"
     )
     if summary["dimension_means"]:
         print("dimension means: " + json.dumps(summary["dimension_means"], ensure_ascii=False, sort_keys=True))
