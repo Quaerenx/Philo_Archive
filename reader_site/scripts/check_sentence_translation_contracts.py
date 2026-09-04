@@ -288,9 +288,9 @@ def check_prompt_and_record(target: dict) -> None:
     prompt = prompt_bundle["prompt"]
     require(prompt_bundle["prompt_template_id"] == PROMPT_TEMPLATE_ID, "unexpected sentence prompt template id")
     require(PROMPT_TEMPLATE_ID == "sentence_translation_study_v4", "current sentence translation prompt must be v4")
-    require(CRITIC_PROMPT_TEMPLATE_ID == "sentence_translation_critic_v2", "current sentence critic prompt must be v2")
-    require(REVISION_PROMPT_TEMPLATE_ID == "sentence_translation_revision_v2", "current sentence revision prompt must be v2")
-    require(prompt_bundle["quality_pipeline_version"] == QUALITY_PIPELINE_VERSION == 2, "quality pipeline must be v2")
+    require(CRITIC_PROMPT_TEMPLATE_ID == "sentence_translation_critic_v4", "current sentence critic prompt must be v4")
+    require(REVISION_PROMPT_TEMPLATE_ID == "sentence_translation_revision_v3", "current sentence revision prompt must be v3")
+    require(prompt_bundle["quality_pipeline_version"] == QUALITY_PIPELINE_VERSION == 4, "quality pipeline must be v4")
     require(prompt_bundle["prompt_sha256"] == sha256_text(prompt), "prompt_sha256 mismatch")
     require(target["sentence_text"] in prompt, "prompt missing selected sentence")
     for phrase in [
@@ -669,11 +669,22 @@ def check_strict_critic_output_contract() -> None:
 
 def check_critic_prompt_boundary(target: dict) -> None:
     prompt_bundle = build_sentence_prompt_bundle(target)
+    adjacent_sentinel = "ADJACENT_CONTEXT_MUST_NOT_REACH_CRITIC"
+    prompt_bundle = {
+        **prompt_bundle,
+        "source_context": (
+            f'<CONTEXT_SEGMENT position="previous">{adjacent_sentinel}</CONTEXT_SEGMENT>\n'
+            f'<CONTEXT_SEGMENT position="target"><TARGET_SENTENCE>{target["sentence_text"]}'
+            "</TARGET_SENTENCE></CONTEXT_SEGMENT>"
+        ),
+    }
     critic_bundle = build_critic_prompt_bundle(prompt_bundle, "이 책의 저작권을 얻은 사람")
     require(critic_bundle["response_schema"] == CRITIC_RESPONSE_SCHEMA, "critic response schema drifted")
     require(critic_bundle["generation_parameters"]["temperature"] == 0.0, "critic temperature must be zero")
     require("이 책의 저작권을 얻은 사람" in critic_bundle["prompt"], "critic prompt missing draft translation")
-    require("translator's commentary is intentionally absent" in critic_bundle["prompt"], "critic prompt must declare commentary absent")
+    require(target["sentence_text"] in critic_bundle["prompt"], "critic prompt missing exact target sentence")
+    require(adjacent_sentinel not in critic_bundle["prompt"], "critic prompt must exclude adjacent source context")
+    require("translator's commentary and surrounding context are intentionally absent" in critic_bundle["prompt"], "critic prompt must declare commentary and adjacent context absent")
 
 
 def check_quality_pipeline_contract(target: dict) -> None:
@@ -818,13 +829,42 @@ def check_human_approved_translation_profile_contract() -> None:
             require(False, "non-approved translation profile should be rejected")
 
     kierkegaard_policy = translation_policy_bundle("kierkegaard", "aas", "text", "sks-0003.s001")
-    require(kierkegaard_policy["profile_id"] == "kierkegaard-aas-lscd-v1", "tracked Kierkegaard profile was not selected")
+    require(kierkegaard_policy["profile_id"] == "kierkegaard-aas-lscd-v2", "tracked Kierkegaard profile was not selected")
     require(kierkegaard_policy["terminology"][0]["target"] == "마땅한 망각", "tracked Kierkegaard term drifted")
+    require(
+        any(term["target"] == "마땅한 망각에 내맡겨" for term in kierkegaard_policy["terminology"]),
+        "tracked Kierkegaard handover meaning drifted",
+    )
     require(kierkegaard_policy["sentence_rules"], "tracked Kierkegaard sentence rule was not selected")
     nietzsche_policy = translation_policy_bundle("nietzsche", "GM", "", "p-0004.s001")
-    require(nietzsche_policy["profile_id"] == "nietzsche-gm-lscd-v1", "tracked Nietzsche profile was not selected")
+    require(nietzsche_policy["profile_id"] == "nietzsche-gm-lscd-v2", "tracked Nietzsche profile was not selected")
     require(nietzsche_policy["terminology"][0]["target"] == "우리 인식하는 자들", "tracked Nietzsche term drifted")
     require(nietzsche_policy["sentence_rules"][0]["allowed_translation_fragments"], "tracked approved fragment was not selected")
+    require(
+        any(
+            fragment["text"] == "우리 스스로가 우리 자신에게 미지" and fragment["severity"] == "major"
+            for fragment in nietzsche_policy["sentence_rules"][0]["forbidden_translation_fragments"]
+        ),
+        "tracked Nietzsche duplicated-predicate rule drifted",
+    )
+    wittgenstein_policy = translation_policy_bundle(
+        "wittgenstein",
+        "10.7.10",
+        "source_metadata",
+        "p-0001.s001",
+    )
+    require(
+        wittgenstein_policy["profile_id"] == "wittgenstein-10.7.10-lscd-v2",
+        "tracked Wittgenstein metadata profile was not selected",
+    )
+    require(
+        wittgenstein_policy["terminology"][0]["target"] == "각 노트 페이지가 어느 학기에 해당하는지",
+        "tracked Wittgenstein academic-term meaning drifted",
+    )
+    require(
+        wittgenstein_policy["sentence_rules"][0]["forbidden_translation_fragments"][0]["text"] == "용어",
+        "tracked Wittgenstein forbidden terminology drifted",
+    )
     policy_audit = merge_approved_policy_audit(
         {
             "source_context": "<TARGET_SENTENCE>fortient Glemsel</TARGET_SENTENCE>",

@@ -96,6 +96,80 @@
         "korean_readability"
       ],
       "require_major_issue": false
+    },
+    {
+      "case_id": "nietzsche-gm-duplicated-epistemic-predicate",
+      "corpus_id": "nietzsche",
+      "work_id": "GM",
+      "variant_id": "",
+      "segment_id": "p-0004",
+      "sentence_id": "p-0004.s001",
+      "source_features": {
+        "epistemic_predicate": [
+          "unbekannt"
+        ],
+        "emphatic_restatement": [
+          "wir selbst uns selbst"
+        ]
+      },
+      "known_bad_translation": "우리 인식하는 자들은 우리 스스로가 우리 자신에게 알려져 있지 않으며, 우리 스스로가 우리 자신에게 미지입니다.",
+      "known_bad_fragments": [
+        "우리 스스로가 우리 자신에게 알려져 있지 않으며",
+        "우리 스스로가 우리 자신에게 미지"
+      ],
+      "expected_categories": [
+        "syntax_or_scope",
+        "korean_readability"
+      ],
+      "require_major_issue": true
+    },
+    {
+      "case_id": "wittgenstein-metadata-academic-term-as-word",
+      "corpus_id": "wittgenstein",
+      "work_id": "10.7.10",
+      "variant_id": "source_metadata",
+      "segment_id": "p-0001",
+      "sentence_id": "p-0001.s001",
+      "source_features": {
+        "contextual_term": [
+          "term"
+        ],
+        "filename_metadata": [
+          "filename",
+          "facsimile"
+        ]
+      },
+      "known_bad_translation": "아카이브 노트 F: 각 노트 페이지에서 다루는 용어에 관한 정보는 각 팩시밀리의 파일 이름 일부로서 체계적인 방식으로 제공됩니다.",
+      "known_bad_fragments": [
+        "용어"
+      ],
+      "expected_categories": [
+        "terminology",
+        "ambiguity_resolution",
+        "semantic_substitution"
+      ],
+      "require_major_issue": true
+    },
+    {
+      "case_id": "nietzsche-gm-adjacent-context-leak",
+      "corpus_id": "nietzsche",
+      "work_id": "GM",
+      "variant_id": "",
+      "segment_id": "p-0004",
+      "sentence_id": "p-0004.s001",
+      "source_features": {
+        "target_boundary": [
+          "wir selbst uns selbst:"
+        ]
+      },
+      "known_bad_translation": "우리 인식하는 자들은 우리 자신에게 미지의 존재다, 우리 스스로가 우리 자신에게 그러하다. 이는 타당한 이유가 있다:",
+      "known_bad_fragments": [
+        "이는 타당한 이유가 있다"
+      ],
+      "expected_categories": [
+        "unsupported_addition"
+      ],
+      "require_major_issue": true
     }
   ]
 }

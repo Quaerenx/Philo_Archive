@@ -2,13 +2,13 @@
   "schema_version": 1,
   "profiles": [
     {
-      "profile_id": "kierkegaard-aas-lscd-v1",
+      "profile_id": "kierkegaard-aas-lscd-v2",
       "corpus_id": "kierkegaard",
       "work_id": "aas",
       "variant_id": "text",
       "approval_state": "approved",
       "approved_by": "LSCD",
-      "approved_at": "2026-09-04T14:06:19+09:00",
+      "approved_at": "2026-09-04T17:10:10+09:00",
       "source_case_ids": [
         "kierkegaard-aas-sks-0003-s001"
       ],
@@ -19,9 +19,14 @@
           "note": "이 문맥에서는 의미 중복을 만드는 ‘마땅히 잊혀져야 할 망각’을 피한다."
         },
         {
+          "source": "overgivet til fortient Glemsel",
+          "target": "마땅한 망각에 내맡겨",
+          "note": "LSCD 재평가에 따라 ‘망각 속으로 사라지다’로 의역하지 않고 내맡겨지는 의미를 보존한다."
+        },
+        {
           "source": "beskrevet, opstillet som Mønster",
-          "target": "기록되어 하나의 본보기로 제시",
-          "note": "LSCD 확정 번역의 자연스러운 한국어 구절 대응이다."
+          "target": "묘사되어 하나의 본보기로 제시",
+          "note": "LSCD 재평가에서 확정한 병렬 동작의 자연스러운 한국어 대응이다."
         },
         {
           "source": "»Folkebladet«",
@@ -36,7 +41,8 @@
       ],
       "style_notes": [
         "문맥상 det가 Dit Liv을 가리키는 것이 분명하면, 한국어에서 모호한 ‘그것’ 대신 ‘그 삶’ 또는 ‘당신의 삶’으로 지시 대상을 드러낸다.",
-        "조건법의 의미를 보존하되 덴마크어 어순과 수동 표현을 그대로 복사하지 말고 자연스러운 한국어 절 순서로 옮긴다."
+        "조건법의 의미를 보존하되 덴마크어 어순과 수동 표현을 그대로 복사하지 말고 자연스러운 한국어 절 순서로 옮긴다.",
+        "thi가 이끄는 이유절은 단순 병렬로 약화하지 말고 ‘~때문이다’처럼 앞 문장과의 명시적인 인과관계를 드러낸다."
       ],
       "sentence_rules": [
         {
@@ -47,19 +53,25 @@
               "category": "referent",
               "severity": "major",
               "explanation": "이 문장의 det는 Dit Liv을 가리키므로 ‘그 삶’ 또는 ‘당신의 삶’처럼 지시 대상을 밝혀야 한다."
+            },
+            {
+              "text": "망각 속으로 사라지",
+              "category": "semantic_substitution",
+              "severity": "minor",
+              "explanation": "overgivet는 이 문맥에서 ‘내맡겨지다’의 의미이므로 ‘사라지다’로 의역하지 않는다."
             }
           ]
         }
       ]
     },
     {
-      "profile_id": "nietzsche-gm-lscd-v1",
+      "profile_id": "nietzsche-gm-lscd-v2",
       "corpus_id": "nietzsche",
       "work_id": "GM",
       "variant_id": "",
       "approval_state": "approved",
       "approved_by": "LSCD",
-      "approved_at": "2026-09-04T14:06:19+09:00",
+      "approved_at": "2026-09-04T17:10:10+09:00",
       "source_case_ids": [
         "nietzsche-gm-p-0004-s001"
       ],
@@ -73,7 +85,8 @@
       "style_notes": [
         "자기 자신을 알지 못한다는 문맥의 unbekannt는 단순한 친소 관계보다 인식되지 않음 또는 미지의 의미를 우선 검토한다.",
         "반복과 강조는 보존하되 독일어 어순을 그대로 복사해 한국어 문장 파편을 만들지 않는다.",
-        "wir selbst uns selbst와 같은 재귀 강조는 자기 자신이라는 관계를 보존하면서 자연스러운 한국어 문장으로 재구성한다."
+        "wir selbst uns selbst와 같은 재귀 강조는 자기 자신이라는 관계를 보존하면서 자연스러운 한국어 문장으로 재구성한다.",
+        "wir selbst uns selbst는 앞 명제를 강조하고 재확인하는 구조이므로 unbekannt의 뜻을 별개의 두 서술로 반복하지 않는다."
       ],
       "sentence_rules": [
         {
@@ -93,6 +106,79 @@
               "category": "terminology",
               "severity": "minor",
               "explanation": "이 문맥의 unbekannt는 친소 관계의 ‘낯선’보다 자기 자신에게 알려지지 않은 ‘미지’의 의미로 옮겨야 한다."
+            },
+            {
+              "text": "우리 스스로가 우리 자신에게 알려져 있지 않으며",
+              "category": "syntax_or_scope",
+              "severity": "major",
+              "explanation": "재귀 강조를 별도의 첫 번째 서술로 만들면 원문의 압축된 재확인 구조가 중복된 병렬문으로 바뀐다."
+            },
+            {
+              "text": "우리 스스로가 우리 자신에게 미지",
+              "category": "korean_readability",
+              "severity": "major",
+              "explanation": "앞에서 이미 옮긴 unbekannt의 의미를 다시 서술하지 말고 ‘그러하다’처럼 재확인 관계를 보존한다."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile_id": "wittgenstein-10.7.10-lscd-v2",
+      "corpus_id": "wittgenstein",
+      "work_id": "10.7.10",
+      "variant_id": "source_metadata",
+      "approval_state": "approved",
+      "approved_by": "LSCD",
+      "approved_at": "2026-09-04T17:39:27+09:00",
+      "source_case_ids": [
+        "wittgenstein-10-7-10-p-0001-s001"
+      ],
+      "terminology": [
+        {
+          "source": "the term covered on each page of notes",
+          "target": "각 노트 페이지가 어느 학기에 해당하는지",
+          "note": "이어지는 Lent 1930 파일명 설명과 LSCD 재평가에 따라 term을 대학의 학기로 해석하고 자연스러운 관계 표현을 사용한다."
+        },
+        {
+          "source": "Archival note",
+          "target": "아카이브 주석",
+          "note": "LSCD 확정 번역의 기록 자료 표기이다."
+        },
+        {
+          "source": "facsimile",
+          "target": "팩시밀리",
+          "note": "기록 자료의 복제 이미지를 가리키는 표기를 유지한다."
+        }
+      ],
+      "style_notes": [
+        "파일명에 포함된 정보가 각 노트 페이지의 학기를 체계적으로 표시한다는 관계를 분명하게 옮긴다.",
+        "in a systematic way as part of the filename은 ‘파일명의 일부로 체계적으로 제공된다’처럼 간결하게 옮긴다."
+      ],
+      "sentence_rules": [
+        {
+          "sentence_id": "p-0001.s001",
+          "allowed_translation_fragments": [
+            "학기"
+          ],
+          "forbidden_translation_fragments": [
+            {
+              "text": "용어",
+              "category": "terminology",
+              "severity": "major",
+              "explanation": "추가 문맥과 LSCD 평가에 따르면 이 문장의 term은 일반적인 용어가 아니라 Lent 1930과 같은 대학의 학기를 뜻한다."
+            },
+            {
+              "text": "어느 학기의 것인지",
+              "category": "korean_readability",
+              "severity": "minor",
+              "explanation": "LSCD 평가에 따라 ‘어느 학기에 해당하는지’로 관계를 직접 표현한다."
+            },
+            {
+              "text": "파일명 일부로서 체계적인 방식으로",
+              "category": "korean_readability",
+              "severity": "minor",
+              "explanation": "LSCD 평가에 따라 ‘파일명의 일부로 체계적으로’처럼 번역투를 줄인다."
             }
           ]
         }

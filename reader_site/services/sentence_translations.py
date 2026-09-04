@@ -21,9 +21,9 @@ from services.translation_profiles import render_translation_policy, translation
 SITE = Path(__file__).resolve().parents[1]
 AI_DIR = Path(os.environ.get("PHILO_AI_DIR", str(SITE / "data" / "ai")))
 PROMPT_TEMPLATE_ID = "sentence_translation_study_v4"
-CRITIC_PROMPT_TEMPLATE_ID = "sentence_translation_critic_v2"
-REVISION_PROMPT_TEMPLATE_ID = "sentence_translation_revision_v2"
-QUALITY_PIPELINE_VERSION = 2
+CRITIC_PROMPT_TEMPLATE_ID = "sentence_translation_critic_v4"
+REVISION_PROMPT_TEMPLATE_ID = "sentence_translation_revision_v3"
+QUALITY_PIPELINE_VERSION = 4
 MAX_REVISION_COUNT = 1
 MAX_HUMAN_TRANSLATION_CHARS = 12_000
 MODEL_NAME = os.environ.get("PHILO_GEMMA_MODEL_NAME", "gemma-4-26B-A4B-it-Q4_K_M")
@@ -389,12 +389,20 @@ def render_stage_prompt(template_id: str, values: dict[str, str]) -> str:
     return str(template["template"]).format(**values)
 
 
+def target_sentence_from_context(source_context: str) -> str:
+    matches = re.findall(r"<TARGET_SENTENCE>(.*?)</TARGET_SENTENCE>", source_context, flags=re.DOTALL)
+    require(len(matches) == 1, "source context must contain exactly one target sentence")
+    target_sentence = matches[0].strip()
+    require(target_sentence, "target sentence is empty")
+    return target_sentence
+
+
 def build_critic_prompt_bundle(prompt_bundle: dict[str, Any], draft_translation: str) -> dict[str, Any]:
     prompt = render_stage_prompt(
         CRITIC_PROMPT_TEMPLATE_ID,
         {
             "translation_policy": str(prompt_bundle["translation_policy_text"]),
-            "source_context": str(prompt_bundle["source_context"]),
+            "target_sentence": target_sentence_from_context(str(prompt_bundle["source_context"])),
             "draft_translation": draft_translation,
         },
     )

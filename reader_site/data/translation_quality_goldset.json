@@ -46,19 +46,19 @@
       "segment_id": "sks-0003",
       "sentence_id": "sks-0003.s001",
       "source_text": "Dit Liv vilde da ei være blevet overgivet til fortient Glemsel, thi din Virksomhed vilde have gjort det uforglemmeligt, og ei blot dette, men det vilde maaskee være blevet beskrevet, opstillet som Mønster, maaskee i »Folkebladet« eller i »Naturen, Mennesket og Borgeren;« det vilde være blevet sagt om Dig:",
-      "candidate_translation": "그렇다면 당신의 삶은 마땅히 잊혀져야 할 망각에 넘겨지지 않았을 것입니다. 왜냐하면 당신의 활동이 그것을 잊을 수 없게 만들었을 것이기 때문입니다. 그리고 단지 이것뿐만 아니라, 아마도 그것은 묘사되어, 본보기로서 제시되었을 것입니다. 아마도 «Folkebladet»나 «Naturen, Mennesket og Borgeren»에서 말입니다. 당신에 대해 다음과 같이 말해졌을 것입니다:",
-      "reference_translation": "그렇다면 당신의 삶은 마땅한 망각 속에 내맡겨지지 않았을 것입니다. 당신의 활동이 그 삶을 잊을 수 없는 것으로 만들었을 것이기 때문입니다. 그뿐만 아니라, 어쩌면 당신의 삶은 기록되어 하나의 본보기로 제시되었을지도 모릅니다. 아마도 『Folkebladet』이나 『Naturen, Mennesket og Borgeren』에서 말입니다. 그리고 당신에 관해서는 다음과 같이 말해졌을 것입니다:",
+      "candidate_translation": "그렇다면 당신의 삶은 마땅한 망각 속으로 사라지지 않았을 것이며, 당신의 활동은 그 삶을 잊을 수 없게 만들었을 것이고, 단지 그뿐만 아니라 아마도 『Folkebladet』나 『Naturen, Mennesket og Borgeren』에서 묘사되고 하나의 본보기로 제시되었을지도 모릅니다; 당신에 대해 다음과 같이 말해졌을 것입니다:",
+      "reference_translation": "그렇다면 당신의 삶은 마땅한 망각에 내맡겨지지 않았을 것입니다. 당신의 활동이 그 삶을 잊을 수 없는 것으로 만들었을 것이기 때문입니다. 그뿐만 아니라, 그 삶은 아마도 『Folkebladet』나 『Naturen, Mennesket og Borgeren』에서 묘사되어 하나의 본보기로 제시되었을지도 모릅니다. 당신에 대해서는 다음과 같이 말해졌을 것입니다:",
       "human_evaluation": {
         "status": "evaluated",
         "evaluator": "LSCD",
-        "evaluated_at": "2026-09-04T14:06:19+09:00",
+        "evaluated_at": "2026-09-04T17:10:10+09:00",
         "scores": {
           "fidelity": 4,
           "completeness": 5,
           "terminology": 4,
-          "korean_readability": 3
+          "korean_readability": 4
         },
-        "notes": "전체 의미와 조건법의 구조는 대체로 충실하게 보존되어 있다. 다만 ‘fortient Glemsel’을 ‘마땅히 잊혀져야 할 망각’으로 옮긴 것은 의미가 중복되고 한국어로 부자연스럽다. 또한 대명사 ‘det’을 반복해서 ‘그것’으로 번역해 무엇을 가리키는지 불투명해졌으며, ‘묘사되어, 본보기로서 제시되었을 것입니다’ 역시 다소 번역투이다."
+        "notes": "현재 후보는 원문의 핵심 내용을 모두 포함하고 있으나, ‘thi’가 나타내는 명시적인 인과관계를 ‘~것이며, ~것이고’라는 병렬 구조로 옮겨 논리적 관계가 약해졌다. 또한 ‘overgivet til fortient Glemsel’의 ‘망각에 내맡겨지다’라는 의미가 ‘망각 속으로 사라지다’로 다소 의역되었고, ‘그 삶을 잊을 수 없게 만들다’도 한국어로 다소 어색하다. 전체 의미는 잘 보존되어 있으므로 대폭 수정이 필요한 수준은 아니다."
       }
     },
     {
@@ -69,19 +69,19 @@
       "segment_id": "p-0004",
       "sentence_id": "p-0004.s001",
       "source_text": "Wir sind uns unbekannt, wir Erkennenden, wir selbst uns selbst:",
-      "candidate_translation": "우리 인식하는 자들은 우리 자신에게 낯선 존재다, 우리 자신에게 우리 스스로가:",
-      "reference_translation": "우리 인식하는 자들은 우리 자신에게 미지의 존재다. 우리 스스로가 우리 자신에게 그러하다:",
+      "candidate_translation": "우리 인식하는 자들은 우리 스스로가 우리 자신에게 알려져 있지 않으며, 우리 스스로가 우리 자신에게 미지입니다.",
+      "reference_translation": "우리 인식하는 자들은 우리 자신에게 미지의 존재다, 우리 스스로가 우리 자신에게 그러하다:",
       "human_evaluation": {
         "status": "evaluated",
         "evaluator": "LSCD",
-        "evaluated_at": "2026-09-04T14:06:19+09:00",
+        "evaluated_at": "2026-09-04T17:10:10+09:00",
         "scores": {
-          "fidelity": 4,
+          "fidelity": 3,
           "completeness": 5,
           "terminology": 4,
-          "korean_readability": 2
+          "korean_readability": 3
         },
-        "notes": "‘wir Erkennenden’을 ‘우리 인식하는 자들’로 옮긴 것은 가능하며, 자신을 알지 못한다는 핵심 의미도 전달된다. 다만 ‘unbekannt’는 여기서 ‘낯선 존재’보다는 ‘알려져 있지 않은, 미지의’에 가깝다. 특히 ‘우리 자신에게 우리 스스로가’는 독일어 어순을 지나치게 그대로 옮겨 한국어 문장으로 매우 부자연스럽다."
+        "notes": "‘wir Erkennenden’을 ‘우리 인식하는 자들’로, ‘unbekannt’를 ‘알려져 있지 않다/미지이다’로 이해한 점은 적절하다. 그러나 원문의 ‘wir selbst uns selbst’는 앞의 명제를 강조하고 재확인하는 구조인데, 현재 후보는 ‘알려져 있지 않으며’와 ‘미지입니다’를 별개의 두 서술로 병렬화하여 동일한 의미를 불필요하게 중복한다. 그 결과 니체 특유의 압축적이고 강조적인 문장 구조가 흐려지고 한국어도 장황해졌다."
       }
     },
     {
@@ -92,21 +92,26 @@
       "segment_id": "p-0001",
       "sentence_id": "p-0001.s001",
       "source_text": "Archival note F Information about the term covered on each page of notes is provided in a systematic way as part of the filename for each facsimile.",
-      "candidate_translation": "아카이브 노트 F: 각 노트 페이지에서 다루는 용어에 관한 정보는 각 파시밀리(facsimile)의 파일 이름 일부로서 체계적인 방식으로 제공됩니다.",
-      "reference_translation": "",
+      "candidate_translation": "아카이브 주석 F: 각 노트 페이지가 어느 학기의 것인지에 관한 정보는 각 팩시밀리의 파일명 일부로서 체계적인 방식으로 제공된다.",
+      "reference_translation": "아카이브 주석 F: 각 노트 페이지가 어느 학기에 해당하는지에 관한 정보는 각 팩시밀리 파일명의 일부로 체계적으로 제공된다.",
       "adjudication_context": {
         "status": "source_context_resolved",
         "resolved_sense": "academic term (학기)",
         "evidence": "바로 다음 문장들이 파일명 Lent30a를 ‘the first set of summaries of the Lent 1930 notes’라고 풀이하므로, 여기서 term은 일반적인 ‘용어’가 아니라 대학의 학기를 뜻한다.",
-        "proposed_reference_translation": "기록 주석 F. 각 노트 페이지가 다루는 학기에 관한 정보는 각 팩시밀리 파일명의 일부에 체계적으로 표시되어 있다.",
+        "proposed_reference_translation": "아카이브 주석 F: 각 노트 페이지가 어느 학기에 해당하는지에 관한 정보는 각 팩시밀리 파일명의 일부로 체계적으로 제공된다.",
         "source_url": "http://www.wittgensteinsource.org/agora_show_book_metadata/22"
       },
       "human_evaluation": {
-        "status": "pending",
-        "evaluator": "",
-        "evaluated_at": "",
-        "scores": {},
-        "notes": "LSCD 보류 사유: 문장 구조 자체는 번역 가능하지만, 이 기록 자료에서 ‘term’이 일반적인 ‘용어’를 뜻하는지, 특정 기간·학기·시기 등의 전문적 의미를 뜻하는지 주어진 문맥만으로 확정하기 어렵다. 이 의미가 번역의 핵심 용어에 직접 영향을 주므로 추측하지 않고 보류한다."
+        "status": "evaluated",
+        "evaluator": "LSCD",
+        "evaluated_at": "2026-09-04T17:39:27+09:00",
+        "scores": {
+          "fidelity": 5,
+          "completeness": 5,
+          "terminology": 5,
+          "korean_readability": 4
+        },
+        "notes": "추가 문맥에 따라 term을 대학의 ‘학기’로 해석한 것은 정확하며, 원문의 각 의미 요소도 빠짐없이 보존되어 있다. 다만 후보의 ‘어느 학기의 것인지’와 ‘파일명 일부로서 체계적인 방식으로 제공된다’는 표현은 의미상 문제는 없지만 다소 번역투이므로, ‘어느 학기에 해당하는지’, ‘파일명의 일부로 체계적으로 제공된다’로 다듬으면 더 자연스럽다."
       }
     }
   ]
