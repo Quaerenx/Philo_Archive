@@ -290,7 +290,7 @@ def check_prompt_and_record(target: dict) -> None:
     require(PROMPT_TEMPLATE_ID == "sentence_translation_study_v4", "current sentence translation prompt must be v4")
     require(CRITIC_PROMPT_TEMPLATE_ID == "sentence_translation_critic_v4", "current sentence critic prompt must be v4")
     require(REVISION_PROMPT_TEMPLATE_ID == "sentence_translation_revision_v3", "current sentence revision prompt must be v3")
-    require(prompt_bundle["quality_pipeline_version"] == QUALITY_PIPELINE_VERSION == 4, "quality pipeline must be v4")
+    require(prompt_bundle["quality_pipeline_version"] == QUALITY_PIPELINE_VERSION == 6, "quality pipeline must be v6")
     require(prompt_bundle["prompt_sha256"] == sha256_text(prompt), "prompt_sha256 mismatch")
     require(target["sentence_text"] in prompt, "prompt missing selected sentence")
     for phrase in [
@@ -837,9 +837,18 @@ def check_human_approved_translation_profile_contract() -> None:
     )
     require(kierkegaard_policy["sentence_rules"], "tracked Kierkegaard sentence rule was not selected")
     nietzsche_policy = translation_policy_bundle("nietzsche", "GM", "", "p-0004.s001")
-    require(nietzsche_policy["profile_id"] == "nietzsche-gm-lscd-v2", "tracked Nietzsche profile was not selected")
+    require(nietzsche_policy["profile_id"] == "nietzsche-gm-lscd-v5", "tracked Nietzsche profile was not selected")
     require(nietzsche_policy["terminology"][0]["target"] == "우리 인식하는 자들", "tracked Nietzsche term drifted")
+    require(
+        any(term["source"] == "unbekannt" and term["target"] == "미지" for term in nietzsche_policy["terminology"]),
+        "tracked Nietzsche epistemic predicate drifted",
+    )
     require(nietzsche_policy["sentence_rules"][0]["allowed_translation_fragments"], "tracked approved fragment was not selected")
+    require(
+        nietzsche_policy["sentence_rules"][0]["required_translation_fragments"][0]["alternatives"]
+        == ["우리 인식하는 자들은 우리 자신에게 미지"],
+        "tracked Nietzsche required subject-predicate relation drifted",
+    )
     require(
         any(
             fragment["text"] == "우리 스스로가 우리 자신에게 미지" and fragment["severity"] == "major"
@@ -901,6 +910,54 @@ def check_human_approved_translation_profile_contract() -> None:
     )
     require(sentence_policy_audit["verdict"] == "revise", "sentence-specific approved rule must not pass")
     require(sentence_policy_audit["issues"][0]["severity"] == "major", "sentence rule severity drifted")
+    required_fragment_audit = merge_approved_policy_audit(
+        {
+            "source_context": "<TARGET_SENTENCE>Wir sind uns unbekannt.</TARGET_SENTENCE>",
+            "approved_terminology": [],
+            "approved_sentence_rules": [
+                {
+                    "sentence_id": "p-0004.s001",
+                    "required_translation_fragments": [
+                        {
+                            "source_span": "unbekannt",
+                            "alternatives": ["미지"],
+                            "category": "omission",
+                            "severity": "major",
+                            "explanation": "핵심 술어를 보존해야 한다.",
+                        }
+                    ],
+                    "forbidden_translation_fragments": [],
+                }
+            ],
+        },
+        "우리는 우리 자신에게 그러하다.",
+        {"verdict": "pass", "issues": []},
+    )
+    require(required_fragment_audit["verdict"] == "revise", "missing required meaning must not pass")
+    require(required_fragment_audit["issues"][0]["category"] == "omission", "required meaning category drifted")
+    require(required_fragment_audit["issues"][0]["severity"] == "major", "required meaning severity drifted")
+    boundary_audit = merge_approved_policy_audit(
+        {
+            "source_context": "<TARGET_SENTENCE>wir selbst uns selbst:</TARGET_SENTENCE>",
+            "approved_terminology": [],
+            "approved_sentence_rules": [],
+        },
+        "우리 스스로가 우리 자신에게 그러하다.",
+        {"verdict": "pass", "issues": []},
+    )
+    require(boundary_audit["verdict"] == "revise", "dropped continuation colon must not pass")
+    require(boundary_audit["issues"][0]["category"] == "syntax_or_scope", "boundary issue category drifted")
+    require(boundary_audit["issues"][0]["severity"] == "major", "boundary issue severity drifted")
+    preserved_boundary_audit = merge_approved_policy_audit(
+        {
+            "source_context": "<TARGET_SENTENCE>wir selbst uns selbst:</TARGET_SENTENCE>",
+            "approved_terminology": [],
+            "approved_sentence_rules": [],
+        },
+        "우리 스스로가 우리 자신에게 그러하다:",
+        {"verdict": "pass", "issues": []},
+    )
+    require(preserved_boundary_audit == {"verdict": "pass", "issues": []}, "preserved continuation colon must pass")
     approved_fragment_audit = merge_approved_policy_audit(
         {
             "source_context": "<TARGET_SENTENCE>wir selbst uns selbst</TARGET_SENTENCE>",
@@ -908,7 +965,7 @@ def check_human_approved_translation_profile_contract() -> None:
             "approved_sentence_rules": [
                 {
                     "sentence_id": "p-0004.s001",
-                    "allowed_translation_fragments": ["우리 스스로가 우리 자신에게"],
+                    "allowed_translation_fragments": ["우리 스스로가 우리 자신에게 그러하다"],
                     "forbidden_translation_fragments": [],
                 }
             ],
@@ -931,6 +988,36 @@ def check_human_approved_translation_profile_contract() -> None:
         approved_fragment_audit == {"verdict": "pass", "issues": []},
         "human-approved exact fragment should suppress a style false positive",
     )
+    approved_mapping_audit = merge_approved_policy_audit(
+        {
+            "source_context": "<TARGET_SENTENCE>wir selbst uns selbst</TARGET_SENTENCE>",
+            "approved_terminology": [],
+            "approved_sentence_rules": [
+                {
+                    "sentence_id": "p-0004.s001",
+                    "allowed_translation_fragments": ["우리 스스로가 우리 자신에게 그러하다"],
+                    "forbidden_translation_fragments": [],
+                }
+            ],
+        },
+        "우리 스스로가 우리 자신에게 그러하다.",
+        {
+            "verdict": "revise",
+            "issues": [
+                {
+                    "source_span": "wir selbst uns selbst",
+                    "translation_span": "우리 스스로가 우리 자신에게 그러하다",
+                    "category": "unsupported_addition",
+                    "severity": "minor",
+                    "explanation": "승인된 대응을 근거 없는 추가로 본 오탐",
+                }
+            ],
+        },
+    )
+    require(
+        approved_mapping_audit == {"verdict": "pass", "issues": []},
+        "exact human-approved mapping should suppress an unsupported-addition false positive",
+    )
     semantic_issue = {
         "source_span": "wir selbst uns selbst",
         "translation_span": "우리 스스로가 우리 자신에게",
@@ -945,7 +1032,7 @@ def check_human_approved_translation_profile_contract() -> None:
             "approved_sentence_rules": [
                 {
                     "sentence_id": "p-0004.s001",
-                    "allowed_translation_fragments": ["우리 스스로가 우리 자신에게"],
+                    "allowed_translation_fragments": ["우리 스스로가 우리 자신에게 그러하다"],
                     "forbidden_translation_fragments": [],
                 }
             ],

@@ -23,7 +23,7 @@ AI_DIR = Path(os.environ.get("PHILO_AI_DIR", str(SITE / "data" / "ai")))
 PROMPT_TEMPLATE_ID = "sentence_translation_study_v4"
 CRITIC_PROMPT_TEMPLATE_ID = "sentence_translation_critic_v4"
 REVISION_PROMPT_TEMPLATE_ID = "sentence_translation_revision_v3"
-QUALITY_PIPELINE_VERSION = 4
+QUALITY_PIPELINE_VERSION = 6
 MAX_REVISION_COUNT = 1
 MAX_HUMAN_TRANSLATION_CHARS = 12_000
 MODEL_NAME = os.environ.get("PHILO_GEMMA_MODEL_NAME", "gemma-4-26B-A4B-it-Q4_K_M")
@@ -541,6 +541,25 @@ def approved_terminology_issues(
     return issues
 
 
+def target_boundary_issues(
+    prompt_bundle: dict[str, Any],
+    draft_translation: str,
+) -> list[dict[str, str]]:
+    target_source = target_sentence_from_context(str(prompt_bundle.get("source_context", ""))).rstrip()
+    normalized_translation = draft_translation.rstrip()
+    if target_source.endswith(":") and not normalized_translation.endswith(":"):
+        return [
+            {
+                "source_span": ":",
+                "translation_span": normalized_translation[-1:] if normalized_translation else "",
+                "category": "syntax_or_scope",
+                "severity": "major",
+                "explanation": "원문의 문장 끝 콜론은 뒤 내용으로 이어지는 열린 구조이므로 번역에서도 콜론으로 보존해야 합니다.",
+            }
+        ]
+    return []
+
+
 def approved_sentence_rule_issues(
     prompt_bundle: dict[str, Any],
     draft_translation: str,
@@ -550,6 +569,25 @@ def approved_sentence_rule_issues(
     for rule in prompt_bundle.get("approved_sentence_rules", []):
         if not isinstance(rule, dict):
             continue
+        for requirement in rule.get("required_translation_fragments", []):
+            if not isinstance(requirement, dict):
+                continue
+            alternatives = [
+                re.sub(r"\s+", " ", str(fragment)).strip()
+                for fragment in requirement.get("alternatives", [])
+            ]
+            alternatives = [fragment for fragment in alternatives if fragment]
+            if alternatives and any(fragment in normalized_translation for fragment in alternatives):
+                continue
+            issues.append(
+                {
+                    "source_span": str(requirement["source_span"]),
+                    "translation_span": "",
+                    "category": str(requirement["category"]),
+                    "severity": str(requirement["severity"]),
+                    "explanation": str(requirement["explanation"]),
+                }
+            )
         for fragment in rule.get("forbidden_translation_fragments", []):
             if not isinstance(fragment, dict):
                 continue
@@ -587,19 +625,38 @@ def merge_approved_policy_audit(
 ) -> dict[str, Any]:
     allowed_fragments = approved_sentence_rule_fragments(prompt_bundle)
     form_only_categories = {"korean_readability", "register", "syntax_or_scope", "terminology"}
+    normalized_translation = re.sub(r"\s+", " ", draft_translation).strip()
+
+    def is_approved_false_positive(issue: dict[str, str]) -> bool:
+        issue_span = re.sub(r"\s+", " ", str(issue["translation_span"])).strip()
+        if not issue_span:
+            return False
+        for fragment in allowed_fragments:
+            if (
+                issue_span == fragment
+                and fragment in normalized_translation
+                and issue["category"] in form_only_categories | {"unsupported_addition"}
+            ):
+                return True
+            if (
+                issue["category"] in form_only_categories
+                and issue_span in fragment
+                and fragment in normalized_translation
+            ):
+                return True
+        return False
+
     issues = [
         issue
         for issue in critic["issues"]
-        if not (
-            issue["category"] in form_only_categories
-            and re.sub(r"\s+", " ", str(issue["translation_span"])).strip() in allowed_fragments
-        )
+        if not is_approved_false_positive(issue)
     ]
     existing = {
         (issue["category"], issue["source_span"], issue["translation_span"])
         for issue in issues
     }
     policy_issues = [
+        *target_boundary_issues(prompt_bundle, draft_translation),
         *approved_terminology_issues(prompt_bundle, draft_translation),
         *approved_sentence_rule_issues(prompt_bundle, draft_translation),
     ]

@@ -98,6 +98,7 @@ def read_translation_profiles(path: Path = TRANSLATION_PROFILE_FILE) -> list[dic
             seen_sentence_ids.add(sentence_id)
             forbidden = rule.get("forbidden_translation_fragments")
             allowed = rule.get("allowed_translation_fragments", [])
+            required_fragments = rule.get("required_translation_fragments", [])
             require(
                 isinstance(forbidden, list) and forbidden,
                 f"translation profile {index} sentence rule {rule_index} needs forbidden_translation_fragments",
@@ -106,6 +107,28 @@ def read_translation_profiles(path: Path = TRANSLATION_PROFILE_FILE) -> list[dic
                 isinstance(allowed, list) and all(isinstance(item, str) and clean_text(item) for item in allowed),
                 f"translation profile {index} sentence rule {rule_index} has invalid allowed_translation_fragments",
             )
+            require(
+                isinstance(required_fragments, list),
+                f"translation profile {index} sentence rule {rule_index} has invalid required_translation_fragments",
+            )
+            for fragment_index, fragment in enumerate(required_fragments):
+                fragment_label = f"translation profile {index} sentence rule {rule_index} required fragment {fragment_index}"
+                require(isinstance(fragment, dict), f"{fragment_label} must be an object")
+                for field in ("source_span", "category", "severity", "explanation"):
+                    require(clean_text(fragment.get(field)), f"{fragment_label} missing {field}")
+                alternatives = fragment.get("alternatives")
+                require(
+                    isinstance(alternatives, list)
+                    and alternatives
+                    and all(isinstance(item, str) and clean_text(item) for item in alternatives),
+                    f"{fragment_label} has invalid alternatives",
+                )
+                require(
+                    len({clean_text(item) for item in alternatives}) == len(alternatives),
+                    f"{fragment_label} has duplicate alternatives",
+                )
+                require(fragment["category"] in POLICY_ISSUE_CATEGORIES, f"{fragment_label} has invalid category")
+                require(fragment["severity"] in {"minor", "major"}, f"{fragment_label} has invalid severity")
             for fragment_index, fragment in enumerate(forbidden):
                 fragment_label = f"translation profile {index} sentence rule {rule_index} fragment {fragment_index}"
                 require(isinstance(fragment, dict), f"{fragment_label} must be an object")
@@ -170,6 +193,14 @@ def render_translation_policy(policy: dict[str, Any]) -> str:
                 lines.append(
                     "- These exact Korean fragments are human-approved and must not be flagged merely for their form: "
                     + ", ".join(f"‘{clean_text(fragment)}’" for fragment in allowed)
+                )
+            for requirement in rule.get("required_translation_fragments", []):
+                alternatives = ", ".join(
+                    f"‘{clean_text(fragment)}’" for fragment in requirement.get("alternatives", [])
+                )
+                lines.append(
+                    f"- Preserve source meaning ‘{clean_text(requirement['source_span'])}’ by including at least one of "
+                    f"these Korean fragments: {alternatives}. {clean_text(requirement['explanation'])}"
                 )
             for fragment in rule.get("forbidden_translation_fragments", []):
                 lines.append(
