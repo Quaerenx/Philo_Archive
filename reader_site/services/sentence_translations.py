@@ -15,15 +15,24 @@ from services.interpretation_prompts import load_prompt_template
 from services.jsonl_storage import atomic_write_jsonl, jsonl_snapshot_key, locked_jsonl
 from services.sentence_targets import MAX_CONTEXT_CHARS, marked_target_segment, sentence_target_bundle
 from services.source_targets import sha256_text
+from services.translation_commentary import (
+    COMMENTARY_SYSTEM_PROMPT,
+    build_commentary_prompt_bundle,
+    commentary_audit_contract,
+    commentary_audit_record,
+    normalized_commentary_output,
+    validate_commentary_audit_record,
+)
 from services.translation_profiles import render_translation_policy, translation_policy_bundle
 
 
 SITE = Path(__file__).resolve().parents[1]
 AI_DIR = Path(os.environ.get("PHILO_AI_DIR", str(SITE / "data" / "ai")))
-PROMPT_TEMPLATE_ID = "sentence_translation_study_v4"
-CRITIC_PROMPT_TEMPLATE_ID = "sentence_translation_critic_v2"
-REVISION_PROMPT_TEMPLATE_ID = "sentence_translation_revision_v2"
-QUALITY_PIPELINE_VERSION = 2
+PROMPT_TEMPLATE_ID = "sentence_translation_study_v4_context_notes_v1"
+CRITIC_PROMPT_TEMPLATE_ID = "sentence_translation_critic_v2_context_v1"
+REVISION_PROMPT_TEMPLATE_ID = "sentence_translation_revision_v2_context_notes_v1"
+# This is the public-main lineage; it does not identify unprovided local v9/v10 code.
+QUALITY_PIPELINE_VERSION = 3
 MAX_REVISION_COUNT = 1
 MAX_HUMAN_TRANSLATION_CHARS = 12_000
 MODEL_NAME = os.environ.get("PHILO_GEMMA_MODEL_NAME", "gemma-4-26B-A4B-it-Q4_K_M")
@@ -252,6 +261,7 @@ def build_sentence_prompt_bundle(target: dict[str, Any]) -> dict[str, Any]:
     }
     request_contract = {
         "prompt_sha256": sha256_text(prompt),
+        "system_prompt_sha256": sha256_text(TRANSLATOR_SYSTEM_PROMPT),
         "model_name": MODEL_NAME,
         "model_runtime": MODEL_RUNTIME,
         "model_file_sha256": MODEL_FILE_SHA256,
@@ -266,12 +276,15 @@ def build_sentence_prompt_bundle(target: dict[str, Any]) -> dict[str, Any]:
         "translator_request_contract_sha256": request_contract_sha256,
         "critic_prompt_template_id": CRITIC_PROMPT_TEMPLATE_ID,
         "critic_prompt_template_sha256": sha256_text(str(critic_template["template"])),
+        "critic_system_prompt_sha256": sha256_text(CRITIC_SYSTEM_PROMPT),
         "critic_generation_parameters": CRITIC_GENERATION_PARAMETERS,
         "critic_response_schema": CRITIC_RESPONSE_SCHEMA,
         "revision_prompt_template_id": REVISION_PROMPT_TEMPLATE_ID,
         "revision_prompt_template_sha256": sha256_text(str(revision_template["template"])),
+        "revision_system_prompt_sha256": sha256_text(REVISION_SYSTEM_PROMPT),
         "revision_generation_parameters": generation_parameters,
         "max_revision_count": MAX_REVISION_COUNT,
+        "commentary_audit_contract": commentary_audit_contract(),
     }
     pipeline_contract_sha256 = sha256_text(
         json.dumps(pipeline_contract, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
@@ -298,6 +311,7 @@ def build_sentence_prompt_bundle(target: dict[str, Any]) -> dict[str, Any]:
         "revision_prompt_template_id": REVISION_PROMPT_TEMPLATE_ID,
         "revision_prompt_template_sha256": pipeline_contract["revision_prompt_template_sha256"],
         "max_revision_count": MAX_REVISION_COUNT,
+        "commentary_audit_contract": pipeline_contract["commentary_audit_contract"],
         "translation_policy_text": translation_policy_text,
         "source_context": source_context,
         "target_url": target["target_url"],
@@ -643,7 +657,7 @@ def pipeline_output(
     }
 
 
-def run_translation_pipeline(prompt_bundle: dict[str, Any]) -> dict[str, Any]:
+def _run_translation_fidelity_pipeline(prompt_bundle: dict[str, Any]) -> dict[str, Any]:
     draft = call_llama_server(prompt_bundle)
     initial_bundle = build_critic_prompt_bundle(prompt_bundle, draft["translation"])
     try:
@@ -735,6 +749,65 @@ def run_translation_pipeline(prompt_bundle: dict[str, Any]) -> dict[str, Any]:
     )
 
 
+def call_commentary_audit_server(
+    audit_bundle: dict[str, Any], *, source_context: str, commentary: str,
+) -> dict[str, Any]:
+    content = call_llama_json(
+        str(audit_bundle["prompt"]),
+        dict(audit_bundle["generation_parameters"]),
+        dict(audit_bundle["response_schema"]),
+        COMMENTARY_SYSTEM_PROMPT,
+    )
+    try:
+        return normalized_commentary_output(content, source_context=source_context, commentary=commentary)
+    except (ValueError, TypeError) as exc:
+        raise TranslationModelResponseError("번역 노트 검사 응답 형식이 올바르지 않습니다.") from exc
+
+
+def run_translation_pipeline(prompt_bundle: dict[str, Any]) -> dict[str, Any]:
+    # Keep the source-to-translation critic blind to commentary, then audit only
+    # the notes that will actually be stored. There is no notes revision loop.
+    output = _run_translation_fidelity_pipeline(prompt_bundle)
+    output["translation_quality_state"] = output["quality_state"]
+    translation = output["translation"]
+    commentary = output["commentary"]
+    audit_identity = {
+        "source_context_sha256": sha256_text(str(prompt_bundle["source_context"])),
+        "translation_policy_sha256": str(prompt_bundle["translation_policy_sha256"]),
+    }
+    if not commentary.strip():
+        audit = commentary_audit_record(translation, commentary, status="skipped_empty", **audit_identity)
+    elif output["quality_state"] == "critic_error":
+        audit = commentary_audit_record(
+            translation, commentary, status="not_run", **audit_identity,
+            error="번역 품질 검사가 완료되지 않아 번역 노트 검사를 실행하지 못했습니다.",
+        )
+    else:
+        audit_bundle = build_commentary_prompt_bundle(prompt_bundle, translation, commentary)
+        try:
+            result = call_commentary_audit_server(
+                audit_bundle, source_context=str(prompt_bundle["source_context"]), commentary=commentary,
+            )
+            audit = commentary_audit_record(
+                translation, commentary, **audit_identity,
+                status="pass" if result["verdict"] == "pass" else "needs_review",
+                prompt_sha256=audit_bundle["prompt_sha256"], issues=result["issues"],
+            )
+            if result["issues"]:
+                output["quality_state"] = "needs_human_review"
+                for issue in result["issues"]:
+                    output = with_pipeline_caution(output, "번역 노트 확인: " + issue["explanation"])
+        except (ConnectionError, TranslationModelResponseError) as exc:
+            audit = commentary_audit_record(
+                translation, commentary, status="error", **audit_identity,
+                prompt_sha256=audit_bundle["prompt_sha256"], error=str(exc),
+            )
+            output["quality_state"] = "needs_human_review"
+            output = with_pipeline_caution(output, "번역 노트 검사를 완료하지 못했습니다. 인간 검토가 필요합니다.")
+    output["commentary_audit"] = audit
+    return output
+
+
 @lru_cache(maxsize=16)
 def _read_translation_snapshot(
     path_value: str,
@@ -805,6 +878,16 @@ def find_cached_record(path: Path, target: dict[str, Any], prompt_bundle: dict[s
             continue
         if record.get("pipeline_contract_sha256") != prompt_bundle["pipeline_contract_sha256"]:
             continue
+        if record.get("schema_version", 1) >= 6:
+            try:
+                validate_commentary_audit_record(
+                    record["commentary_audit"], translation=record["translation"], commentary=record["commentary"],
+                    translation_quality_state=record["translation_quality_state"], quality_state=record["quality_state"],
+                    source_context_sha256=record["source_context_sha256"],
+                    translation_policy_sha256=record["translation_policy_sha256"],
+                )
+            except (ValueError, KeyError, TypeError):
+                continue
         if record.get("review_state") == "rejected":
             continue
         if record.get("review_state") != "reviewed" and record.get("quality_state") not in {
@@ -827,7 +910,7 @@ def build_record(target: dict[str, Any], prompt_bundle: dict[str, Any], output: 
     now = utc_now()
     prompt_target = prompt_bundle["target"]
     return {
-        "schema_version": 5,
+        "schema_version": 6,
         "record_type": "ai_sentence_translation",
         "id": str(uuid.uuid4()),
         "created_at": now,
@@ -872,6 +955,8 @@ def build_record(target: dict[str, Any], prompt_bundle: dict[str, Any], output: 
         "commentary": output["commentary"],
         "cautions": [str(item) for item in output["cautions"]],
         "quality_state": output["quality_state"],
+        "translation_quality_state": output["translation_quality_state"],
+        "commentary_audit": output["commentary_audit"],
         "revision_count": output["revision_count"],
         "critic": output["critic"],
         "critic_prompt_sha256": output["critic_prompt_sha256"],
@@ -1036,10 +1121,13 @@ def sentence_translations_summary_from_query(query: dict[str, list[str]]) -> dic
     ]
     if work_id:
         records = [record for record in records if record.get("work_id") == work_id]
+    if "variant_id" in query:
+        variant_id = str((query.get("variant_id") or [""])[0]).strip()
+        records = [record for record in records if record.get("variant_id", "") == variant_id]
     review_counts = {"generated": 0, "reviewed": 0, "rejected": 0}
     latest_generated_at = ""
     latest_reviewed_at = ""
-    sentence_states: dict[str, dict[str, Any]] = {}
+    sentence_states: dict[tuple[str, str, str, str, str], dict[str, Any]] = {}
     for record in records:
         review_state = str(record.get("review_state") or "generated").strip().lower()
         if review_state not in review_counts:
@@ -1054,11 +1142,20 @@ def sentence_translations_summary_from_query(query: dict[str, list[str]]) -> dic
             latest_reviewed_at = reviewed_at
         sentence_id = str(record.get("sentence_id") or record.get("target_id") or "").strip()
         if sentence_id:
-            current = sentence_states.get(sentence_id)
+            state_key = (
+                str(record.get("corpus_id") or ""), str(record.get("work_id") or ""),
+                str(record.get("variant_id") or ""), sentence_id,
+                str(record.get("sentence_text_sha256") or ""),
+            )
+            current = sentence_states.get(state_key)
             if current is None or updated_at >= current.get("updated_at", ""):
-                sentence_states[sentence_id] = {
+                sentence_states[state_key] = {
                     "sentence_id": sentence_id,
                     "segment_id": str(record.get("segment_id") or ""),
+                    "corpus_id": str(record.get("corpus_id") or ""),
+                    "work_id": str(record.get("work_id") or ""),
+                    "variant_id": str(record.get("variant_id") or ""),
+                    "sentence_text_sha256": str(record.get("sentence_text_sha256") or ""),
                     "review_state": review_state,
                     "record_id": public_record_id(record),
                     "updated_at": updated_at,
@@ -1072,7 +1169,12 @@ def sentence_translations_summary_from_query(query: dict[str, list[str]]) -> dic
         "count": len(records),
         "review_state_counts": review_counts,
         "sentence_state_count": len(sentence_states),
-        "sentence_states": sorted(sentence_states.values(), key=lambda item: item["sentence_id"]),
+        "sentence_states": sorted(
+            sentence_states.values(),
+            key=lambda item: (
+                item["corpus_id"], item["work_id"], item["variant_id"], item["sentence_id"], item["sentence_text_sha256"],
+            ),
+        ),
         "latest_generated_at": latest_generated_at,
         "latest_reviewed_at": latest_reviewed_at,
     }

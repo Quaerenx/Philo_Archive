@@ -45,6 +45,11 @@ python .\scripts\check_server_boundary.py
 python .\scripts\check_provenance_contracts.py
 python .\scripts\check_prompt_template_contracts.py
 python .\scripts\check_sentence_translation_contracts.py
+python .\scripts\check_sentence_boundaries.py
+python .\scripts\check_segment_offset_contracts.py
+python .\scripts\check_translation_commentary.py
+python .\scripts\check_translation_ai_reviews.py
+python .\scripts\check_translation_comparison.py
 python .\scripts\check_ai_records_contracts.py
 python .\scripts\check_translation_goldset.py
 python .\scripts\check_backup_snapshot_contracts.py

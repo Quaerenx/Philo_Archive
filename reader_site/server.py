@@ -149,7 +149,7 @@ class Handler(BaseHTTPRequestHandler):
             self.handle_sentence_translations_export_get(parse_qs(parsed.query))
             return
         if parsed.path == "/api/sentence-translations/summary":
-            self.handle_sentence_translations_summary_get(parse_qs(parsed.query))
+            self.handle_sentence_translations_summary_get(parse_qs(parsed.query, keep_blank_values=True))
             return
         if parsed.path == "/api/notes":
             self.handle_notes_get(parse_qs(parsed.query))

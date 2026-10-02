@@ -199,11 +199,17 @@ function setStudyProgress(text, state = "loading", detail = "") {
 
 function translationStateCountsFromSentences() {
   const counts = { generated: 0, reviewed: 0, rejected: 0 };
-  translationSentenceStates.forEach((state) => {
+  translationSentenceStates.forEach((state, sentenceId) => {
+    if (!sentenceTranslationStateIsVerified(sentenceId, state)) return;
     const reviewState = normalizedTranslationReviewState(state.reviewState);
     counts[reviewState] += 1;
   });
   return counts;
+}
+
+function verifiedSentenceTranslationCount() {
+  const counts = translationStateCountsFromSentences();
+  return counts.generated + counts.reviewed + counts.rejected;
 }
 
 function updateStudyProgress() {
@@ -218,10 +224,10 @@ function updateStudyProgress() {
     }
     return;
   }
-  const studied = translationSentenceStates.size;
+  const stateCounts = translationStateCountsFromSentences();
+  const studied = stateCounts.generated + stateCounts.reviewed + stateCounts.rejected;
   const total = totalSentenceCount();
   const remaining = Math.max(0, total - studied);
-  const stateCounts = translationStateCountsFromSentences();
   const pendingReview = stateCounts.generated;
   const state = remaining > 0
     ? (studied ? "active" : "empty")
@@ -270,26 +276,136 @@ function normalizedTranslationReviewState(value) {
   return TRANSLATION_STATE_LABELS[state] ? state : "generated";
 }
 
+function translationIdentityText(value) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function sentenceTranslationIdentity(item) {
+  return {
+    sentenceId: translationIdentityText(item && (item.sentence_id || item.target_id)),
+    sentenceHash: translationIdentityText(item?.sentence_text_sha256).toLowerCase(),
+    corpusId: translationIdentityText(item?.corpus_id),
+    workId: translationIdentityText(item?.work_id),
+    variantId: translationIdentityText(item?.variant_id)
+  };
+}
+
+function sentenceTranslationStateMatchesWork(state) {
+  return Boolean(
+    state
+    && state.corpusId
+    && state.workId
+    && state.corpusId === translationIdentityText(researchData.corpus_id || researchData.author_id)
+    && state.workId === translationIdentityText(researchData.work_id)
+    && state.variantId === translationIdentityText(researchData.variant_id)
+  );
+}
+
+function sentenceTranslationStateMatchesNode(node, state) {
+  const sourceHash = translationIdentityText(node?.dataset?.sentenceSha256).toLowerCase();
+  return Boolean(
+    node?.classList?.contains("reader-sentence")
+    && sentenceTranslationStateMatchesWork(state)
+    && state.sentenceId === sentenceNodeId(node)
+    && /^[a-f0-9]{64}$/.test(sourceHash)
+    && sourceHash === state.sentenceHash
+  );
+}
+
+function sentenceTranslationStateIsVerified(sentenceId, state) {
+  if (!state?.validated || !sentenceTranslationStateMatchesWork(state)) return false;
+  const node = sentenceNodeById.get(sentenceId) || document.getElementById(sentenceId);
+  // A previously checked virtual sentence stays verified while unmounted.
+  // Every mount rechecks its current source before a badge can be restored.
+  return !node || sentenceTranslationStateMatchesNode(node, state);
+}
+
+function canReuseSentenceTranslationVerification(previous, current) {
+  return Boolean(
+    previous
+    && current
+    && previous.sentenceId === current.sentenceId
+    && previous.sentenceHash === current.sentenceHash
+    && previous.corpusId === current.corpusId
+    && previous.workId === current.workId
+    && previous.variantId === current.variantId
+    && sentenceTranslationStateIsVerified(previous.sentenceId, previous)
+  );
+}
+
+function rememberSentenceTranslationCandidate(state) {
+  let candidates = translationSentenceCandidates.get(state.sentenceId);
+  if (!candidates) {
+    candidates = new Map();
+    translationSentenceCandidates.set(state.sentenceId, candidates);
+  }
+  const previous = candidates.get(state.sentenceHash);
+  const previousTime = Date.parse(previous?.updatedAt || "");
+  const currentTime = Date.parse(state.updatedAt || "");
+  if (
+    sentenceTranslationStateMatchesWork(previous)
+    && Number.isFinite(previousTime)
+    && (!Number.isFinite(currentTime) || previousTime > currentTime)
+  ) return previous;
+  state.validated = canReuseSentenceTranslationVerification(previous, state)
+    || canReuseSentenceTranslationVerification(translationSentenceStates.get(state.sentenceId), state);
+  candidates.set(state.sentenceHash, state);
+  return state;
+}
+
+function boundSentenceTranslationState(node) {
+  const sentenceId = sentenceNodeId(node);
+  const current = sentenceId ? translationSentenceStates.get(sentenceId) : null;
+  const sourceHash = translationIdentityText(node?.dataset?.sentenceSha256).toLowerCase();
+  const candidate = translationSentenceCandidates.get(sentenceId)?.get(sourceHash);
+  const state = sentenceTranslationStateMatchesNode(node, candidate) ? candidate : current;
+  if (!state) return null;
+  if (!sentenceTranslationStateMatchesNode(node, state)) {
+    applySentenceTranslationVisualState(node, state, false);
+    return null;
+  }
+  if (current !== state) translationSentenceStates.set(sentenceId, state);
+  if (current !== state || !state.validated) applySentenceTranslationVisualState(node, state, false);
+  return state;
+}
+
 function applySentenceTranslationState(item, flash = false) {
-  const sentenceId = cleanText(item && (item.sentence_id || item.target_id));
+  const identity = sentenceTranslationIdentity(item);
+  const sentenceId = identity.sentenceId;
   if (!sentenceId) return false;
   const reviewState = normalizedTranslationReviewState(item.review_state);
   const label = TRANSLATION_STATE_LABELS[reviewState];
   const state = {
+    ...identity,
+    validated: false,
     reviewState,
     label,
     recordId: cleanText(item.record_id || item.id || ""),
     updatedAt: cleanText(item.updated_at || item.reviewed_at || item.generated_at || "")
   };
-  translationSentenceStates.set(sentenceId, state);
+  if (!/^[a-f0-9]{64}$/.test(state.sentenceHash) || !sentenceTranslationStateMatchesWork(state)) return false;
   const node = sentenceNodeById.get(sentenceId) || document.getElementById(sentenceId);
-  if (node && node.classList.contains("reader-sentence")) {
-    applySentenceTranslationVisualState(node, state, flash);
+  if (!node && !virtualDocument) return false;
+  const candidate = rememberSentenceTranslationCandidate(state);
+  if (node && !sentenceTranslationStateMatchesNode(node, candidate)) return false;
+  // Previously unseen offscreen records are candidates, not studied sentences.
+  translationSentenceStates.set(sentenceId, candidate);
+  if (node) {
+    applySentenceTranslationVisualState(node, candidate, flash);
   }
   return true;
 }
 
 function applySentenceTranslationVisualState(node, state, flash = false) {
+  if (!sentenceTranslationStateMatchesNode(node, state)) {
+    const sentenceId = sentenceNodeId(node);
+    if (translationSentenceStates.get(sentenceId) === state) {
+      translationSentenceStates.delete(sentenceId);
+    }
+    clearSentenceTranslationVisualState(node);
+    return false;
+  }
+  state.validated = true;
   const reviewState = normalizedTranslationReviewState(state.reviewState);
   const label = TRANSLATION_STATE_LABELS[reviewState];
   if (!Object.prototype.hasOwnProperty.call(node.dataset, "originalTitle")) {
@@ -304,36 +420,60 @@ function applySentenceTranslationVisualState(node, state, flash = false) {
   if (flash) {
     flashSentenceReviewState(node, reviewState);
   }
+  return true;
+}
+
+function clearSentenceTranslationVisualState(node) {
+  if (!node) return;
+  node.classList.remove("has-translation-state");
+  node.removeAttribute("data-translation-state");
+  node.removeAttribute("data-translation-state-short");
+  node.removeAttribute("data-translation-state-label");
+  if (Object.prototype.hasOwnProperty.call(node.dataset, "originalTitle")) {
+    const originalTitle = node.dataset.originalTitle;
+    if (originalTitle) {
+      node.setAttribute("title", originalTitle);
+    } else {
+      node.removeAttribute("title");
+    }
+    delete node.dataset.originalTitle;
+  }
 }
 
 function clearSentenceTranslationStates(markLoaded = false) {
   translationSentenceStates = new Map();
+  translationSentenceCandidates = new Map();
   translationSentenceStatesLoaded = markLoaded;
-  sentenceNodes.forEach((node) => {
-    node.classList.remove("has-translation-state");
-    node.removeAttribute("data-translation-state");
-    node.removeAttribute("data-translation-state-short");
-    node.removeAttribute("data-translation-state-label");
-    if (Object.prototype.hasOwnProperty.call(node.dataset, "originalTitle")) {
-      const originalTitle = node.dataset.originalTitle;
-      if (originalTitle) {
-        node.setAttribute("title", originalTitle);
-      } else {
-        node.removeAttribute("title");
-      }
-      delete node.dataset.originalTitle;
-    }
-  });
+  sentenceNodes.forEach(clearSentenceTranslationVisualState);
   updateStudyProgress();
   updateSentenceControls();
 }
 
 function applySentenceTranslationStates(states) {
+  const previousStates = translationSentenceStates;
   clearSentenceTranslationStates();
   translationSentenceStatesLoaded = true;
   if (!Array.isArray(states)) return;
   states.forEach((item) => {
-    applySentenceTranslationState(item, false);
+    if (!applySentenceTranslationState(item, false)) return;
+    const sentenceId = sentenceTranslationIdentity(item).sentenceId;
+    const state = translationSentenceStates.get(sentenceId);
+    if (canReuseSentenceTranslationVerification(previousStates.get(sentenceId), state)) {
+      state.validated = true;
+    }
+  });
+  translationSentenceCandidates.forEach((candidates, sentenceId) => {
+    const node = sentenceNodeById.get(sentenceId) || document.getElementById(sentenceId);
+    if (node) {
+      boundSentenceTranslationState(node);
+      return;
+    }
+    const previous = previousStates.get(sentenceId);
+    const candidate = previous ? candidates.get(previous.sentenceHash) : null;
+    if (canReuseSentenceTranslationVerification(previous, candidate)) {
+      candidate.validated = true;
+      translationSentenceStates.set(sentenceId, candidate);
+    }
   });
   updateStudyProgress();
   updateSentenceControls();
@@ -404,7 +544,8 @@ async function loadTranslationRecordsSummary() {
   if (!translationRecordsSummary) return;
   const params = new URLSearchParams({
     corpus_id: researchData.corpus_id || researchData.author_id || "",
-    work_id: researchData.work_id || ""
+    work_id: researchData.work_id || "",
+    variant_id: researchData.variant_id || ""
   });
   try {
     const response = await fetch(`/api/sentence-translations/summary?${params}`);
@@ -417,11 +558,11 @@ async function loadTranslationRecordsSummary() {
     const generated = Number(counts.generated || 0);
     const reviewed = Number(counts.reviewed || 0);
     const rejected = Number(counts.rejected || 0);
-    const sentenceCount = Number(payload.sentence_state_count || 0);
     const summaryText = generated
       ? "검토할 번역"
       : (total ? "저장한 번역" : "아직 번역 없음");
     applySentenceTranslationStates(payload.sentence_states || []);
+    const sentenceCount = verifiedSentenceTranslationCount();
     setTranslationRecordsSummary(
       summaryText,
       generated ? "needs-review" : (total ? "has-records" : "empty"),

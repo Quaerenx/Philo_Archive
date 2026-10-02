@@ -51,6 +51,7 @@ from services.sentence_translations import (  # noqa: E402
     update_sentence_translation_review,
 )
 from services.source_targets import sha256_text  # noqa: E402
+from services.translation_commentary import commentary_audit_record  # noqa: E402
 from services.translation_profiles import translation_policy_bundle  # noqa: E402
 from scripts.check_ai_records_contracts import validate_file  # noqa: E402
 
@@ -255,12 +256,23 @@ def synthetic_sentence_target() -> dict:
     }
 
 
-def passing_pipeline_output(translation: str, commentary: str = "", cautions: list[str] | None = None) -> dict:
+def passing_pipeline_output(
+    translation: str, commentary: str = "", cautions: list[str] | None = None, *, prompt_bundle: dict,
+) -> dict:
     return {
         "translation": translation,
         "commentary": commentary,
         "cautions": list(cautions or []),
         "quality_state": "critic_pass",
+        "translation_quality_state": "critic_pass",
+        "commentary_audit": commentary_audit_record(
+            translation,
+            commentary,
+            status="pass" if commentary.strip() else "skipped_empty",
+            prompt_sha256="b" * 64 if commentary.strip() else "",
+            source_context_sha256=sha256_text(prompt_bundle["source_context"]),
+            translation_policy_sha256=prompt_bundle["translation_policy_sha256"],
+        ),
         "revision_count": 0,
         "critic": {"initial": {"verdict": "pass", "issues": []}, "final": None},
         "critic_prompt_sha256": {"initial": "a" * 64, "final": ""},
@@ -287,10 +299,10 @@ def check_prompt_and_record(target: dict) -> None:
     prompt_bundle = build_sentence_prompt_bundle(target)
     prompt = prompt_bundle["prompt"]
     require(prompt_bundle["prompt_template_id"] == PROMPT_TEMPLATE_ID, "unexpected sentence prompt template id")
-    require(PROMPT_TEMPLATE_ID == "sentence_translation_study_v4", "current sentence translation prompt must be v4")
-    require(CRITIC_PROMPT_TEMPLATE_ID == "sentence_translation_critic_v2", "current sentence critic prompt must be v2")
-    require(REVISION_PROMPT_TEMPLATE_ID == "sentence_translation_revision_v2", "current sentence revision prompt must be v2")
-    require(prompt_bundle["quality_pipeline_version"] == QUALITY_PIPELINE_VERSION == 2, "quality pipeline must be v2")
+    require(PROMPT_TEMPLATE_ID == "sentence_translation_study_v4_context_notes_v1", "current sentence translator must retain its public-main lineage")
+    require(CRITIC_PROMPT_TEMPLATE_ID == "sentence_translation_critic_v2_context_v1", "current sentence critic must retain its public-main lineage")
+    require(REVISION_PROMPT_TEMPLATE_ID == "sentence_translation_revision_v2_context_notes_v1", "current sentence revision must retain its public-main lineage")
+    require(prompt_bundle["quality_pipeline_version"] == QUALITY_PIPELINE_VERSION == 3, "public-main quality pipeline must be v3")
     require(prompt_bundle["prompt_sha256"] == sha256_text(prompt), "prompt_sha256 mismatch")
     require(target["sentence_text"] in prompt, "prompt missing selected sentence")
     for phrase in [
@@ -326,9 +338,10 @@ def check_prompt_and_record(target: dict) -> None:
         "삶은 힘에의 의지이다.",
         "선택 문장에 한정한 해설.",
         ["Generated translation"],
+        prompt_bundle=prompt_bundle,
     )
     record = build_record(target, prompt_bundle, output)
-    require(record["schema_version"] == 5, "new sentence translation records should use schema v5")
+    require(record["schema_version"] == 6, "new sentence translation records should use schema v6")
     require("interpretation" not in record, "sentence translation must not duplicate commentary as interpretation")
     require(record["quality_state"] == "critic_pass", "record missing automatic quality state")
     require(record["generation_parameters"] == prompt_bundle["generation_parameters"], "record missing generation parameters")
@@ -364,18 +377,18 @@ def check_cache_and_review_compatibility(target: dict) -> None:
     older = build_record(
         target,
         prompt_bundle,
-        passing_pipeline_output("older translation", "older commentary"),
+        passing_pipeline_output("older translation", "older commentary", prompt_bundle=prompt_bundle),
     )
     rejected = build_record(
         target,
         prompt_bundle,
-        passing_pipeline_output("rejected translation", "rejected commentary"),
+        passing_pipeline_output("rejected translation", "rejected commentary", prompt_bundle=prompt_bundle),
     )
     rejected["review_state"] = "rejected"
     newest = build_record(
         target,
         prompt_bundle,
-        passing_pipeline_output("newest translation", "newest commentary"),
+        passing_pipeline_output("newest translation", "newest commentary", prompt_bundle=prompt_bundle),
     )
     legacy = dict(newest)
     legacy.pop("id", None)
@@ -415,6 +428,8 @@ def check_cache_and_review_compatibility(target: dict) -> None:
             require(summary["sentence_state_count"] == 1, "sentence translation summary sentence state count failed")
             require(summary["sentence_states"][0]["sentence_id"] == target["sentence_id"], "sentence translation summary state sentence id failed")
             require(summary["sentence_states"][0]["review_state"] == "generated", "sentence translation summary state review failed")
+            for field in ("corpus_id", "work_id", "variant_id", "sentence_text_sha256"):
+                require(summary["sentence_states"][0][field] == target.get(field, ""), f"sentence summary lost its {field} binding")
             updated = update_sentence_translation_review(
                 {"corpus_id": target["corpus_id"], "review_state": "reviewed"},
                 public_legacy["id"],
@@ -427,6 +442,73 @@ def check_cache_and_review_compatibility(target: dict) -> None:
             require(summary["sentence_states"][0]["review_state"] == "reviewed", "sentence translation summary reviewed state failed")
             stored = json.loads(path.read_text(encoding="utf-8").splitlines()[0])
             require(stored["id"] == public_legacy["id"], "reviewing a legacy record should persist the stable id")
+
+            # Identical sentence IDs in different editions remain separate, and
+            # an explicitly empty edition filter must not mean "all editions".
+            alternate_sentence = "Das Leben ist Wille zur Macht (in dieser Fassung)."
+            alternate_source = alternate_sentence + " Dies ist ein zweiter Satz."
+            alternate_target = {
+                **target, "variant_id": "synthetic-alternate",
+                "source_text": alternate_source, "sentence_text": alternate_sentence,
+                "source_text_chars": len(alternate_source), "sentence_text_chars": len(alternate_sentence),
+                "source_text_sha256": sha256_text(alternate_source), "sentence_text_sha256": sha256_text(alternate_sentence),
+            }
+            alternate_bundle = build_sentence_prompt_bundle(alternate_target)
+            alternate_record = build_record(
+                alternate_target, alternate_bundle,
+                passing_pipeline_output("다른 판본의 번역.", prompt_bundle=alternate_bundle),
+            )
+            path.write_text("\n".join(json.dumps(item, ensure_ascii=False) for item in [stored, alternate_record]) + "\n", encoding="utf-8")
+            scope_query = {"corpus_id": [target["corpus_id"]], "work_id": [target["work_id"]]}
+            unfiltered = sentence_translations_summary_from_query(scope_query)
+            require(unfiltered["count"] == unfiltered["sentence_state_count"] == 2, "unfiltered editions collapsed identical sentence IDs")
+            for variant, expected in ((target.get("variant_id", ""), stored), ("synthetic-alternate", alternate_record)):
+                scoped = sentence_translations_summary_from_query({**scope_query, "variant_id": [variant]})
+                require(scoped["count"] == scoped["sentence_state_count"] == 1, "explicit edition filter selected multiple editions")
+                state = scoped["sentence_states"][0]
+                for field in ("corpus_id", "work_id", "variant_id", "sentence_id", "sentence_text_sha256", "review_state"):
+                    require(state[field] == expected[field], f"edition-scoped summary has incorrect {field}")
+                require(state["record_id"] == expected["id"], "edition scope reused another edition's review record")
+            require(stored["sentence_text_sha256"] != alternate_record["sentence_text_sha256"], "edition fixtures must exercise distinct source hashes")
+
+            # A later human review of old source A must not erase current source
+            # B's status at the same corpus/work/edition/sentence identity. Each
+            # source hash still selects its own most recently updated record.
+            current_target = {**alternate_target, "variant_id": target.get("variant_id", "")}
+            current_bundle = build_sentence_prompt_bundle(current_target)
+            current_record = build_record(
+                current_target, current_bundle,
+                passing_pipeline_output("현재 원문 B의 번역.", prompt_bundle=current_bundle),
+            )
+            old_a_earlier = {
+                **stored, "id": "source-a-earlier", "review_state": "generated", "reviewed_at": "",
+                "generated_at": "2026-10-02T08:00:00Z", "updated_at": "2026-10-02T08:00:00Z",
+            }
+            old_a_reviewed_later = {
+                **old_a_earlier, "id": "source-a-reviewed-later", "review_state": "reviewed",
+                "reviewed_at": "2026-10-02T12:00:00Z", "updated_at": "2026-10-02T12:00:00Z",
+            }
+            current_b_earlier = {
+                **current_record, "id": "source-b-earlier",
+                "generated_at": "2026-10-02T09:00:00Z", "updated_at": "2026-10-02T09:00:00Z",
+            }
+            current_b_latest = {
+                **current_b_earlier, "id": "source-b-latest",
+                "generated_at": "2026-10-02T10:00:00Z", "updated_at": "2026-10-02T10:00:00Z",
+            }
+            source_history = [old_a_reviewed_later, current_b_latest, current_b_earlier, old_a_earlier]
+            path.write_text("\n".join(json.dumps(item, ensure_ascii=False) for item in source_history) + "\n", encoding="utf-8")
+            bound_states = sentence_translations_summary_from_query({**scope_query, "variant_id": [target.get("variant_id", "")]})
+            require(bound_states["count"] == 4 and bound_states["sentence_state_count"] == 2, "reviewing old source A erased current source B's summary state")
+            states_by_hash = {state["sentence_text_sha256"]: state for state in bound_states["sentence_states"]}
+            require(set(states_by_hash) == {stored["sentence_text_sha256"], current_record["sentence_text_sha256"]}, "summary did not retain both source hashes within one sentence scope")
+            for expected in (old_a_reviewed_later, current_b_latest):
+                state = states_by_hash[expected["sentence_text_sha256"]]
+                require(state["record_id"] == expected["id"], "summary did not choose the latest record within its source hash")
+                require(state["review_state"] == expected["review_state"], "review state leaked between source hashes")
+                require(state["updated_at"] == expected["updated_at"], "summary source hash retained a stale update timestamp")
+            path.write_text(json.dumps(stored, ensure_ascii=False) + "\n", encoding="utf-8")
+
             bible_record = dict(stored)
             bible_record["id"] = "bible-demo-translation"
             bible_record["corpus_id"] = "bible"
@@ -580,7 +662,7 @@ def check_translation_cache_paths_use_bounded_source_reads() -> None:
     def fake_pipeline(_prompt_bundle: dict) -> dict:
         nonlocal model_calls
         model_calls += 1
-        return passing_pipeline_output("bounded lookup test translation", "bounded lookup test commentary")
+        return passing_pipeline_output("bounded lookup test translation", "bounded lookup test commentary", prompt_bundle=_prompt_bundle)
 
     payload = {
         "corpus_id": "nietzsche",
@@ -683,6 +765,7 @@ def check_quality_pipeline_contract(target: dict) -> None:
     with (
         patch.object(sentence_translation_service, "call_llama_server", return_value=draft),
         patch.object(sentence_translation_service, "call_critic_server", return_value={"verdict": "pass", "issues": []}),
+        patch.object(sentence_translation_service, "call_commentary_audit_server", return_value={"verdict": "pass", "issues": []}),
         patch.object(sentence_translation_service, "call_revision_server") as revision_call,
     ):
         passed = run_translation_pipeline(prompt_bundle)
@@ -702,6 +785,7 @@ def check_quality_pipeline_contract(target: dict) -> None:
             "call_revision_server",
             return_value={"translation": "이 책을 낳은 사상가", "commentary": "부성 비유를 보존했다.", "cautions": []},
         ) as revision_call,
+        patch.object(sentence_translation_service, "call_commentary_audit_server", return_value={"verdict": "pass", "issues": []}),
     ):
         revised = run_translation_pipeline(prompt_bundle)
     require(revised["quality_state"] == "critic_pass_after_revision", "revised draft quality state is incorrect")
@@ -716,6 +800,7 @@ def check_quality_pipeline_contract(target: dict) -> None:
             return_value={"verdict": "revise", "issues": [critic_issue("minor")]},
         ),
         patch.object(sentence_translation_service, "call_revision_server") as revision_call,
+        patch.object(sentence_translation_service, "call_commentary_audit_server", return_value={"verdict": "pass", "issues": []}),
     ):
         minor = run_translation_pipeline(prompt_bundle)
     require(minor["quality_state"] == "needs_human_review", "minor-only issues should require human review")

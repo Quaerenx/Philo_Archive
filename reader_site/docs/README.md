@@ -16,6 +16,8 @@ This directory contains only documents that describe the current reader, its ope
 - `encoding_policy.md`: UTF-8 and Korean source-root naming policy.
 - `source_publication_policy.md`: boundary between tracked application metadata and local primary-source data.
 - `search_quality_policy.md`: benchmark and privacy-preserving research-question evaluation policy.
+- `translation_quality_evaluation.md`: human translation evaluation and separate AI review history.
+- `translation_context_audit.md`: bracket boundaries, final-note audits, version migration, and local comparison runs.
 
 ## Reproducibility And Release
 
