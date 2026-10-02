@@ -9,13 +9,11 @@ function sentenceNodeId(node) {
 }
 
 function sentenceHasTranslationState(node) {
-  const sentenceId = sentenceNodeId(node);
-  return Boolean(sentenceId && translationSentenceStates.has(sentenceId));
+  return Boolean(boundSentenceTranslationState(node));
 }
 
 function sentenceTranslationState(node) {
-  const sentenceId = sentenceNodeId(node);
-  const state = sentenceId ? translationSentenceStates.get(sentenceId) : null;
+  const state = boundSentenceTranslationState(node);
   return state ? normalizedTranslationReviewState(state.reviewState) : "";
 }
 
@@ -348,7 +346,7 @@ function updateSentenceControls() {
     const canSearchVirtualUnstudied = Boolean(
       virtualDocument
       && translationSentenceStatesLoaded
-      && translationSentenceStates.size < totalSentenceCount()
+      && verifiedSentenceTranslationCount() < totalSentenceCount()
     );
     nextUnstudiedSentenceButton.disabled = nextUnstudiedIndex < 0 && !canSearchVirtualUnstudied;
     const nextLabel = nextUnstudiedIndex >= 0
@@ -367,7 +365,7 @@ function updateSentenceControls() {
     const canSearchVirtualReview = Boolean(
       virtualDocument
       && translationSentenceStatesLoaded
-      && translationStateCountsFromSentences().generated > 0
+      && generatedSentenceCandidateIds().length > 0
     );
     nextReviewSentenceButton.disabled = nextReviewIndex < 0 && !canSearchVirtualReview;
     const nextReviewLabel = nextReviewIndex >= 0
@@ -748,30 +746,53 @@ async function nextVirtualUnstudiedSentenceNode() {
   return null;
 }
 
-function nextGeneratedSentenceId() {
-  if (!translationSentenceStatesLoaded) return "";
+function generatedSentenceCandidateIds() {
+  if (!translationSentenceStatesLoaded) return [];
   const currentId = selectedSentence?.sentenceId || "";
-  let firstId = "";
-  let nextId = "";
-  translationSentenceStates.forEach((state, sentenceId) => {
-    if (normalizedTranslationReviewState(state.reviewState) !== "generated") return;
-    if (!firstId || sentenceId.localeCompare(firstId) < 0) firstId = sentenceId;
-    if (sentenceId.localeCompare(currentId) > 0 && (!nextId || sentenceId.localeCompare(nextId) < 0)) {
-      nextId = sentenceId;
+  const ids = [];
+  translationSentenceCandidates.forEach((candidates, sentenceId) => {
+    const node = sentenceNodeById.get(sentenceId) || document.getElementById(sentenceId);
+    const selected = node ? boundSentenceTranslationState(node) : translationSentenceStates.get(sentenceId);
+    if (node || sentenceTranslationStateIsVerified(sentenceId, selected)) {
+      if (selected && normalizedTranslationReviewState(selected.reviewState) === "generated") ids.push(sentenceId);
+      return;
     }
+    if (Array.from(candidates.values()).some((state) =>
+      sentenceTranslationStateMatchesWork(state)
+      && normalizedTranslationReviewState(state.reviewState) === "generated"
+    )) ids.push(sentenceId);
   });
-  return nextId || firstId;
+  ids.sort((left, right) => left.localeCompare(right));
+  return ids.filter((id) => id.localeCompare(currentId) > 0)
+    .concat(ids.filter((id) => id.localeCompare(currentId) <= 0));
+}
+
+function nextGeneratedSentenceId() {
+  return generatedSentenceCandidateIds().find((sentenceId) =>
+    sentenceTranslationStateIsVerified(sentenceId, translationSentenceStates.get(sentenceId))
+  ) || "";
 }
 
 async function nextVirtualReviewSentenceNode() {
   if (!virtualDocument) return null;
-  const sentenceId = nextGeneratedSentenceId();
-  if (!sentenceId) return null;
-  try {
-    return await virtualWork.ensureTarget(sentenceId);
-  } catch (error) {
-    return null;
+  // Pending offscreen summaries may point to removed fragments or old source.
+  // Mount and validate each candidate before choosing it for review.
+  for (const sentenceId of generatedSentenceCandidateIds()) {
+    let node;
+    try {
+      node = await virtualWork.ensureTarget(sentenceId);
+    } catch (error) {
+      continue;
+    }
+    if (!node) {
+      translationSentenceStates.delete(sentenceId);
+      translationSentenceCandidates.delete(sentenceId);
+      continue;
+    }
+    if (sentenceTranslationState(node) === "generated") return node;
   }
+  updateSentenceControls();
+  return null;
 }
 
 async function navigateToNextUnstudiedSentence() {

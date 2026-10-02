@@ -79,6 +79,7 @@ let sourceFocusTimer = 0;
 let translationReviewFlashTimer = 0;
 let sentenceReviewFlashTimer = 0;
 let translationSentenceStates = new Map();
+let translationSentenceCandidates = new Map();
 let translationSentenceStatesLoaded = false;
 let gemmaRuntimeCheckController = null;
 let gemmaRuntimePollTimer = 0;
@@ -182,11 +183,9 @@ function refreshSentenceNodeIndex() {
     sentenceNodeById.set(sentenceId, node);
     sentenceIndexById.set(sentenceId, position - 1);
     sentenceNodeByPosition.set(position, node);
-    const storedState = translationSentenceStates.get(sentenceId);
-    if (storedState) {
-      applySentenceTranslationVisualState(node, storedState, false);
-    }
+    boundSentenceTranslationState(node);
   });
+  updateSentenceControls();
 }
 
 function currentWorkHref() {

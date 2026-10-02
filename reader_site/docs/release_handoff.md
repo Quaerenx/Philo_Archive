@@ -141,7 +141,7 @@ git status --short
 
 `check_prompt_template_contracts.py --with-source-targets` verifies that tracked AI prompt templates render deterministic prompt bundles from restored source targets, including `prompt_template_id`, `prompt_sha256`, `source_text_sha256`, and visible "Original source" / "Generated interpretation" labels. It does not call a model.
 
-`check_sentence_translation_contracts.py --with-source-targets` verifies the on-demand sentence translation boundary, sentence IDs such as `p-0023.s001`, prompt and quality-pipeline checksums, bounded one-pass revision behavior, and local schema-v5 JSONL record shape. It does not call Gemma.
+`check_sentence_translation_contracts.py --with-source-targets` verifies the on-demand sentence translation boundary, sentence IDs such as `p-0023.s001`, prompt and quality-pipeline checksums, bounded one-pass revision behavior, and local schema-v6 JSONL records while preserving older record compatibility. It does not call Gemma. The source-light suite also checks bracket merging and stable legacy IDs, offset-index version 3 rebuilds, separate final-commentary audits, append-only AI review history, and isolated comparison runs. See `docs/translation_context_audit.md` for migration and local model comparison commands.
 
 `check_translation_quality_regressions.py` verifies the tracked source/known-bad-translation fixtures without calling Gemma. The fixtures cover the `Vaterschaft` → `저작권` semantic substitution plus LSCD-reviewed Kierkegaard and Nietzsche source-order, referent, and Korean-readability failures. Add `--with-model` for an explicit local-runtime check that the critic rejects all three known-bad translations; the `Vaterschaft` case must still be classified as major.
 

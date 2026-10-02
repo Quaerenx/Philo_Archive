@@ -552,6 +552,12 @@ async function previewStudySession() {
 }
 
 function renderTranslationRecord(record, cached, reviewFlashState = "") {
+  const identity = sentenceTranslationIdentity(record);
+  if (
+    !selectedSentence
+    || identity.sentenceId !== selectedSentence.sentenceId
+    || !sentenceTranslationStateMatchesNode(selectedSentenceNode(), identity)
+  ) return false;
   selectedTranslationRecord = record;
   pendingTranslationRegenerate = false;
   const reviewState = normalizedTranslationReviewState(record.review_state || "generated");
@@ -591,6 +597,7 @@ function renderTranslationRecord(record, cached, reviewFlashState = "") {
   syncTranslationModeDensity();
   updateStudyPanelToggleLabel();
   updateSentenceControls();
+  return true;
 }
 
 function revealFreshTranslationResult(cached) {

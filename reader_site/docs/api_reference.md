@@ -565,7 +565,7 @@ Response:
   "ok": true,
   "cached": false,
   "record": {
-    "schema_version": 5,
+    "schema_version": 6,
     "record_type": "ai_sentence_translation",
     "target_url": "/work/nietzsche/GM#p-0023.s001",
     "translation": "generated Korean translation",
@@ -585,8 +585,9 @@ Response:
     "translation_policy_sha256": "64-char sha256",
     "request_contract_sha256": "64-char sha256",
     "pipeline_contract_sha256": "64-char sha256",
-    "quality_pipeline_version": 2,
+    "quality_pipeline_version": 3,
     "quality_state": "critic_pass",
+    "translation_quality_state": "critic_pass",
     "revision_count": 0,
     "max_revision_count": 1,
     "critic": {
@@ -597,9 +598,9 @@ Response:
 }
 ```
 
-The server supplies the selected structural segment plus adjacent source units, up to 6,000 characters, and marks the selected sentence inside that context. When a unit must be shortened, complete sentences are preferred over arbitrary character cuts. llama.cpp first receives a strict JSON Schema requiring `translation` and `commentary` strings plus a string-array `cautions`; a non-empty commentary without Korean text is rejected. A fresh critic request then receives the source context, approved policy, and draft translation—but not the translator commentary—and returns a strict `pass`/`revise` issue report. The v2 pipeline checks semantic fidelity and material Korean readability defects such as opaque referents, source-order fragments, and literal-calque redundancy; smoother wording alone is not an issue. Human-approved terminology and sentence-specific forbidden fragments are then checked deterministically, and an exact evaluator-approved fragment can suppress a form-only model false positive for that sentence. Major issues trigger at most one schema-constrained revision and one final critic; minor-only issues do not trigger an automatic rewrite. Therefore an uncached request normally uses two model calls and a major-error repair uses four. Invalid translator output is rejected with `502` and is not saved; critic or revision failure is saved explicitly as `quality_state: "critic_error"` with a caution. Automatically flagged records are not cache hits unless human-reviewed.
+The server supplies the selected structural segment plus adjacent source units, up to 6,000 characters, and marks the selected sentence inside that context. When a unit must be shortened, complete sentences are preferred over arbitrary character cuts. llama.cpp first receives a strict JSON Schema requiring `translation` and `commentary` strings plus a string-array `cautions`; a non-empty commentary without Korean text is rejected. A fresh critic request then receives the source context, approved policy, and draft translation—but not the translator commentary—and returns a strict `pass`/`revise` issue report. The public-main v3 pipeline checks semantic fidelity and material Korean readability defects such as opaque referents, source-order fragments, and literal-calque redundancy; smoother wording alone is not an issue. Human-approved terminology and sentence-specific forbidden fragments are then checked deterministically, and an exact evaluator-approved fragment can suppress a form-only model false positive for that sentence. Major issues trigger at most one schema-constrained revision and one final critic; minor-only issues do not trigger an automatic rewrite. The source audit uses two model calls, or four when a major issue requires revision. Nonempty final commentary then receives one independent notes audit, for a maximum of five total calls. Empty notes require no extra call; a source-audit error skips that call explicitly. Notes issues or notes-audit failure result in `needs_human_review` and a caution without changing the candidate translation or human review state. Invalid translator output is rejected with `502` and is not saved; critic or revision failure is saved explicitly as `quality_state: "critic_error"` with a caution. Automatically flagged records are not cache hits unless human-reviewed.
 
-`quality_state` is one of `critic_pass`, `critic_pass_after_revision`, `needs_human_review`, or `critic_error`. It is automated evidence and remains separate from the human-owned `review_state` (`generated`, `reviewed`, or `rejected`). The `pipeline_contract_sha256` changes when any translator, critic, or revision contract changes, so records from an older quality pipeline cannot silently satisfy the current cache. Citation hashes have distinct meanings: `source_text_sha256` hashes the exact selected source segment, `sentence_text_sha256` hashes the clicked sentence, and `source_context_sha256` hashes the bounded context sent to the model.
+`translation_quality_state` preserves the source-only result. The `commentary_audit` object records `pass`, `needs_review`, `skipped_empty`, `not_run`, or `error`, exact input hashes, prompt/model-call metadata, and issues. Its input fingerprint covers source context, approval policy, final translation, and final commentary. See `docs/translation_context_audit.md` for the full audit contract. The combined `quality_state` is one of `critic_pass`, `critic_pass_after_revision`, `needs_human_review`, or `critic_error`. It is automated evidence and remains separate from the human-owned `review_state` (`generated`, `reviewed`, or `rejected`). The `pipeline_contract_sha256` changes when any translator, critic, revision, or final-commentary contract (including system prompts) changes, so records from an older quality pipeline cannot silently satisfy the current cache. Citation hashes have distinct meanings: `source_text_sha256` hashes the exact selected source segment, `sentence_text_sha256` hashes the clicked sentence, and `source_context_sha256` hashes the bounded context sent to the model.
 
 If the shared llama.cpp runtime is not running at `127.0.0.1:9999`, the endpoint returns `503` with `{"ok": false, "error": "번역 준비가 필요합니다."}`. Generated JSONL files under `data/ai/` are local-only and ignored by Git.
 
@@ -664,6 +665,9 @@ Query parameters:
 
 - `corpus_id`: required corpus id.
 - `work_id`: optional work id filter.
+- `variant_id`: optional exact variant filter. An explicitly empty value selects the empty variant; omitting the parameter keeps all variants.
+
+`sentence_states` contains the latest state per corpus/work/variant/sentence/source-hash identity, including `sentence_text_sha256`. Different source hashes for one sentence ID remain separate candidates, so a later review of an old source cannot hide the current source's valid review. A reader must select a matching hash and scope for its current rendered sentence before showing a reviewed badge or skipping it as already studied. Historical counts include stored records and do not establish that a current sentence has been reviewed.
 
 Response:
 

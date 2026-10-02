@@ -18,7 +18,10 @@ SEGMENT_FILES = {
 }
 
 SEGMENT_OFFSET_INDEX = DATA / "segment_offset_index.sqlite"
-INDEX_SCHEMA_VERSION = 2
+# This version covers cached sentence_count semantics as well as table layout.
+# v3 merges boundaries inside brackets, so v2 counts require a rebuild even when
+# the source JSONL bytes and stat signature are unchanged.
+INDEX_SCHEMA_VERSION = 3
 BUILD_COMMAND = r"python .\scripts\build_segment_offset_index.py"
 
 

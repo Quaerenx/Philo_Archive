@@ -18,6 +18,7 @@ from services.segment_offsets import (  # noqa: E402
     BUILD_COMMAND,
     INDEX_SCHEMA_VERSION,
     SegmentOffsetIndexError,
+    indexed_work_segment_locations,
     resolve_indexed_segment_record,
     sha256_file,
     validate_segment_offset_index,
@@ -283,6 +284,87 @@ def check_hash_validation(root: Path) -> None:
         raise AssertionError("full hash validation should reject changed source bytes")
 
 
+def check_splitter_version_rebuild(root: Path) -> None:
+    source = root / "kierkegaard_segments.jsonl"
+    expected = record(
+        "kierkegaard",
+        "anxiety",
+        "text",
+        "paragraph-34",
+        "Denne Modsigelse magter Springet og Immanentsen "
+        "(ɔ: det vil sige den senere Immanents). "
+        "Ved Adams første Synd kom Synden ind i Verden.",
+    )
+    write_jsonl(source, [expected])
+    sources = {"kierkegaard": source}
+    original_stat = source.stat()
+    original_digest = sha256_file(source)
+    index_path = root / "splitter.sqlite"
+    build_segment_offset_index(index_path, sources)
+
+    lookups = (
+        (
+            "full validation",
+            lambda: validate_segment_offset_index(index_path, sources, verify_hashes=True),
+        ),
+        (
+            "segment lookup",
+            lambda: resolve_indexed_segment_record(
+                "kierkegaard",
+                "anxiety",
+                "paragraph-34",
+                "text",
+                index_path=index_path,
+                segment_files=sources,
+            ),
+        ),
+        (
+            "work sentence counts",
+            lambda: indexed_work_segment_locations(
+                "kierkegaard",
+                "anxiety",
+                "text",
+                index_path=index_path,
+                segment_files=sources,
+            ),
+        ),
+    )
+
+    # Simulate v2's three fragments without touching the original source. A
+    # header-only version edit must not make the stale source metadata usable.
+    for header_version in (2, INDEX_SCHEMA_VERSION):
+        with sqlite3.connect(index_path) as connection:
+            connection.execute(f"PRAGMA user_version={header_version}")
+            connection.execute("UPDATE index_sources SET schema_version = 2")
+            connection.execute("UPDATE segment_offsets SET sentence_count = 3")
+        for label, lookup in lookups:
+            try:
+                lookup()
+            except SegmentOffsetIndexError as exc:
+                require("stale" in str(exc), f"{label} must report stale splitter metadata")
+                require(BUILD_COMMAND in str(exc), f"{label} must include the rebuild command")
+            else:
+                raise AssertionError(f"{label} accepted v2 sentence counts with header {header_version}")
+
+    build_segment_offset_index(index_path, sources)
+    summary = validate_segment_offset_index(index_path, sources, verify_hashes=True)
+    require(summary["schema_version"] == INDEX_SCHEMA_VERSION, "rebuild did not refresh the index version")
+    require(lookups[1][1]() == expected, "splitter migration changed the indexed source record")
+    locations = lookups[2][1]()
+    require(len(locations) == 1, "splitter fixture should contain one source segment")
+    require(
+        locations[0]["sentence_count"] == 2,
+        "rebuild must count the parenthetical explanation and its sentence as one unit",
+    )
+    current_stat = source.stat()
+    require(
+        (current_stat.st_size, current_stat.st_mtime_ns)
+        == (original_stat.st_size, original_stat.st_mtime_ns)
+        and sha256_file(source) == original_digest,
+        "splitter migration must not rewrite the source JSONL",
+    )
+
+
 def check_atomic_replacement(root: Path) -> None:
     sources, _ = fixture_sources(root / "atomic-sources")
     index_path = root / "atomic.sqlite"
@@ -339,12 +421,16 @@ def main() -> None:
         (hash_root / "hash-sources").mkdir()
         check_hash_validation(hash_root)
 
+        splitter_root = root / "splitter"
+        splitter_root.mkdir()
+        check_splitter_version_rebuild(splitter_root)
+
         atomic_root = root / "atomic"
         atomic_root.mkdir()
         (atomic_root / "atomic-sources").mkdir()
         check_atomic_replacement(atomic_root)
 
-    print("segment offset contracts ok (schema/round-trip/unicode/missing/corrupt/stale/hash/atomic/interrupted)")
+    print("segment offset contracts ok (schema/round-trip/unicode/missing/corrupt/stale/splitter-rebuild/hash/atomic/interrupted)")
 
 
 if __name__ == "__main__":
