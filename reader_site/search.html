@@ -5,10 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>검색 / Personal Archive of Literature</title>
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
-  <link rel="stylesheet" href="/assets/design-tokens.css?v=frame5">
-  <link rel="stylesheet" href="/assets/search.css?v=phase34">
+  <link rel="stylesheet" href="/assets/design-tokens.css?v=frame7">
+  <link rel="stylesheet" href="/assets/search.css?v=phase35">
+  <link rel="stylesheet" href="/assets/reader-presentation.css?v=presentation2">
+  <link rel="stylesheet" href="/assets/collection-layout.css?v=collection2">
 </head>
-<body>
+<body class="collection-page">
   <div class="page">
     <div class="spacer"></div>
     <main class="reader">
@@ -21,11 +23,16 @@
         </nav>
       </header>
 
-      <form id="searchForm" class="search-form">
-        <label class="query-label">
-          본문 찾기
-          <input id="queryInput" name="q" autocomplete="off" autofocus placeholder="예: ressentiment, John 3:16, 아침놀">
-        </label>
+      <form id="searchForm" class="search-form" role="search">
+        <label class="query-label" for="queryInput">본문 찾기</label>
+        <div class="query-entry">
+          <input id="queryInput" name="q" type="search" autocomplete="off" autofocus aria-describedby="queryHelp" placeholder="예: ressentiment, John 3:16, 아침놀">
+          <div class="form-actions">
+            <button id="searchSubmit" type="submit">검색</button>
+            <button id="searchClear" type="button" class="secondary-action" disabled>지우기</button>
+          </div>
+        </div>
+        <p id="queryHelp" class="field-help">검색어를 입력하고 Enter를 누르세요. 범위를 열면 자료·문서·판본을 좁힐 수 있습니다.</p>
         <details class="filter-panel">
           <summary>범위</summary>
           <div class="filter-panel-fields">
@@ -53,10 +60,6 @@
             </label>
           </div>
         </details>
-        <div class="form-actions">
-          <button id="searchSubmit" type="submit">검색</button>
-          <button id="searchClear" type="button" class="secondary-action" disabled>지우기</button>
-        </div>
       </form>
       <div id="searchActiveFilters" class="active-filters" aria-live="polite" aria-label="활성 검색 조건"></div>
       <div id="searchReturn" class="search-return" hidden></div>
@@ -65,6 +68,6 @@
       <section id="results" class="results" aria-live="polite" aria-busy="false"></section>
     </main>
   </div>
-  <script src="/assets/search.js?v=phase48"></script>
+  <script src="/assets/search.js?v=phase50"></script>
 </body>
 </html>

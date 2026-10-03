@@ -34,6 +34,7 @@ from services.sentence_translations import (  # noqa: E402
     append_record,
     build_record,
     build_critic_prompt_bundle,
+    build_revision_prompt_bundle,
     build_sentence_prompt_bundle,
     delete_sentence_translation,
     delete_sentence_translation_from_query,
@@ -51,6 +52,7 @@ from services.sentence_translations import (  # noqa: E402
     update_sentence_translation_review,
 )
 from services.source_targets import sha256_text  # noqa: E402
+from services import translation_profiles as translation_profile_service  # noqa: E402
 from services.translation_profiles import translation_policy_bundle  # noqa: E402
 from scripts.check_ai_records_contracts import validate_file  # noqa: E402
 
@@ -287,10 +289,10 @@ def check_prompt_and_record(target: dict) -> None:
     prompt_bundle = build_sentence_prompt_bundle(target)
     prompt = prompt_bundle["prompt"]
     require(prompt_bundle["prompt_template_id"] == PROMPT_TEMPLATE_ID, "unexpected sentence prompt template id")
-    require(PROMPT_TEMPLATE_ID == "sentence_translation_study_v4", "current sentence translation prompt must be v4")
-    require(CRITIC_PROMPT_TEMPLATE_ID == "sentence_translation_critic_v4", "current sentence critic prompt must be v4")
-    require(REVISION_PROMPT_TEMPLATE_ID == "sentence_translation_revision_v3", "current sentence revision prompt must be v3")
-    require(prompt_bundle["quality_pipeline_version"] == QUALITY_PIPELINE_VERSION == 6, "quality pipeline must be v6")
+    require(PROMPT_TEMPLATE_ID == "sentence_translation_study_v6", "current sentence translation prompt must be v5")
+    require(CRITIC_PROMPT_TEMPLATE_ID == "sentence_translation_critic_v6", "current sentence critic prompt must be v5")
+    require(REVISION_PROMPT_TEMPLATE_ID == "sentence_translation_revision_v5", "current sentence revision prompt must be v4")
+    require(prompt_bundle["quality_pipeline_version"] == QUALITY_PIPELINE_VERSION == 10, "quality pipeline must be v10")
     require(prompt_bundle["prompt_sha256"] == sha256_text(prompt), "prompt_sha256 mismatch")
     require(target["sentence_text"] in prompt, "prompt missing selected sentence")
     for phrase in [
@@ -303,7 +305,10 @@ def check_prompt_and_record(target: dict) -> None:
         "opaque pronoun",
         "source-language word order",
         "grammatically complete",
-        "Do not praise, defend, or justify",
+        "exact source constituent",
+        "One source sentence may become multiple complete Korean sentences",
+        "claim expressed only in an adjacent sentence",
+        "commentary: return an empty string",
         "silently verify",
         "Return exactly one JSON object",
     ]:
@@ -327,8 +332,9 @@ def check_prompt_and_record(target: dict) -> None:
         "선택 문장에 한정한 해설.",
         ["Generated translation"],
     )
+    output["translation_notes"] = [{"source_span": target["sentence_text"], "note": output["commentary"]}]
     record = build_record(target, prompt_bundle, output)
-    require(record["schema_version"] == 5, "new sentence translation records should use schema v5")
+    require(record["schema_version"] == 6, "new sentence translation records should use schema v6")
     require("interpretation" not in record, "sentence translation must not duplicate commentary as interpretation")
     require(record["quality_state"] == "critic_pass", "record missing automatic quality state")
     require(record["generation_parameters"] == prompt_bundle["generation_parameters"], "record missing generation parameters")
@@ -346,7 +352,7 @@ def check_prompt_and_record(target: dict) -> None:
     require("key_terms" not in public_record, "public sentence translation record should hide key_terms")
     markdown = export_sentence_translations_markdown([public_record])
     require("번역 목록" in markdown, "sentence translation markdown export heading missing")
-    require("번역" in markdown and "해설" in markdown, "sentence translation markdown export should use reader-language section labels")
+    require("번역" in markdown and "번역 노트" in markdown, "sentence translation markdown export should use reader-language section labels")
     require("Reviewed Gemma" not in markdown, "sentence translation markdown export should hide runtime-oriented title")
     require("Review:" not in markdown, "sentence translation markdown export should hide review-state metadata")
     require("Reviewed:" not in markdown, "sentence translation markdown export should hide reviewed timestamps")
@@ -399,6 +405,14 @@ def check_cache_and_review_compatibility(target: dict) -> None:
         stale_pipeline["pipeline_contract_sha256"] = "0" * 64
         path.write_text(json.dumps(stale_pipeline, ensure_ascii=False) + "\n", encoding="utf-8")
         require(find_cached_record(path, target, prompt_bundle) is None, "cache should reject a stale quality pipeline contract")
+        with patch.object(sentence_translation_service, "QUALITY_PIPELINE_VERSION", 7):
+            v7_bundle = build_sentence_prompt_bundle(target)
+            v7_record = build_record(target, v7_bundle, passing_pipeline_output("previous v7 translation"))
+        require(v7_bundle["prompt_sha256"] == prompt_bundle["prompt_sha256"], "pipeline-only version change must not rewrite the translator prompt")
+        require(v7_bundle["pipeline_contract_sha256"] != prompt_bundle["pipeline_contract_sha256"], "v8 must invalidate the v7 automatic audit cache")
+        path.write_text(json.dumps(v7_record, ensure_ascii=False) + "\n", encoding="utf-8")
+        require(find_cached_record(path, target, prompt_bundle) is None, "a v7 automatic audit must not satisfy the v8 cache contract")
+        require(sentence_translation_service.iter_cached_records(path)[0]["translation"] == "previous v7 translation", "pipeline invalidation must preserve the historical model record")
 
     with tempfile.TemporaryDirectory() as temp_dir:
         original_ai_dir = sentence_translation_service.AI_DIR
@@ -685,6 +699,10 @@ def check_critic_prompt_boundary(target: dict) -> None:
     require(target["sentence_text"] in critic_bundle["prompt"], "critic prompt missing exact target sentence")
     require(adjacent_sentinel not in critic_bundle["prompt"], "critic prompt must exclude adjacent source context")
     require("translator's commentary and surrounding context are intentionally absent" in critic_bundle["prompt"], "critic prompt must declare commentary and adjacent context absent")
+    revision_bundle = build_revision_prompt_bundle(prompt_bundle, "이 책의 저작권을 얻은 사람", [critic_issue()])
+    require(target["sentence_text"] in revision_bundle["prompt"], "revision prompt missing exact target sentence")
+    require(adjacent_sentinel not in revision_bundle["prompt"], "revision prompt must exclude adjacent source context")
+    require("Surrounding context and the translator commentary are intentionally absent" in revision_bundle["prompt"], "revision prompt must declare adjacent context absent")
 
 
 def check_quality_pipeline_contract(target: dict) -> None:
@@ -732,6 +750,30 @@ def check_quality_pipeline_contract(target: dict) -> None:
     require(minor["quality_state"] == "needs_human_review", "minor-only issues should require human review")
     require(minor["revision_count"] == 0, "minor-only issues should not trigger revision")
     require(not revision_call.called, "minor-only issues must not call revision")
+
+    readability_issue = {**critic_issue("minor"), "category": "korean_readability"}
+    for final_critic in [
+        {"verdict": "pass", "issues": []},
+        {"verdict": "revise", "issues": [readability_issue]},
+    ]:
+        with (
+            patch.object(sentence_translation_service, "call_llama_server", return_value=draft) as draft_call,
+            patch.object(
+                sentence_translation_service,
+                "call_critic_server",
+                side_effect=[{"verdict": "revise", "issues": [readability_issue]}, final_critic],
+            ) as critic_call,
+            patch.object(
+                sentence_translation_service,
+                "call_revision_server",
+                return_value={"translation": "수정 번역", "commentary": "", "cautions": []},
+            ) as revision_call,
+        ):
+            readable = run_translation_pipeline(prompt_bundle)
+        expected_state = "critic_pass_after_revision" if final_critic["verdict"] == "pass" else "needs_human_review"
+        require(readable["quality_state"] == expected_state, "minor readability final audit state is incorrect")
+        require(readable["revision_count"] == revision_call.call_count == 1, "material minor readability defect must permit exactly one revision")
+        require(draft_call.call_count + critic_call.call_count + revision_call.call_count == 4, "readability repair must stay within four model calls")
 
     with (
         patch.object(sentence_translation_service, "call_llama_server", return_value=draft),
@@ -845,8 +887,8 @@ def check_human_approved_translation_profile_contract() -> None:
     )
     require(nietzsche_policy["sentence_rules"][0]["allowed_translation_fragments"], "tracked approved fragment was not selected")
     require(
-        nietzsche_policy["sentence_rules"][0]["required_translation_fragments"][0]["alternatives"]
-        == ["우리 인식하는 자들은 우리 자신에게 미지"],
+        "우리 인식하는 자들은 우리 자신에게 미지" in nietzsche_policy["sentence_rules"][0]["required_translation_fragments"][0]["alternatives"]
+        and "인식하는 자들인 우리는 우리 자신을 알지 못" in nietzsche_policy["sentence_rules"][0]["required_translation_fragments"][0]["alternatives"],
         "tracked Nietzsche required subject-predicate relation drifted",
     )
     require(
@@ -1041,6 +1083,268 @@ def check_human_approved_translation_profile_contract() -> None:
         {"verdict": "revise", "issues": [semantic_issue]},
     )
     require(semantic_audit["issues"] == [semantic_issue], "approved form must not suppress a semantic issue")
+    scope_issue = {**semantic_issue, "category": "syntax_or_scope"}
+    scope_audit = merge_approved_policy_audit(
+        {
+            "source_context": "<TARGET_SENTENCE>wir selbst uns selbst</TARGET_SENTENCE>",
+            "approved_terminology": [],
+            "approved_sentence_rules": [
+                {"sentence_id": "p-0004.s001", "allowed_translation_fragments": ["우리 스스로가 우리 자신에게 그러하다"]}
+            ],
+        },
+        "우리 스스로가 우리 자신에게 그러하다.",
+        {"verdict": "revise", "issues": [scope_issue]},
+    )
+    require(scope_audit["issues"] == [scope_issue], "approved form must not suppress a major scope error")
+
+
+def check_approved_fragment_semantic_boundaries() -> None:
+    approved = "물개는 동물이며 도장이 아니다"
+    bundle = {
+        "source_context": "<TARGET_SENTENCE>The seal is an animal, not a stamp.</TARGET_SENTENCE>",
+        "approved_terminology": [],
+        "approved_sentence_rules": [{"allowed_translation_fragments": [approved]}],
+    }
+    # Retaining an approved sentence does not license a contradictory added definition.
+    draft = approved + ". 이때 물개는 도장이라는 뜻이다."
+    for category in (
+        "omission", "unsupported_addition", "semantic_substitution", "syntax_or_scope",
+        "negation_or_modality", "ambiguity_resolution", "referent", "metaphor_or_rhetoric", "terminology",
+    ):
+        for issue_span in ("물개", approved):
+            issue = {
+                "source_span": "seal",
+                "translation_span": issue_span,
+                "category": category,
+                "severity": "major",
+                "explanation": "뒤에서 동물인 seal을 도장으로 다시 정의하므로 승인된 구절이 있어도 의미 감사가 필요하다.",
+            }
+            critic = {"verdict": "revise", "issues": [issue]}
+            audit = merge_approved_policy_audit(bundle, draft, critic)
+            require(audit == critic, f"approved fragment must not erase a major {category} finding")
+            require(critic["issues"] == [issue], "policy merge must preserve the original critic evidence")
+
+
+def check_source_bound_lshd_policy_contract(*, with_source_targets: bool = False) -> None:
+    # Freeze the LSHD 2026-09-30 evidence without depending on private runtime files.
+    cases = [
+        {
+            "sample_label": "K02",
+            "corpus_id": "kierkegaard",
+            "work_id": "ba",
+            "segment_id": "sks-0047",
+            "sentence_id": "sks-0047.s007",
+            "variant_id": "text",
+            "source_text": "Begrebet Angest seer man næsten aldrig behandlet i Psychologien, jeg maa derfor gjøre opmærksom paa, at det er aldeles forskjelligt fra Frygt og lignende Begreber, der referere sig til noget bestemt, medens Angest er Frihedens Virkelighed som Mulighed for Muligheden .",
+            "sentence_text_sha256": "360807eddde1ee6d6d8728a4db0868fd369a4b34f213fd28080abc07f145e36a",
+            "source_case_id": "expansion-20260909-k02",
+            "approved_translation": "심리학에서는 불안이라는 개념이 다루어지는 것을 거의 볼 수 없다. 따라서 나는 불안이 어떤 특정한 것을 대상으로 하는 공포 및 그와 유사한 개념들과는 전적으로 다르다는 점을 지적해 두어야 한다. 그에 반해 불안은 가능성의 가능성으로서의 자유의 현실성이다.",
+            "rejected_replacements": [
+                [
+                    "가능성의 가능성",
+                    "가능성을 위한 가능성",
+                    "semantic_substitution",
+                    "major"
+                ],
+                [
+                    "자유의 현실성",
+                    "자유의 실재",
+                    "terminology",
+                    "major"
+                ],
+                [
+                    "지적해 두어야 한다",
+                    "주의를 환기해야겠다",
+                    "negation_or_modality",
+                    "minor"
+                ]
+            ],
+            "permitted_replacements": [
+                [
+                    "지적해 두어야 한다",
+                    "지적하여야 한다"
+                ]
+            ]
+        },
+        {
+            "sample_label": "N01",
+            "corpus_id": "nietzsche",
+            "work_id": "JGB",
+            "segment_id": "p-0004",
+            "sentence_id": "p-0004.s002",
+            "variant_id": "",
+            "source_text": "ist der Verdacht nicht gegründet, dass alle Philosophen, sofern sie Dogmatiker waren, sich schlecht auf Weiber verstanden?",
+            "sentence_text_sha256": "30b61fb55936824c8f8713b28f1c8fc4297199cfe53597ea0496da590e2ce25d",
+            "source_case_id": "expansion-20260909-n01",
+            "approved_translation": "모든 철학자들은, 독단론자였던 한에서, 여자에 대해서는 영 서툴렀다는 의심이 근거 있는 것이 아닌가?",
+            "rejected_replacements": [
+                [
+                    "근거 있는 것이 아닌가",
+                    "근거가 없는 것은 아닌가",
+                    "negation_or_modality",
+                    "major"
+                ],
+                [
+                    "여자에 대해서는 영 서툴렀다",
+                    "여인들을 다루는 데 서툴렀다",
+                    "semantic_substitution",
+                    "major"
+                ],
+                [
+                    "독단론자",
+                    "교조주의자",
+                    "terminology",
+                    "minor"
+                ]
+            ],
+            "permitted_replacements": [
+                [
+                    "여자에 대해서는 영 서툴렀다",
+                    "여자를 잘 알지 못했다"
+                ]
+            ]
+        },
+        {
+            "sample_label": "W03",
+            "corpus_id": "wittgenstein",
+            "work_id": "Group_ItemsInEnglish",
+            "segment_id": "p-0001",
+            "sentence_id": "p-0001.s002",
+            "variant_id": "idp_transcription_linear",
+            "source_text": "If only these || those signs which contain proper names were complex then propositions containing nothing but apparent variables would be simple.",
+            "sentence_text_sha256": "ed0a7344152615e45f2664356d87ec90b9f5074ef80c0b14e18db1254105fa9c",
+            "source_case_id": "expansion-20260909-w03",
+            "approved_translation": "고유명을 포함하는 이 || 저 기호들만이 복합적이라면, 겉보기 변수만을 포함하는 명제들은 단순할 것이다.",
+            "rejected_replacements": [
+                [
+                    "기호들만이 복합적이라면",
+                    "기호들이 복합적이기만 하다면",
+                    "syntax_or_scope",
+                    "major"
+                ],
+                [
+                    "이 || 저",
+                    "|| 저",
+                    "omission",
+                    "major"
+                ],
+                [
+                    "이 || 저",
+                    "이 ||",
+                    "omission",
+                    "major"
+                ]
+            ],
+            "permitted_replacements": [
+                [
+                    "겉보기 변수",
+                    "외견상 변수"
+                ],
+                [
+                    "겉보기 변수",
+                    "외견적 변수"
+                ],
+                ["겉보기 변수", "속박변수"],
+                [
+                    "고유명을",
+                    "고유 명사를"
+                ],
+                [
+                    "기호들만이 복합적이라면",
+                    "기호들에 한해서만 복합적이라면"
+                ],
+                ["이 || 저", "이||저"],
+                ["이 || 저", "이 ||저"],
+                ["이 || 저", "이|| 저"],
+                ["이 || 저", "저"],
+                ["이 || 저", ""]
+            ]
+        }
+    ]
+    profiles = translation_profile_service.read_translation_profiles()
+    legacy_profiles = [profile for profile in profiles if profile.get("approved_by") != "LSHD"]
+    for case in cases:
+        label = case["sample_label"]
+        source = case["source_text"]
+        require(sha256_text(source) == case["sentence_text_sha256"], f"{label}: approved source hash drifted")
+        if with_source_targets:
+            canonical = sentence_target_bundle(*(case[key] for key in ("corpus_id", "work_id", "segment_id", "sentence_id", "variant_id")))
+            require(canonical["sentence_text"] == source and canonical["sentence_text_sha256"] == case["sentence_text_sha256"], f"{label}: restored canonical source differs from the approved policy")
+        target = {
+            **synthetic_sentence_target(),
+            **{key: case[key] for key in ("corpus_id", "work_id", "variant_id", "segment_id", "sentence_id")},
+            "target_id": case["sentence_id"],
+            "target_url": f"/work/{case['corpus_id']}/{case['work_id']}#{case['sentence_id']}",
+            "source_text": source,
+            "source_text_preview": source,
+            "sentence_text": source,
+            "source_text_chars": len(source),
+            "sentence_text_chars": len(source),
+            "source_text_sha256": sha256_text(source),
+            "sentence_text_sha256": sha256_text(source),
+        }
+        bundle = build_sentence_prompt_bundle(target)
+        rules = bundle["approved_sentence_rules"]
+        require(len(rules) == 1, f"{label}: exactly one approved sentence rule must apply")
+        require(not bundle["approved_terminology"], f"{label}: sentence approval must not add work-wide terms")
+        require(rules[0]["approved_by"] == "LSHD", f"{label}: approval evaluator drifted")
+        require(rules[0]["approved_at"] == "2026-09-30T15:35:03+09:00", f"{label}: approval timestamp drifted")
+        require(rules[0]["source_case_id"] == case["source_case_id"], f"{label}: approval case provenance drifted")
+        require(rules[0]["sentence_text_sha256"] == case["sentence_text_sha256"], f"{label}: rule/source hash mismatch")
+        require(rules[0]["variant_id"] == case["variant_id"], f"{label}: rule edition drifted")
+        translation = case["approved_translation"]
+        require(
+            merge_approved_policy_audit(bundle, translation, {"verdict": "pass", "issues": []}) == {"verdict": "pass", "issues": []},
+            f"{label}: LSHD-confirmed translation must not receive a deterministic policy defect",
+        )
+        for approved_fragment, bad_fragment, category, severity in case["rejected_replacements"]:
+            require(approved_fragment in translation, f"{label}: invalid rejected-translation fixture")
+            audit = merge_approved_policy_audit(bundle, translation.replace(approved_fragment, bad_fragment), {"verdict": "pass", "issues": []})
+            require(any(issue["category"] == category and issue["severity"] == severity for issue in audit["issues"]), f"{label}: approved rejection was not enforced for {bad_fragment}")
+        for approved_fragment, permitted_fragment in case["permitted_replacements"]:
+            require(approved_fragment in translation, f"{label}: invalid permitted-translation fixture")
+            audit = merge_approved_policy_audit(bundle, translation.replace(approved_fragment, permitted_fragment), {"verdict": "pass", "issues": []})
+            require(audit == {"verdict": "pass", "issues": []}, f"{label}: legitimate alternative was over-restricted")
+        if label == "W03":
+            dangling_marker = translation.replace("이 || 저", "저") + " ||"
+            audit = merge_approved_policy_audit(bundle, dangling_marker, {"verdict": "pass", "issues": []})
+            require(any(issue["category"] == "omission" and issue["severity"] == "major" for issue in audit["issues"]), "W03: an appended marker must not disguise a missing alternative")
+        if label == "N01":
+            regressions = json.loads((SITE / "data" / "translation_regression_cases.json").read_text(encoding="utf-8"))["cases"]
+            reversal = next(record for record in regressions if record["case_id"] == "nietzsche-jgb-v7-negative-question-reversal")
+            audit = merge_approved_policy_audit(bundle, reversal["known_bad_translation"], {"verdict": "pass", "issues": []})
+            require(any(issue["category"] == "negation_or_modality" and issue["severity"] == "major" for issue in audit["issues"]), "N01: the real v7 critic false negative must be rejected by the approved policy")
+        args = (case["corpus_id"], case["work_id"], case["variant_id"], case["sentence_id"])
+        require(not translation_policy_bundle(*args)["sentence_rules"], f"{label}: source-bound approval must not apply without a hash")
+        require(not translation_policy_bundle(*args, sentence_text_sha256=sha256_text(source + " Changed."))["sentence_rules"], f"{label}: stale source approval must not apply to changed text")
+        other_variant = (case["corpus_id"], case["work_id"], "other-edition", case["sentence_id"])
+        require(not translation_policy_bundle(*other_variant, sentence_text_sha256=case["sentence_text_sha256"])["sentence_rules"], f"{label}: approval leaked to another edition")
+        other_sentence = (case["corpus_id"], case["work_id"], case["variant_id"], case["sentence_id"] + "-other")
+        require(not translation_policy_bundle(*other_sentence, sentence_text_sha256=case["sentence_text_sha256"])["sentence_rules"], f"{label}: approval leaked to another sentence")
+        with patch.object(translation_profile_service, "read_translation_profiles", return_value=legacy_profiles):
+            old_bundle = build_sentence_prompt_bundle(target)
+        for field in ("translation_policy_sha256", "request_contract_sha256", "pipeline_contract_sha256"):
+            require(old_bundle[field] != bundle[field], f"{label}: approval must invalidate the previous {field}")
+        require(old_bundle["quality_pipeline_version"] == bundle["quality_pipeline_version"], f"{label}: policy changes do not require a pipeline-version bump")
+        with tempfile.TemporaryDirectory(prefix="philo_lshd_policy_cache_") as temp_dir:
+            path = Path(temp_dir) / f"{case['corpus_id']}_sentence_translations.jsonl"
+            append_record(path, build_record(target, old_bundle, passing_pipeline_output(translation)))
+            require(find_cached_record(path, target, old_bundle) is not None, f"{label}: cache fixture was not reusable")
+            require(find_cached_record(path, target, bundle) is None, f"{label}: previous automatic record survived the approval change")
+    legacy = translation_policy_bundle("nietzsche", "GM", "", "p-0004.s001", SITE / "data" / "translation_profiles.json")
+    with_hash = translation_policy_bundle("nietzsche", "GM", "", "p-0004.s001", sentence_text_sha256="a" * 64)
+    require(legacy == with_hash and legacy["sentence_rules"], "legacy rules without source hashes must remain compatible")
+    with tempfile.TemporaryDirectory(prefix="philo_lshd_invalid_hash_") as temp_dir:
+        path = Path(temp_dir) / "translation_profiles.json"
+        payload = {"schema_version": 1, "profiles": [json.loads(json.dumps(profiles[-1]))]}
+        payload["profiles"][0]["sentence_rules"][0]["sentence_text_sha256"] = "not-a-source-hash"
+        path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+        try:
+            translation_policy_bundle("wittgenstein", "Group_ItemsInEnglish", "idp_transcription_linear", "p-0001.s002", path)
+        except ValueError as error:
+            require("sentence_text_sha256" in str(error), "invalid hash should have an explicit validation error")
+        else:
+            require(False, "malformed source-bound approval hash must be rejected")
 
 
 def check_runtime_error_copy(target: dict) -> None:
@@ -1078,6 +1382,8 @@ def main() -> None:
     check_strict_model_output_contract()
     check_strict_critic_output_contract()
     check_human_approved_translation_profile_contract()
+    check_approved_fragment_semantic_boundaries()
+    check_source_bound_lshd_policy_contract(with_source_targets=args.with_source_targets)
     synthetic_target = synthetic_sentence_target()
     check_prompt_and_record(synthetic_target)
     check_critic_prompt_boundary(synthetic_target)

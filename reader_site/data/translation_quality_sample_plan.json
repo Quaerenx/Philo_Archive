@@ -1,0 +1,151 @@
+{
+  "schema_version": 1,
+  "id": "translation-quality-expansion-20260909",
+  "sampling_method": "모델 결과를 보기 전에 고정한 목적 표집. 코퍼스별 4건을 추가한다. 기존 4건을 포함해 20건이며 전체 코퍼스의 무작위·대표 표본이나 통계적 품질 추정치가 아니다.",
+  "cases": [
+    {
+      "id": "B01",
+      "corpus_id": "bible",
+      "work_id": "oshb.Exod",
+      "variant_id": "oshb_morphhb",
+      "segment_id": "Exod.20.13",
+      "sentence_id": "Exod.20.13.s001",
+      "sampling_reason": "율법의 짧은 금지문: 부정과 행위 범위"
+    },
+    {
+      "id": "B02",
+      "corpus_id": "bible",
+      "work_id": "oshb.Ps",
+      "variant_id": "oshb_morphhb",
+      "segment_id": "Ps.23.4",
+      "sentence_id": "Ps.23.4.s001",
+      "sampling_reason": "시편의 비유와 긴 문장: 두려움·이유·위로 관계"
+    },
+    {
+      "id": "B03",
+      "corpus_id": "bible",
+      "work_id": "sblgnt.John",
+      "variant_id": "sblgnt",
+      "segment_id": "John.1.1",
+      "sentence_id": "John.1.1.s001",
+      "sampling_reason": "그리스어 복음서: logos와 반복되는 술어"
+    },
+    {
+      "id": "B04",
+      "corpus_id": "bible",
+      "work_id": "sblgnt.Rom",
+      "variant_id": "sblgnt",
+      "segment_id": "Rom.8.1",
+      "sentence_id": "Rom.8.1.s001",
+      "sampling_reason": "그리스어 서신: 부정의 범위와 한정 구절"
+    },
+    {
+      "id": "K01",
+      "corpus_id": "kierkegaard",
+      "work_id": "sd",
+      "variant_id": "text",
+      "segment_id": "sks-0007",
+      "sentence_id": "sks-0007.s002",
+      "sampling_reason": "철학 본문: 자기·관계·재귀 표현의 구별"
+    },
+    {
+      "id": "K02",
+      "corpus_id": "kierkegaard",
+      "work_id": "ba",
+      "variant_id": "text",
+      "segment_id": "sks-0047",
+      "sentence_id": "sks-0047.s007",
+      "sampling_reason": "긴 개념 구별: 불안·두려움·가능성"
+    },
+    {
+      "id": "K03",
+      "corpus_id": "kierkegaard",
+      "work_id": "fb",
+      "variant_id": "text",
+      "segment_id": "sks-0006",
+      "sentence_id": "sks-0006.s009",
+      "sampling_reason": "서사적 철학 문장: 아브라함·이삭·슬픔의 의인화"
+    },
+    {
+      "id": "K04",
+      "corpus_id": "kierkegaard",
+      "work_id": "2t43",
+      "variant_id": "text",
+      "segment_id": "sks-0006",
+      "sentence_id": "sks-0006.s011",
+      "sampling_reason": "강화의 조건·이유·반복 구조"
+    },
+    {
+      "id": "N01",
+      "corpus_id": "nietzsche",
+      "work_id": "JGB",
+      "variant_id": "",
+      "segment_id": "p-0004",
+      "sentence_id": "p-0004.s002",
+      "sampling_reason": "수사적 질문과 조건절, 철학자·독단가의 범위"
+    },
+    {
+      "id": "N02",
+      "corpus_id": "nietzsche",
+      "work_id": "FW",
+      "variant_id": "",
+      "segment_id": "p-0003",
+      "sentence_id": "p-0003.s001",
+      "sampling_reason": "시구와 다중 부정, 자기 풍자의 대상"
+    },
+    {
+      "id": "N03",
+      "corpus_id": "nietzsche",
+      "work_id": "GM",
+      "variant_id": "",
+      "segment_id": "p-0004",
+      "sentence_id": "p-0004.s007",
+      "sampling_reason": "정신·꿀벌·귀환의 확장 비유"
+    },
+    {
+      "id": "N04",
+      "corpus_id": "nietzsche",
+      "work_id": "MA-I",
+      "variant_id": "",
+      "segment_id": "p-0021",
+      "sentence_id": "p-0021.s003",
+      "sampling_reason": "긴 열거와 대립 개념의 대응"
+    },
+    {
+      "id": "W01",
+      "corpus_id": "wittgenstein",
+      "work_id": "Group_BrownBookCorpus",
+      "variant_id": "idp_transcription_linear",
+      "segment_id": "p-0001",
+      "sentence_id": "p-0001.s011",
+      "sampling_reason": "독일어 언어철학: 조건과 의사소통 체계"
+    },
+    {
+      "id": "W02",
+      "corpus_id": "wittgenstein",
+      "work_id": "Group_BigTypescriptCorpus",
+      "variant_id": "idp_transcription_linear",
+      "segment_id": "p-0006",
+      "sentence_id": "p-0006.s008",
+      "sampling_reason": "독일어 원고 전사: 부정·조건·유의미성 및 문헌 표식"
+    },
+    {
+      "id": "W03",
+      "corpus_id": "wittgenstein",
+      "work_id": "Group_ItemsInEnglish",
+      "variant_id": "idp_transcription_linear",
+      "segment_id": "p-0001",
+      "sentence_id": "p-0001.s002",
+      "sampling_reason": "영어 논리학: 고유명·변항·복합/단순 명제"
+    },
+    {
+      "id": "W04",
+      "corpus_id": "wittgenstein",
+      "work_id": "Group_ItemsInEnglish",
+      "variant_id": "idp_transcription_linear",
+      "segment_id": "p-0001",
+      "sentence_id": "p-0001.s006",
+      "sampling_reason": "영어 원고 이형 표기와 추론·정당화의 구별"
+    }
+  ]
+}

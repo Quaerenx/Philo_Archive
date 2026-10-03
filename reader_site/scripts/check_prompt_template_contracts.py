@@ -96,27 +96,30 @@ def check_template_records() -> None:
         "sentence_translation_study_v2",
         "sentence_translation_study_v3",
         "sentence_translation_study_v4",
+        "sentence_translation_study_v5",
         "sentence_translation_critic_v1",
         "sentence_translation_critic_v2",
         "sentence_translation_critic_v3",
         "sentence_translation_critic_v4",
+        "sentence_translation_critic_v5",
         "sentence_translation_revision_v1",
         "sentence_translation_revision_v2",
         "sentence_translation_revision_v3",
+        "sentence_translation_revision_v4",
     ]:
         require(template_id in ids, f"missing tracked prompt template {template_id}")
     require(len(ids) == len(set(ids)), "duplicate prompt_template_id values")
     default_record = next(record for record in templates if record["prompt_template_id"] == DEFAULT_PROMPT_TEMPLATE_ID)
     for phrase in ["Do not replace", "filesystem paths", "Explicit statements", "Reasoned inferences", "quoted data"]:
         require(phrase in default_record["template"], f"default interpretation prompt missing {phrase!r}")
-    current_translation = next(record for record in templates if record["prompt_template_id"] == "sentence_translation_study_v4")
-    for phrase in ["opaque pronoun", "source-language word order", "grammatically complete", "genuinely ambiguous"]:
+    current_translation = next(record for record in templates if record["prompt_template_id"] == "sentence_translation_study_v6")
+    for phrase in ["opaque pronoun", "source-language word order", "grammatically complete", "genuinely ambiguous", "exact source constituent", "One source sentence may become multiple", "only in an adjacent sentence"]:
         require(phrase in current_translation["template"], f"current translation prompt missing {phrase!r}")
-    current_critic = next(record for record in templates if record["prompt_template_id"] == "sentence_translation_critic_v4")
-    for phrase in ["Korean readability", "referentially opaque", "korean_readability", "part of the audit contract", "target boundary clause by clause", "unsupported_addition", "surrounding context are intentionally absent"]:
+    current_critic = next(record for record in templates if record["prompt_template_id"] == "sentence_translation_critic_v6")
+    for phrase in ["Korean readability", "referentially opaque", "korean_readability", "part of the audit contract", "target boundary clause by clause", "unsupported_addition", "surrounding context are intentionally absent", "constituent by constituent", "major syntax_or_scope", "wording is not an issue"]:
         require(phrase in current_critic["template"], f"current critic prompt missing {phrase!r}")
-    current_revision = next(record for record in templates if record["prompt_template_id"] == "sentence_translation_revision_v3")
-    for phrase in ["only the Korean translation", "context for disambiguation only", "adjacent sentence", "ends with a colon"]:
+    current_revision = next(record for record in templates if record["prompt_template_id"] == "sentence_translation_revision_v5")
+    for phrase in ["only the Korean translation", "Surrounding context and the translator commentary are intentionally absent", "adjacent sentence", "ends with a colon", "minor korean_readability", "wording preference alone", "exact constituent restricted", "<REVISION_TARGET>"]:
         require(phrase in current_revision["template"], f"current revision prompt missing {phrase!r}")
 
 

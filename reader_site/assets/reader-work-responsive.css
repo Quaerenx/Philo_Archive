@@ -433,3 +433,18 @@
     min-height: var(--archive-mobile-control-height, 44px);
   }
 }
+
+/* Pointer targets remain reachable on desktop and touch layouts. */
+.toolbar a,
+.toolbar-more summary,
+.toolbar-more[open] .toolbar-more-links a,
+.variant-tabs .variant-tab,
+.study-page button,
+.study-page summary,
+.study-page .study-tab,
+.study-page .study-tab-secondary,
+.study-page .translation-card.reading-mode .translation-utility > summary,
+.study-page .translation-card.reading-mode .translation-utility[open] > summary {
+  min-height: var(--archive-control-height, 44px);
+  min-width: var(--archive-control-height, 44px);
+}

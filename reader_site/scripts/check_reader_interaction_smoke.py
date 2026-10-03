@@ -9,10 +9,14 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
+from urllib.parse import urlencode
 
 
 SITE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SITE / "scripts"))
+sys.path.insert(0, str(SITE))
+
+from services.work_chunks import work_chunk_manifest  # noqa: E402
 
 from check_visual_smoke import (  # noqa: E402
     find_browser,
@@ -215,6 +219,137 @@ def check_recent_work_dom(html: str, viewport_label: str) -> None:
     require("Zur Genealogie der Moral" in html, f"{context} missing recent work title")
 
 
+def check_virtual_reader(node: str, node_path: str, browser: str, base_url: str, width: int, height: int) -> None:
+    cases = []
+    for corpus, work, variant in (("kierkegaard", "ae", "text"), ("nietzsche", "MA-I", "")):
+        manifest = work_chunk_manifest(corpus, work, variant)
+        chunk = manifest["chunks"][len(manifest["chunks"]) // 2]
+        location = next(item for item in chunk["locations"] if corpus != "nietzsche" or str(item["segment_id"]).startswith("p-"))
+        target = str(location["segment_id"]) + ".s001"
+        route = f"/work/{corpus}/{work}?" + urlencode({"variant": variant}) + "#" + target
+        cases.append({"route": route, "target": target, "total": manifest["sentence_count"]})
+    script = r"""
+require('module').Module._initPaths();
+const { chromium } = require('playwright-core');
+const [base, casesText, executablePath, width, height] = process.argv.slice(2);
+(async () => {
+  const browser = await chromium.launch({headless:true, executablePath, args:['--disable-background-networking','--no-first-run']});
+  try {
+    const page = await browser.newPage({viewport:{width:Number(width),height:Number(height)}});
+    const errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await page.route('**/api/sentence-translation', route => route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({ok:false,error:'offline validation fixture'})}));
+    for (const test of JSON.parse(casesText)) {
+      await page.goto(base + test.route, {waitUntil:'domcontentloaded'});
+      await page.waitForFunction(id => document.getElementById(id)?.classList.contains('selected'), test.target, {timeout:15000});
+      await page.waitForFunction(() => document.querySelectorAll('.reader-chunk.is-loaded').length <= 6, null, {timeout:5000});
+      const state = await page.evaluate(id => ({
+        selected:document.getElementById(id)?.closest('.reader-chunk')?.dataset.chunkState,
+        sentences:document.querySelectorAll('.reader-sentence').length,
+        overflow:document.documentElement.scrollWidth > innerWidth + 1,
+        print:!!document.querySelector('a[href*="view=print"]')
+      }), test.target);
+      if (state.selected !== 'loaded' || state.sentences >= test.total || state.sentences > 3000 || state.overflow || !state.print) throw new Error(JSON.stringify({route:test.route,state}));
+    }
+    const readinessError = '검색 DB를 다시 생성하세요. <script>unsafe</script>';
+    await page.route('**/api/search?*', route => route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({error:readinessError,count:0,results:[],work_results:[{corpus_id:'nietzsche',work_id:'GM',title:'fixture work',url:'/work/nietzsche/GM'}]})}));
+    await page.goto(base + '/search?q=fixture', {waitUntil:'domcontentloaded'});
+    await page.waitForFunction(error => document.getElementById('search-results-segments')?.textContent.includes(error), readinessError);
+    const searchState = await page.evaluate(() => ({work:!!document.querySelector('.work-result a'), unsafe:!!document.querySelector('#search-results-segments script'),status:document.getElementById('searchStatus').textContent}));
+    if (!searchState.work || searchState.unsafe || !searchState.status.includes('본문 검색')) throw new Error('search readiness guidance hid work results or rendered unsafe HTML');
+    if (errors.length) throw new Error(errors.join('; '));
+    process.stdout.write('virtual reader deep links, bounded DOM, print links, overflow, and search readiness checks ok\n');
+  } finally { await browser.close(); }
+})().catch(error => { process.stderr.write(String(error.stack || error)); process.exit(1); });
+"""
+    with tempfile.TemporaryDirectory(prefix="philo_virtual_reader_") as directory:
+        path = Path(directory) / "verify.js"
+        path.write_text(script, encoding="utf-8")
+        env = os.environ.copy()
+        env["NODE_PATH"] = node_path
+        result = subprocess.run([node, str(path), base_url, json.dumps(cases), browser, str(width), str(height)], env=env, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=60)
+        require(result.returncode == 0, "virtual reader browser validation failed: " + result.stderr)
+        print(result.stdout.strip())
+
+
+def check_scrollbar_layout(node: str, node_path: str, browser: str, base_url: str) -> None:
+    script = r"""
+require('module').Module._initPaths();
+const { chromium } = require('playwright-core');
+const [base, executablePath] = process.argv.slice(2);
+(async () => {
+  const browser = await chromium.launch({
+    headless: true, executablePath, ignoreDefaultArgs: ['--hide-scrollbars'],
+    args: ['--disable-background-networking', '--no-first-run', '--no-default-browser-check',
+      '--disable-features=OverlayScrollbar,FluentOverlayScrollbar,FluentScrollbar']
+  });
+  const results = [];
+  const equal = (before, after, context) => {
+    for (const key of Object.keys(before)) {
+      if (Math.abs(before[key] - after[key]) > 0.5) throw new Error(`${context}: ${JSON.stringify({before,after})}`);
+    }
+  };
+  try {
+    for (const [width, height] of [[1365,900], [390,844], [1040,900], [1041,900]]) {
+      const page = await browser.newPage({viewport:{width,height}});
+      await page.goto(base + '/search', {waitUntil:'networkidle'});
+      const measure = () => page.evaluate(() => {
+        const frame=document.querySelector('.page').getBoundingClientRect();
+        const input=document.querySelector('#queryInput').getBoundingClientRect();
+        return {frameLeft:frame.left,frameWidth:frame.width,inputLeft:input.left,inputWidth:input.width};
+      });
+      if (await page.evaluate(() => document.documentElement.scrollHeight > innerHeight)) throw new Error('short search fixture unexpectedly scrolls');
+      const short = await measure();
+      await page.evaluate(() => {
+        const block=document.createElement('div');block.id='scrollbar-layout-fixture';block.style.height='200vh';
+        document.querySelector('#results').append(block);
+      });
+      const scrollbarWidth = await page.evaluate(() => innerWidth-document.documentElement.clientWidth);
+      if (scrollbarWidth <= 0) throw new Error('classic scrollbar fixture must consume viewport width');
+      const long = await measure();
+      equal(short,long,'document scrollbar changed horizontal geometry');
+      await page.evaluate(() => document.querySelector('#scrollbar-layout-fixture').remove());
+      equal(short,await measure(),'removing document scrollbar changed horizontal geometry');
+      await page.goto(base + '/work/nietzsche/GM#p-0023.s001', {waitUntil:'domcontentloaded'});
+      await page.waitForSelector('#translationOutput .translation-reading-actions');
+      await page.evaluate(() => setStudyPanelExpanded(true));
+      const panelMeasure = () => page.evaluate(() => {
+        const panel=document.querySelector('.study-page').getBoundingClientRect();
+        const tabs=document.querySelector('.study-tabs').getBoundingClientRect();
+        return {panelLeft:panel.left,panelWidth:panel.width,tabsLeft:tabs.left,tabsWidth:tabs.width};
+      });
+      const panelShort = await panelMeasure();
+      await page.evaluate(() => {
+        const block=document.createElement('div');block.id='panel-scrollbar-fixture';block.style.height='200vh';
+        document.querySelector('#study-panel-translation').append(block);
+      });
+      if (!await page.evaluate(() => {const panel=document.querySelector('.study-page');return panel.scrollHeight>panel.clientHeight+1;})) throw new Error('long panel fixture must scroll');
+      equal(panelShort,await panelMeasure(),'panel scrollbar changed horizontal geometry');
+      await page.click('#study-tab-notes');
+      equal(panelShort,await panelMeasure(),'notes tab changed panel horizontal geometry');
+      await page.click('#study-tab-citation');
+      equal(panelShort,await panelMeasure(),'citation tab changed panel horizontal geometry');
+      await page.click('#study-tab-translation');
+      await page.evaluate(() => document.querySelector('#panel-scrollbar-fixture').remove());
+      equal(panelShort,await panelMeasure(),'translation tab restoration changed panel horizontal geometry');
+      if (await page.evaluate(() => document.documentElement.scrollWidth>innerWidth+1)) throw new Error('scrollbar policy introduced horizontal overflow');
+      results.push({width,height,scrollbarWidth,documentShift:long.frameLeft-short.frameLeft,panelShift:(await panelMeasure()).panelLeft-panelShort.panelLeft});
+      await page.close();
+    }
+    process.stdout.write(JSON.stringify(results)+'\n');
+  } finally {await browser.close();}
+})().catch(error=>{process.stderr.write(String(error.stack||error));process.exit(1);});
+"""
+    with tempfile.TemporaryDirectory(prefix="philo_scrollbar_layout_") as directory:
+        path = Path(directory) / "verify.js"
+        path.write_text(script, encoding="utf-8")
+        env = os.environ.copy()
+        env["NODE_PATH"] = node_path
+        result = subprocess.run([node, str(path), base_url, browser], env=env, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=60)
+        require(result.returncode == 0, "scrollbar layout validation failed: " + result.stderr)
+        print("scrollbar layout geometry: " + result.stdout.strip())
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Validate reader sentence selection interaction in a headless browser.", allow_abbrev=False)
     parser.add_argument("--browser", default="", help="Path to Edge/Chrome/Chromium. Defaults to common local installs.")
@@ -229,6 +364,8 @@ def main() -> None:
     ai_temp_dir = tempfile.TemporaryDirectory(prefix="philo_reader_interaction_ai_")
     server_env = os.environ.copy()
     server_env["PHILO_AI_DIR"] = str(Path(ai_temp_dir.name))
+    server_env["PHILO_NOTES_DIR"] = str(Path(ai_temp_dir.name) / "notes")
+    server_env["PHILO_GEMMA_BASE_URL"] = "http://127.0.0.1:1"
     seed_visual_translations(Path(ai_temp_dir.name))
     server = subprocess.Popen(
         [sys.executable, str(SITE / "server.py"), "--host", "127.0.0.1", "--port", str(port)],
@@ -261,6 +398,10 @@ def main() -> None:
                     shutil.rmtree(profile_dir, ignore_errors=True)
             check_selected_sentence_dom(html, viewport_label)
             check_recent_work_dom(home_html, viewport_label)
+            if use_playwright:
+                check_virtual_reader(node, node_path, browser, base_url, width, height)
+        if use_playwright:
+            check_scrollbar_layout(node, node_path, browser, base_url)
         print("reader interaction smoke ok")
     finally:
         server.terminate()

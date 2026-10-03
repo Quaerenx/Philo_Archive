@@ -146,6 +146,8 @@ def validate_metadata(check: SchemaCheck, corpus: CorpusFiles) -> dict[str, dict
 def validate_segments(check: SchemaCheck, corpus: CorpusFiles, works: dict[str, dict[str, Any]]) -> int:
     check.require(corpus.segments.exists(), f"{corpus.corpus_id}: missing segment file")
     seen: set[tuple[str, str, str]] = set()
+    covered: set[tuple[str, str]] = set()
+    readable_variants: set[tuple[str, str]] = set()
     count = 0
     with corpus.segments.open("r", encoding="utf-8") as handle:
         for line_number, line in enumerate(handle, start=1):
@@ -169,9 +171,15 @@ def validate_segments(check: SchemaCheck, corpus: CorpusFiles, works: dict[str, 
             work_id = str(record.get("work_id", ""))
             check.require(work_id in works, f"{context}: unknown work_id {work_id!r}")
             variant_id = str(record.get("variant_id", ""))
+            covered.add((work_id, variant_id))
+            if record.get("segment_type") in {"paragraph", "verse", "block"}:
+                readable_variants.add((work_id, variant_id))
             if work_id in works:
                 ids = variant_ids_for(works[work_id])
                 check.require(not variant_id or variant_id in ids, f"{context}: unknown variant_id {variant_id!r}")
+                expected_title = works[work_id].get("display_title") or works[work_id].get("title") or work_id
+                if corpus.corpus_id in {"kierkegaard", "wittgenstein"}:
+                    check.require(record.get("title") == expected_title, f"{context}: segment title differs from metadata")
             key = (work_id, variant_id, str(record.get("segment_id", "")))
             check.require(key not in seen, f"{context}: duplicate segment key {key}")
             seen.add(key)
@@ -182,6 +190,15 @@ def validate_segments(check: SchemaCheck, corpus: CorpusFiles, works: dict[str, 
             check.require(url.startswith(f"/work/{corpus.corpus_id}/"), f"{context}: url must start with /work/{corpus.corpus_id}/")
             check.require("#" in url, f"{context}: url must include segment anchor")
     check.require(count > 0, f"{corpus.corpus_id}: segment file must contain records")
+    for work_id, work in works.items():
+        check.require(any(key[0] == work_id for key in covered), f"{corpus.corpus_id}/{work_id}: no readable segments")
+        if corpus.corpus_id == "kierkegaard":
+            for variant in work.get("variants", []):
+                variant_id = str(variant.get("variant_id", ""))
+                check.require((work_id, variant_id) in covered, f"kierkegaard/{work_id}/{variant_id}: no readable segments")
+                status = variant.get("reading_status", "text")
+                check.require(status in {"text", "labels_only"}, f"kierkegaard/{work_id}/{variant_id}: missing reading source")
+                check.require(((work_id, variant_id) in readable_variants) == (status == "text"), f"kierkegaard/{work_id}/{variant_id}: reading status differs from segment types")
     return count
 
 

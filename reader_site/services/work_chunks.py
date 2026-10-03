@@ -5,6 +5,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
+from corpora.reading_policy import translation_unavailable_reason
 from sentence_units import render_sentence_spans
 from services.segment_offsets import (
     SEGMENT_FILES,
@@ -16,6 +17,7 @@ from services.segment_offsets import (
 
 VIRTUAL_WORK_MIN_SEGMENTS = 2000
 VIRTUAL_WORK_MIN_TEXT_CHARS = 2 * 1024 * 1024
+VIRTUAL_WORK_MIN_SENTENCES = 4000
 WORK_CHUNK_TARGET_SENTENCES = 360
 WORK_CHUNK_MAX_SEGMENTS = 32
 WORK_CHUNK_CACHE_SIZE = 16
@@ -56,6 +58,9 @@ def _cached_work_chunk_manifest(cache_key: tuple[Any, ...]) -> dict[str, Any]:
     current_text_chars = 0
     total_sentences = 0
     total_text_chars = 0
+    toc: list[dict[str, Any]] = []
+    heading_locations: list[dict[str, Any]] = []
+    previous_chapter = ""
 
     def flush_chunk() -> None:
         nonlocal current_locations, current_sentences, current_text_chars
@@ -83,6 +88,18 @@ def _cached_work_chunk_manifest(cache_key: tuple[Any, ...]) -> dict[str, Any]:
     for work_segment_index, original_location in enumerate(locations):
         location = dict(original_location)
         sentence_count = max(1, int(location["sentence_count"]))
+        segment_id = str(location["segment_id"])
+        if corpus_id == "nietzsche" and not segment_id.startswith("p-"):
+            # Headings and quotations have anchors but no selectable sentence spans.
+            sentence_count = 0
+            if not segment_id.startswith("quote-"):
+                heading_locations.append(location)
+        if corpus_id == "bible":
+            chapter_id = segment_id.rsplit(".", 1)[0]
+            if chapter_id != previous_chapter:
+                location["chapter_id"] = chapter_id
+                toc.append({"id": chapter_id, "label": "Chapter " + chapter_id.rsplit(".", 1)[-1], "level": 2})
+                previous_chapter = chapter_id
         text_chars = max(0, int(location["text_chars"]))
         if current_locations and (
             len(current_locations) >= WORK_CHUNK_MAX_SEGMENTS
@@ -102,6 +119,17 @@ def _cached_work_chunk_manifest(cache_key: tuple[Any, ...]) -> dict[str, Any]:
     for chunk in chunks:
         for location in chunk["locations"]:
             segment_to_chunk[str(location["segment_id"])] = int(chunk["index"])
+            if location.get("chapter_id"):
+                segment_to_chunk[str(location["chapter_id"])] = int(chunk["index"])
+
+    virtualized = total_sentences >= VIRTUAL_WORK_MIN_SENTENCES or (
+        len(locations) >= VIRTUAL_WORK_MIN_SEGMENTS and total_text_chars >= VIRTUAL_WORK_MIN_TEXT_CHARS
+    )
+    if heading_locations and virtualized:
+        toc = [
+            {"id": record["segment_id"], "label": record["label"], "level": 2}
+            for record in read_indexed_segment_records(corpus_id, heading_locations)
+        ]
 
     return {
         "corpus_id": corpus_id,
@@ -112,10 +140,9 @@ def _cached_work_chunk_manifest(cache_key: tuple[Any, ...]) -> dict[str, Any]:
         "text_chars": total_text_chars,
         "chunks": tuple(chunks),
         "segment_to_chunk": segment_to_chunk,
-        "virtualized": (
-            len(locations) >= VIRTUAL_WORK_MIN_SEGMENTS
-            and total_text_chars >= VIRTUAL_WORK_MIN_TEXT_CHARS
-        ),
+        "toc": toc,
+        "virtualized": virtualized,
+        "paragraph_count": sum(str(location["segment_id"]).startswith("p-") for location in locations) if corpus_id == "nietzsche" else len(locations),
     }
 
 
@@ -145,7 +172,9 @@ def localized_segment_label(record: dict[str, Any], fallback_index: int) -> str:
     label = str(record.get("label") or "")
     order = int(record.get("order") or fallback_index)
     if segment_type == "paragraph":
-        return f"문단 {order}"
+        segment_id = str(record.get("segment_id") or "")
+        suffix = segment_id.rsplit("-", 1)[-1]
+        return f"문단 {int(suffix) if suffix.isdigit() else order}"
     return label or str(record.get("segment_id") or "")
 
 
@@ -156,6 +185,10 @@ def render_chunk_records(chunk: dict[str, Any]) -> str:
     corpus_id = str(locations[0]["corpus_id"])
     records = read_indexed_segment_records(corpus_id, locations)
     output: list[str] = []
+    text_dir = "ltr"
+    if corpus_id == "bible":
+        from corpora.catalogs import resolve_bible_work
+        text_dir = "rtl" if resolve_bible_work(str(locations[0]["work_id"])).get("language") == "hbo" else "ltr"
 
     for location, record in zip(locations, records, strict=True):
         segment_id = str(record.get("segment_id") or "")
@@ -164,6 +197,14 @@ def render_chunk_records(chunk: dict[str, Any]) -> str:
         escaped_id = html.escape(segment_id, quote=True)
         escaped_label = html.escape(label, quote=True)
         text_raw = str(record.get("text_raw") or "")
+
+        if location.get("chapter_id"):
+            chapter_id = html.escape(str(location["chapter_id"]), quote=True)
+            chapter_label = html.escape("Chapter " + str(record.get("chapter", "")))
+            output.append(
+                f'<h2 id="{chapter_id}" data-label="{chapter_label}" data-target-type="chapter">'
+                f'<a class="segment-anchor" href="#{chapter_id}" aria-label="{chapter_label}">#</a>{chapter_label}</h2>'
+            )
 
         if segment_type in {"section", "chapter"}:
             output.append(
@@ -184,13 +225,14 @@ def render_chunk_records(chunk: dict[str, Any]) -> str:
             segment_id,
             text_raw,
             sentence_position_offset=sentence_offset,
+            translatable=not bool(translation_unavailable_reason(corpus_id, str(record.get("variant_id") or ""))),
         )
         if segment_type == "verse":
             output.append(
                 f'<p id="{escaped_id}" class="verse" data-label="{escaped_label}" data-target-type="verse">'
                 f'<a class="segment-anchor" href="#{escaped_id}" aria-label="{escaped_label}">&#182;</a>'
                 f'<span class="verse-label">{escaped_id}</span>'
-                f'<span class="verse-text">{sentence_html}</span></p>'
+                f'<span class="verse-text" dir="{text_dir}">{sentence_html}</span></p>'
             )
             continue
         output.append(
@@ -264,9 +306,9 @@ def virtual_work_document(
     )
     return {
         "html": content,
-        "toc": [],
-        "paragraph_count": int(manifest["segment_count"]),
-        "heading_count": 0,
+        "toc": manifest["toc"],
+        "paragraph_count": int(manifest["paragraph_count"]),
+        "heading_count": len(manifest["toc"]),
         "virtual_document": {
             "enabled": True,
             "endpoint": "/api/work-chunks",

@@ -147,13 +147,16 @@ def check_prompt_template_builder() -> None:
         "sentence_translation_study_v2",
         "sentence_translation_study_v3",
         "sentence_translation_study_v4",
+        "sentence_translation_study_v5",
         "sentence_translation_critic_v1",
         "sentence_translation_critic_v2",
         "sentence_translation_critic_v3",
         "sentence_translation_critic_v4",
+        "sentence_translation_critic_v5",
         "sentence_translation_revision_v1",
         "sentence_translation_revision_v2",
         "sentence_translation_revision_v3",
+        "sentence_translation_revision_v4",
     ]:
         require(template_id in template_ids, f"missing tracked prompt template {template_id}")
 

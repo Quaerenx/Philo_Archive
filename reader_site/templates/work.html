@@ -5,15 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{TITLE}} / {{CORPUS_TITLE}}</title>
   <link rel="icon" href="/assets/favicon.svg?v=phi1" type="image/svg+xml">
-  <link rel="stylesheet" href="/assets/design-tokens.css?v=frame5">
+  <link rel="stylesheet" href="/assets/design-tokens.css?v=frame7">
   <link rel="stylesheet" href="/assets/reader-work-document.css?v=document2">
-  <link rel="stylesheet" href="/assets/reader-work.css?v=common152">
-  <link rel="stylesheet" href="/assets/reader-work-study.css?v=study2">
-  <link rel="stylesheet" href="/assets/reader-work-controls.css?v=controls2">
-  <link rel="stylesheet" href="/assets/reader-work-translation.css?v=translation2">
+  <link rel="stylesheet" href="/assets/reader-work.css?v=common154">
+  <link rel="stylesheet" href="/assets/reader-work-study.css?v=study3">
+  <link rel="stylesheet" href="/assets/reader-work-controls.css?v=controls4">
+  <link rel="stylesheet" href="/assets/reader-work-translation.css?v=translation4">
   <link rel="stylesheet" href="/assets/reader-work-notes.css?v=notes2">
   <link rel="stylesheet" href="/assets/reader-work-source.css?v=source2">
-  <link rel="stylesheet" href="/assets/reader-work-responsive.css?v=responsive3">
+  <link rel="stylesheet" href="/assets/reader-work-responsive.css?v=responsive5">
+  <link rel="stylesheet" href="/assets/reader-presentation.css?v=presentation2">
+  <link rel="stylesheet" href="/assets/reader-work-preferences.css?v=preferences1">
+  <link rel="stylesheet" href="/assets/reader-usability.css?v=usability1">
 </head>
 <body class="{{BODY_CLASS}}">
   <div class="page">
@@ -35,6 +38,24 @@
             </div>
           </details>
         </nav>
+        <details id="readerPreferences" class="reader-preferences">
+          <summary>읽기 설정</summary>
+          <div class="reading-presets" role="group" aria-label="읽기 설정 프리셋">
+            <button type="button" data-reading-preset="balanced" aria-pressed="true">기본</button>
+            <button type="button" data-reading-preset="reading" aria-pressed="false">원문 집중</button>
+            <button type="button" data-reading-preset="comparison" aria-pressed="false">번역 비교</button>
+          </div>
+          <div class="reading-preference-fields">
+            <label>글자 크기<select data-reading-preference="size"><option value="small">작게 · 16px</option><option value="standard" selected>기본 · 18px</option><option value="large">크게 · 21px</option></select></label>
+            <label>줄 간격<select data-reading-preference="spacing"><option value="standard">보통</option><option value="relaxed" selected>여유롭게</option><option value="wide">넓게</option></select></label>
+            <label>본문 폭<select data-reading-preference="width"><option value="narrow">좁게</option><option value="standard" selected>기본</option><option value="wide">넓게</option></select></label>
+            <label>패널 비율<select data-reading-preference="panel" aria-describedby="readingPanelHelp"><option value="source">원문 넓게</option><option value="balanced" selected>균형</option><option value="translation">번역 넓게</option></select></label>
+          </div>
+          <p id="readingPanelHelp" class="reading-preferences-status">패널 비율은 넓은 화면에 적용됩니다.</p>
+          <label class="automatic-translation-option"><input type="checkbox" id="automaticSentenceTranslation" aria-describedby="automaticTranslationStatus">문장 선택 시 자동 번역</label>
+          <p id="automaticTranslationStatus" class="automatic-translation-status" role="status" aria-live="polite">기본 문장 탐색은 저장된 번역만 확인합니다. 새 번역은 번역 버튼으로 생성하세요.</p>
+          <p id="readingPreferencesStatus" class="reading-preferences-status" role="status" aria-live="polite"></p>
+        </details>
       </header>
       {{VARIANT_TABS}}
       {{TOC}}
@@ -44,7 +65,7 @@
         </section>
         <button type="button" id="studyPanelScrim" class="study-panel-scrim" aria-label="학습 패널 닫기" hidden></button>
         <aside id="studyCompanionPanel" class="study-page" aria-label="학습 패널">
-          <button type="button" id="studyPanelToggle" class="study-panel-toggle" aria-expanded="false" aria-controls="studyCompanionPanel" aria-label="해설 보기. 문장 선택"><span class="study-panel-toggle-action">해설 보기</span><span class="study-panel-toggle-summary">문장 선택</span></button>
+          <button type="button" id="studyPanelToggle" class="study-panel-toggle" aria-expanded="false" aria-controls="studyCompanionPanel" aria-label="번역 노트 보기. 문장 선택"><span class="study-panel-toggle-action">번역 노트 보기</span><span class="study-panel-toggle-summary">문장 선택</span></button>
           <nav class="study-tabs" role="tablist" aria-label="학습 도구" aria-orientation="horizontal">
             <button type="button" id="study-tab-translation" class="study-tab active" role="tab" aria-selected="true" aria-controls="study-panel-translation" tabindex="0" data-study-tab="translation">번역</button>
             <button type="button" id="study-tab-notes" class="study-tab" role="tab" aria-selected="false" aria-controls="study-panel-notes" tabindex="-1" data-study-tab="notes">노트</button>
@@ -55,13 +76,15 @@
             <section class="research-card translation-card" aria-labelledby="translationCardTitle">
               <h2 id="translationCardTitle" class="visually-hidden">번역</h2>
               <div id="translationOutput" class="translation-output reading-mode" aria-label="번역 결과" aria-busy="false" tabindex="0" hidden></div>
+              <div id="readerTermStrip" class="reader-term-strip" aria-label="선택 문장의 용어와 표현" hidden></div>
+              <section id="readerTermCard" class="reader-term-card" aria-label="용어 설명" aria-live="polite" hidden></section>
               <details class="translation-utility" aria-label="읽기 설정">
                 <summary>
                   <span>설정</span>
                 </summary>
                 <div class="translation-utility-body">
                   <section class="translation-utility-group" aria-label="문장 이동">
-                    <div class="translation-utility-group-label visually-hidden">문장</div>
+                    <div class="translation-utility-group-label">문장</div>
                     <div id="translationTarget" class="translation-target">문장을 선택하세요.</div>
                     <div id="readingPosition" class="reading-position" aria-label="현재 읽는 위치" hidden></div>
                     <details class="sentence-context-tools" aria-label="주변 문장" hidden>
@@ -82,7 +105,7 @@
                     </div>
                   </section>
                   <section class="translation-utility-group translation-flow-group" aria-label="학습 흐름">
-                    <div class="translation-utility-group-label visually-hidden">학습</div>
+                    <div class="translation-utility-group-label">학습</div>
                     <div id="translationStatus" class="translation-status" role="status" aria-live="polite" aria-atomic="true"></div>
                     <div id="studyProgress" class="study-progress" data-progress-state="loading" role="status" aria-live="polite" aria-atomic="true">
                       <span id="studyProgressText">진행 확인 중</span>
@@ -111,7 +134,7 @@
                     </details>
                   </section>
                   <section class="translation-utility-group" aria-label="보기와 번역기">
-                    <div class="translation-utility-group-label visually-hidden">설정</div>
+                    <div class="translation-utility-group-label">설정</div>
                     <div class="mode-toggle" role="group" aria-label="번역 표시 방식">
                       <button type="button" id="readingMode" class="active">읽기</button>
                       <button type="button" id="studyMode">학습</button>
@@ -130,7 +153,7 @@
             <section class="research-card notes-card">
               <h2>노트</h2>
               <form id="noteForm">
-                <label><span class="visually-hidden">노트</span><textarea id="noteText" name="note" aria-describedby="noteStatus" placeholder="메모 작성..." required></textarea></label>
+                <label><span>노트</span><textarea id="noteText" name="note" aria-describedby="noteStatus" placeholder="메모 작성..." required></textarea></label>
                 <details class="note-options" aria-label="노트 태그">
                   <summary>태그</summary>
                   <label>태그<input id="noteTags" name="tags" autocomplete="off"></label>
@@ -182,14 +205,21 @@
     </main>
   </div>
   <script id="researchData" type="application/json">{{RESEARCH_JSON}}</script>
-  <script src="/assets/reader-work-storage.js?v=storage1"></script>
+  <script src="/assets/reader-work-storage.js?v=storage3"></script>
+  <script src="/assets/translation-workflow.js?v=workflow2"></script>
+  <script src="/assets/translation-comparison.js?v=comparison2"></script>
   <script src="/assets/reader-work-virtual.js?v=virtual1"></script>
-  <script src="/assets/reader-work.js?v=common197"></script>
-  <script src="/assets/reader-work-panel.js?v=panel1"></script>
-  <script src="/assets/reader-work-runtime.js?v=runtime1"></script>
-  <script src="/assets/reader-work-sentences.js?v=sentences2"></script>
-  <script src="/assets/reader-work-translation.js?v=translation3"></script>
-  <script src="/assets/reader-work-notes.js?v=notes2"></script>
-  <script src="/assets/reader-work-app.js?v=app1"></script>
+  <script src="/assets/reader-work.js?v=common200"></script>
+  <script src="/assets/reader-work-navigation.js?v=navigation2"></script>
+  <script src="/assets/reader-work-recent.js?v=recent2"></script>
+  <script src="/assets/reader-work-preferences.js?v=preferences1"></script>
+  <script src="/assets/reader-work-terms.js?v=terms2"></script>
+  <script src="/assets/reader-work-panel.js?v=panel2"></script>
+  <script src="/assets/reader-work-runtime.js?v=runtime4"></script>
+  <script src="/assets/reader-work-sentences.js?v=sentences6"></script>
+  <script src="/assets/reader-translation-metrics.js?v=metrics3"></script>
+  <script src="/assets/reader-work-translation.js?v=translation13"></script>
+  <script src="/assets/reader-work-notes.js?v=notes5"></script>
+  <script src="/assets/reader-work-app.js?v=app5"></script>
 </body>
 </html>

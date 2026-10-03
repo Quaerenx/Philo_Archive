@@ -4,13 +4,13 @@ import json
 import os
 import re
 from datetime import datetime
-from functools import lru_cache
+from copy import deepcopy
 from pathlib import Path
 from urllib.parse import quote
 from uuid import uuid4
 
 from corpora.catalogs import validate_work_target
-from services.jsonl_storage import atomic_write_jsonl, jsonl_snapshot_key, locked_jsonl
+from services.jsonl_storage import JsonlSnapshotCache, atomic_append_jsonl, atomic_write_jsonl, jsonl_snapshot_key, locked_jsonl
 from services.sentence_targets import resolve_sentence_target
 from services.source_targets import resolve_segment_target
 from services.sources import work_href
@@ -79,39 +79,61 @@ def note_storage_path(corpus_id: str) -> Path:
     return NOTES_DIR / f"{corpus_id}_notes.jsonl"
 
 
-@lru_cache(maxsize=16)
+_NOTE_SNAPSHOTS = JsonlSnapshotCache()
+
+
 def _read_jsonl_snapshot(
     path_value: str,
     _modified_ns: int,
     _changed_ns: int,
     _size: int,
+    _inode: int = 0,
 ) -> tuple[dict, ...]:
-    records = []
-    with Path(path_value).open("r", encoding="utf-8") as handle:
-        for line in handle:
-            line = line.strip()
-            if line:
-                records.append(json.loads(line))
-    return tuple(records)
+    def load(value: str) -> tuple[dict, ...]:
+        records = []
+        with Path(value).open("r", encoding="utf-8") as handle:
+            for line in handle:
+                line = line.strip()
+                if line:
+                    item = json.loads(line)
+                    if not isinstance(item, dict):
+                        raise ValueError("note JSONL records must be objects")
+                    records.append(item)
+        return tuple(records)
+    path = Path(path_value)
+    with locked_jsonl(path):
+        key = jsonl_snapshot_key(path)
+        return _NOTE_SNAPSHOTS.get(key, load) if key is not None else ()
+
+
+_read_jsonl_snapshot.cache_clear = _NOTE_SNAPSHOTS.clear
+_read_jsonl_snapshot.cache_info = _NOTE_SNAPSHOTS.info
 
 
 def read_jsonl(path: Path) -> list[dict]:
-    snapshot_key = jsonl_snapshot_key(path)
-    if snapshot_key is None:
-        return []
-    return [dict(record) for record in _read_jsonl_snapshot(*snapshot_key)]
+    with locked_jsonl(path):
+        snapshot_key = jsonl_snapshot_key(path)
+        if snapshot_key is None:
+            return []
+        return [dict(record) for record in _read_jsonl_snapshot(*snapshot_key)]
 
 
 def append_jsonl(path: Path, record: dict) -> None:
     with locked_jsonl(path):
-        records = read_jsonl(path)
-        records.append(record)
-        write_jsonl(path, records)
+        key = jsonl_snapshot_key(path)
+        records = _NOTE_SNAPSHOTS.peek(key) if key is not None else ()
+        if key is not None and records is None and not _NOTE_SNAPSHOTS.is_validated(key):
+            records = _read_jsonl_snapshot(*key)
+        new_key = atomic_append_jsonl(path, record, expected_signature=key)
+        if records is not None and new_key[3] <= _NOTE_SNAPSHOTS.max_bytes:
+            _NOTE_SNAPSHOTS.remember(new_key, (*records, deepcopy(record)))
+        else:
+            _NOTE_SNAPSHOTS.remember_validation(new_key)
 
 
 def write_jsonl(path: Path, records: list[dict]) -> None:
     atomic_write_jsonl(path, records)
-    _read_jsonl_snapshot.cache_clear()
+    _NOTE_SNAPSHOTS.invalidate(path)
 
 
 def normalize_note_record(note: dict, fallback_corpus_id: str) -> dict:
@@ -159,6 +181,7 @@ def read_notes(
     tag: str = "",
     query: str = "",
     review_state: str = "",
+    variant_id: str | None = None,
 ) -> list[dict]:
     corpus_id = safe_note_slug(corpus_id)
     if not corpus_id:
@@ -170,6 +193,8 @@ def read_notes(
     ]
     if work_id:
         notes = [note for note in notes if note.get("work_id") == work_id]
+    if variant_id is not None:
+        notes = [note for note in notes if str(note.get("variant_id") or "") == variant_id]
     if target_id:
         notes = [note for note in notes if note.get("target_id") == target_id]
     if tag:
@@ -198,6 +223,7 @@ def read_all_notes(
     tag: str = "",
     query: str = "",
     review_state: str = "",
+    variant_id: str | None = None,
 ) -> list[dict]:
     selected = [safe_note_slug(item) for item in (corpus_ids or available_note_corpus_ids())]
     notes: list[dict] = []
@@ -211,6 +237,7 @@ def read_all_notes(
                     tag=tag,
                     query=query,
                     review_state=review_state,
+                    variant_id=variant_id,
                 )
             )
     return sorted(
@@ -365,6 +392,7 @@ def notes_payload_from_query(query: dict[str, list[str]]) -> dict:
             tag=first_query_value(query, "tag"),
             query=first_query_value(query, "q"),
             review_state=first_query_value(query, "review_state"),
+            variant_id=first_query_value(query, "variant_id") if "variant_id" in query else None,
         )
     except ValueError:
         notes = []
@@ -381,6 +409,7 @@ def notes_for_export_query(query: dict[str, list[str]]) -> list[dict]:
         tag=first_query_value(query, "tag"),
         query=first_query_value(query, "q"),
         review_state=first_query_value(query, "review_state"),
+        variant_id=first_query_value(query, "variant_id") if "variant_id" in query else None,
     )
 
 

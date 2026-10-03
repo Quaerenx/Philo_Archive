@@ -13,6 +13,7 @@ SITE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SITE))
 
 from path_config import KIERKEGAARD_TEXTS, ROOT  # noqa: E402
+from corpora.kierkegaard_text import extract_texts, has_readable_text, reading_source_path  # noqa: E402
 
 OUTPUT = SITE / "data" / "kierkegaard_metadata.json"
 
@@ -68,17 +69,6 @@ def display_title(work_id: str, title: str, document_type: str) -> str:
     return title
 
 
-def extract_count(document: dict) -> int:
-    count = 0
-    for key in ("prose_extract_tesim", "verse_extract_tesim", "performance_extract_tesim", "text_tesim"):
-        value = document.get(key)
-        if isinstance(value, list):
-            count += sum(1 for item in value if str(item).strip())
-        elif value and str(value).strip():
-            count += 1
-    return count
-
-
 def load_existing_generated_at() -> str:
     if not OUTPUT.exists():
         return datetime.now().isoformat(timespec="seconds")
@@ -108,16 +98,19 @@ def build_metadata() -> dict:
             document_type = document_type or str(document.get("type_ssi", ""))
             copyright_note = copyright_note or document.get("copyright_ssi", "")
             volume = volume or first_value(document.get("volume_title_tesim"))
+            reading_path = reading_source_path(path)
+            texts = extract_texts(reading_path)
             variants.append(
                 {
                     "variant_id": variant_id,
                     "label": label,
                     "document_id": document.get("id") or path.stem,
-                    "source_path": relative_source_path(path),
-                    "source_url": source_href(path),
+                    "source_path": relative_source_path(reading_path),
+                    "source_url": source_href(reading_path),
                     "source_xml": document.get("url_ssi", ""),
-                    "sha256": sha256_file(path),
-                    "extract_count": extract_count(document),
+                    "sha256": sha256_file(reading_path),
+                    "extract_count": len(texts),
+                    "reading_status": "text" if has_readable_text(texts) else "labels_only" if texts else "missing",
                 }
             )
         if not variants:

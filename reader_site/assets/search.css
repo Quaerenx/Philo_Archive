@@ -98,6 +98,10 @@ h1 {
 }
 
 .toolbar a {
+  display: inline-flex;
+  min-width: 44px;
+  min-height: 44px;
+  align-items: center;
   color: #666;
 }
 
@@ -113,9 +117,8 @@ h1 {
 
 .search-form {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(180px, 220px) 126px;
-  gap: 10px;
-  align-items: end;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
   margin-bottom: 16px;
   padding-bottom: 16px;
   border-bottom: 1px solid #d4d4d4;
@@ -128,13 +131,26 @@ h1 {
   line-height: 1.35;
 }
 
+.query-entry {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 160px;
+  gap: 8px;
+}
+
+.field-help {
+  margin: 0;
+  color: #555;
+  line-height: 1.5;
+}
+
 .search-form input,
 .search-form select,
 .search-form button {
-  min-height: 28px;
+  min-width: 44px;
+  min-height: 44px;
   color: #000;
   font-family: var(--archive-font);
-  font-size: 10px;
+  font-size: 12px;
   background: #fff;
   border: 1px solid #bdbdbd;
 }
@@ -154,11 +170,29 @@ h1 {
 .form-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
+  gap: 8px;
 }
 
 .form-actions button {
   width: 100%;
+}
+
+.form-actions #searchSubmit {
+  color: #fff;
+  font-weight: bold;
+  background: #9f0000;
+  border-color: #9f0000;
+}
+
+.form-actions #searchSubmit:hover:not(:disabled) {
+  background: #7f0000;
+  border-color: #7f0000;
+}
+
+.search-form :is(input, select, button, summary):focus-visible,
+.reader :is(a, button):focus-visible {
+  outline: 2px solid #555;
+  outline-offset: 3px;
 }
 
 .form-actions .secondary-action {
@@ -175,7 +209,7 @@ h1 {
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 8px;
   align-items: center;
-  min-height: 28px;
+  min-height: 44px;
   padding: 4px 8px;
   color: #333;
   background: #fff;
@@ -199,6 +233,7 @@ h1 {
 
 .filter-panel-fields {
   display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
   margin-top: 8px;
   padding: 8px;
@@ -209,7 +244,7 @@ h1 {
 .active-filters {
   display: none;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
   align-items: center;
   margin: -4px 0 14px;
   color: #555;
@@ -227,7 +262,7 @@ h1 {
 .search-return {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
   align-items: baseline;
   margin: -4px 0 14px;
   padding-top: 8px;
@@ -242,6 +277,9 @@ h1 {
 }
 
 .search-return a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
   color: #9a0000;
 }
 
@@ -256,12 +294,13 @@ h1 {
   display: inline-flex;
   align-items: center;
   max-width: 100%;
-  min-height: 28px;
+  min-width: 44px;
+  min-height: 44px;
   gap: 7px;
   padding: 3px 8px;
   color: #000;
   font-family: var(--archive-font);
-  font-size: 10px;
+  font-size: 12px;
   background: #fafafa;
   border: 1px solid #d4d4d4;
   cursor: pointer;
@@ -292,6 +331,7 @@ h1 {
 }
 
 .search-form.is-searching #searchSubmit {
+  color: #555;
   padding-right: 28px;
   background: #fffaf0;
   border-color: #c8b86a;
@@ -320,7 +360,7 @@ h1 {
 .result-summary-nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
   align-items: center;
   padding: 8px;
   background: #fbfbfb;
@@ -329,7 +369,8 @@ h1 {
 
 .result-summary-link {
   display: inline-flex;
-  min-height: 26px;
+  min-width: 44px;
+  min-height: 44px;
   align-items: center;
   gap: 5px;
   padding: 3px 7px;
@@ -387,7 +428,7 @@ h1 {
 
 .search-start-links a {
   display: flex;
-  min-height: 34px;
+  min-height: 44px;
   align-items: center;
   justify-content: center;
   padding: 5px 8px;
@@ -413,6 +454,8 @@ h1 {
 .empty-actions a {
   display: inline-flex;
   align-items: center;
+  min-width: 44px;
+  min-height: 44px;
   color: #555;
 }
 
@@ -422,7 +465,8 @@ h1 {
 }
 
 .empty-actions button {
-  min-height: 28px;
+  min-width: 44px;
+  min-height: 44px;
   padding: 4px 12px;
   color: #000;
   font-family: var(--archive-font);
@@ -434,7 +478,7 @@ h1 {
 
 .result-group {
   display: grid;
-  gap: 14px;
+  gap: 20px;
 }
 
 .result-group-header {
@@ -476,7 +520,8 @@ h1 {
 }
 
 .search-pagination button {
-  min-height: 34px;
+  min-width: 44px;
+  min-height: 44px;
   padding: 5px 12px;
   color: #111;
   font-family: var(--archive-font);
@@ -524,20 +569,23 @@ h1 {
 
 .result-title {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 6px;
   align-items: center;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
   line-height: 1.35;
 }
 
 .result-title > a {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
   min-width: 0;
   overflow: hidden;
   color: #111;
   font-weight: bold;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 .result-kind {
@@ -600,7 +648,8 @@ h1 {
 
 .result-actions a {
   display: inline-flex;
-  min-height: 24px;
+  min-width: 44px;
+  min-height: 44px;
   align-items: center;
   padding: 2px 7px;
   border: 1px solid transparent;
@@ -633,6 +682,7 @@ h1 {
 .snippet-link {
   position: relative;
   display: block;
+  min-height: 44px;
   padding-right: 18px;
   color: #111;
   text-decoration: none;
@@ -755,7 +805,7 @@ mark {
   }
 
   .toolbar {
-    gap: 4px 10px;
+    gap: 8px 10px;
     margin-top: 6px;
   }
 
@@ -776,6 +826,11 @@ mark {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .query-entry,
+  .filter-panel-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .search-start-links a {
     min-height: var(--archive-mobile-control-height, 44px);
   }
@@ -788,9 +843,8 @@ mark {
     min-height: var(--archive-mobile-control-height, 44px);
   }
 
-  input,
-  select,
-  textarea {
+  .search-form input,
+  .search-form select {
     min-height: var(--archive-mobile-control-height, 44px);
     font-size: 16px;
   }

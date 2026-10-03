@@ -22,6 +22,9 @@ let recentlyChangedRecordId = "";
 let archiveCorpora = [];
 let pendingReviewQueueFocus = false;
 let pendingReviewQueueMessage = "";
+let priorityQueueActive = false;
+const translationWorkflow = window.TranslationWorkflow;
+const translationDrafts = window.TranslationDrafts;
 
 const DEFAULT_CORPUS = "";
 const LAST_CORPUS_STORAGE_KEY = "philoArchive.lastCorpusId";
@@ -33,10 +36,10 @@ const REVIEW_LABELS = {
   rejected: "제외한 번역"
 };
 const QUALITY_LABELS = {
-  critic_pass: "자동 검증 통과",
-  critic_pass_after_revision: "자동 수정 후 통과",
-  needs_human_review: "자동 검증 확인 필요",
-  critic_error: "자동 검증 실패"
+  critic_pass: "자동 검토 완료",
+  critic_pass_after_revision: "자동 수정됨",
+  needs_human_review: "검토 필요",
+  critic_error: "검토 필요"
 };
 
 function escapeHtml(value) {
@@ -165,6 +168,7 @@ function fetchParams(format = "json") {
     format,
     review_state: "all"
   });
+  params.set("include_source_state", "1");
   if (corpusSelect.value) params.set("corpus_id", corpusSelect.value);
   const workId = workInput.value.trim();
   if (workId) params.set("work_id", workId);
@@ -194,6 +198,7 @@ function urlParams() {
   if (corpusId) params.set("corpus_id", corpusId);
   if (workId) params.set("work_id", workId);
   if (reviewState !== "all") params.set("review_state", reviewState);
+  if (priorityQueueActive) params.set("view", "review_queue");
   return params;
 }
 
@@ -220,6 +225,7 @@ function hasSearchFilters() {
 }
 
 function currentPageHeading() {
+  if (priorityQueueActive) return "우선 검토";
   const reviewState = reviewSelect.value || "all";
   if (reviewState === "generated" && !hasSearchFilters()) return "검토할 번역";
   if (reviewState === "reviewed" && !hasSearchFilters()) return "저장한 번역";
@@ -237,7 +243,7 @@ function updatePageHeading() {
 }
 
 function isReviewQueueOnlyView() {
-  return (reviewSelect.value || "all") === "generated" &&
+  return priorityQueueActive || (reviewSelect.value || "all") === "generated" &&
     !hasSearchFilters() &&
     generatedRecords(lastRecords).length > 0;
 }
@@ -370,16 +376,16 @@ function generatedRecords(records) {
 
 function updateReviewQueueButton(records = lastRecords) {
   if (!reviewQueueButton) return;
-  const generatedCount = generatedRecords(records).length;
-  reviewQueueButton.hidden = generatedCount === 0 || isReviewQueueOnlyView();
-  reviewQueueButton.textContent = "검토할 번역";
-  reviewQueueButton.disabled = form.classList.contains("is-loading") || generatedCount === 0;
+  const generatedCount = translationWorkflow.queue(records.filter(recordMatchesQuery)).length;
+  reviewQueueButton.hidden = generatedCount === 0 && !priorityQueueActive;
+  reviewQueueButton.textContent = priorityQueueActive ? "전체 목록으로" : `우선 검토 · ${generatedCount.toLocaleString()}문장`;
+  reviewQueueButton.disabled = form.classList.contains("is-loading") || !priorityQueueActive && generatedCount === 0;
   reviewQueueButton.title = generatedCount
     ? `${generatedCount.toLocaleString()}개 검토 대기`
     : "검토할 번역 없음";
   reviewQueueButton.setAttribute(
     "aria-label",
-    generatedCount ? `검토할 번역 ${generatedCount.toLocaleString()}개로 이동` : "검토할 번역 없음"
+    priorityQueueActive ? "전체 번역 목록으로 돌아가기" : `우선 검토 ${generatedCount.toLocaleString()}문장으로 이동`
   );
 }
 
@@ -522,7 +528,7 @@ function groupedTranslationRecords(records) {
   for (const group of groups) {
     for (const sentence of group.sentences) {
       sentence.records.sort((left, right) => (
-        recordSortTime(right) - recordSortTime(left) ||
+        translationWorkflow.compareCurrent(left, right) || recordSortTime(right) - recordSortTime(left) ||
         (recordIndexes.get(right) ?? 0) - (recordIndexes.get(left) ?? 0)
       ));
     }
@@ -574,16 +580,17 @@ function renderRecord(record, options) {
   const modelTranslation = rawModelTranslation;
   const humanTranslation = rawHumanTranslation;
   const translation = humanTranslation || modelTranslation;
-  const commentary = cleanText(record.commentary || record.interpretation || "");
+  const commentary = record.commentary_status === "current" ? cleanText(record.commentary || "") : "";
   const targetUrl = cleanText(record.target_url || "");
   const isRecent = record.id === recentlyChangedRecordId;
   const hasHumanTranslation = Boolean(humanTranslation);
   const reviewLabel = REVIEW_LABELS[reviewState] || reviewState;
   const qualityState = cleanText(record.quality_state || "");
   const qualityLabel = QUALITY_LABELS[qualityState] || "";
+  const qualityContext = hasHumanTranslation ? "모델 원본: " : "";
   const revisionCount = Number(record.revision_count || 0);
   const qualityBadge = qualityLabel
-    ? `<span class="quality-badge" data-quality-state="${escapeHtml(qualityState)}" aria-label="자동 품질 상태: ${escapeHtml(qualityLabel)}">${escapeHtml(qualityLabel)}${revisionCount > 0 ? ` · ${revisionCount}회` : ""}</span>`
+    ? `<span class="quality-badge" data-quality-state="${escapeHtml(qualityState)}" aria-label="자동 품질 상태: ${escapeHtml(qualityContext + qualityLabel)}">${escapeHtml(qualityContext + qualityLabel)}${revisionCount > 0 ? ` · ${revisionCount}회` : ""}</span>`
     : "";
   const showReviewBadge = options.showReviewBadge !== false;
   const showReviewActions = options.showReviewActions === true;
@@ -593,6 +600,11 @@ function renderRecord(record, options) {
   const confirmedBadge = hasHumanTranslation
     ? '<span class="human-translation-badge">사람 확정</span>'
     : "";
+  const currentState = translationWorkflow.state(record);
+  const currentStatus = options.historical ? '<p class="translation-current-status">이전 번역 기록</p>'
+    : `<p class="translation-current-status" data-current-state="${escapeHtml(currentState.kind)}">현재 표시: ${escapeHtml(currentState.label)}</p>`;
+  const priority = options.priority;
+  const priorityInfo = priority ? `<div class="translation-priority" data-priority-rank="${priority.rank}"><strong>${escapeHtml(priority.label)}</strong><p>${escapeHtml(priority.reason)}</p></div>` : "";
   const reviewKicker = showReviewBadge || qualityBadge || confirmedBadge
     ? `<div class="translation-record-kicker">
         ${showReviewBadge ? `<span class="review-badge" aria-label="검토 상태: ${escapeHtml(reviewLabel)}">${escapeHtml(reviewLabel)}</span>` : ""}
@@ -632,10 +644,8 @@ function renderRecord(record, options) {
     sourceAction,
     moreAction
   ].filter(Boolean).join("") : "";
-  const modelOriginal = hasHumanTranslation && modelTranslation && modelTranslation !== humanTranslation
-    ? `<details class="translation-model-original"><summary>모델 원본</summary><p>${escapeHtml(modelTranslation)}</p></details>`
-    : "";
-  const humanEditor = showReviewActions
+  const comparison = window.TranslationComparison.render(record);
+  const humanEditor = showReviewActions && record.source_current !== false
     ? `<details class="translation-human-editor">
         <summary>${hasHumanTranslation ? "확정 번역 수정" : "번역 직접 교정"}</summary>
         <form data-human-translation-form>
@@ -653,9 +663,13 @@ function renderRecord(record, options) {
       ${reviewKicker}
       ${showContext && context ? `<div class="translation-record-context">${escapeHtml(context)}</div>` : ""}
     </header>
+    ${currentStatus}
+    ${priorityInfo}
     ${translation ? `<p class="translation-text">${escapeHtml(translation)}</p>` : ""}
-    ${modelOriginal}
-    ${commentary ? `<details class="translation-commentary"${openCommentary ? " open" : ""} aria-label="해설"><summary>해설</summary><p>${escapeHtml(commentary)}</p></details>` : ""}
+    ${comparison}
+    ${record.current_translation_issues?.length ? `<p class="translation-unavailable-copy">${escapeHtml(record.current_translation_issues.map(issue => issue.explanation).join(" "))}</p>` : ""}
+    ${record.current_note_issues?.length ? `<p class="translation-unavailable-copy">${escapeHtml(record.current_note_issues.map(issue => issue.explanation).join(" "))}</p>` : ""}
+    ${commentary ? `<details class="translation-commentary"${openCommentary ? " open" : ""} aria-label="번역 노트"><summary>번역 노트</summary><p>${escapeHtml(commentary)}</p></details>` : ""}
     ${source && showSourceDetail ? `<details class="translation-source"><summary>선택 문장</summary><blockquote>${escapeHtml(source)}</blockquote></details>` : ""}
     ${humanEditor}
     ${actions ? `<footer class="translation-record-footer">
@@ -681,7 +695,8 @@ function renderSentenceRecords(sentence, options, groupIndex, sentenceIndex) {
           ${older.map((record) => renderRecord(record, {
             ...options,
             showContext: false,
-            openCommentary: false
+            openCommentary: false,
+            historical: true
           })).join("")}
         </div>
       </details>`
@@ -706,20 +721,28 @@ function renderRecords(records) {
   lastRecords = records;
   updateTranslationsListChrome(records.length);
   const queryMatched = records.filter(recordMatchesQuery);
-  const visible = queryMatched.filter(recordMatchesReview);
+  const queue = priorityQueueActive ? translationWorkflow.queue(queryMatched) : [];
+  const visible = priorityQueueActive ? queue.map((item) => item.record) : queryMatched.filter(recordMatchesReview);
   updateReviewQueueButton(records);
   if (exportTools) {
     exportTools.hidden = visible.length === 0;
     if (!visible.length) exportTools.open = false;
   }
   const showReviewBadges = reviewActionsVisible() && visibleReviewStates(visible).size > 1;
-  const showReviewActions = reviewActionsVisible();
+  const showReviewActions = reviewActionsVisible() || priorityQueueActive;
   const inReviewQueue = isReviewQueueOnlyView();
   const inSavedReading = isReviewedOnlyView();
   statusEl.textContent = "";
-  resultsEl.innerHTML = queryMatched.length
+  resultsEl.innerHTML = priorityQueueActive ? (queue.length ? `<p class="translation-queue-help">현재 원문·번역의 문제를 먼저 보여줍니다. 확정본이 있는 문장의 이전 모델 판정은 검토 대상으로 세지 않습니다.</p>`
+    + queue.map(({ record, priority }) => renderRecord(record, { priority, showReviewActions: true, showContext: true, showSourceDetail: true })).join("")
+    : '<div class="empty-state"><h2>우선 검토할 문장이 없습니다.</h2><p>전체 목록에서 번역을 확인할 수 있습니다.</p></div>') : queryMatched.length
     ? renderSummary(queryMatched) + (visible.length ? renderRecordGroups(visible, { showReviewBadge: showReviewBadges, showReviewActions, showGroupActions: !inReviewQueue, showSourceDetail: showReviewActions, openFirstCommentary: inReviewQueue || inSavedReading }) : renderEmptyRecords())
     : renderEmptyRecords();
+  const indexed = new Map(records.map((record) => [String(record.id), record]));
+  resultsEl.querySelectorAll("form[data-human-translation-form]").forEach((humanForm) => {
+    const record = indexed.get(humanForm.closest(".translation-record-card").dataset.recordId);
+    if (record) translationDrafts.attach(humanForm, record);
+  });
   if (pendingReviewQueueFocus) {
     const reviewMessage = pendingReviewQueueMessage;
     pendingReviewQueueFocus = false;
@@ -734,18 +757,19 @@ function renderRecords(records) {
 }
 
 function focusFirstReviewQueueRecord() {
-  const card = resultsEl.querySelector('.translation-record-card[data-review-state="generated"]');
+  const card = resultsEl.querySelector(priorityQueueActive ? '.translation-record-card' : '.translation-record-card[data-review-state="generated"]');
   if (!card) return false;
   return focusRecordCard(card, true);
 }
 
 function openReviewQueue() {
-  if (!generatedRecords(lastRecords).length) {
+  if (priorityQueueActive) { priorityQueueActive = false; updateUrl(); renderRecords(lastRecords); return; }
+  if (!translationWorkflow.queue(lastRecords.filter(recordMatchesQuery)).length) {
     statusEl.textContent = "검토할 번역이 없습니다.";
     return;
   }
-  queryInput.value = "";
-  reviewSelect.value = "generated";
+  priorityQueueActive = true;
+  reviewSelect.value = "all";
   pendingReviewQueueFocus = true;
   pendingReviewQueueMessage = "";
   updateUrl();
@@ -861,18 +885,22 @@ async function updateRecordReview(recordId, corpusId, reviewState) {
   return response.ok;
 }
 
-async function updateHumanTranslation(recordId, corpusId, humanTranslation) {
+async function updateHumanTranslation(recordId, corpusId, humanTranslation, expectedTranslation) {
   const response = await fetch(`/api/sentence-translations/${encodeURIComponent(recordId)}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       corpus_id: corpusId,
       review_state: "reviewed",
-      human_translation: humanTranslation
+      human_translation: humanTranslation,
+      expected_translation: expectedTranslation
     })
   });
-  if (!response.ok) return null;
   const payload = await response.json();
+  if (!response.ok) {
+    if (payload.error === "translation_changed_since_editing") throw new Error("translation_changed_since_editing");
+    return null;
+  }
   return payload.record || null;
 }
 
@@ -1009,7 +1037,9 @@ resultsEl.addEventListener("submit", async (event) => {
   const submitButton = humanForm.querySelector('button[type="submit"]');
   const textarea = humanForm.elements.human_translation;
   if (!card || !submitButton || !textarea) return;
-  const humanTranslation = textarea.value.trim();
+  const draftSnapshot = translationDrafts.snapshot(humanForm);
+  const humanTranslation = draftSnapshot.text;
+  if (typeof draftSnapshot.baseTranslation !== "string") { statusEl.textContent = "편집 대상을 다시 불러온 뒤 저장해주세요."; return; }
   if (!humanTranslation) {
     textarea.focus();
     statusEl.textContent = "확정 번역을 입력해주세요.";
@@ -1019,16 +1049,20 @@ resultsEl.addEventListener("submit", async (event) => {
   const corpusId = card.dataset.corpusId || corpusSelect.value || DEFAULT_CORPUS;
   setActionButtonBusy(submitButton, true);
   try {
-    const updated = await updateHumanTranslation(recordId, corpusId, humanTranslation);
+    const updated = await updateHumanTranslation(recordId, corpusId, humanTranslation, draftSnapshot.baseTranslation);
     if (!updated) {
       statusEl.textContent = "확정 번역을 저장하지 못했습니다.";
       return;
     }
     recentlyChangedRecordId = recordId;
+    translationDrafts.saved(updated, humanTranslation);
+    pendingReviewQueueFocus = priorityQueueActive;
     await loadRecords();
     statusEl.textContent = "사람 확정 번역을 저장했습니다. 모델 원본은 그대로 보존됩니다.";
-  } catch {
-    statusEl.textContent = "확정 번역을 저장하지 못했습니다.";
+  } catch (error) {
+    if (error.message === "translation_changed_since_editing") {
+      await loadRecords(); statusEl.textContent = "저장된 번역이 바뀌었습니다. 초안을 보존했으니 최신 내용과 비교해주세요.";
+    } else statusEl.textContent = "확정 번역을 저장하지 못했습니다. 초안은 유지합니다.";
   } finally {
     setActionButtonBusy(submitButton, false);
   }
@@ -1088,7 +1122,7 @@ resultsEl.addEventListener("click", async (event) => {
     const actionMessage = reviewActionMessage(nextState);
     if (ok) {
       recentlyChangedRecordId = recordId;
-      pendingReviewQueueFocus = reviewSelect.value === "generated" && nextState !== "generated";
+      pendingReviewQueueFocus = (priorityQueueActive || reviewSelect.value === "generated") && nextState !== "generated";
       pendingReviewQueueMessage = pendingReviewQueueFocus ? actionMessage : "";
     }
     statusEl.textContent = ok ? actionMessage : "변경하지 못했습니다.";
@@ -1121,6 +1155,8 @@ for (const field of [corpusSelect, reviewSelect]) {
 }
 
 const initialParams = new URLSearchParams(location.search);
+priorityQueueActive = initialParams.get("view") === "review_queue";
+translationDrafts.initialize(resultsEl);
 queryInput.value = initialParams.get("q") || "";
 corpusSelect.value = initialParams.get("corpus_id") || (location.search ? DEFAULT_CORPUS : rememberedCorpusId());
 workInput.value = initialParams.get("work_id") || "";

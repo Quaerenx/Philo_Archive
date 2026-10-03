@@ -37,14 +37,19 @@ def study_session_payload_from_query(query: dict[str, list[str]]) -> dict[str, A
     work_id = session_query_value(query, "work_id")
     note_state = reviewed_note_state(query)
     translation_state = translation_review_state(query)
-    notes = read_all_notes([corpus_id], work_id=work_id, review_state=note_state)
+    variant_id = session_query_value(query, "variant_id") if "variant_id" in query else None
+    notes = read_all_notes([corpus_id], work_id=work_id, review_state=note_state, variant_id=variant_id)
     translations = sentence_translations_for_export(
-        {"corpus_id": [corpus_id], "work_id": [work_id], "review_state": [translation_state]}
+        {
+            "corpus_id": [corpus_id], "work_id": [work_id], "review_state": [translation_state],
+            **({"variant_id": [variant_id]} if variant_id is not None else {}),
+        }
     )
     return {
         "ok": True,
         "corpus_id": corpus_id,
         "work_id": work_id,
+        "variant_id": variant_id,
         "notes_review_state": note_state or "all",
         "translation_review_state": translation_state,
         "note_count": len(notes),
@@ -83,7 +88,7 @@ def export_study_session_markdown(payload: dict[str, Any]) -> str:
             lines.extend(note_meta)
         lines.append("")
 
-    lines.extend(["## 번역과 해설", ""])
+    lines.extend(["## 번역과 번역 노트", ""])
     translations = payload.get("translations") if isinstance(payload.get("translations"), list) else []
     if not translations:
         lines.extend(["일치하는 번역이 없습니다.", ""])
@@ -106,7 +111,9 @@ def export_study_session_markdown(payload: dict[str, Any]) -> str:
         elif model_translation:
             lines.extend(["번역", "", model_translation, ""])
         if record.get("commentary"):
-            lines.extend(["해설", "", str(record["commentary"]), ""])
+            lines.extend(["번역 노트", "", str(record["commentary"]), ""])
+        if record.get("current_translation_issues"):
+            lines.extend(["현재 번역 의미 검토 필요", "", *[issue["explanation"] for issue in record["current_translation_issues"]], ""])
         if record.get("source_text_excerpt"):
             lines.extend(["원문", "", "> " + markdown_quote(record["source_text_excerpt"]), ""])
         if record.get("target_url"):

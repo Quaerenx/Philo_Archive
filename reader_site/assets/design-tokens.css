@@ -12,6 +12,7 @@
   --archive-muted-color: #555555;
   --archive-font: "Pretendard Variable", Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "Segoe UI", sans-serif;
   --archive-ui-font-size: 12px;
+  --archive-control-height: 44px;
   --archive-mobile-control-height: 44px;
   --header-strip-image: url("/assets/header-strip.svg?v=archive2");
   --header-portrait-image: none;
@@ -21,6 +22,17 @@
   --mobile-header-strip-height: 112px;
   --mobile-header-spacer-height: 84px;
   --mobile-portrait-spacer-height: 112px;
+}
+
+/* Keep centered pages still when content starts or stops scrolling. */
+html {
+  scrollbar-gutter: stable;
+}
+
+@supports not (scrollbar-gutter: stable) {
+  html {
+    overflow-y: scroll;
+  }
 }
 
 body.category-nietzsche,

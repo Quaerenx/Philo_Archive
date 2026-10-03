@@ -13,6 +13,7 @@ reader_site/data/search_index.jsonl
 reader_site/data/search_index.sqlite
 reader_site/data/search_index.sqlite-*
 reader_site/data/artifact_manifest.local.json
+reader_site/data/.rebuild-backup-*/
 reader_site/data/release_stage_manifest.local.json
 reader_site/data/visual_qa.local/
 reader_site/data/visual_qa.local/*
@@ -20,10 +21,17 @@ reader_site/data/visual_qa.local/*
 # Personal notes and local-only state.
 reader_site/data/notes/*.jsonl
 reader_site/data/ai/*.jsonl
+reader_site/data/notes/.*.lock
+reader_site/data/notes/.*.append-journal
+reader_site/data/notes/.*.tmp
+reader_site/data/ai/.*.lock
+reader_site/data/ai/.*.append-journal
+reader_site/data/ai/.*.tmp
 reader_site/data/ai/*.sqlite
 reader_site/data/ai/*.sqlite-*
 reader_site/data/runtime.local/
 reader_site/data/runtime.local/*
+reader_site/data/.translation_quality_goldset.json.lock
 reader_site/local_paths.json
 OLD/local-only/
 OLD/local-only/*

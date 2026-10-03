@@ -2,9 +2,14 @@ from __future__ import annotations
 
 import json
 import re
+import threading
+from collections import OrderedDict
+from copy import deepcopy
+from functools import lru_cache
 from pathlib import Path
 
 from path_config import NIETZSCHE_OUTPUT, ROOT, SITE
+from services.segment_offsets import SEGMENT_OFFSET_INDEX, indexed_work_segment_locations, read_indexed_segment_records
 
 DATA = SITE / "data"
 
@@ -17,11 +22,44 @@ KIERKEGAARD_METADATA = DATA / "kierkegaard_metadata.json"
 WITTGENSTEIN_METADATA = DATA / "wittgenstein_metadata.json"
 
 BIBLE_SEGMENTS_CACHE: tuple[float, list[dict]] | None = None
+_METADATA_LOCK = threading.RLock()
+_BIBLE_SEGMENTS_LOCK = threading.Lock()
+_BIBLE_WORK_LOCK = threading.Lock()
+_BIBLE_WORK_CACHE: OrderedDict[tuple, tuple[int, tuple[dict, ...]]] = OrderedDict()
+BIBLE_WORK_CACHE_SIZE = 4
+BIBLE_WORK_CACHE_BYTES = 16 * 1024 * 1024
+
+
+def metadata_signature(path: Path) -> tuple[str, int, int, int, int]:
+    info = path.stat()
+    return str(path.resolve()), info.st_size, info.st_mtime_ns, info.st_ctime_ns, info.st_ino
+
+
+@lru_cache(maxsize=16)
+def _read_metadata_snapshot(path_value: str, _size: int, _mtime_ns: int, _ctime_ns: int, _inode: int) -> dict:
+    with Path(path_value).open("r", encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def _metadata_snapshot(path: Path) -> dict:
+    with _METADATA_LOCK:
+        for _attempt in range(3):
+            signature = metadata_signature(path)
+            value = _read_metadata_snapshot(*signature)
+            if metadata_signature(path) == signature:
+                return value
+    raise RuntimeError("metadata changed repeatedly while loading")
 
 
 def read_json(path: Path) -> dict:
-    with path.open("r", encoding="utf-8") as handle:
-        return json.load(handle)
+    # Callers may decorate metadata without changing the cached snapshot.
+    return deepcopy(_metadata_snapshot(path))
+
+
+def metadata_record(path: Path, work_id: str) -> dict:
+    if not path.exists():
+        return {}
+    return deepcopy(_metadata_snapshot(path).get("works", {}).get(work_id, {}))
 
 
 def read_jsonl(path: Path) -> list[dict]:
@@ -70,7 +108,7 @@ def load_nietzsche_metadata() -> dict:
 
 
 def nietzsche_metadata_record(work_id: str) -> dict:
-    return load_nietzsche_metadata().get("works", {}).get(work_id, {})
+    return metadata_record(NIETZSCHE_METADATA, work_id)
 
 
 def load_nietzsche_concepts() -> dict:
@@ -98,29 +136,54 @@ def load_wittgenstein_metadata() -> dict:
 
 
 def bible_metadata_record(work_id: str) -> dict:
-    return load_bible_metadata().get("works", {}).get(work_id, {})
+    return metadata_record(BIBLE_METADATA, work_id)
 
 
 def kierkegaard_metadata_record(work_id: str) -> dict:
-    return load_kierkegaard_metadata().get("works", {}).get(work_id, {})
+    return metadata_record(KIERKEGAARD_METADATA, work_id)
 
 
 def wittgenstein_metadata_record(work_id: str) -> dict:
-    return load_wittgenstein_metadata().get("works", {}).get(work_id, {})
+    return metadata_record(WITTGENSTEIN_METADATA, work_id)
 
 
 def load_bible_segments() -> list[dict]:
     global BIBLE_SEGMENTS_CACHE
     if not BIBLE_SEGMENTS.exists():
         return []
-    mtime = BIBLE_SEGMENTS.stat().st_mtime
-    if BIBLE_SEGMENTS_CACHE is None or BIBLE_SEGMENTS_CACHE[0] != mtime:
-        BIBLE_SEGMENTS_CACHE = (mtime, read_jsonl(BIBLE_SEGMENTS))
-    return BIBLE_SEGMENTS_CACHE[1]
+    with _BIBLE_SEGMENTS_LOCK:
+        mtime = BIBLE_SEGMENTS.stat().st_mtime
+        if BIBLE_SEGMENTS_CACHE is None or BIBLE_SEGMENTS_CACHE[0] != mtime:
+            BIBLE_SEGMENTS_CACHE = (mtime, read_jsonl(BIBLE_SEGMENTS))
+        return BIBLE_SEGMENTS_CACHE[1]
 
 
 def bible_segments_for_work(work_id: str) -> list[dict]:
-    return [segment for segment in load_bible_segments() if segment.get("work_id") == work_id]
+    work = resolve_bible_work(work_id)
+    variant_id = str(work.get("variant_id") or "")
+
+    def key() -> tuple:
+        return work_id, variant_id, metadata_signature(BIBLE_SEGMENTS), metadata_signature(SEGMENT_OFFSET_INDEX)
+
+    with _BIBLE_WORK_LOCK:
+        try:
+            signature = key()
+        except OSError:
+            # Preserve the index service's rebuild guidance for missing artifacts.
+            locations = indexed_work_segment_locations("bible", work_id, variant_id)
+            return read_indexed_segment_records("bible", locations)
+        cached = _BIBLE_WORK_CACHE.get(signature)
+        if cached is not None:
+            _BIBLE_WORK_CACHE.move_to_end(signature)
+            return [dict(record) for record in cached[1]]
+        locations = indexed_work_segment_locations("bible", work_id, variant_id)
+        records = tuple(read_indexed_segment_records("bible", locations))
+        source_bytes = sum(int(location["byte_length"]) for location in locations)
+        if source_bytes <= BIBLE_WORK_CACHE_BYTES and key() == signature:
+            _BIBLE_WORK_CACHE[signature] = source_bytes, records
+            while len(_BIBLE_WORK_CACHE) > BIBLE_WORK_CACHE_SIZE or sum(entry[0] for entry in _BIBLE_WORK_CACHE.values()) > BIBLE_WORK_CACHE_BYTES:
+                _BIBLE_WORK_CACHE.popitem(last=False)
+        return [dict(record) for record in records]
 
 
 def first_query_value(query: dict[str, list[str]], key: str, default: str = "") -> str:

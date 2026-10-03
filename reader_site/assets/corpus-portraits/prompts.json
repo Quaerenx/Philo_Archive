@@ -1,0 +1,26 @@
+[
+  {
+    "asset": "nietzsche",
+    "prompt": "Use case: background-extraction. Input image: edit target, authentic 1882 Friedrich Nietzsche photograph. Asset type: clean representative cutout for a literary archive corpus row. Square 1024x1024 canvas with genuine transparent alpha background. Render the single subject as a neutral black-and-white high-quality archival portrait, clean natural hair and fabric edges, no white/gray halo, no background, border, text, watermark, glow, drop shadow or vignette. Center the subject in the canvas, top of hair around 8% and torso cut around 92% of canvas height, leave safe transparent margins. Keep the person completely recognizable: preserve the reference face, age, expression, hairstyle, direction of gaze, pose and clothing texture. No beautification, new expression, cartoon style, invented facial detail or modern clothing. Maintain source fidelity while making the subject clearly readable at a 176px display size. Remove only the background. Preserve Nietzsche's seated profile and hand resting against his cheek, his full moustache, hair and visible coat. Include head, shoulders and upper torso, keeping the hand and face intact. Crop the lower torso cleanly to suit the square framing; do not depict the surrounding furniture or photo paper.",
+    "mode": "background-extraction",
+    "transparent_background": true
+  },
+  {
+    "asset": "kierkegaard",
+    "prompt": "Use case: background-extraction. Input image: edit target, archival Luplau Janssen portrait of Søren Kierkegaard. Asset type: clean representative cutout for a literary archive corpus row. Square 1024x1024 canvas with genuine transparent alpha background. Render the single subject as a neutral black-and-white high-quality archival portrait, clean natural hair and fabric edges, no white/gray halo, no background, border, text, watermark, glow, drop shadow or vignette. Center the subject in the canvas, top of hair around 8% and torso cut around 92% of canvas height, leave safe transparent margins. Keep the person completely recognizable: preserve the reference face, age, expression, hairstyle, direction of gaze, pose and clothing texture. No beautification, new expression, cartoon style, invented facial detail or modern clothing. Maintain source fidelity while making the subject clearly readable at a 176px display size. Extract Kierkegaard's head, shoulders and upper body only. Preserve the original painted likeness, gently lowered profile gaze, swept hair, white collar and dark coat. Remove the desk, chair, papers, room, signature and all background. Preserve the original painting's fine texture; do not turn this into a fabricated photograph or alter the face.",
+    "mode": "background-extraction",
+    "transparent_background": true
+  },
+  {
+    "asset": "wittgenstein",
+    "prompt": "Use case: background-extraction. Input image: edit target, Moritz Nähr photograph of Ludwig Wittgenstein. Asset type: clean representative cutout for a literary archive corpus row. Square 1024x1024 canvas with genuine transparent alpha background. Render the single subject as a neutral black-and-white high-quality archival portrait, clean natural hair and fabric edges, no white/gray halo, no background, border, text, watermark, glow, drop shadow or vignette. Center the subject in the canvas, top of hair around 8% and torso cut around 92% of canvas height, leave safe transparent margins. Keep the person completely recognizable: preserve the reference face, age, expression, hairstyle, direction of gaze, pose and clothing texture. No beautification, new expression, cartoon style, invented facial detail or modern clothing. Maintain source fidelity while making the subject clearly readable at a 176px display size. Remove the beige photo background and any surrounding paper while keeping Wittgenstein's entire hair, face, shoulders, open white shirt collar and textured jacket. Preserve the subtle original photographic detail and authentic likeness. Produce a bust cutout consistent in visual size with other archive philosopher portraits.",
+    "mode": "background-extraction",
+    "transparent_background": true
+  },
+  {
+    "asset": "bible",
+    "prompt": "Use case: product-mockup. Asset type: representative Bible corpus image for a quiet literary archive, matching black-and-white archival cutout portraits. Create one realistic open old bound Bible viewed at a gentle elevated three-quarter angle. Fine aged paper edges, subtle two-column page layout without readable invented words, dark cloth cover and a simple ribbon bookmark. Neutral black-and-white grayscale. Square 1024x1024 canvas, genuinely transparent alpha background with no tabletop, surface, background, floor or shadow. Center the single book with safe transparent margin, balanced silhouette occupying about 80% width and 70% height. Beautiful detailed paper and binding, clear crisp edges, high resolution suitable for 176px display. No extra objects, religious figures, floating symbols, borders, title text, labels, watermark or glow.",
+    "mode": "generated",
+    "transparent_background": true
+  }
+]

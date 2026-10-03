@@ -485,23 +485,66 @@ img {
 
 .root-link-list {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
 }
 
 .root-link {
-  display: flex;
-  min-height: 34px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-height: 226px;
   align-items: center;
-  justify-content: center;
-  padding: 5px 8px;
+  gap: 32px;
+  padding: 20px 26px;
   color: #222;
-  font-size: 11px;
+  font-size: 16px;
   line-height: 1.35;
   overflow-wrap: anywhere;
-  text-align: center;
+  text-align: left;
   background: #fff;
-  border: 1px solid #d4d4d4;
+  border: 1px solid #bdbdbd;
+}
+
+.root-link.has-portrait {
+  grid-template-columns: 176px minmax(0, 1fr);
+}
+
+.root-link:visited,
+.root-link:active {
+  color: #222;
+}
+
+.corpus-image {
+  display: block;
+  width: 176px;
+  height: 176px;
+  object-fit: contain;
+}
+
+.corpus-info {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.corpus-name {
+  color: #111;
+  font-size: 16px;
+}
+
+.corpus-period {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 6px;
+  color: #333;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.corpus-region {
+  margin-top: 14px;
+  color: #333;
+  font-size: 14px;
 }
 
 .root-link:hover,
@@ -509,6 +552,11 @@ img {
   color: #222;
   text-decoration: none;
   border-color: #999;
+}
+
+.root-link:focus-visible {
+  outline: 2px solid #b00000;
+  outline-offset: 3px;
 }
 
 .category-section {
@@ -637,7 +685,18 @@ img {
   }
 
   .root-link {
-    min-height: var(--archive-mobile-control-height, 44px);
+    min-height: 164px;
+    gap: 20px;
+    padding: 16px;
+  }
+
+  .root-link.has-portrait {
+    grid-template-columns: 96px minmax(0, 1fr);
+  }
+
+  .corpus-image {
+    width: 96px;
+    height: 96px;
   }
 
   .corpus-search-input,
@@ -667,5 +726,22 @@ img {
   button {
     min-height: var(--archive-mobile-control-height, 44px);
     font-size: 16px;
+  }
+}
+
+@media (max-width: 420px) {
+  .root-link {
+    min-height: 156px;
+    gap: 16px;
+    padding: 14px;
+  }
+
+  .root-link.has-portrait {
+    grid-template-columns: 80px minmax(0, 1fr);
+  }
+
+  .corpus-image {
+    width: 80px;
+    height: 80px;
   }
 }

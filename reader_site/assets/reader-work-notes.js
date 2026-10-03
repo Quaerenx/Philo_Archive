@@ -2,15 +2,16 @@
 function translationNoteDraftText(record) {
   if (!record) return "";
   const translation = cleanText(record.human_translation || record.translation || "");
-  const commentary = cleanText(record.commentary || record.interpretation || "");
+  const commentary = record.commentary_status === "current" ? cleanText(record.commentary || "") : "";
   const lines = [];
   if (translation) {
     lines.push("번역", translation);
   }
   if (commentary) {
     if (lines.length) lines.push("");
-    lines.push("해설", commentary);
+    lines.push("번역 노트", commentary);
   }
+  if (record.current_translation_issues?.length) lines.push("의미 검토 필요", ...record.current_translation_issues.map(issue => issue.explanation));
   return lines.join("\n");
 }
 
@@ -74,7 +75,7 @@ function translationStudyCardText(record) {
   const lines = [];
   const source = cleanText(record.source_text_excerpt || selectedSentence?.text || "");
   const translation = cleanText(record.human_translation || record.translation || "");
-  const commentary = cleanText(record.commentary || record.interpretation || "");
+  const commentary = record.commentary_status === "current" ? cleanText(record.commentary || "") : "";
   if (source) {
     lines.push("원문", source);
   }
@@ -82,8 +83,9 @@ function translationStudyCardText(record) {
     lines.push("번역", translation);
   }
   if (commentary) {
-    lines.push("해설", commentary);
+    lines.push("번역 노트", commentary);
   }
+  if (record.current_translation_issues?.length) lines.push("의미 검토 필요", ...record.current_translation_issues.map(issue => issue.explanation));
   return lines.join("\n");
 }
 
@@ -367,11 +369,19 @@ function revealRecentNote(recentNote) {
   }
 }
 
+let notesRequestSequence = 0;
+
 async function loadNotes() {
+  const requestId = ++notesRequestSequence;
   const corpusId = researchData.corpus_id || researchData.author_id || "";
   const workId = researchData.work_id || "";
-  const params = new URLSearchParams({ corpus_id: corpusId, work_id: workId });
+  const variantId = researchData.variant_id || "";
+  const params = new URLSearchParams({ corpus_id: corpusId, work_id: workId, variant_id: variantId });
   const filter = noteFilter ? noteFilter.value.trim() : "";
+  const current = () => requestId === notesRequestSequence
+    && filter === (noteFilter ? noteFilter.value.trim() : "")
+    && corpusId === (researchData.corpus_id || researchData.author_id || "")
+    && workId === (researchData.work_id || "") && variantId === (researchData.variant_id || "");
   if (filter.startsWith("#") && filter.length > 1) {
     params.set("tag", filter.slice(1));
   } else if (filter) {
@@ -380,12 +390,14 @@ async function loadNotes() {
   renderNotesPending();
   try {
     const response = await fetch(`/api/notes?${params}`);
+    if (!current()) return;
     if (!response.ok) {
       renderNotesUnavailable();
       noteStatus.textContent = "노트를 불러오지 못했습니다.";
       return;
     }
     const payload = await response.json();
+    if (!current()) return;
     renderNotesList(payload.notes || []);
     if (recentlyChangedNoteId) {
       const recentNote = Array.from(notesList.querySelectorAll(".note-item"))
@@ -397,6 +409,7 @@ async function loadNotes() {
       }
     }
   } catch (error) {
+    if (!current()) return;
     renderNotesUnavailable();
     noteStatus.textContent = "노트를 불러오지 못했습니다.";
   }

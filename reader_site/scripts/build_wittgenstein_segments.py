@@ -12,6 +12,7 @@ SITE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SITE))
 
 from path_config import ROOT  # noqa: E402
+from services.jsonl_storage import atomic_write_jsonl  # noqa: E402
 
 METADATA = SITE / "data" / "wittgenstein_metadata.json"
 OUTPUT = SITE / "data" / "wittgenstein_segments.jsonl"
@@ -30,12 +31,16 @@ def build_segments() -> list[dict]:
     for work in sorted(metadata.get("works", {}).values(), key=lambda item: item.get("work_id", "")):
         for variant in work.get("variants", []):
             source_path = variant.get("source_path")
-            if not source_path or not source_path.endswith(".md"):
+            if not source_path:
+                raise ValueError(f"missing Wittgenstein source path: {work['work_id']}/{variant.get('variant_id', '')}")
+            if not source_path.endswith(".md"):
                 continue
             path = (ROOT / source_path).resolve()
             if not path.exists():
-                continue
+                raise FileNotFoundError(f"missing Wittgenstein source: {work['work_id']}/{variant.get('variant_id', '')}")
             segments = readable_markdown_chunks(path.read_text(encoding="utf-8", errors="replace"))
+            if not segments:
+                raise ValueError(f"empty Wittgenstein source: {work['work_id']}/{variant.get('variant_id', '')}")
             variant_id = variant.get("variant_id", "")
             for segment in segments:
                 segment.update(
@@ -50,6 +55,8 @@ def build_segments() -> list[dict]:
                     }
                 )
                 records.append(segment)
+    if not records:
+        raise ValueError("Wittgenstein segment build produced no records")
     return records
 
 
@@ -69,7 +76,7 @@ def main() -> None:
             raise SystemExit("wittgenstein segments are out of date")
         print("wittgenstein segments are up to date")
         return
-    OUTPUT.write_text(encoded, encoding="utf-8", newline="\n")
+    atomic_write_jsonl(OUTPUT, records)
     print(f"wrote {OUTPUT} ({len(records)} segments)")
 
 

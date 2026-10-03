@@ -87,7 +87,7 @@ def check_static_cache_contracts(base_url: str) -> None:
         ("/app.js?v=home19", "javascript"),
         ("/assets/reader-work.css?v=common152", "text/css"),
         ("/assets/reader-work-translation.css?v=translation2", "text/css"),
-        ("/assets/reader-work-app.js?v=app1", "javascript"),
+        ("/assets/reader-work-app.js?v=app2", "javascript"),
     ):
         identity_body, identity_headers = request_bytes(
             base_url,
@@ -471,7 +471,7 @@ def check_routes(base_url: str) -> None:
         "&variant_id=idp_transcription_linear"
         "&anchor=p-3301.s001",
     )
-    require(chunk.get("chunk", {}).get("index") == 158, "work chunk anchor route resolved the wrong chunk")
+    require(chunk.get("chunk", {}).get("index") == 154, "work chunk anchor route resolved the wrong chunk")
     require("p-3301.s001" in chunk.get("chunk", {}).get("html", ""), "work chunk route lost the sentence anchor")
     require(fetch_status(base_url, "/api/work-chunks?corpus_id=wittgenstein") == 400, "missing chunk fields should return 400")
 

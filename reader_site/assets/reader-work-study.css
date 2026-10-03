@@ -1,8 +1,8 @@
 /* Shared study-panel tabs, cards, fields, and controls. */
 .study-tabs {
   display: grid;
-  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1.1fr) repeat(2, minmax(34px, max-content));
-  gap: 4px;
+  grid-template-columns: minmax(44px, 1.55fr) minmax(44px, 1.1fr) repeat(2, minmax(44px, max-content));
+  gap: 8px;
   align-items: center;
   margin-bottom: 8px;
 }
@@ -14,7 +14,7 @@
 .study-tab,
 .mode-toggle button {
   min-width: 0;
-  min-height: 30px;
+  min-height: var(--archive-control-height, 44px);
   padding: 4px 7px;
   color: #555;
   font-family: var(--archive-font);
@@ -33,11 +33,11 @@
 }
 
 .study-tab-secondary {
-  min-height: 26px;
+  min-height: var(--archive-control-height, 44px);
   justify-self: end;
   padding: 1px 4px;
-  color: #888;
-  font-size: 11px;
+  color: #555;
+  font-size: 12px;
   background: transparent;
   border-color: transparent;
 }
@@ -94,7 +94,7 @@
 
 .research-card button {
   position: relative;
-  min-height: 24px;
+  min-height: var(--archive-control-height, 44px);
   margin: 7px 8px 0 0;
   padding: 2px 8px;
   color: #000;
@@ -152,9 +152,28 @@
   margin-top: 4px;
   color: #000;
   font-family: var(--archive-font);
-  font-size: 10px;
+  font-size: 13px;
   background: #fff;
   border: 1px solid #cfcfcf;
+}
+
+.study-page button,
+.study-page summary,
+.research-card input,
+.research-card select {
+  min-width: var(--archive-control-height, 44px);
+  min-height: var(--archive-control-height, 44px);
+}
+
+.study-page summary {
+  align-content: center;
+  padding: 8px;
+  color: #555;
+}
+
+.study-page :is(button, summary, input, select, textarea, a):focus-visible {
+  outline: 2px solid #b00000;
+  outline-offset: 2px;
 }
 
 .research-card textarea {
@@ -168,7 +187,7 @@
 
 .note-options summary {
   display: inline-flex;
-  min-height: 22px;
+  min-height: var(--archive-control-height, 44px);
   align-items: center;
   color: #777;
   font-family: var(--archive-font);

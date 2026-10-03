@@ -44,6 +44,11 @@ def main() -> None:
         require(snippet in text, f"workflow missing {snippet!r}")
     for snippet in FORBIDDEN_SNIPPETS:
         require(snippet not in text, f"workflow should not run source-heavy command {snippet!r}")
+    quality_workflow = (REPO / ".github" / "workflows" / "reader-site-translation-quality.yml").read_text(encoding="utf-8")
+    require("workflow_dispatch:" in quality_workflow, "translation quality gate must be explicitly runnable")
+    require("check_sentence_translation_contracts.py" in quality_workflow, "translation release gate must validate source-light translation contracts")
+    require("check_translation_quality_regressions.py" not in quality_workflow, "hosted translation release gate cannot require untracked local source segments")
+    require("check_translation_goldset.py --require-passing" in quality_workflow, "translation release gate must reject below-threshold human scores")
     print("ci contracts ok")
 
 

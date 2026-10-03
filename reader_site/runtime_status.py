@@ -27,7 +27,7 @@ from path_config import (
     WITTGENSTEIN_OUTPUT,
     WITTGENSTEIN_SOURCE_ROOT,
 )
-from services.segment_offsets import SEGMENT_OFFSET_INDEX
+from services.segment_offsets import SEGMENT_OFFSET_INDEX, probe_segment_offset_index
 
 DATA = SITE / "data"
 
@@ -126,6 +126,7 @@ class TTLCache:
 _CORPUS_HEALTH_CACHE = TTLCache()
 _SEARCH_HEALTH_CACHE = TTLCache()
 _GEMMA_HEALTH_CACHE = TTLCache()
+_OFFSET_HEALTH_CACHE = TTLCache()
 
 
 def utc_now() -> str:
@@ -190,14 +191,22 @@ def read_metadata_summary(path: Path) -> dict[str, Any]:
 
 
 def search_database_summary() -> dict[str, Any]:
-    summary: dict[str, Any] = file_record("search_index.sqlite", SEARCH_DB, "search", "query database")
-    if not SEARCH_DB.exists():
-        summary["records"] = 0
-        summary["fts5"] = False
-        return summary
-
-    connection = sqlite3.connect(SEARCH_DB)
+    summary: dict[str, Any] = {
+        "name": "search_index.sqlite", "kind": "search", "role": "query database",
+        "path": display_path(SEARCH_DB), "exists": False, "records": 0, "fts5": False,
+    }
+    connection = None
     try:
+        summary.update(file_record("search_index.sqlite", SEARCH_DB, "search", "query database"))
+        if not summary["exists"]:
+            return summary
+
+        from services.search import search_database_stale
+        if search_database_stale(SEARCH_DB, SEARCH_INDEX):
+            summary["error"] = "search database predates the generated index; rebuild search database"
+            return summary
+
+        connection = sqlite3.connect(SEARCH_DB.resolve().as_uri() + "?mode=ro", uri=True)
         summary["records"] = connection.execute("SELECT COUNT(*) FROM search_segments").fetchone()[0]
         summary["by_corpus"] = {
             corpus_id: count
@@ -210,12 +219,13 @@ def search_database_summary() -> dict[str, Any]:
                 "SELECT 1 FROM sqlite_master WHERE type = 'table' AND sql LIKE '%VIRTUAL TABLE%' AND sql LIKE '%fts5%'"
             ).fetchone()
         )
-    except sqlite3.Error as exc:
+    except (sqlite3.Error, OSError) as exc:
         summary["error"] = str(exc)
         summary["records"] = 0
         summary["fts5"] = False
     finally:
-        connection.close()
+        if connection is not None:
+            connection.close()
     return summary
 
 
@@ -271,14 +281,15 @@ def gemma_runtime_summary() -> dict[str, Any]:
     models = payload.get("data") or payload.get("models") or []
     if not isinstance(models, list):
         models = []
-    summary["state"] = "ready"
-    summary["reachable"] = True
-    summary["model_count"] = len(models)
-    summary["models"] = [
+    available_models = [
         str(model.get("id") or model.get("name") or model.get("model") or "")
         for model in models
-        if isinstance(model, dict)
-    ][:5]
+        if isinstance(model, dict) and (model.get("id") or model.get("name") or model.get("model"))
+    ]
+    summary["state"] = "ready" if available_models else "unavailable"
+    summary["reachable"] = bool(available_models)
+    summary["model_count"] = len(available_models)
+    summary["models"] = available_models[:5]
     return summary
 
 
@@ -312,7 +323,7 @@ def public_corpus_status(status: dict[str, Any]) -> dict[str, Any]:
 
 def public_search_summary(summary: dict[str, Any]) -> dict[str, Any]:
     return {
-        "ready": bool(summary.get("exists")),
+        "ready": bool(summary.get("exists") and not summary.get("error") and summary.get("records", 0) > 0),
         "fts5": bool(summary.get("fts5")),
     }
 
@@ -354,10 +365,26 @@ def cached_gemma_runtime_summary() -> dict[str, Any]:
     return _GEMMA_HEALTH_CACHE.get(gemma_runtime_summary, gemma_status_ttl)
 
 
+def segment_index_summary() -> dict[str, Any]:
+    try:
+        sources = {config["corpus_id"]: config["segments"] for config in CORPORA}
+        return probe_segment_offset_index(SEGMENT_OFFSET_INDEX, sources)
+    except (OSError, ValueError):
+        return {"ready": False}
+
+
+def cached_segment_index_summary() -> dict[str, Any]:
+    return _OFFSET_HEALTH_CACHE.get(
+        segment_index_summary,
+        lambda value: STATIC_HEALTH_TTL_SECONDS if value.get("ready") else STATIC_HEALTH_FAILURE_TTL_SECONDS,
+    )
+
+
 def clear_runtime_health_caches() -> None:
     _CORPUS_HEALTH_CACHE.clear()
     _SEARCH_HEALTH_CACHE.clear()
     _GEMMA_HEALTH_CACHE.clear()
+    _OFFSET_HEALTH_CACHE.clear()
 
 
 def public_gemma_summary(gemma: dict[str, Any]) -> dict[str, Any]:
@@ -449,19 +476,29 @@ def build_runtime_health() -> dict[str, Any]:
     corpora = cached_corpus_statuses()
     search = cached_search_database_summary()
     gemma = cached_gemma_runtime_summary()
+    source_index = cached_segment_index_summary()
     issues = []
     for corpus in corpora:
         if not corpus["source_root_exists"]:
             issues.append(f"missing source root: {corpus['corpus_id']}")
+        if not corpus["primary_output_exists"]:
+            issues.append(f"missing source output: {corpus['corpus_id']}")
         if not corpus["metadata"]["exists"]:
             issues.append(f"missing metadata: {corpus['corpus_id']}")
         if not corpus["segments"]["exists"]:
             issues.append(f"missing segment artifact: {corpus['corpus_id']}")
         if corpus.get("metadata_error"):
             issues.append(f"metadata parse error: {corpus['corpus_id']}")
+        elif not corpus.get("work_count"):
+            issues.append(f"empty work metadata: {corpus['corpus_id']}")
+    if not source_index.get("ready"):
+        issues.append("segment offset index is not ready")
     if not search["exists"]:
         issues.append("missing search sqlite database")
-    elif not search.get("fts5"):
+    elif search.get("error") or not search.get("records"):
+        issues.append("search sqlite database is not ready")
+    reader_ready = not issues
+    if search.get("exists") and not search.get("fts5"):
         issues.append("search database is LIKE-based; FTS5 upgrade is still pending")
     if not gemma.get("reachable"):
         gemma_state = str(gemma.get("state") or "unavailable")
@@ -485,6 +522,9 @@ def build_runtime_health() -> dict[str, Any]:
 
     return {
         "status": "ok" if not issues else "warning",
+        "reader_ready": reader_ready,
+        "translation_ready": reader_ready and bool(gemma.get("reachable") and gemma.get("model_count")),
+        "source_index": source_index,
         "generated_at": utc_now(),
         "site_root": str(SITE),
         "corpus_root": str(ROOT),
@@ -500,6 +540,9 @@ def build_public_runtime_health() -> dict[str, Any]:
     health = build_runtime_health()
     return {
         "status": health["status"],
+        "reader_ready": health["reader_ready"],
+        "translation_ready": health["translation_ready"],
+        "source_index": {"ready": bool(health["source_index"].get("ready"))},
         "generated_at": health["generated_at"],
         "corpora": [public_corpus_status(status) for status in health["corpora"]],
         "search": public_search_summary(health["search"]),

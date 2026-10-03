@@ -15,6 +15,7 @@ sys.path.insert(0, str(SITE))
 
 from services.interpretation_prompts import prompt_template_ids  # noqa: E402
 from services.source_targets import sha256_text  # noqa: E402
+from services.translation_notes import grounded_notes, translation_hash  # noqa: E402
 
 HEX_SHA256 = re.compile(r"^[0-9a-f]{64}$")
 ALLOWED_REVIEW_STATES = {"generated", "reviewed", "rejected"}
@@ -158,7 +159,7 @@ def validate_critic_result(value: Any, path: Path, line_number: int, field: str)
         require(isinstance(value["error"], str) and value["error"].strip(), context(path, line_number, f"{field} error message is required"))
         return
 
-    require(set(value) == {"verdict", "issues"}, context(path, line_number, f"{field} fields are invalid"))
+    require(set(value) in [{"verdict", "issues"}, {"verdict", "issues", "translation_notes"}], context(path, line_number, f"{field} fields are invalid"))
     require(verdict in {"pass", "revise"}, context(path, line_number, f"{field} verdict is invalid"))
     issues = value["issues"]
     require(isinstance(issues, list), context(path, line_number, f"{field}.issues must be a list"))
@@ -181,7 +182,7 @@ def validate_record(record: Any, path: Path, line_number: int) -> None:
     for field in REQUIRED_TEXT_FIELDS:
         require(isinstance(record[field], str) and record[field].strip(), context(path, line_number, f"{field} must be a non-empty string"))
 
-    require(record["schema_version"] in {1, 2, 3, 4, 5}, context(path, line_number, "schema_version must be between 1 and 5"))
+    require(record["schema_version"] in {1, 2, 3, 4, 5, 6}, context(path, line_number, "schema_version must be between 1 and 6"))
     require(record["record_type"] in ALLOWED_RECORD_TYPES, context(path, line_number, "record_type is invalid"))
     require(record["review_state"] in ALLOWED_REVIEW_STATES, context(path, line_number, "review_state is invalid"))
     require(isinstance(record.get("variant_id"), str), context(path, line_number, "variant_id must be a string"))
@@ -279,7 +280,7 @@ def validate_record(record: Any, path: Path, line_number: int) -> None:
             require("interpretation" not in record, context(path, line_number, "sentence translation v5 must not duplicate commentary as interpretation"))
             for field in ("pipeline_contract_sha256", "critic_prompt_template_sha256", "revision_prompt_template_sha256"):
                 require(HEX_SHA256.fullmatch(str(record[field])) is not None, context(path, line_number, f"{field} must be a SHA-256 hex digest"))
-            require(record["quality_pipeline_version"] in {1, 2, 3, 4, 5, 6}, context(path, line_number, "quality_pipeline_version must be between 1 and 6"))
+            require(record["quality_pipeline_version"] in {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, context(path, line_number, "quality_pipeline_version must be between 1 and 10"))
             if record["quality_pipeline_version"] == 2:
                 require(record["prompt_template_id"] == "sentence_translation_study_v4", context(path, line_number, "pipeline v2 translator prompt is invalid"))
                 require(record["critic_prompt_template_id"] == "sentence_translation_critic_v2", context(path, line_number, "pipeline v2 critic prompt is invalid"))
@@ -300,6 +301,14 @@ def validate_record(record: Any, path: Path, line_number: int) -> None:
                 require(record["prompt_template_id"] == "sentence_translation_study_v4", context(path, line_number, "pipeline v6 translator prompt is invalid"))
                 require(record["critic_prompt_template_id"] == "sentence_translation_critic_v4", context(path, line_number, "pipeline v6 critic prompt is invalid"))
                 require(record["revision_prompt_template_id"] == "sentence_translation_revision_v3", context(path, line_number, "pipeline v6 revision prompt is invalid"))
+            if record["quality_pipeline_version"] in {7, 8}:
+                require(record["prompt_template_id"] == "sentence_translation_study_v5", context(path, line_number, "pipeline v7/v8 translator prompt is invalid"))
+                require(record["critic_prompt_template_id"] == "sentence_translation_critic_v5", context(path, line_number, "pipeline v7/v8 critic prompt is invalid"))
+                require(record["revision_prompt_template_id"] == "sentence_translation_revision_v4", context(path, line_number, "pipeline v7/v8 revision prompt is invalid"))
+            if record["quality_pipeline_version"] in {9, 10}:
+                require(record["prompt_template_id"] == "sentence_translation_study_v6", context(path, line_number, "pipeline v9 translator prompt is invalid"))
+                require(record["critic_prompt_template_id"] == "sentence_translation_critic_v6", context(path, line_number, "pipeline v9 critic prompt is invalid"))
+                require(record["revision_prompt_template_id"] == "sentence_translation_revision_v5", context(path, line_number, "pipeline v9 revision prompt is invalid"))
             require(record["critic_prompt_template_id"] in KNOWN_PROMPT_TEMPLATE_IDS, context(path, line_number, "critic prompt template is unknown"))
             require(record["revision_prompt_template_id"] in KNOWN_PROMPT_TEMPLATE_IDS, context(path, line_number, "revision prompt template is unknown"))
             require(record["critic_response_schema_name"] == "sentence_translation_critic_response", context(path, line_number, "critic_response_schema_name is invalid"))
@@ -331,14 +340,18 @@ def validate_record(record: Any, path: Path, line_number: int) -> None:
                 require(record["quality_state"] == "critic_error", context(path, line_number, "initial critic error must map to critic_error"))
                 require(record["revision_count"] == 0 and critic["final"] is None, context(path, line_number, "initial critic error must stop the pipeline"))
             else:
-                initial_has_major = any(issue["severity"] == "major" for issue in critic["initial"]["issues"])
-                if not initial_has_major:
+                initial_has_revisable_issue = any(
+                    issue["severity"] == "major"
+                    or (record["quality_pipeline_version"] >= 7 and issue["category"] == "korean_readability")
+                    for issue in critic["initial"]["issues"]
+                )
+                if not initial_has_revisable_issue:
                     require(record["quality_state"] == "needs_human_review", context(path, line_number, "minor-only critic issues must require human review"))
                     require(record["revision_count"] == 0 and critic["final"] is None, context(path, line_number, "minor-only issues must not trigger a revision"))
                     require(not record["revision_prompt_sha256"] and not critic_hashes["final"], context(path, line_number, "minor-only issues must not have revision-stage hashes"))
                 else:
                     if final_verdict is None:
-                        require(False, context(path, line_number, "major critic issues require a revision-stage audit"))
+                        require(False, context(path, line_number, "revisable critic issues require a revision-stage audit"))
                     elif final_verdict == "error":
                         require(record["quality_state"] == "critic_error", context(path, line_number, "revision-stage error must map to critic_error"))
                         expected_revision_count = 0 if critic["final"]["stage"] == "revision" else 1
@@ -347,8 +360,42 @@ def validate_record(record: Any, path: Path, line_number: int) -> None:
                         require(record["revision_count"] == 1, context(path, line_number, "completed revision must have revision_count 1"))
                         expected_quality = "critic_pass_after_revision" if final_verdict == "pass" else "needs_human_review"
                         require(record["quality_state"] == expected_quality, context(path, line_number, "final critic verdict and quality_state disagree"))
-                    require(bool(record["revision_prompt_sha256"]), context(path, line_number, "major issue path must record the revision prompt hash"))
+                    require(bool(record["revision_prompt_sha256"]), context(path, line_number, "revision path must record the revision prompt hash"))
+        if record["schema_version"] >= 6:
+            for field in ["translation_notes", "commentary_translation_sha256", "note_source_text", "generation_metrics"]:
+                require(field in record, context(path, line_number, f"missing {field}"))
+            require(record["commentary_translation_sha256"] == translation_hash(record["translation"]), context(path, line_number, "notes must bind to the model translation"))
+            require(sha256_text(record["note_source_text"]) == record["sentence_text_sha256"], context(path, line_number, "note source must match the exact selected sentence"))
+            notes = grounded_notes(record["translation_notes"], record["note_source_text"])
+            require(notes == record["translation_notes"], context(path, line_number, "notes have an ungrounded span or internal policy language"))
+            require(record["commentary"] == "\n".join(note["note"] for note in notes), context(path, line_number, "commentary must equal the grounded notes"))
+            metrics = record["generation_metrics"]
+            require(isinstance(metrics, dict) and isinstance(metrics.get("model_usage"), list), context(path, line_number, "generation metrics must contain numeric model usage"))
+            require(metrics.get("model_calls") == len(metrics["model_usage"]) <= 4, context(path, line_number, "model call count is inconsistent or exceeds four"))
+            for call in metrics["model_usage"]:
+                require(set(call) == {"stage", "max_tokens", "prompt_tokens", "completion_tokens", "available_context", "context_limit", "completed"}, context(path, line_number, "model metrics may contain only allowlisted fields"))
+                for key in ["max_tokens", "prompt_tokens", "completion_tokens", "available_context", "context_limit"]:
+                    require(call[key] is None or (isinstance(call[key], int) and not isinstance(call[key], bool) and call[key] >= 0), context(path, line_number, f"invalid numeric metric {key}"))
         citation_hash = record["source_text_sha256"] if record["schema_version"] >= 5 else record["sentence_text_sha256"]
+
+    if "human_evaluation_v2" in record or "human_translation_notes" in record:
+        from services.human_review_batches import validate_review
+        review = record.get("human_evaluation_v2")
+        try:
+            validate_review(review)
+        except ValueError:
+            require(False, context(path, line_number, "invalid five-dimension human evaluation"))
+        require(bool(record.get("human_translation")) and review["decision"] == "confirmed", context(path, line_number, "adopted evaluation needs a confirmed human translation"))
+        require(review["candidate_record_id"] == record["id"] and review["sentence_text_sha256"] == record["sentence_text_sha256"], context(path, line_number, "adopted evaluation must match the candidate and source"))
+        require(review["candidate_translation_sha256"] == sha256_text(record["translation"]), context(path, line_number, "adopted scores must bind to the original model translation"))
+        binding = record.get("human_translation_notes")
+        require(isinstance(binding, dict) and set(binding) == {"source_text", "sentence_text_sha256", "translation_sha256", "notes"}, context(path, line_number, "invalid adopted note binding"))
+        require(isinstance(binding["source_text"], str) and sha256_text(binding["source_text"]) == binding["sentence_text_sha256"] == record["sentence_text_sha256"], context(path, line_number, "adopted notes must bind to the original source"))
+        require(binding["translation_sha256"] == translation_hash(review["reference_translation"]), context(path, line_number, "adopted notes must bind to the adopted translation"))
+        require(isinstance(binding["notes"], list) and grounded_notes(binding["notes"], binding["source_text"]) == binding["notes"], context(path, line_number, "adopted notes must be source grounded"))
+        require(bool(binding["notes"]) == (review["note_action"] != "not_applicable"), context(path, line_number, "adopted note applicability mismatch"))
+        if review["note_action"] == "replace":
+            require(binding["notes"] == review["translation_notes"], context(path, line_number, "adopted notes differ from the review"))
 
     citations = record["citations"]
     require(isinstance(citations, list), context(path, line_number, "citations must be a list"))

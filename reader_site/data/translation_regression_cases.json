@@ -251,6 +251,1066 @@
         "unsupported_addition"
       ],
       "require_major_issue": true
+    },
+    {
+      "case_id": "kierkegaard-ba-nested-attention-calque",
+      "corpus_id": "kierkegaard",
+      "work_id": "ba",
+      "variant_id": "text",
+      "segment_id": "sks-0047",
+      "sentence_id": "sks-0047.s007",
+      "source_features": {
+        "speaker_predicate": [
+          "jeg maa derfor gjøre opmærksom paa"
+        ],
+        "conceptual_contrast": [
+          "Frygt",
+          "Angest"
+        ]
+      },
+      "known_bad_translation": "불안이라는 개념은 심리학에서 거의 다루어지는 법이 없으므로, 나는 따라서 이것이 특정한 무언가를 지칭하는 공포나 그와 유사한 개념들과는 완전히 다르며, 반면 불안은 가능성을 위한 가능성으로서의 자유의 실재라는 점에 주목해야 한다고 말해야겠다.",
+      "known_bad_fragments": [
+        "주목해야 한다고 말해야겠다"
+      ],
+      "expected_categories": [
+        "korean_readability",
+        "syntax_or_scope",
+        "unsupported_addition"
+      ],
+      "require_major_issue": false
+    },
+    {
+      "case_id": "nietzsche-jgb-adjacent-premise-leak",
+      "corpus_id": "nietzsche",
+      "work_id": "JGB",
+      "variant_id": "",
+      "segment_id": "p-0004",
+      "sentence_id": "p-0004.s002",
+      "source_features": {
+        "target_boundary": [
+          "ist der Verdacht nicht gegründet"
+        ],
+        "conditional_scope": [
+          "sofern sie Dogmatiker waren"
+        ]
+      },
+      "known_bad_translation": "진리가 여인이라는 전제하에—의심이 근거 없는 것인가, 모든 철학자들이, 그들이 독단주의자였던 한, 여인을 다루는 데 서툴렀다는 의심이?",
+      "known_bad_fragments": [
+        "진리가 여인이라는 전제하에"
+      ],
+      "expected_categories": [
+        "unsupported_addition"
+      ],
+      "require_major_issue": true
+    },
+    {
+      "case_id": "wittgenstein-english-only-subject-scope",
+      "corpus_id": "wittgenstein",
+      "work_id": "Group_ItemsInEnglish",
+      "variant_id": "idp_transcription_linear",
+      "segment_id": "p-0001",
+      "sentence_id": "p-0001.s002",
+      "source_features": {
+        "limiter_scope": [
+          "If only these || those signs which contain proper names were complex"
+        ],
+        "consequence": [
+          "then propositions containing nothing but apparent variables would be simple"
+        ]
+      },
+      "known_bad_translation": "고유 명사를 포함하는 기호들이 복합적이기만 하다면, 겉보기 변수들 외에는 아무것도 포함하지 않는 명제들은 단순할 것입니다.",
+      "known_bad_fragments": [
+        "복합적이기만 하다면"
+      ],
+      "expected_categories": [
+        "syntax_or_scope"
+      ],
+      "require_major_issue": true
+    },
+    {
+      "case_id": "nietzsche-jgb-v7-negative-question-reversal",
+      "corpus_id": "nietzsche",
+      "work_id": "JGB",
+      "variant_id": "",
+      "segment_id": "p-0004",
+      "sentence_id": "p-0004.s002",
+      "source_features": {
+        "negative_question": [
+          "ist der Verdacht nicht gegründet"
+        ],
+        "conditional_scope": [
+          "sofern sie Dogmatiker waren"
+        ]
+      },
+      "known_bad_translation": "모든 철학자들이, 그들이 교조주의자였던 한, 여인들을 다루는 데 서툴렀다는 의심이 근거가 없는 것은 아닌가?",
+      "known_bad_fragments": [
+        "근거가 없는 것은 아닌가"
+      ],
+      "expected_categories": [
+        "negation_or_modality"
+      ],
+      "require_major_issue": true
+    },
+    {
+      "case_id": "kierkegaard-ba-r23-magter-causal-substitution",
+      "corpus_id": "kierkegaard",
+      "work_id": "ba",
+      "variant_id": "text",
+      "segment_id": "sks-0034",
+      "sentence_id": "sks-0034.s001",
+      "source_features": {
+        "lexical_relation": [
+          "baade magter Springet og Immanentsen"
+        ],
+        "predicative_complement": [
+          "den eneste dialektisk consequente"
+        ],
+        "parenthetical_restatement": [
+          "det vil sige den senere Immanents"
+        ]
+      },
+      "known_bad_translation": "이 모순은 도약과 내재성(즉, 후기적 내재성)을 모두 가능하게 하는 유일하게 변증법적으로 일관된 것이다.",
+      "known_bad_fragments": [
+        "가능하게 하는"
+      ],
+      "expected_categories": [
+        "semantic_substitution"
+      ],
+      "require_major_issue": true
+    },
+    {
+      "case_id": "kierkegaard-fb-r02-obligation-ellipsis",
+      "corpus_id": "kierkegaard",
+      "work_id": "fb",
+      "variant_id": "text",
+      "segment_id": "sks-0027",
+      "sentence_id": "sks-0027.s001",
+      "source_features": {
+        "elliptical_obligation": [
+          "ethisk Forpligtelse",
+          "den høieste og helligste"
+        ]
+      },
+      "known_bad_translation": "이 돈에 대해서는 나에게 아무런 윤리적 의무가 없으나, 아들에 대해서는 아버지가 가장 높고 거룩하다.",
+      "known_bad_fragments": [
+        "아버지가 가장 높고 거룩하다"
+      ],
+      "expected_categories": [
+        "syntax_or_scope"
+      ],
+      "require_major_issue": true
+    },
+    {
+      "case_id": "nietzsche-fw-r18-face-not-presence",
+      "corpus_id": "nietzsche",
+      "work_id": "FW",
+      "variant_id": "",
+      "segment_id": "p-0186",
+      "sentence_id": "p-0186.s001",
+      "source_features": {
+        "possessed_face": [
+          "unsres Angesichts"
+        ],
+        "sweat_image": [
+          "Schweisse"
+        ]
+      },
+      "known_bad_translation": "우리 면전의 땀 흘리는 수고 속에서",
+      "known_bad_fragments": [
+        "면전"
+      ],
+      "expected_categories": [
+        "terminology"
+      ],
+      "require_major_issue": true
+    },
+    {
+      "case_id": "kierkegaard-fb-r19-contending-not-walking",
+      "corpus_id": "kierkegaard",
+      "work_id": "fb",
+      "variant_id": "text",
+      "segment_id": "sks-0014",
+      "sentence_id": "sks-0014.s001",
+      "source_features": {
+        "historical_verb": [
+          "stred med Gud"
+        ],
+        "contrast": [
+          "men"
+        ]
+      },
+      "known_bad_translation": "하나님과 함께 걷는 자는 모든 이보다 더 위대해졌다.",
+      "known_bad_fragments": [
+        "함께 걷는"
+      ],
+      "expected_categories": [
+        "semantic_substitution"
+      ],
+      "require_major_issue": true
+    },
+    {
+      "case_id": "r03-zipporah-subject-and-flint",
+      "corpus_id": "bible",
+      "work_id": "oshb.Exod",
+      "variant_id": "oshb_morphhb",
+      "segment_id": "Exod.4.25",
+      "sentence_id": "Exod.4.25.s001",
+      "source_features": {
+        "verified_meaning": [
+          "צִפֹּרָ֜ה צֹ֗ר"
+        ]
+      },
+      "known_bad_translation": "그녀가 츠포라를 가져다가 아들의 포피를 베어 그의 발에 대며 말하였다. '당신은 나에게 피의 신랑이로군요.'",
+      "known_bad_fragments": [
+        "그녀가 츠포라를 가져다가 아들의 포피를 베어 그의 발에 대며 말하였다. '당신은 나에게 피의 신랑이로군요.'"
+      ],
+      "expected_categories": [
+        "omission",
+        "syntax_or_scope"
+      ],
+      "require_major_issue": true,
+      "accepted_translations": [
+        "십보라가 부싯돌을 가져다가 자기 아들의 포피를 베어 내어 그의 발에 대고 말하였다. “당신은 참으로 내게 피의 신랑이로다.”"
+      ]
+    },
+    {
+      "case_id": "r06-counterfactual-causal-clause",
+      "corpus_id": "kierkegaard",
+      "work_id": "aas",
+      "variant_id": "text",
+      "segment_id": "sks-0003",
+      "sentence_id": "sks-0003.s001",
+      "source_features": {
+        "verified_meaning": [
+          "thi din Virksomhed vilde have gjort det uforglemmeligt"
+        ]
+      },
+      "known_bad_translation": "그렇다면 당신의 삶은 마땅한 망각에 내맡겨지지 않았을 것이며, 이는 당신의 활동이 당신의 삶을 잊을 수 없게 만들었기 때문입니다. 또한 단지 이것뿐만 아니라, 아마도 『Folkebladet』나 『Naturen, Mennesket og Borgeren』에서 당신의 삶이 묘사되어 하나의 본보기로 제시되었을지도 모르며, 아마도 당신에 대해 다음과 같이 말해졌을 것입니다:",
+      "known_bad_fragments": [
+        "그렇다면 당신의 삶은 마땅한 망각에 내맡겨지지 않았을 것이며, 이는 당신의 활동이 당신의 삶을 잊을 수 없게 만들었기 때문입니다. 또한 단지 이것뿐만 아니라, 아마도 『Folkebladet』나 『Naturen, Mennesket og Borgeren』에서 당신의 삶이 묘사되어 하나의 본보기로 제시되었을지도 모르며, 아마도 당신에 대해 다음과 같이 말해졌을 것입니다:"
+      ],
+      "expected_categories": [
+        "syntax_or_scope"
+      ],
+      "require_major_issue": true,
+      "accepted_translations": [
+        "그랬다면 당신의 삶은 마땅한 망각에 내맡겨지지 않았을 것입니다. 당신의 활동이 그 삶을 잊을 수 없게 만들었을 테니 말입니다. 그뿐 아니라 그 삶이 글로 기록되어 본보기로 제시되었을지도 모릅니다. 어쩌면 『Folkebladet』나 『Naturen, Mennesket og Borgeren』에 말입니다. 당신을 두고는 다음과 같은 말이 나왔을 것입니다:"
+      ]
+    },
+    {
+      "case_id": "r07-pharaoh-chooses-time-nile",
+      "corpus_id": "bible",
+      "work_id": "oshb.Exod",
+      "variant_id": "oshb_morphhb",
+      "segment_id": "Exod.8.5",
+      "sentence_id": "Exod.8.5.s001",
+      "source_features": {
+        "verified_meaning": [
+          "הִתְפָּאֵ֣ר עָלַ/י֒"
+        ]
+      },
+      "known_bad_translation": "모세가 바로에게 말하였다. “나를 대단하게 여기다니, 내가 언제 당신과 당신의 종들과 당신의 백성을 위하여 당신과 당신의 집에서 개구리들을 제거하라고 간청하겠습니까? 오직 요르단 강에만 남아 있게 될 것입니다.”",
+      "known_bad_fragments": [
+        "모세가 바로에게 말하였다. “나를 대단하게 여기다니, 내가 언제 당신과 당신의 종들과 당신의 백성을 위하여 당신과 당신의 집에서 개구리들을 제거하라고 간청하겠습니까? 오직 요르단 강에만 남아 있게 될 것입니다.”"
+      ],
+      "expected_categories": [
+        "terminology",
+        "semantic_substitution"
+      ],
+      "require_major_issue": true,
+      "accepted_translations": [
+        "모세가 바로에게 말하였다. “때를 정하는 영예를 당신에게 돌리겠습니다. 내가 당신과 당신의 신하들과 당신의 백성을 위하여, 개구리들이 언제 당신과 당신의 집들에서 없어지고 나일강에만 남게 해 달라고 간구하면 되겠습니까?”"
+      ]
+    },
+    {
+      "case_id": "r13-water-diviner-context",
+      "corpus_id": "wittgenstein",
+      "work_id": "Group_ItemsInEnglish",
+      "variant_id": "idp_transcription_linear",
+      "segment_id": "p-0159",
+      "sentence_id": "p-0159.s001",
+      "source_features": {
+        "verified_meaning": [
+          "diviner's answer"
+        ]
+      },
+      "known_bad_translation": "점술가의 답변을 조사하는 것이 중요한 이유는, 우리가 단지 “P가 그러하다고 느낀다(또는 믿는다)”라고 단언하는 것만으로도 P라는 진술에 의미를 부여했다고 흔히 생각하기 때문입니다.",
+      "known_bad_fragments": [
+        "점술가의 답변을 조사하는 것이 중요한 이유는, 우리가 단지 “P가 그러하다고 느낀다(또는 믿는다)”라고 단언하는 것만으로도 P라는 진술에 의미를 부여했다고 흔히 생각하기 때문입니다."
+      ],
+      "expected_categories": [
+        "terminology"
+      ],
+      "require_major_issue": true,
+      "accepted_translations": [
+        "수맥 탐지자의 답변을 검토하는 것이 중요한 이유는, 우리가 단지 “나는 P가 사실이라고 느낀다(또는 믿는다)”라고 단언하는 것만으로도 P라는 진술에 의미를 부여했다고 흔히 생각하기 때문입니다."
+      ]
+    },
+    {
+      "case_id": "r14-difficulty-resolved-not-raised",
+      "corpus_id": "kierkegaard",
+      "work_id": "ba",
+      "variant_id": "text",
+      "segment_id": "sks-0017",
+      "sentence_id": "sks-0017.s001",
+      "source_features": {
+        "verified_meaning": [
+          "hæver Vanskeligheden"
+        ]
+      },
+      "known_bad_translation": "즉, 어려움을 높이는 것인데, 이는 윤리학의 도움에 의해서가 아니라 교의학의 도움에 의해서이다.",
+      "known_bad_fragments": [
+        "즉, 어려움을 높이는 것인데, 이는 윤리학의 도움에 의해서가 아니라 교의학의 도움에 의해서이다."
+      ],
+      "expected_categories": [
+        "semantic_substitution"
+      ],
+      "require_major_issue": true,
+      "accepted_translations": [
+        "즉, 윤리학의 도움이 아니라 교의학의 도움으로 그 어려움을 해소한다는 것이다."
+      ]
+    },
+    {
+      "case_id": "r15-small-prick-suffices-to-burst",
+      "corpus_id": "nietzsche",
+      "work_id": "FW",
+      "variant_id": "",
+      "segment_id": "p-0089",
+      "sentence_id": "p-0089.s001",
+      "source_features": {
+        "verified_meaning": [
+          "Zum Platzen schon ein kleiner Stich"
+        ]
+      },
+      "known_bad_translation": "터질 듯한 작은 찌름.",
+      "known_bad_fragments": [
+        "터질 듯한 작은 찌름."
+      ],
+      "expected_categories": [
+        "syntax_or_scope"
+      ],
+      "require_major_issue": true,
+      "accepted_translations": [
+        "작은 찌름 하나만으로도 터지고 말 테니."
+      ]
+    },
+    {
+      "case_id": "r17-blessedness-reminder-not-omitted",
+      "corpus_id": "kierkegaard",
+      "work_id": "sd",
+      "variant_id": "text",
+      "segment_id": "sks-0030",
+      "sentence_id": "sks-0030.s001",
+      "source_features": {
+        "verified_meaning": [
+          "men aldrig minder dem om denne Salighed"
+        ]
+      },
+      "known_bad_translation": "아, 그리고 너무나 많은 이들이 모든 생각 중 가장 복된 생각으로부터 기만당한 채 이와 같이 살아간다는 이 비참함, 이 비참함, 즉 사람들이 스스로를 몰두시키거나 인류의 무리라는 관점에서 그들을 다른 모든 것에 몰두하게 하며, 삶이라는 연극 속에서 그들의 기력을 소진하는 데 그들을 사용하면서도, 그들을 하나로 모으고—그들을 분리하여 각 개인이 살 가치가 있는 가장 높고 유일한 것, 그리고 영원 속에서 살기에 충분한 것을 획득하게 하는 대신에, 그들을 기만한다는 이 비참함:",
+      "known_bad_fragments": [
+        "아, 그리고 너무나 많은 이들이 모든 생각 중 가장 복된 생각으로부터 기만당한 채 이와 같이 살아간다는 이 비참함, 이 비참함, 즉 사람들이 스스로를 몰두시키거나 인류의 무리라는 관점에서 그들을 다른 모든 것에 몰두하게 하며, 삶이라는 연극 속에서 그들의 기력을 소진하는 데 그들을 사용하면서도, 그들을 하나로 모으고—그들을 분리하여 각 개인이 살 가치가 있는 가장 높고 유일한 것, 그리고 영원 속에서 살기에 충분한 것을 획득하게 하는 대신에, 그들을 기만한다는 이 비참함:"
+      ],
+      "expected_categories": [
+        "omission"
+      ],
+      "require_major_issue": true,
+      "accepted_translations": [
+        "아, 그리고 너무나 많은 이들이 모든 생각 중 가장 복된 생각을 기만으로 빼앗긴 채 그렇게 살아간다는 이 비참함, 사람들이 다른 온갖 일에 스스로 몰두하거나 대중을 상대할 때에는 그들을 그런 일에 몰두시키고, 삶이라는 연극에 힘을 보태도록 그들을 이용하면서도 이 복됨을 결코 일깨워 주지 않으며, 각자가 지고한 것, 곧 그것을 위해 살아갈 가치가 있고 그 안에서 영원히 살아가기에도 충분한 유일한 것을 얻을 수 있도록 그들을 흩어 놓는 대신, 한데 몰아넣고 기만한다는 이 비참함:"
+      ]
+    },
+    {
+      "case_id": "r21-concessive-balance-of-benefits",
+      "corpus_id": "nietzsche",
+      "work_id": "MA-I",
+      "variant_id": "",
+      "segment_id": "p-0057",
+      "sentence_id": "p-0057.s002",
+      "source_features": {
+        "verified_meaning": [
+          "Rechnung und Gegenrechnung"
+        ]
+      },
+      "known_bad_translation": "— 이제 계산과 반계산이 어떠한 상태인지에 대하여:",
+      "known_bad_fragments": [
+        "— 이제 계산과 반계산이 어떠한 상태인지에 대하여:"
+      ],
+      "expected_categories": [
+        "syntax_or_scope"
+      ],
+      "require_major_issue": true,
+      "accepted_translations": [
+        "— 이제 득실을 어떻게 따지든 간에:"
+      ]
+    },
+    {
+      "case_id": "r24-required-manner-of-worship",
+      "corpus_id": "bible",
+      "work_id": "sblgnt.John",
+      "variant_id": "sblgnt",
+      "segment_id": "John.4.24",
+      "sentence_id": "John.4.24.s001",
+      "source_features": {
+        "verified_meaning": [
+          "ἐν πνεύματι καὶ ἀληθείᾳ δεῖ προσκυνεῖν"
+        ]
+      },
+      "known_bad_translation": "하나님은 영이시니, 영과 진리 안에서 그분을 예배하는 자들은 예배를 드려야 합니다.",
+      "known_bad_fragments": [
+        "하나님은 영이시니, 영과 진리 안에서 그분을 예배하는 자들은 예배를 드려야 합니다."
+      ],
+      "expected_categories": [
+        "syntax_or_scope"
+      ],
+      "require_major_issue": true,
+      "accepted_translations": [
+        "하나님은 영이시며, 그분을 예배하는 사람들은 영과 진리 안에서 예배해야 합니다."
+      ]
+    },
+    {
+      "case_id": "r34-hypothetical-not-obligation",
+      "corpus_id": "kierkegaard",
+      "work_id": "sd",
+      "variant_id": "text",
+      "segment_id": "sks-0015",
+      "sentence_id": "sks-0015.s001",
+      "source_features": {
+        "verified_meaning": [
+          "Skulde et Menneske døe af Fortvivlelse"
+        ]
+      },
+      "known_bad_translation": "만약 사람이 질병으로 죽는 것처럼 절망으로 죽어야 한다면, 그 사람 안의 영원한 것인 자아는 육체가 질병으로 죽는 것과 동일한 의미에서 죽을 수 있어야만 한다.",
+      "known_bad_fragments": [
+        "만약 사람이 질병으로 죽는 것처럼 절망으로 죽어야 한다면, 그 사람 안의 영원한 것인 자아는 육체가 질병으로 죽는 것과 동일한 의미에서 죽을 수 있어야만 한다."
+      ],
+      "expected_categories": [
+        "syntax_or_scope"
+      ],
+      "require_major_issue": true,
+      "accepted_translations": [
+        "만약 사람이 질병으로 죽듯이 절망으로 죽는다면, 그 사람 안의 영원한 것, 곧 자아는 육체가 질병으로 죽는 것과 같은 의미에서 죽을 수 있어야 할 것이다."
+      ]
+    },
+    {
+      "case_id": "r38-future-as-occasion",
+      "corpus_id": "kierkegaard",
+      "work_id": "2t43",
+      "variant_id": "text",
+      "segment_id": "sks-0006",
+      "sentence_id": "sks-0006.s001",
+      "source_features": {
+        "verified_meaning": [
+          "det Tilkommende, saaledes som dette jo var Anledningen"
+        ]
+      },
+      "known_bad_translation": "현재에 관한 것이 아니라 다가올 것에 적합한 소망, 바로 이것이 그가 소망하게 된 계기였습니다.",
+      "known_bad_fragments": [
+        "현재에 관한 것이 아니라 다가올 것에 적합한 소망, 바로 이것이 그가 소망하게 된 계기였습니다."
+      ],
+      "expected_categories": [
+        "syntax_or_scope"
+      ],
+      "require_major_issue": false,
+      "accepted_translations": [
+        "그가 소망하게 된 계기가 바로 미래였던 만큼, 현재에 관한 것이 아니라 미래에 걸맞은 소망."
+      ]
+    },
+    {
+      "case_id": "r44-religiosity-singular-subject",
+      "corpus_id": "nietzsche",
+      "work_id": "JGB",
+      "variant_id": "",
+      "segment_id": "p-0060",
+      "sentence_id": "p-0060.s001",
+      "source_features": {
+        "verified_meaning": [
+          "welche sie ausströmt"
+        ]
+      },
+      "known_bad_translation": "고대 그리스인의 종교성에서 경탄을 자아내는 것은, 그들이 뿜어내는 억제할 수 없는 풍요로운 감사함이다:",
+      "known_bad_fragments": [
+        "고대 그리스인의 종교성에서 경탄을 자아내는 것은, 그들이 뿜어내는 억제할 수 없는 풍요로운 감사함이다:"
+      ],
+      "expected_categories": [
+        "syntax_or_scope"
+      ],
+      "require_major_issue": true,
+      "accepted_translations": [
+        "고대 그리스인의 종교성에서 경탄을 자아내는 것은 그 종교성이 뿜어내는 억누를 수 없이 넘치는 감사의 마음이다:"
+      ]
+    },
+    {
+      "case_id": "followup-r07-houses-not-omitted",
+      "corpus_id": "bible",
+      "work_id": "oshb.Exod",
+      "variant_id": "oshb_morphhb",
+      "segment_id": "Exod.8.5",
+      "sentence_id": "Exod.8.5.s001",
+      "source_features": {
+        "verified_meaning": [
+          "וּ/מִ/בָּתֶּ֑י/ךָ"
+        ]
+      },
+      "known_bad_translation": "모세가 바로에게 말하였다. “때를 정하는 영예를 당신에게 돌리겠습니다. 내가 당신과 당신의 신하들과 당신의 백성을 위하여, 개구리들이 언제 당신에게서 없어지고 나일강에만 남게 해 달라고 간구하면 되겠습니까?”",
+      "known_bad_fragments": [
+        "모세가 바로에게 말하였다. “때를 정하는 영예를 당신에게 돌리겠습니다. 내가 당신과 당신의 신하들과 당신의 백성을 위하여, 개구리들이 언제 당신에게서 없어지고 나일강에만 남게 해 달라고 간구하면 되겠습니까?”"
+      ],
+      "expected_categories": [
+        "omission"
+      ],
+      "require_major_issue": true,
+      "accepted_translations": [
+        "모세가 바로에게 말하였다. “때를 정하는 영예를 당신에게 돌리겠습니다. 내가 당신과 당신의 신하들과 당신의 백성을 위하여, 개구리들이 언제 당신과 당신의 집들에서 없어지고 나일강에만 남게 해 달라고 간구하면 되겠습니까?”",
+        "모세가 바로에게 말하였다. “때를 정하는 영예를 당신에게 돌리겠습니다. 내가 당신과 당신의 신하들과 당신의 백성을 위하여, 개구리들이 언제 당신과 당신의 가옥에서 없어지고 나일강에만 남게 해 달라고 간구하면 되겠습니까?”",
+        "모세가 바로에게 말하였다. “때를 정하는 영예를 당신에게 돌리겠습니다. 내가 당신과 당신의 신하들과 당신의 백성을 위하여, 개구리들이 언제 당신과 당신의 거처에서 없어지고 나일강에만 남게 해 달라고 간구하면 되겠습니까?”"
+      ]
+    },
+    {
+      "case_id": "followup-r17-supply-not-exhaust",
+      "corpus_id": "kierkegaard",
+      "work_id": "sd",
+      "variant_id": "text",
+      "segment_id": "sks-0030",
+      "sentence_id": "sks-0030.s001",
+      "source_features": {
+        "verified_meaning": [
+          "afgive Kræfterne"
+        ]
+      },
+      "known_bad_translation": "아, 그리고 이 비참함, 즉 너무나 많은 이들이 모든 생각 중 가장 복된 생각을 기만당한 채 이와 같이 살아간다는 이 비참함, 이 비참함, 즉 사람들이 스스로를 몰두시키거나 인류의 무리라는 관점에서 그들을 다른 모든 것에 몰두하게 하여, 그들이 삶이라는 연극 속에서 기력을 소진하도록 사용하면서도, 그들을 하나로 모으고—그들을 흩어놓는 대신 그들을 속이며—각 개인이 살 가치가 있고 영원 속에서 살기에 충분한, 가장 높고 유일한 것을 얻어야 함에도 불구하고 그들에게 이 복됨을 결코 상기시켜 주지 않는다는 이 비참함:",
+      "known_bad_fragments": [
+        "아, 그리고 이 비참함, 즉 너무나 많은 이들이 모든 생각 중 가장 복된 생각을 기만당한 채 이와 같이 살아간다는 이 비참함, 이 비참함, 즉 사람들이 스스로를 몰두시키거나 인류의 무리라는 관점에서 그들을 다른 모든 것에 몰두하게 하여, 그들이 삶이라는 연극 속에서 기력을 소진하도록 사용하면서도, 그들을 하나로 모으고—그들을 흩어놓는 대신 그들을 속이며—각 개인이 살 가치가 있고 영원 속에서 살기에 충분한, 가장 높고 유일한 것을 얻어야 함에도 불구하고 그들에게 이 복됨을 결코 상기시켜 주지 않는다는 이 비참함:"
+      ],
+      "expected_categories": [
+        "semantic_substitution"
+      ],
+      "require_major_issue": true,
+      "accepted_translations": [
+        "아, 그리고 너무나 많은 이들이 모든 생각 중 가장 복된 생각을 기만으로 빼앗긴 채 그렇게 살아간다는 이 비참함, 사람들이 다른 온갖 일에 스스로 몰두하거나 대중을 상대할 때에는 그들을 그런 일에 몰두시키고, 삶이라는 연극에 힘을 보태도록 그들을 이용하면서도 이 복됨을 결코 일깨워 주지 않으며, 각자가 지고한 것, 곧 그것을 위해 살아갈 가치가 있고 그 안에서 영원히 살아가기에도 충분한 유일한 것을 얻을 수 있도록 그들을 흩어 놓는 대신, 한데 몰아넣고 기만한다는 이 비참함:",
+        "아, 그리고 너무나 많은 이들이 모든 생각 중 가장 복된 생각을 기만으로 빼앗긴 채 그렇게 살아간다는 이 비참함, 사람들이 다른 온갖 일에 스스로 몰두하거나 대중을 상대할 때에는 그들을 그런 일에 몰두시키고, 삶이라는 연극에 역량을 제공하도록 그들을 이용하면서도 이 복됨을 결코 일깨워 주지 않으며, 각자가 지고한 것, 곧 그것을 위해 살아갈 가치가 있고 그 안에서 영원히 살아가기에도 충분한 유일한 것을 얻을 수 있도록 그들을 흩어 놓는 대신, 한데 몰아넣고 기만한다는 이 비참함:",
+        "아, 그리고 너무나 많은 이들이 모든 생각 중 가장 복된 생각을 기만으로 빼앗긴 채 그렇게 살아간다는 이 비참함, 사람들이 다른 온갖 일에 스스로 몰두하거나 대중을 상대할 때에는 그들을 그런 일에 몰두시키고, 삶이라는 연극에 기력을 내놓도록 그들을 이용하면서도 이 복됨을 결코 일깨워 주지 않으며, 각자가 지고한 것, 곧 그것을 위해 살아갈 가치가 있고 그 안에서 영원히 살아가기에도 충분한 유일한 것을 얻을 수 있도록 그들을 흩어 놓는 대신, 한데 몰아넣고 기만한다는 이 비참함:"
+      ]
+    },
+    {
+      "case_id": "followup-r24-worship-not-self-predication",
+      "corpus_id": "bible",
+      "work_id": "sblgnt.John",
+      "variant_id": "sblgnt",
+      "segment_id": "John.4.24",
+      "sentence_id": "John.4.24.s001",
+      "source_features": {
+        "verified_meaning": [
+          "τοὺς προσκυνοῦντας αὐτὸν"
+        ]
+      },
+      "known_bad_translation": "하나님은 영이시니, 그분을 영과 진리로 예배드리는 것은 반드시 예배드려야 하는 방식입니다.",
+      "known_bad_fragments": [
+        "하나님은 영이시니, 그분을 영과 진리로 예배드리는 것은 반드시 예배드려야 하는 방식입니다."
+      ],
+      "expected_categories": [
+        "syntax_or_scope"
+      ],
+      "require_major_issue": true,
+      "accepted_translations": [
+        "하나님은 영이시며, 그분을 예배하는 사람들은 영과 진리 안에서 예배해야 합니다.",
+        "하나님은 영이시며, 그분을 예배하려면 영과 진리 안에서 예배해야 합니다.",
+        "하나님은 영이시며 그분께 드리는 예배는 영과 진리로 드려져야 합니다."
+      ]
+    },
+    {
+      "corpus_id": "bible",
+      "work_id": "oshb.Exod",
+      "variant_id": "oshb_morphhb",
+      "segment_id": "Exod.8.5",
+      "sentence_id": "Exod.8.5.s001",
+      "sentence_text_sha256": "4aab26bb1a9e208c551d48f7ce9c092c5806799e8a43526b7eecd4fcb0a8c75b",
+      "case_id": "relations-r07",
+      "source_features": {
+        "logical_relation": [
+          "אַעְתִּ֣יר לְ/ךָ֗"
+        ]
+      },
+      "known_bad_translation": "모세가 바로에게 말하였다. “때를 정하는 영예를 당신에게 돌리겠습니다. 당신과 당신의 신하들과 당신의 백성을 위해, 개구리들이 당신과 당신의 집들에서 없어지고 나일강에만 남도록 내가 언제 당신에게 간청하면 되겠습니까?”",
+      "known_bad_fragments": [
+        "모세가 바로에게 말하였다. “때를 정하는 영예를 당신에게 돌리겠습니다. 당신과 당신의 신하들과 당신의 백성을 위해, 개구리들이 당신과 당신의 집들에서 없어지고 나일강에만 남도록 내가 언제 당신에게 간청하면 되겠습니까?”"
+      ],
+      "expected_categories": [
+        "syntax_or_scope"
+      ],
+      "require_major_issue": true,
+      "accepted_translations": [
+        "모세가 바로에게 말하였다. “때를 정하는 영예를 당신에게 돌리겠습니다. 내가 당신과 당신의 신하들과 당신의 백성을 위하여, 개구리들이 언제 당신과 당신의 집들에서 없어지고 나일강에만 남게 해 달라고 간구하면 되겠습니까?”",
+        "모세가 바로에게 말하였다. “때를 정하는 영예를 당신에게 돌리겠습니다. 내가 당신과 당신의 신하들과 당신의 백성을 위하여, 개구리들이 언제 당신과 당신의 집들에서 없어지고 나일강에만 남게 해 달라고 기도하면 되겠습니까?”",
+        "모세가 바로에게 말하였다. “때를 정하는 영예를 당신에게 돌리겠습니다. 내가 당신과 당신의 신하들과 당신의 백성을 위해, 개구리들이 언제 당신과 당신의 집들에서 없어지고 나일강에만 남게 해 달라고 간구하면 되겠습니까?”",
+        "모세가 바로에게 말하였다. “때를 정하는 영예를 당신에게 돌리겠습니다. 당신과 당신의 신하들과 당신의 백성을 위해, 개구리들이 당신과 당신의 집들에서 없어지고 나일강에만 남도록 내가 언제 하나님께 간청하면 되겠습니까?”"
+      ],
+      "fixture_origin": "controlled change of one logical relationship in Codex proposal"
+    },
+    {
+      "corpus_id": "kierkegaard",
+      "work_id": "ba",
+      "variant_id": "text",
+      "segment_id": "sks-0017",
+      "sentence_id": "sks-0017.s001",
+      "sentence_text_sha256": "996c712c5eb3e1621ac3a3a0e01e5f6e2f317f65c13418a8144b07c8d2c27f38",
+      "case_id": "relations-r14",
+      "source_features": {
+        "logical_relation": [
+          "dog ikke ved Ethikens Hjælp, men ved Dogmatikens"
+        ]
+      },
+      "known_bad_translation": "즉, 교의학의 도움이 아니라 윤리학의 도움으로 그 어려움을 해소한다는 것이다.",
+      "known_bad_fragments": [
+        "즉, 교의학의 도움이 아니라 윤리학의 도움으로 그 어려움을 해소한다는 것이다."
+      ],
+      "expected_categories": [
+        "syntax_or_scope"
+      ],
+      "require_major_issue": true,
+      "accepted_translations": [
+        "즉, 윤리학의 도움이 아니라 교의학의 도움으로 그 어려움을 해소한다는 것이다.",
+        "즉, 교의학의 도움으로 그 어려움을 해소하되 윤리학의 도움을 받는 것은 아니다.",
+        "즉, 윤리학의 도움 없이 교의학의 도움으로 그 어려움을 해결한다는 것이다."
+      ],
+      "fixture_origin": "controlled change of one logical relationship in Codex proposal"
+    },
+    {
+      "corpus_id": "kierkegaard",
+      "work_id": "sd",
+      "variant_id": "text",
+      "segment_id": "sks-0030",
+      "sentence_id": "sks-0030.s001",
+      "sentence_text_sha256": "19c370639b8c75e2eed8d243f7261fe514d5b359fbfd38660d4b75eda997e2ce",
+      "case_id": "relations-r17",
+      "source_features": {
+        "logical_relation": [
+          "men aldrig minder dem om denne Salighed"
+        ]
+      },
+      "known_bad_translation": "아, 그리고 너무나 많은 이들이 모든 생각 중 가장 복된 생각을 기만으로 빼앗긴 채 그렇게 살아간다는 이 비참함, 사람들이 다른 온갖 일에 스스로 몰두하거나 대중을 상대할 때에는 그들을 그런 일에 몰두시키고, 삶이라는 연극에 힘을 보태도록 그들을 이용하면서도 이 복됨을 일깨워 주며, 각자가 지고한 것, 곧 그것을 위해 살아갈 가치가 있고 그 안에서 영원히 살아가기에도 충분한 유일한 것을 얻을 수 있도록 그들을 흩어 놓는 대신, 한데 몰아넣고 기만한다는 이 비참함:",
+      "known_bad_fragments": [
+        "아, 그리고 너무나 많은 이들이 모든 생각 중 가장 복된 생각을 기만으로 빼앗긴 채 그렇게 살아간다는 이 비참함, 사람들이 다른 온갖 일에 스스로 몰두하거나 대중을 상대할 때에는 그들을 그런 일에 몰두시키고, 삶이라는 연극에 힘을 보태도록 그들을 이용하면서도 이 복됨을 일깨워 주며, 각자가 지고한 것, 곧 그것을 위해 살아갈 가치가 있고 그 안에서 영원히 살아가기에도 충분한 유일한 것을 얻을 수 있도록 그들을 흩어 놓는 대신, 한데 몰아넣고 기만한다는 이 비참함:"
+      ],
+      "expected_categories": [
+        "syntax_or_scope"
+      ],
+      "require_major_issue": true,
+      "accepted_translations": [
+        "아, 그리고 너무나 많은 이들이 모든 생각 중 가장 복된 생각을 기만으로 빼앗긴 채 그렇게 살아간다는 이 비참함, 사람들이 다른 온갖 일에 스스로 몰두하거나 대중을 상대할 때에는 그들을 그런 일에 몰두시키고, 삶이라는 연극에 힘을 보태도록 그들을 이용하면서도 이 복됨을 결코 일깨워 주지 않으며, 각자가 지고한 것, 곧 그것을 위해 살아갈 가치가 있고 그 안에서 영원히 살아가기에도 충분한 유일한 것을 얻을 수 있도록 그들을 흩어 놓는 대신, 한데 몰아넣고 기만한다는 이 비참함:",
+        "아, 그리고 너무나 많은 이들이 모든 생각 중 가장 복된 생각을 기만으로 빼앗긴 채 그렇게 살아간다는 이 비참함, 사람들이 다른 온갖 일에 스스로 몰두하거나 대중을 상대할 때에는 그들을 그런 일에 몰두시키고, 삶이라는 연극에 힘을 보태도록 그들을 이용하면서도 이 복됨을 상기시키는 법이 없으며, 각자가 지고한 것, 곧 그것을 위해 살아갈 가치가 있고 그 안에서 영원히 살아가기에도 충분한 유일한 것을 얻을 수 있도록 그들을 흩어 놓는 대신, 한데 몰아넣고 기만한다는 이 비참함:",
+        "아, 그리고 너무나 많은 이들이 모든 생각 중 가장 복된 생각을 기만으로 빼앗긴 채 그렇게 살아간다는 이 비참함, 사람들이 다른 온갖 일에 스스로 몰두하거나 대중을 상대할 때에는 그들을 그런 일에 몰두시키고, 삶이라는 연극에 힘을 보태도록 그들을 이용하면서도 그들에게 결코 일깨워 주지 않는 것이 이 복됨이며, 각자가 지고한 것, 곧 그것을 위해 살아갈 가치가 있고 그 안에서 영원히 살아가기에도 충분한 유일한 것을 얻을 수 있도록 그들을 흩어 놓는 대신, 한데 몰아넣고 기만한다는 이 비참함:"
+      ],
+      "fixture_origin": "controlled change of one logical relationship in Codex proposal"
+    },
+    {
+      "case_id": "relations-r07-heightened-moses",
+      "corpus_id": "bible",
+      "work_id": "oshb.Exod",
+      "variant_id": "oshb_morphhb",
+      "segment_id": "Exod.8.5",
+      "sentence_id": "Exod.8.5.s001",
+      "source_features": {
+        "logical_relation": [
+          "הִתְפָּאֵ֣ר עָלַ/י֒"
+        ]
+      },
+      "known_bad_translation": "모세가 바로에게 말하였다. “당신이 나를 높여 주시는 것이 언제입니까? 내가 당신과 당신의 신하들과 당신의 백성을 위하여, 개구리들이 언제 당신과 당신의 집들에서 없어지고 나일강에만 남게 해 달라고 간구하면 되겠습니까?”",
+      "known_bad_fragments": [
+        "당신이 나를 높여 주시는 것이 언제입니까?"
+      ],
+      "expected_categories": [
+        "semantic_substitution"
+      ],
+      "require_major_issue": true,
+      "accepted_translations": [
+        "모세가 바로에게 말하였다. “때를 정하는 영예를 당신에게 돌리겠습니다. 내가 당신과 당신의 신하들과 당신의 백성을 위하여, 개구리들이 언제 당신과 당신의 집들에서 없어지고 나일강에만 남게 해 달라고 간구하면 되겠습니까?”"
+      ],
+      "fixture_origin": "controlled idiom-only error observed in the R07 revision"
+    }
+  ],
+  "superseded_cases": [
+    {
+      "retired_date": "2026-10-02",
+      "reason": "WAB의 교정 후 those 독법은 유효하므로 저 기호들만이라는 번역을 누락 오역으로 분류하지 않는다. only의 범위와 손상된 || 표기 검사는 유지한다.",
+      "evidence_url": "https://wab.uib.no/sample/201a-1.htm",
+      "case": {
+        "case_id": "wittgenstein-idp-alternative-reading-omission",
+        "corpus_id": "wittgenstein",
+        "work_id": "Group_ItemsInEnglish",
+        "variant_id": "idp_transcription_linear",
+        "segment_id": "p-0001",
+        "sentence_id": "p-0001.s002",
+        "source_features": {
+          "alternative_readings": [
+            "these || those"
+          ],
+          "limiter_scope": [
+            "If only"
+          ]
+        },
+        "known_bad_translation": "고유명을 포함하는 저 기호들만이 복합적이라면, 겉보기 변수만을 포함하는 명제들은 단순할 것이다.",
+        "known_bad_fragments": [
+          "저 기호들만이 복합적이라면"
+        ],
+        "expected_categories": [
+          "omission"
+        ],
+        "require_major_issue": true
+      }
+    }
+  ],
+  "note_cases": [
+    {
+      "case_id": "note-r19",
+      "corpus_id": "kierkegaard",
+      "work_id": "fb",
+      "variant_id": "text",
+      "segment_id": "sks-0014",
+      "sentence_id": "sks-0014.s001",
+      "sentence_text_sha256": "cecdb21e741cdf2d31ec3b52d9461bf388078838e016bde7675a23e16ddf71c0",
+      "source_text": "men den, der stred med Gud , blev større end Alle.",
+      "known_bad_notes": [
+        {
+          "note": "독일어/덴마크어 혼용 또는 오타가 포함된 것으로 보이는 원문(stred)을 '하나님과 함께 걷는 자'로 해석하여 의미를 전달함.",
+          "source_span": "men den, der stred med Gud"
+        }
+      ],
+      "reference_translation": "그러나 하나님과 겨룬 사람은 모든 이보다 더 위대해졌다.",
+      "corrected_notes": [
+        {
+          "source_span": "men den, der stred med Gud",
+          "note": "stred는 덴마크어 stride의 과거형이며 여기서는 하나님과 겨루거나 싸운다는 뜻이다. 영어 혼용이나 오탈자가 아니다."
+        }
+      ]
+    },
+    {
+      "case_id": "note-r21",
+      "corpus_id": "nietzsche",
+      "work_id": "MA-I",
+      "variant_id": "",
+      "segment_id": "p-0057",
+      "sentence_id": "p-0057.s002",
+      "sentence_text_sha256": "d40cd977d84cfed5555361d76db3615d93a4506e0f199ded70cd8e7c43bc06a2",
+      "source_text": "— Wie es sich nun mit Rechnung und Gegenrechnung verhalte:",
+      "known_bad_notes": [
+        {
+          "note": "원문의 접속사 'Wie'로 시작하는 의문형 구조를 '~어떠한 상태인지에 대하여'로 번역하여 문장의 도입부 역할을 유지함.",
+          "source_span": "Wie es sich nun mit Rechnung und Gegenrechnung verhalte:"
+        }
+      ],
+      "reference_translation": "— 이제 득실을 어떻게 따지든 간에:",
+      "corrected_notes": [
+        {
+          "source_span": "Wie es sich nun mit Rechnung und Gegenrechnung verhalte:",
+          "note": "Wie절은 득실의 판단을 유보하는 양보 관계를 나타내며 다음의 주장으로 이어진다."
+        }
+      ]
+    },
+    {
+      "case_id": "note-r34",
+      "corpus_id": "kierkegaard",
+      "work_id": "sd",
+      "variant_id": "text",
+      "segment_id": "sks-0015",
+      "sentence_id": "sks-0015.s001",
+      "sentence_text_sha256": "cff5e432fb623c94390d263e1d71e3b4425098076e3be8972acf7709336d7336",
+      "source_text": "Skulde et Menneske døe af Fortvivlelse, som man døer af en Sygdom, saa maatte det Evige i ham, Selvet, kunne døe i samme Forstand som Legemet døer af Sygdommen.",
+      "known_bad_notes": [
+        {
+          "note": "조건절(Skulde...)과 비교절(som...)의 관계를 '질병으로 죽는 것처럼 절망으로 죽어야 한다면'으로 적절히 대응시킴.",
+          "source_span": "Skulde et Menneske døe af Fortvivlelse, som man døer af en Sygdom"
+        }
+      ],
+      "reference_translation": "만약 사람이 질병으로 죽듯이 절망으로 죽는다면, 그 사람 안의 영원한 것, 곧 자아는 육체가 질병으로 죽는 것과 같은 의미에서 죽을 수 있어야 할 것이다.",
+      "corrected_notes": [
+        {
+          "source_span": "Skulde et Menneske døe af Fortvivlelse, som man døer af en Sygdom",
+          "note": "Skulde로 시작하는 조건절은 가정이며 죽어야 한다는 의무가 아니다. 후반 maatte ... kunne는 조건적 논리적 필요성을 나타낸다."
+        }
+      ]
+    },
+    {
+      "case_id": "note-r37",
+      "corpus_id": "wittgenstein",
+      "work_id": "Group_BigTypescriptCorpus",
+      "variant_id": "idp_transcription_linear",
+      "segment_id": "p-0006",
+      "sentence_id": "p-0006.s008",
+      "sentence_text_sha256": "37e3b1c41fe5d9c5d112564c6c28b3acc6fc02696d748c2bb868a9ebb38dcdf6",
+      "source_text": "Ms-105,15 Hat der Mord gar nicht stattgefunden so bleibt der erste Satz doch sinnvoll.",
+      "known_bad_notes": [
+        {
+          "note": "독어의 가정법(Konjunktiv II) 형태를 한국어의 '설령 ~않았더라도'라는 양보 가정 표현으로 적절히 번역함.",
+          "source_span": "Hat der Mord gar nicht stattgefunden"
+        }
+      ],
+      "reference_translation": "설령 살인이 전혀 일어나지 않았더라도 첫 번째 문장은 여전히 의미가 있다.",
+      "corrected_notes": [
+        {
+          "source_span": "Hat der Mord gar nicht stattgefunden",
+          "note": "hat ... stattgefunden은 직설법 완료이다. 접속법 II가 아니며, 동사 선두 조건절의 의미를 설령 ... 않았더라도로 옮길 수 있다."
+        }
+      ]
+    },
+    {
+      "case_id": "note-r44",
+      "corpus_id": "nietzsche",
+      "work_id": "JGB",
+      "variant_id": "",
+      "segment_id": "p-0060",
+      "sentence_id": "p-0060.s001",
+      "sentence_text_sha256": "9f2049cf8492e2f639e229c35a1bf5341e89edd6d03ce58ad337b5abe8de49d6",
+      "source_text": "Das, was an der Religiosität der alten Griechen staunen macht, ist die unbändige Fülle von Dankbarkeit, welche sie ausströmt:",
+      "known_bad_notes": [
+        {
+          "note": "관계절 'welche sie ausströmt'의 내용을 '그들이 뿜어내는'으로 적절히 수식 구조로 변환함.",
+          "source_span": "die unbändige Fülle von Dankbarkeit, welche sie ausströmt"
+        },
+        {
+          "source_span": "welche sie ausströmt",
+          "note": "독일어 단수 동사 ausströmt는 선행사 Fülle(풍요)에 일치하며, 관계대명사 welche는 이를 받습니다. 초안은 이를 '그 종교성이 뿜어내는'으로 번역하여 주체 관계를 명확히 유지했습니다."
+        },
+        {
+          "source_span": "welche sie ausströmt",
+          "note": "독일어 단수 동사 ausströmt는 선행사 Fülle(풍요로움)와 일치하며, sie은 Religiosität(종교성)를 지칭하므로, 번역문에서 '종교성으로부터 흘러나오는'으로 관계절의 의미를 적절히 구현함."
+        }
+      ],
+      "reference_translation": "고대 그리스인의 종교성에서 경탄을 자아내는 것은 그 종교성이 뿜어내는 억누를 수 없이 넘치는 감사의 마음이다:",
+      "corrected_notes": [
+        {
+          "source_span": "die unbändige Fülle von Dankbarkeit, welche sie ausströmt",
+          "note": "단수 ausströmt에 호응하는 sie는 Religiosität를 가리킨다. 감사의 풍성함을 뿜어내는 주체는 그 종교성이다."
+        }
+      ]
+    },
+    {
+      "case_id": "note-r47",
+      "corpus_id": "wittgenstein",
+      "work_id": "Group_ItemsInEnglish",
+      "variant_id": "idp_transcription_linear",
+      "segment_id": "p-0080",
+      "sentence_id": "p-0080.s001",
+      "sentence_text_sha256": "afbe2f2d38d167a84e7435411676a3c99b6e74db1c736e6cf486f70248d8ab65",
+      "source_text": "What happens in it is that all its simple parts have meaning, but it is such that the connections between these paralyse or destroy one another, so that they are all connected only in an irrelevant manner.",
+      "known_bad_notes": [
+        {
+          "note": "부사절 'so that'의 결과를 '~라는 것이다'로 종결하여 문장 전체의 구조를 완성함.",
+          "source_span": "so that they are all connected only in an irrelevant manner"
+        }
+      ],
+      "reference_translation": "그 안에서 일어나는 일은 이렇다. 그것의 단순한 부분들은 모두 의미를 갖지만, 그 부분들 사이의 연결들이 서로를 마비시키거나 파괴하여, 그 결과 그 부분들은 모두 오직 무관한 방식으로만 연결되어 있다.",
+      "corrected_notes": [
+        {
+          "source_span": "so that they are all connected only in an irrelevant manner",
+          "note": "so that은 결과를 나타낸다. 기존 번역의 그러한 상태여서가 그 연결을 드러내며 다는 것이다는 전체 문장을 종결한다."
+        }
+      ]
+    },
+    {
+      "case_id": "note-r50",
+      "corpus_id": "bible",
+      "work_id": "sblgnt.Rom",
+      "variant_id": "sblgnt",
+      "segment_id": "Rom.3.6",
+      "sentence_id": "Rom.3.6.s001",
+      "sentence_text_sha256": "6548b8e9c9e57700997e185205c7da5bcf07476f485a81c39e4e17b52a8c7f03",
+      "source_text": "μὴ γένοιτο· ἐπεὶ πῶς κρινεῖ ὁ θεὸς τὸν κόσμον;",
+      "known_bad_notes": [
+        {
+          "note": "부정 명령형/기원법으로 '결코 그럴 수 없다'는 강한 부정의 의미를 나타냄.",
+          "source_span": "μὴ γένοιτο"
+        }
+      ],
+      "reference_translation": "결코 그럴 수 없습니다. 만일 그렇다면 하나님께서 어떻게 세상을 심판하시겠습니까?",
+      "corrected_notes": [
+        {
+          "source_span": "μὴ γένοιτο",
+          "note": "γένοιτο는 부정과거 중간태 기원법 3인칭 단수이다. 명령형이 아니라 강한 부정을 표현하는 부정 기원이다."
+        }
+      ]
+    },
+    {
+      "case_id": "note-r02",
+      "corpus_id": "kierkegaard",
+      "work_id": "fb",
+      "variant_id": "text",
+      "segment_id": "sks-0027",
+      "sentence_id": "sks-0027.s001",
+      "sentence_text_sha256": "5dca1c4f46b6034bb53dd5d7862e3823615f7c084b19e50c61e551a3a1a2429e",
+      "source_text": "thi mod Penge har jeg ingen ethisk Forpligtelse, men mod Sønnen har Faderen den høieste og helligste.",
+      "known_bad_notes": [
+        {
+          "source_span": "den høieste og helligste",
+          "note": "원문의 형용사가 '의무(Forpligtelse)'를 수식하도록 번역문에서 '가장 높고 거룩한 의ub의'로 명확히 연결됨."
+        },
+        {
+          "source_span": "den høieste og helligste",
+          "note": "원문의 형용사가 '의무(Forpligtelse)'를 수식하도록 번역문에서 '가장 높고도 거룩한 의ub의'로 명시적 관계를 설정함."
+        }
+      ],
+      "reference_translation": "왜냐하면 나는 돈에 대해서는 아무런 윤리적 의무도 지지 않지만, 아버지는 아들에 대해서 가장 높고 신성한 의무를 지기 때문이다.",
+      "corrected_notes": [
+        {
+          "source_span": "den høieste og helligste",
+          "note": "den høieste og helligste는 앞의 Forpligtelse를 이어받아 의무를 수식한다. 아버지 자신의 속성을 서술하는 것이 아니다."
+        }
+      ]
+    },
+    {
+      "case_id": "note-r13",
+      "corpus_id": "wittgenstein",
+      "work_id": "Group_ItemsInEnglish",
+      "variant_id": "idp_transcription_linear",
+      "segment_id": "p-0159",
+      "sentence_id": "p-0159.s001",
+      "sentence_text_sha256": "158732dd5bbbeacb7d285dc387277ba64d716eb4b3fc8c4b9840be4df8e2e4ec",
+      "source_text": "The importance of investigating the diviner's answer lies in the fact that we often think we have given a meaning to a statement P if only we assert “I feel (or I believe) that P is the case.”",
+      "known_bad_notes": [
+        {
+          "source_span": "if only we assert",
+          "note": "조건절의 'if only'가 '단언하는 것만으로도'로 번역되어, 단언이라는 행위가 의미 부여의 충분조건임을 나타내는 범위를 적절히 반영함."
+        }
+      ],
+      "reference_translation": "수맥 탐지자의 답변을 검토하는 것이 중요한 이유는, 우리가 단지 “나는 P가 사실이라고 느낀다(또는 믿는다)”라고 단언하는 것만으로도 P라는 진술에 의미를 부여했다고 흔히 생각하기 때문입니다.",
+      "corrected_notes": [
+        {
+          "source_span": "if only we assert",
+          "note": "if only we assert는 we often think의 범위 안에 있다. 단언만으로 의미를 부여했다고 사람들이 흔히 생각한다는 뜻이며 저자가 이를 충분조건으로 승인한 것이 아니다."
+        }
+      ]
+    },
+    {
+      "case_id": "note-r07",
+      "corpus_id": "bible",
+      "work_id": "oshb.Exod",
+      "variant_id": "oshb_morphhb",
+      "segment_id": "Exod.8.5",
+      "sentence_id": "Exod.8.5.s001",
+      "sentence_text_sha256": "4aab26bb1a9e208c551d48f7ce9c092c5806799e8a43526b7eecd4fcb0a8c75b",
+      "source_text": "וַ/יֹּ֣אמֶר מֹשֶׁ֣ה לְ/פַרְעֹה֮ הִתְפָּאֵ֣ר עָלַ/י֒ לְ/מָתַ֣י׀ אַעְתִּ֣יר לְ/ךָ֗ וְ/לַ/עֲבָדֶ֨י/ךָ֙ וּֽ/לְ/עַמְּ/ךָ֔ לְ/הַכְרִית֙ הַֽ/צֲפַרְדְּעִ֔ים מִמְּ/ךָ֖ וּ/מִ/בָּתֶּ֑י/ךָ רַ֥ק בַּ/יְאֹ֖ר תִּשָּׁאַֽרְנָה׃",
+      "known_bad_notes": [
+        {
+          "source_span": "לְ/מָתַ֣י׀ אַעְתִּ֣יר לְ/ךָ֗",
+          "note": "원문은 바로에게(לְךָ) 간청하는 시점을 묻는 구조임."
+        }
+      ],
+      "reference_translation": "모세가 바로에게 말하였다. “때를 정하는 영예를 당신에게 돌리겠습니다. 내가 당신과 당신의 신하들과 당신의 백성을 위하여, 개구리들이 언제 당신과 당신의 집들에서 없어지고 나일강에만 남게 해 달라고 간구하면 되겠습니까?”",
+      "corrected_notes": [
+        {
+          "source_span": "לְ/מָתַ֣י׀ אַעְתִּ֣יר לְ/ךָ֗",
+          "note": "לְךָ는 간구의 수혜자인 바로를 가리킨다. 모세는 바로를 위해 간구하며, 바로에게 기도를 드린다는 뜻이 아니다."
+        }
+      ]
+    }
+  ],
+  "semantic_controls": [
+    {
+      "case_id": "critic-r37-adopted-reference",
+      "corpus_id": "wittgenstein",
+      "work_id": "Group_BigTypescriptCorpus",
+      "variant_id": "idp_transcription_linear",
+      "segment_id": "p-0006",
+      "sentence_id": "p-0006.s008",
+      "sentence_text_sha256": "37e3b1c41fe5d9c5d112564c6c28b3acc6fc02696d748c2bb868a9ebb38dcdf6",
+      "translation": "설령 살인이 전혀 일어나지 않았더라도 첫 번째 문장은 여전히 의미가 있다.",
+      "expected_major_semantic_error": false,
+      "kind": "adopted-reference"
+    },
+    {
+      "case_id": "critic-r37-meaning-equivalent",
+      "corpus_id": "wittgenstein",
+      "work_id": "Group_BigTypescriptCorpus",
+      "variant_id": "idp_transcription_linear",
+      "segment_id": "p-0006",
+      "sentence_id": "p-0006.s008",
+      "sentence_text_sha256": "37e3b1c41fe5d9c5d112564c6c28b3acc6fc02696d748c2bb868a9ebb38dcdf6",
+      "translation": "살인이 전혀 일어나지 않았다면 첫 번째 문장은 여전히 의미가 있다.",
+      "expected_major_semantic_error": false,
+      "kind": "meaning-equivalent"
+    },
+    {
+      "case_id": "critic-r37-known-bad",
+      "corpus_id": "wittgenstein",
+      "work_id": "Group_BigTypescriptCorpus",
+      "variant_id": "idp_transcription_linear",
+      "segment_id": "p-0006",
+      "sentence_id": "p-0006.s008",
+      "sentence_text_sha256": "37e3b1c41fe5d9c5d112564c6c28b3acc6fc02696d748c2bb868a9ebb38dcdf6",
+      "translation": "살인이 전혀 일어나지 않았으므로 첫 번째 문장은 여전히 의미가 있다.",
+      "expected_major_semantic_error": true,
+      "kind": "known-bad"
+    },
+    {
+      "case_id": "critic-r44-adopted-reference",
+      "corpus_id": "nietzsche",
+      "work_id": "JGB",
+      "variant_id": "",
+      "segment_id": "p-0060",
+      "sentence_id": "p-0060.s001",
+      "sentence_text_sha256": "9f2049cf8492e2f639e229c35a1bf5341e89edd6d03ce58ad337b5abe8de49d6",
+      "translation": "고대 그리스인의 종교성에서 경탄을 자아내는 것은 그 종교성이 뿜어내는 억누를 수 없이 넘치는 감사의 마음이다:",
+      "expected_major_semantic_error": false,
+      "kind": "adopted-reference"
+    },
+    {
+      "case_id": "critic-r44-meaning-equivalent",
+      "corpus_id": "nietzsche",
+      "work_id": "JGB",
+      "variant_id": "",
+      "segment_id": "p-0060",
+      "sentence_id": "p-0060.s001",
+      "sentence_text_sha256": "9f2049cf8492e2f639e229c35a1bf5341e89edd6d03ce58ad337b5abe8de49d6",
+      "translation": "고대 그리스의 종교성에서 경탄을 자아내는 것은, 그 종교성으로부터 흘러나오는 억제할 수 없는 감사의 풍요로움이다:",
+      "expected_major_semantic_error": false,
+      "kind": "meaning-equivalent"
+    },
+    {
+      "case_id": "critic-r44-known-bad",
+      "corpus_id": "nietzsche",
+      "work_id": "JGB",
+      "variant_id": "",
+      "segment_id": "p-0060",
+      "sentence_id": "p-0060.s001",
+      "sentence_text_sha256": "9f2049cf8492e2f639e229c35a1bf5341e89edd6d03ce58ad337b5abe8de49d6",
+      "translation": "고대 그리스인의 종교성에서 경탄을 자아내는 것은, 그들이 뿜어내는 억제할 수 없는 풍요로운 감사함이다:",
+      "expected_major_semantic_error": true,
+      "kind": "known-bad"
+    },
+    {
+      "case_id": "critic-r47-adopted-reference",
+      "corpus_id": "wittgenstein",
+      "work_id": "Group_ItemsInEnglish",
+      "variant_id": "idp_transcription_linear",
+      "segment_id": "p-0080",
+      "sentence_id": "p-0080.s001",
+      "sentence_text_sha256": "afbe2f2d38d167a84e7435411676a3c99b6e74db1c736e6cf486f70248d8ab65",
+      "translation": "그 안에서 일어나는 일은 이렇다. 그것의 단순한 부분들은 모두 의미를 갖지만, 그 부분들 사이의 연결들이 서로를 마비시키거나 파괴하여, 그 결과 그 부분들은 모두 오직 무관한 방식으로만 연결되어 있다.",
+      "expected_major_semantic_error": false,
+      "kind": "adopted-reference"
+    },
+    {
+      "case_id": "critic-r47-meaning-equivalent",
+      "corpus_id": "wittgenstein",
+      "work_id": "Group_ItemsInEnglish",
+      "variant_id": "idp_transcription_linear",
+      "segment_id": "p-0080",
+      "sentence_id": "p-0080.s001",
+      "sentence_text_sha256": "afbe2f2d38d167a84e7435411676a3c99b6e74db1c736e6cf486f70248d8ab65",
+      "translation": "그 안에서 일어나는 일은 그것의 모든 단순한 부분들이 의미를 갖는다는 것이지만, 그것은 이들 사이의 연결들이 서로를 마비시키거나 파괴하여, 그것들이 모두 단지 무관한 방식으로만 연결되게 하는 그러한 상태라는 것이다.",
+      "expected_major_semantic_error": false,
+      "kind": "meaning-equivalent",
+      "expected_readability_issue": true
+    },
+    {
+      "case_id": "critic-r47-known-bad",
+      "corpus_id": "wittgenstein",
+      "work_id": "Group_ItemsInEnglish",
+      "variant_id": "idp_transcription_linear",
+      "segment_id": "p-0080",
+      "sentence_id": "p-0080.s001",
+      "sentence_text_sha256": "afbe2f2d38d167a84e7435411676a3c99b6e74db1c736e6cf486f70248d8ab65",
+      "translation": "그 안에서 일어나는 일은 이렇다. 그것의 단순한 부분들은 모두 의미를 갖지만, 그 부분들 사이의 연결들이 서로를 마비시키거나 파괴하여, 그 결과 그 부분들은 모두 오직 관련 있는 방식으로만 연결되어 있다.",
+      "expected_major_semantic_error": true,
+      "kind": "known-bad"
     }
   ]
 }

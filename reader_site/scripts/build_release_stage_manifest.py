@@ -48,6 +48,7 @@ ALLOWED_EXACT_PATHS = {
     ".gitattributes",
     ".gitignore",
     ".github/workflows/reader-site-source-light.yml",
+    ".github/workflows/reader-site-translation-quality.yml",
     "README.md",
     "reader_site/README.md",
     "reader_site/data/ai/.gitkeep",
@@ -90,6 +91,8 @@ ALLOWED_DATA_PATTERNS = [
     "reader_site/data/translation_profiles.json",
     "reader_site/data/translation_quality_goldset.json",
     "reader_site/data/translation_regression_cases.json",
+    "reader_site/data/translation_notes_benchmark.json",
+    "reader_site/data/translation_source_checks.json",
 ]
 
 ARCHIVED_ORIGINAL_PATHS = {

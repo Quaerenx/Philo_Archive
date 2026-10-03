@@ -87,7 +87,7 @@ if (sentenceContext) {
     setStudyPanelExpanded(true);
     keepSentenceAboveStudyPanel(node);
     if (!wasSelected || !selectedTranslationRecord) {
-      requestSentenceTranslation(false);
+      requestSelectedTranslation();
     }
   });
 }
@@ -109,9 +109,14 @@ if (readingPosition) {
 }
 
 translationOutput.addEventListener("click", (event) => {
+  if (event.target.closest("[data-translation-generate]")) { requestSentenceTranslation(false); return; }
   const quickAction = event.target.closest("[data-translation-quick-action]");
   if (quickAction) {
     const action = quickAction.dataset.translationQuickAction || "";
+    if (action === "previous-sentence") {
+      navigateSentence(-1);
+      return;
+    }
     if (action === "next-sentence") {
       navigateSentence(1);
       return;
@@ -141,7 +146,8 @@ translationOutput.addEventListener("click", (event) => {
   }
   const retry = event.target.closest("[data-translation-retry]");
   if (retry) {
-    requestSentenceTranslation(retry.dataset.translationRetry === "regenerate");
+    const regenerate = retry.dataset.translationRetry === "regenerate";
+    requestSentenceTranslation(regenerate, regenerate ? false : pendingTranslationCacheOnly);
     return;
   }
   const copyRuntime = event.target.closest("[data-translation-copy-runtime]");
@@ -163,7 +169,7 @@ translationOutput.addEventListener("click", (event) => {
   }
   const sessionTarget = event.target.closest("[data-session-preview-target]");
   if (sessionTarget) {
-    openSessionPreviewTarget(sessionTarget.dataset.sessionPreviewTarget || "");
+    openSessionPreviewTarget(sessionTarget.dataset.sessionPreviewTarget || "", sessionTarget.dataset.sessionPreviewUrl || "");
     return;
   }
   const sessionToggle = event.target.closest("[data-session-preview-toggle]");
@@ -209,6 +215,7 @@ if (studyTabsContainer) {
 }
 
 readingBody.addEventListener("click", (event) => {
+  if (event.target.closest("[data-reader-term]")) return;
   const retryChunk = event.target.closest("[data-load-work-chunk]");
   if (retryChunk) {
     const chunkIndex = Number(retryChunk.dataset.loadWorkChunk);
@@ -224,7 +231,7 @@ readingBody.addEventListener("click", (event) => {
     setStudyPanelExpanded(true);
     keepSentenceAboveStudyPanel(sentence);
     if (!wasSelected || !selectedTranslationRecord) {
-      requestSentenceTranslation(false);
+      requestSelectedTranslation();
     }
   }
 });
@@ -400,6 +407,7 @@ notesList.addEventListener("click", async (event) => {
 
 window.addEventListener("hashchange", async () => {
   await selectSentenceFromHash();
+  if (selectedSentence) requestSelectedTranslation();
   syncTargetDependentViews();
   updateSentenceControls();
   syncConceptReturnLinks();
@@ -416,6 +424,7 @@ async function initializeStudyCompanion() {
   const exportParams = new URLSearchParams({
     corpus_id: researchData.corpus_id || researchData.author_id || "",
     work_id: researchData.work_id || "",
+    variant_id: researchData.variant_id || "",
     review_state: "reviewed",
     format: "markdown"
   });
@@ -432,7 +441,7 @@ async function initializeStudyCompanion() {
   syncConceptsPanelAvailability();
   await selectSentenceFromHash();
   if (selectedSentence) {
-    requestSentenceTranslation(false);
+    requestSelectedTranslation();
   }
   updateSentenceControls();
   syncTargetDependentViews();
@@ -457,6 +466,9 @@ function syncConceptsPanelAvailability() {
 }
 
 if (!researchData.print_view) {
+  initializeSentenceTranslationPreference();
+  initializeReaderPreferences();
+  initializeReaderTerms();
   initializeVirtualWork();
   virtualWork.initialize();
   initializeStudyCompanion();

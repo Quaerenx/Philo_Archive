@@ -24,9 +24,9 @@ def build_work_page_model(
     initial_anchor: str = "",
 ) -> dict:
     if corpus_id == "bible":
-        return build_bible_work_model(work_id)
+        return build_bible_work_model(work_id, view=view, initial_anchor=initial_anchor)
     if corpus_id == "kierkegaard":
-        return build_kierkegaard_work_model(work_id, variant_id)
+        return build_kierkegaard_work_model(work_id, variant_id, view=view, initial_anchor=initial_anchor)
     if corpus_id == "wittgenstein":
         return build_wittgenstein_work_model(
             work_id,
@@ -35,7 +35,7 @@ def build_work_page_model(
             initial_anchor=initial_anchor,
         )
     if corpus_id == "nietzsche":
-        return build_nietzsche_work_model(work_id)
+        return build_nietzsche_work_model(work_id, view=view, initial_anchor=initial_anchor)
     raise FileNotFoundError("unknown corpus")
 
 

@@ -160,6 +160,8 @@ python .\scripts\check_server_boundary.py
 python .\scripts\check_provenance_contracts.py
 python .\scripts\check_prompt_template_contracts.py
 python .\scripts\check_sentence_translation_contracts.py
+python .\scripts\check_translation_notes_contracts.py
+python .\scripts\check_translation_notes_benchmark.py
 python .\scripts\check_corpus_schema.py
 python .\scripts\check_restore_readiness.py
 python .\scripts\check_source_target_contracts.py

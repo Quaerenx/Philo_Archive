@@ -208,7 +208,7 @@ async function clearSearchFilters() {
   await populateFilters();
   updateUrl("", "", "", "");
   statusEl.textContent = "";
-  resultsEl.innerHTML = "";
+  resultsEl.innerHTML = renderSearchStart();
   setSearchBusy(false);
   updateSearchClearState();
   queryInput.focus();
@@ -318,6 +318,7 @@ function renderResults(payload, query) {
   const workResults = payload.work_results || [];
   const segmentResults = payload.results || [];
   const noteResults = payload.note_results || [];
+  const segmentError = String(payload.error || "").trim();
   const page = Math.max(1, Number(payload.page || 1));
   const segmentTotal = Math.max(0, Number(payload.count || 0));
   const segmentStart = segmentResults.length ? Number(payload.offset || 0) + 1 : 0;
@@ -331,7 +332,7 @@ function renderResults(payload, query) {
     variantSelect.disabled ? "" : variantSelect.value,
     currentSearchPage
   );
-  statusEl.textContent = "";
+  statusEl.textContent = segmentError ? "본문 검색을 사용할 수 없습니다. 아래 안내를 확인하세요." : "";
   const workMarkup = (payload.work_results || [])
     .map((result) => {
       const title = result.title || result.work_id;
@@ -402,12 +403,12 @@ function renderResults(payload, query) {
       markup: `<section id="search-results-works" class="result-group">${resultGroupHeader("문서", payload.work_count || workResults.length)}${workMarkup}</section>`
     });
   }
-  if (segmentMarkup || segmentTotal) {
+  if (segmentError || segmentMarkup || segmentTotal) {
     groups.push({
       id: "search-results-segments",
       label: "본문",
       count: segmentTotal,
-      markup: `<section id="search-results-segments" class="result-group">${resultGroupHeader("본문", segmentTotal, segmentRange)}${segmentMarkup}${renderSearchPagination(payload)}</section>`
+      markup: `<section id="search-results-segments" class="result-group">${resultGroupHeader("본문", segmentTotal, segmentRange)}${segmentError ? `<div class="empty-state" role="status"><p>${escapeHtml(segmentError)}</p></div>` : `${segmentMarkup}${renderSearchPagination(payload)}`}</section>`
     });
   }
   if (noteMarkup) {

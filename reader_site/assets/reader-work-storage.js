@@ -4,6 +4,9 @@
   const RECENT_WORK_STORAGE_KEY = "philo.reader.recentWork";
   const STUDY_PANEL_STORAGE_KEY = "philo.reader.studyPanelExpanded";
   const NOTE_DRAFT_STORAGE_PREFIX = "philo.reader.noteDraft";
+  const READING_PREFERENCES_KEY = "philo.reader.readingPreferences.v1";
+  const AUTOMATIC_TRANSLATION_KEY = "philo.reader.automaticTranslation.v1";
+  const RECENT_WORKS_KEY = "philo.reader.recentWorks.v2";
 
   function storageFor(name) {
     try {
@@ -74,8 +77,44 @@
     ].join(":");
   }
 
+  function recentRecord(record) {
+    if (!record || typeof record !== "object") return null;
+    try {
+      const href = String(record.href || "");
+      if (!href.startsWith("/work/")) return null;
+      const url = new URL(href, global.location?.origin || "http://localhost");
+      if (url.origin !== (global.location?.origin || "http://localhost") || !/^\/work\/[^/]+\/[^/]+\/?$/.test(url.pathname)) return null;
+      const variant = url.searchParams.get("variant") || String(record.variant_id || "");
+      const normalizedHref = url.pathname + (variant ? "?" + new URLSearchParams({ variant }) : "") + url.hash;
+      return { ...record, href: normalizedHref, key: url.pathname + "?variant=" + variant,
+        title: String(record.title || record.work_id || "최근 문서").slice(0, 240),
+        position_label: String(record.position_label || "").slice(0, 120) };
+    } catch { return null; }
+  }
+
+  function readRecentWorks() {
+    const value = readJson("localStorage", RECENT_WORKS_KEY);
+    const legacy = readJson("localStorage", RECENT_WORK_STORAGE_KEY);
+    const records = [...(Array.isArray(value) ? value : []), ...(legacy ? [legacy] : [])];
+    const seen = new Set();
+    return records.map(recentRecord).filter((record) => {
+      if (!record || seen.has(record.key)) return false;
+      seen.add(record.key); return true;
+    }).slice(0, 5);
+  }
+
   function storeRecentWork(record) {
-    return writeJson("localStorage", RECENT_WORK_STORAGE_KEY, record);
+    const current = recentRecord(record);
+    if (!current) return false;
+    const recent = readRecentWorks();
+    const old = recent.find((item) => item.key === current.key);
+    // Opening a work without a selected position must not erase its saved anchor.
+    if (!current.href.includes("#") && old?.href.includes("#")) {
+      current.href = old.href; current.position_label = old.position_label;
+    }
+    const saved = writeJson("localStorage", RECENT_WORKS_KEY, [current, ...recent.filter((item) => item.key !== current.key)].slice(0, 5));
+    writeJson("localStorage", RECENT_WORK_STORAGE_KEY, current);
+    return saved;
   }
 
   function readStudyPanelExpanded() {
@@ -102,6 +141,11 @@
   }
 
   global.ReaderWorkStorage = Object.freeze({
+    readAutomaticTranslation: () => readValue("localStorage", AUTOMATIC_TRANSLATION_KEY) === "true",
+    storeAutomaticTranslation: (enabled) => writeValue("localStorage", AUTOMATIC_TRANSLATION_KEY, String(Boolean(enabled))),
+    readRecentWorks,
+    readReadingPreferences: () => readJson("localStorage", READING_PREFERENCES_KEY),
+    storeReadingPreferences: (value) => writeJson("localStorage", READING_PREFERENCES_KEY, value),
     noteDraftStorageKey,
     storeRecentWork,
     readStudyPanelExpanded,

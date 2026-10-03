@@ -41,10 +41,17 @@ python .\scripts\check_path_contracts.py
 python .\scripts\check_source_publication_contracts.py
 python .\scripts\check_release_contracts.py
 python .\scripts\check_layout_contracts.py
+python .\scripts\check_reader_presentation_contracts.py
+python .\scripts\check_reader_usability_contracts.py
 python .\scripts\check_server_boundary.py
 python .\scripts\check_provenance_contracts.py
 python .\scripts\check_prompt_template_contracts.py
 python .\scripts\check_sentence_translation_contracts.py
+python .\scripts\check_translation_notes_contracts.py
+python .\scripts\check_translation_notes_benchmark.py
+python .\scripts\check_human_review_import_contracts.py
+python .\scripts\check_storage_fault_contracts.py
+python .\scripts\check_review_regressions.py
 python .\scripts\check_ai_records_contracts.py
 python .\scripts\check_translation_goldset.py
 python .\scripts\check_backup_snapshot_contracts.py

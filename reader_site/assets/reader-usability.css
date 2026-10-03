@@ -1,0 +1,34 @@
+.translation-current-status {
+  margin: 8px 0;
+  color: #444;
+  font: 600 13px/1.6 var(--archive-font);
+}
+
+.translation-current-status[data-current-state="confirmed"] { color: #24523a; }
+.translation-current-status[data-current-state="attention"] { color: #70431d; }
+.translation-priority { margin: 12px 0; padding: 10px 0; border-block: 1px solid #dedede; color: #513d00; }
+.translation-priority p, .translation-queue-help { margin: 6px 0; color: #555; font-size: 13px; line-height: 1.7; }
+.translation-queue-help { margin: 0 0 16px; }
+.translation-draft-tools { min-width: 0; }
+.translation-draft-tools p { margin: 8px 0; color: #555; font-size: 13px; line-height: 1.7; white-space: pre-wrap; overflow-wrap: anywhere; }
+.translation-draft-tools [hidden] { display: none; }
+.draft-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.translation-draft-tools .draft-actions button { min-height: 44px; justify-self: start; }
+.translation-draft-tools details { margin-top: 10px; }
+.translation-draft-tools summary { min-height: 44px; align-content: center; color: #70431d; cursor: pointer; }
+.translation-draft-tools h4 { margin: 12px 0 4px; font-size: 13px; }
+.translation-awaiting-action > button { min-height: 44px; }
+.translation-awaiting-action .translation-sentence-navigation { margin-top: 12px; }
+.automatic-translation-option { display: flex; align-items: center; gap: 10px; min-height: 44px; margin-top: 12px; color: #444; }
+.automatic-translation-option input { width: 20px; height: 20px; margin: 0; accent-color: #9f0000; }
+.automatic-translation-option:focus-within { outline: 2px solid #b00000; outline-offset: 3px; }
+.automatic-translation-status { margin: 4px 0 0; color: #555; font-size: 13px; line-height: 1.6; }
+.recent-work-history { flex: 1 0 100%; }
+.recent-work-history summary { min-height: 44px; align-content: center; color: #555; font-size: 13px; cursor: pointer; }
+.recent-work-history ul { display: grid; gap: 8px; margin: 4px 0 0; padding: 0; list-style: none; }
+.recent-work-history li { display: grid; gap: 4px; min-width: 0; padding-bottom: 8px; border-bottom: 1px solid #eee; }
+.recent-work .recent-work-link { min-height: 44px; align-items: center; font-size: 13px; }
+.recent-work .recent-work-title { font-size: 13px; }
+.recent-work-meta { font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; }
+.recent-work :is(a, summary):focus-visible { outline: 2px solid #b00000; outline-offset: 3px; }
+@media (max-width: 600px) { .recent-work-link { flex-wrap: wrap; } }

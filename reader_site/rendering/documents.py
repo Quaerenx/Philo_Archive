@@ -1,23 +1,20 @@
 from __future__ import annotations
 
 import html
-import json
 import re
 from pathlib import Path
 
 from sentence_units import render_sentence_spans
+from corpora.kierkegaard_text import extract_texts as kierkegaard_extract_texts
+from rendering.inline_markup import strip_links
 
 
 def strip_markdown_links(value: str) -> str:
-    value = re.sub(r"\[\[([^\n()]+?)\]\]\([^)]*\)", r"\1", value)
-    value = re.sub(r"\[([^\n()]+)\]\([^)]*\)", r"\1", value)
-    return value
+    return strip_links(value)
 
 
 def strip_inert_markdown_links(value: str) -> str:
-    value = re.sub(r"\[\[([^\n()]+?)\]\]\(javascript:;\)", r"\1", value)
-    value = re.sub(r"\[([^\n()]+)\]\(javascript:;\)", r"\1", value)
-    return value
+    return strip_links(value, inert_only=True)
 
 
 def clean_source_markdown_display(text: str) -> str:
@@ -89,13 +86,15 @@ def render_reading_document(text: str) -> dict:
     paragraph: list[str] = []
     paragraph_count = 0
     heading_count = 0
+    record_count = 0
     used_anchors: set[str] = set()
 
     def flush_paragraph() -> None:
-        nonlocal paragraph_count
+        nonlocal paragraph_count, record_count
         if not paragraph:
             return
         paragraph_count += 1
+        record_count += 1
         paragraph_id = f"p-{paragraph_count:04d}"
         label = f"문단 {paragraph_count}"
         value = render_sentence_spans(paragraph_id, " ".join(paragraph))
@@ -136,6 +135,7 @@ def render_reading_document(text: str) -> dict:
             else:
                 anchor_base = anchor_slug(value) or f"section-{heading_count:03d}"
             if value:
+                record_count += 1
                 anchor = unique_anchor(anchor_base, used_anchors)
                 toc.append({"id": anchor, "label": value, "level": level})
                 output.append(
@@ -148,7 +148,10 @@ def render_reading_document(text: str) -> dict:
         if line.startswith(">"):
             flush_paragraph()
             value = clean_reading_inline(line.lstrip("> "))
-            output.append(f"<blockquote>{html.escape(value)}</blockquote>")
+            if value:
+                record_count += 1
+                anchor = f"quote-{record_count:04d}"
+                output.append(f'<blockquote id="{anchor}" data-target-type="quote">{html.escape(value)}</blockquote>')
             continue
 
         cleaned = clean_reading_inline(line)
@@ -188,7 +191,7 @@ def chunk_text(value: str, max_chars: int = 1400) -> list[str]:
     return chunks or [value]
 
 
-def render_segments_from_texts(texts: list[str], prefix: str = "p") -> dict:
+def render_segments_from_texts(texts: list[str], prefix: str = "p", *, include_sentences: bool = True, preserve_sentence_anchors: bool = False) -> dict:
     output = []
     paragraph_count = 0
     for text in texts:
@@ -196,10 +199,14 @@ def render_segments_from_texts(texts: list[str], prefix: str = "p") -> dict:
             paragraph_count += 1
             segment_id = f"{prefix}-{paragraph_count:04d}"
             escaped_id = html.escape(segment_id, quote=True)
-            escaped = render_sentence_spans(segment_id, chunk)
+            escaped = (
+                render_sentence_spans(segment_id, chunk, translatable=include_sentences)
+                if include_sentences or preserve_sentence_anchors else html.escape(chunk)
+            )
+            target_type = "paragraph" if include_sentences else "section"
             label = f"문단 {paragraph_count}"
             output.append(
-                f'<p id="{escaped_id}" data-label="{html.escape(label, quote=True)}" data-target-type="paragraph">'
+                f'<p id="{escaped_id}" data-label="{html.escape(label, quote=True)}" data-target-type="{target_type}">'
                 f'<a class="segment-anchor" href="#{escaped_id}" aria-label="{html.escape(label, quote=True)}">&#182;</a>{escaped}</p>'
             )
     return {
@@ -240,22 +247,6 @@ def readable_markdown_text(text: str) -> str:
         if cleaned:
             lines.append(cleaned)
     return " ".join(lines)
-
-
-def kierkegaard_extract_texts(path: Path) -> list[str]:
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    document = payload.get("response", {}).get("document", {})
-    for key in ("prose_extract_tesim", "verse_extract_tesim", "performance_extract_tesim", "text_tesim"):
-        value = document.get(key)
-        if isinstance(value, list):
-            texts = [str(item).strip() for item in value if str(item).strip()]
-        elif value and str(value).strip():
-            texts = [str(value).strip()]
-        else:
-            texts = []
-        if texts:
-            return texts
-    return []
 
 
 def render_bible_work_document(work: dict, segments: list[dict]) -> dict:

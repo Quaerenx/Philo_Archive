@@ -6,6 +6,7 @@ import re
 from pathlib import Path
 
 from segment_utils import text_preview
+from services.jsonl_storage import atomic_write_jsonl
 
 
 SITE = Path(__file__).resolve().parents[1]
@@ -102,7 +103,7 @@ def main() -> None:
             raise SystemExit("search index is out of date")
         print("search index is up to date")
         return
-    OUTPUT.write_text(encoded, encoding="utf-8", newline="\n")
+    atomic_write_jsonl(OUTPUT, records)
     print(f"wrote {OUTPUT} ({len(records)} records)")
 
 

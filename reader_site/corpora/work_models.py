@@ -19,6 +19,7 @@ from corpora.display_policy import (
     variant_display_label,
 )
 from path_config import CORPUS_ROOTS, ROOT, SITE
+from corpora.reading_policy import translation_unavailable_reason
 from rendering.documents import (
     kierkegaard_extract_texts,
     readable_markdown_text,
@@ -36,6 +37,7 @@ from rendering.work_markup import (
     work_href,
 )
 from services.work_chunks import virtual_work_document
+from corpora.kierkegaard_text import has_readable_text, reading_source_path
 
 
 def is_inside(path: Path, root: Path) -> bool:
@@ -91,13 +93,32 @@ def variant_source_path(variant: dict) -> Path:
     return target
 
 
-def build_nietzsche_work_model(work_id: str) -> dict:
+def apply_work_view(model: dict, document: dict, view: str) -> dict:
+    virtual_document = document.get("virtual_document")
+    model["research"]["virtual_document"] = virtual_document
+    model["research"]["print_view"] = view == "print"
+    if view == "print":
+        model["body_class"] += " print-work"
+    elif virtual_document:
+        model["body_class"] += " virtual-work"
+    if virtual_document:
+        params = {"view": "print"}
+        variant_id = str(model["research"].get("variant_id") or "")
+        if variant_id:
+            params["variant"] = variant_id
+        model["print_href"] = work_href(model["corpus_id"], model["work_id"]) + "?" + urlencode(params)
+    return model
+
+
+def build_nietzsche_work_model(work_id: str, *, view: str = "", initial_anchor: str = "") -> dict:
     target = resolve_nietzsche_work(work_id)
     record = nietzsche_catalog_record(work_id)
     metadata = nietzsche_metadata_record(work_id)
     concepts = concepts_for_work(work_id)
-    text = target.read_text(encoding="utf-8", errors="replace")
-    document = render_reading_document(text)
+    document = virtual_work_document("nietzsche", work_id, initial_anchor=initial_anchor) if view != "print" else None
+    if document is None:
+        text = target.read_text(encoding="utf-8", errors="replace")
+        document = render_reading_document(text)
     rel_path = relative_source_path(target)
     title_raw = metadata.get("title") or record.get("label") or title_from_markdown(target)
     section_label = category_display_label(
@@ -114,7 +135,7 @@ def build_nietzsche_work_model(work_id: str) -> dict:
         "section": section_label,
         "source_path": rel_path,
     }
-    return {
+    return apply_work_view({
         "corpus_id": "nietzsche",
         "corpus_title": "Nietzsche",
         "category_href": "/category/nietzsche",
@@ -134,15 +155,17 @@ def build_nietzsche_work_model(work_id: str) -> dict:
         "body_class": "nietzsche-work",
         "text_direction": "ltr",
         "research": research_payload,
-    }
+    }, document, view)
 
 
-def build_bible_work_model(work_id: str) -> dict:
+def build_bible_work_model(work_id: str, *, view: str = "", initial_anchor: str = "") -> dict:
     work = resolve_bible_work(work_id)
-    segments = bible_segments_for_work(work_id)
-    if not segments:
-        raise FileNotFoundError("segments not found")
-    document = render_bible_work_document(work, segments)
+    document = virtual_work_document("bible", work_id, str(work.get("variant_id") or ""), initial_anchor=initial_anchor) if view != "print" else None
+    if document is None:
+        segments = bible_segments_for_work(work_id)
+        if not segments:
+            raise FileNotFoundError("segments not found")
+        document = render_bible_work_document(work, segments)
     source_path = work.get("source_path", "")
     category_label = category_display_label(
         "bible",
@@ -164,12 +187,12 @@ def build_bible_work_model(work_id: str) -> dict:
         "work_id": work_id,
         "variant_id": work.get("variant_id") or work.get("source_id") or "",
         "title": work.get("display_title") or work.get("title") or work_id,
-        "citation_title": document["title_for_citation"],
+        "citation_title": document.get("title_for_citation") or work.get("title") or work_id,
         "source_label": source_label,
         "default_target_type": "verse",
         "source_path": source_path,
     }
-    return {
+    return apply_work_view({
         "corpus_id": "bible",
         "corpus_title": "Bible",
         "category_href": "/category/bible",
@@ -191,17 +214,27 @@ def build_bible_work_model(work_id: str) -> dict:
         "body_class": "bible-work",
         "text_direction": "ltr",
         "research": research_payload,
-    }
+    }, document, view)
 
 
-def build_kierkegaard_work_model(work_id: str, variant_id: str = "") -> dict:
+def build_kierkegaard_work_model(work_id: str, variant_id: str = "", *, view: str = "", initial_anchor: str = "") -> dict:
     work = resolve_metadata_work("kierkegaard", work_id)
     variant = selected_variant(work, variant_id, list(preferred_variant_ids("kierkegaard")))
     target = variant_source_path(variant)
-    texts = kierkegaard_extract_texts(target)
-    document = render_segments_from_texts(texts, "sks")
     active_variant_id = variant.get("variant_id", "")
-    source_path = variant.get("source_path", "")
+    document = None
+    texts = []
+    readable = variant.get("reading_status") == "text"
+    if view != "print" and readable:
+        document = virtual_work_document("kierkegaard", work_id, active_variant_id, initial_anchor=initial_anchor)
+    if document is None:
+        target = reading_source_path(target)
+        texts = kierkegaard_extract_texts(target)
+        readable = has_readable_text(texts)
+        document = render_segments_from_texts(texts, "sks", include_sentences=readable)
+    if texts and not readable:
+        document["html"] = '<p role="status">수집된 원문에는 구분 번호만 있고 본문 텍스트가 없습니다. 원문 파일을 확인하세요.</p>' + document["html"]
+    source_path = relative_source_path(target)
     title = work.get("display_title") or work.get("title") or work_id
     variant_label = variant_display_label("kierkegaard", variant)
     category_label = category_display_label(
@@ -216,6 +249,8 @@ def build_kierkegaard_work_model(work_id: str, variant_id: str = "") -> dict:
         "corpus_title": "Kierkegaard",
         "work_id": work_id,
         "variant_id": active_variant_id,
+        "translation_available": readable,
+        "translation_unavailable_reason": "수집된 원문에 번역할 본문이 없습니다." if not readable else "",
         "title": title,
         "source_label": variant_label,
         "default_target_type": "paragraph",
@@ -230,27 +265,28 @@ def build_kierkegaard_work_model(work_id: str, variant_id: str = "") -> dict:
             variant.get("source_xml", ""),
         ],
     )
-    return {
+    return apply_work_view({
         "corpus_id": "kierkegaard",
         "corpus_title": "Kierkegaard",
         "category_href": "/category/kierkegaard",
+        "reading_status": "text" if readable else "labels_only" if texts else "missing",
         "title": title,
         "work_id": work_id,
         "section": category_label,
         "header_meta": header_meta(category_label, variant_label),
         "meta": variant_label,
         "source_path": source_path,
-        "source_href": variant.get("source_url") or source_href(target),
+        "source_href": source_href(target),
         "toc": toc_markup(document["toc"]),
         "concepts": notice,
         "variant_tabs": variant_tabs_for_work("kierkegaard", work_id, work.get("variants", []), active_variant_id),
         "heading_count": str(int(document["heading_count"])),
         "segment_count": str(int(document["paragraph_count"])),
-        "content": str(document["html"]),
+        "content": str(document["html"]) or '<p role="status">이 판본의 본문을 읽을 수 없습니다. 원문 파일을 확인하세요.</p>',
         "body_class": "kierkegaard-work",
         "text_direction": "ltr",
         "research": research_payload,
-    }
+    }, document, view)
 
 
 def build_wittgenstein_work_model(
@@ -269,8 +305,9 @@ def build_wittgenstein_work_model(
     )
     target = variant_source_path(variant)
     active_variant_id = variant.get("variant_id", "")
+    translation_notice = translation_unavailable_reason("wittgenstein", active_variant_id)
     document = None
-    if view != "print":
+    if view != "print" and not translation_notice:
         document = virtual_work_document(
             "wittgenstein",
             work_id,
@@ -279,7 +316,12 @@ def build_wittgenstein_work_model(
         )
     if document is None:
         text = target.read_text(encoding="utf-8", errors="replace")
-        document = render_segments_from_texts([readable_markdown_text(text)], "p")
+        document = render_segments_from_texts(
+            [readable_markdown_text(text)], "p",
+            include_sentences=not bool(translation_notice), preserve_sentence_anchors=bool(translation_notice),
+        )
+    if translation_notice:
+        document["html"] = '<p role="status">' + translation_notice + '</p>' + document["html"]
     virtual_document = document.get("virtual_document")
     source_path = variant.get("source_path", "")
     title = work.get("display_title") or work.get("title") or work_id
@@ -291,6 +333,8 @@ def build_wittgenstein_work_model(
     )
     research_payload = {
         "author": work.get("author") or "Ludwig Wittgenstein",
+        "translation_available": not bool(translation_notice),
+        "translation_unavailable_reason": translation_notice,
         "author_id": "wittgenstein",
         "corpus_id": "wittgenstein",
         "corpus_title": "Wittgenstein",
@@ -312,7 +356,7 @@ def build_wittgenstein_work_model(
             variant.get("external_source_url", ""),
         ],
     )
-    return {
+    return apply_work_view({
         "corpus_id": "wittgenstein",
         "corpus_title": "Wittgenstein",
         "category_href": "/category/wittgenstein",
@@ -329,18 +373,7 @@ def build_wittgenstein_work_model(
         "heading_count": str(int(document["heading_count"])),
         "segment_count": str(int(document["paragraph_count"])),
         "content": str(document["html"]),
-        "body_class": (
-            "wittgenstein-work print-work"
-            if view == "print"
-            else ("wittgenstein-work virtual-work" if virtual_document else "wittgenstein-work")
-        ),
+        "body_class": "wittgenstein-work",
         "text_direction": "ltr",
         "research": research_payload,
-        "print_href": (
-            work_href("wittgenstein", work_id)
-            + "?"
-            + urlencode({"variant": active_variant_id, "view": "print"})
-            if virtual_document
-            else ""
-        ),
-    }
+    }, document, view)

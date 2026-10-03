@@ -1,0 +1,22 @@
+name: Reader Translation Release Quality
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  human-quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+      - name: Validate translation contracts and human release scores
+        working-directory: reader_site
+        run: |
+          python scripts/check_sentence_translation_contracts.py
+          python scripts/check_translation_goldset.py --require-passing

@@ -10,6 +10,7 @@ import subprocess
 import sys
 import unicodedata
 from collections import Counter
+from contextlib import nullcontext
 from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Any, Iterable
 from urllib.parse import quote
@@ -20,6 +21,7 @@ sys.dont_write_bytecode = True
 sys.path.insert(0, str(SCRIPT_SITE))
 
 from path_config import REPO, ROOT, SITE, SOURCE_ROOT_NAMES  # noqa: E402
+from services.jsonl_storage import is_jsonl_auxiliary, locked_jsonl  # noqa: E402
 
 
 SCHEMA_VERSION = 1
@@ -454,7 +456,7 @@ def select_sources(
         if fs_is_dir(directory):
             for candidate in iter_regular_files(directory):
                 relative = safe_manifest_path(candidate.relative_to(directory).as_posix())
-                if PurePosixPath(relative).name == ".gitkeep":
+                if PurePosixPath(relative).name == ".gitkeep" or is_jsonl_auxiliary(candidate):
                     continue
                 if relative.lower().endswith(("-wal", "-shm", "-journal")):
                     continue
@@ -624,16 +626,21 @@ def create_snapshot(args: argparse.Namespace) -> dict[str, Any]:
     records: list[dict[str, Any]] = []
     for key in sorted(selected):
         path, role = selected[key]
-        digest, length = sha256_stream(path)
-        record: dict[str, Any] = {
-            "path": key,
-            "role": role,
-            "bytes": length,
-            "sha256": digest,
-            "restore_required": role != "forensic_optional",
-            "git_tracked": role == "tracked_metadata",
-        }
-        record.update(classify_facts(path))
+        guard = locked_jsonl(path, read_only=True) if role == "mutable" and path.suffix.lower() == ".jsonl" else nullcontext()
+        with guard:
+            before = file_signature(path)
+            digest, length = sha256_stream(path)
+            record: dict[str, Any] = {
+                "path": key,
+                "role": role,
+                "bytes": length,
+                "sha256": digest,
+                "restore_required": role != "forensic_optional",
+                "git_tracked": role == "tracked_metadata",
+            }
+            record.update(classify_facts(path))
+            if file_signature(path) != before:
+                raise SnapshotError(f"source changed while building its manifest record: {key}")
         jsonl_record = record.get("jsonl")
         if consistency["mode"] == "reader_quiesced" and jsonl_record and (
             jsonl_record["malformed_records"] or jsonl_record["blank_lines"]

@@ -161,7 +161,7 @@ def compare_sqlite_records(
         db_record = db[key]
         if db_record.get("url") != index_record.get("url"):
             mismatches.append(f"{key}: url")
-        if db_record.get("snippet") != index_record.get("text_preview"):
+        if db_record.get("snippet") != (index_record.get("text") or index_record.get("text_preview")):
             mismatches.append(f"{key}: snippet")
         if len(mismatches) >= 10:
             break

@@ -1,0 +1,64 @@
+/* Compact search/list chrome, with complete labels and a consistent type scale. */
+body.collection-page {
+  --archive-ui-font-size: 14px;
+  --archive-link-color: #b00000;
+  --header-spacer-height: 88px;
+  --mobile-header-spacer-height: 64px;
+}
+
+.collection-page .page { background-size: auto 88px; }
+.collection-page .reader { padding: 22px 28px 32px; }
+.collection-page .reader-header { margin-bottom: 16px; padding-bottom: 10px; }
+.collection-page .reader-header h1 { font-size: 22px; }
+.collection-page .toolbar { margin-top: 4px; }
+
+.translations-form {
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+}
+
+.translations-form .query-label { grid-column: 1 / -1; }
+.translations-filter-fields { grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 0; background: transparent; border: 0; }
+.translations-form .form-actions { min-width: 156px; }
+.translations-form :is(input, select, button) { min-height: 44px; font-size: 14px; }
+
+.collection-page :is(.list-tools > summary, .export-tools > summary, .translation-record-summary button,
+  .translation-review-queue, .filter-chip, .translation-actions button, .translation-actions a,
+  .translation-human-editor button, .translation-human-editor > summary, .translation-model-original > summary,
+  .translation-version-history > summary, .translation-commentary summary, .translation-source summary,
+  .translation-more-actions > summary, .translation-danger-actions > summary) {
+  min-height: 44px;
+  font-size: 13px;
+}
+
+.collection-page :is(.translation-record-title, .translation-record-group-title, .translation-record-context,
+  .translation-record-kicker, .review-badge, .human-translation-badge, .quality-badge,
+  .result-meta, .result-kind, .result-group h2, .result-group-count, .search-start h2,
+  .search-return, .search-return a, .translation-human-editor label) {
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.collection-page :is(.translation-record-context, .translation-record-group-title, .search-return,
+  .result-meta, .result-context, .translation-record-kicker) { color: #555; }
+.collection-page :is(.translation-record-kicker .quality-badge, .translation-record-kicker .human-translation-badge,
+  .translation-record-kicker .review-badge) { font-size: 13px; padding: 3px 6px; }
+.collection-page .translation-text { font-size: 16px; line-height: 1.85; }
+.collection-page .translation-record-heading { gap: 8px 12px; }
+.collection-page .search-form :is(input, select, button) { font-size: 14px; }
+.collection-page :is(.search-pagination button, .empty-actions button) { font-size: 13px; }
+.collection-page :is(button, summary, input, select, textarea, a):focus-visible { outline: 2px solid #b00000; outline-offset: 3px; }
+
+@media (max-width: 860px) {
+  .collection-page .reader { padding: 20px 18px 28px; }
+  .collection-page .page { background-size: auto 64px; }
+  .translations-form { grid-template-columns: minmax(0, 1fr); }
+  .translations-form .form-actions { justify-self: end; }
+  .collection-page .translation-record-summary { flex-wrap: wrap; }
+  .collection-page .search-form :is(input, select), .translations-form :is(input, select) { font-size: 16px; }
+}
+
+@media (max-width: 600px) {
+  .translations-filter-fields { grid-template-columns: minmax(0, 1fr); }
+  .translations-form .form-actions { width: 100%; }
+}

@@ -79,45 +79,56 @@
         {
           "source": "wir Erkennenden",
           "target": "우리 인식하는 자들",
-          "note": "LSCD가 이 문맥에서 허용한 용어 선택이다."
+          "note": "LSCD가 이 문맥에서 허용한 용어 선택이다.",
+          "alternatives": [
+            "인식하는 자들인 우리"
+          ]
         },
         {
           "source": "unbekannt",
           "target": "미지",
-          "note": "LSCD 확정 번역에 따라 자기 자신에게 알려져 있지 않다는 핵심 술어를 ‘미지’로 보존한다."
+          "note": "LSCD 확정 번역에 따라 자기 자신에게 알려져 있지 않다는 핵심 술어를 ‘미지’로 보존한다. 새 제출 확정문에서 자기 자신을 알지 못한다는 표현도 허용한다.",
+          "alternatives": [
+            "알지 못한다",
+            "알려져 있지 않다"
+          ]
         }
       ],
       "style_notes": [
         "자기 자신을 알지 못한다는 문맥의 unbekannt는 단순한 친소 관계보다 인식되지 않음 또는 미지의 의미를 우선 검토한다.",
         "반복과 강조는 보존하되 독일어 어순을 그대로 복사해 한국어 문장 파편을 만들지 않는다.",
         "wir selbst uns selbst와 같은 재귀 강조는 자기 자신이라는 관계를 보존하면서 자연스러운 한국어 문장으로 재구성한다.",
-        "wir selbst uns selbst는 앞 명제를 강조하고 재확인하는 구조이므로 unbekannt의 뜻을 별개의 두 서술로 반복하지 않는다.",
-        "unbekannt의 핵심 의미는 문장에 한 번 명시적으로 남기고, wir selbst uns selbst는 ‘그러하다’처럼 그 서술을 재확인한다."
+        "wir selbst uns selbst는 앞 명제를 강조하고 재확인하는 구조다. 자연스러운 한국어에서는 그러하다 또는 바로 우리 자신이 우리 자신을 모르는 것이다와 같이 서술을 보충할 수 있다.",
+        "unbekannt의 핵심 의미와 그 주어인 우리 인식하는 자들을 명시하고, 자기 자신이라는 관계와 재확인 강조를 보존한다."
       ],
       "sentence_rules": [
         {
           "sentence_id": "p-0004.s001",
           "allowed_translation_fragments": [
-            "우리 스스로가 우리 자신에게 그러하다"
+            "우리 스스로가 우리 자신에게 그러하다",
+            "인식하는 자들인 우리는 우리 자신을 알지 못한다. 바로 우리 자신이 우리 자신을 모르는 것이다:"
           ],
           "required_translation_fragments": [
             {
               "source_span": "Wir sind uns unbekannt, wir Erkennenden",
               "alternatives": [
-                "우리 인식하는 자들은 우리 자신에게 미지"
+                "우리 인식하는 자들은 우리 자신에게 미지",
+                "인식하는 자들인 우리는 우리 자신을 알지 못"
               ],
               "category": "syntax_or_scope",
               "severity": "major",
-              "explanation": "unbekannt는 뒤의 재귀 강조가 아니라 ‘우리 인식하는 자들’이 자기 자신에게 미지라는 핵심 명제를 서술해야 한다."
+              "explanation": "인식하는 자들인 우리가 자기 자신을 알지 못한다는 주어·술어 관계를 명시한다. 미지와 알지 못한다는 동의 표현을 모두 허용한다."
             },
             {
               "source_span": "unbekannt",
               "alternatives": [
-                "미지"
+                "미지",
+                "알지 못한다",
+                "알려져 있지 않다"
               ],
               "category": "omission",
               "severity": "major",
-              "explanation": "자기 자신에게 알려져 있지 않다는 문장의 핵심 술어는 중복을 고칠 때도 한 번은 반드시 보존해야 한다."
+              "explanation": "자기 자신에게 알려져 있지 않다는 핵심 의미를 미지 또는 알지 못한다 등으로 명시한다."
             }
           ],
           "forbidden_translation_fragments": [
@@ -146,6 +157,88 @@
               "explanation": "앞에서 이미 옮긴 unbekannt의 의미를 다시 서술하지 말고 ‘그러하다’처럼 재확인 관계를 보존한다."
             }
           ]
+        }
+      ],
+      "amendment_history": [
+        {
+          "amended_date": "2026-10-02",
+          "authorized_by": "LSHD",
+          "evaluator_as_submitted": "LSHD (ChatGPT 작성)",
+          "source_review": "R28",
+          "candidate_record_id": "60aad4e4-14c3-4464-9171-c4ca27302ec5",
+          "previous": {
+            "terminology": [
+              {
+                "source": "wir Erkennenden",
+                "target": "우리 인식하는 자들",
+                "note": "LSCD가 이 문맥에서 허용한 용어 선택이다."
+              },
+              {
+                "source": "unbekannt",
+                "target": "미지",
+                "note": "LSCD 확정 번역에 따라 자기 자신에게 알려져 있지 않다는 핵심 술어를 ‘미지’로 보존한다."
+              }
+            ],
+            "style_notes": [
+              "자기 자신을 알지 못한다는 문맥의 unbekannt는 단순한 친소 관계보다 인식되지 않음 또는 미지의 의미를 우선 검토한다.",
+              "반복과 강조는 보존하되 독일어 어순을 그대로 복사해 한국어 문장 파편을 만들지 않는다.",
+              "wir selbst uns selbst와 같은 재귀 강조는 자기 자신이라는 관계를 보존하면서 자연스러운 한국어 문장으로 재구성한다.",
+              "wir selbst uns selbst는 앞 명제를 강조하고 재확인하는 구조이므로 unbekannt의 뜻을 별개의 두 서술로 반복하지 않는다.",
+              "unbekannt의 핵심 의미는 문장에 한 번 명시적으로 남기고, wir selbst uns selbst는 ‘그러하다’처럼 그 서술을 재확인한다."
+            ],
+            "sentence_rule": {
+              "sentence_id": "p-0004.s001",
+              "allowed_translation_fragments": [
+                "우리 스스로가 우리 자신에게 그러하다"
+              ],
+              "required_translation_fragments": [
+                {
+                  "source_span": "Wir sind uns unbekannt, wir Erkennenden",
+                  "alternatives": [
+                    "우리 인식하는 자들은 우리 자신에게 미지"
+                  ],
+                  "category": "syntax_or_scope",
+                  "severity": "major",
+                  "explanation": "unbekannt는 뒤의 재귀 강조가 아니라 ‘우리 인식하는 자들’이 자기 자신에게 미지라는 핵심 명제를 서술해야 한다."
+                },
+                {
+                  "source_span": "unbekannt",
+                  "alternatives": [
+                    "미지"
+                  ],
+                  "category": "omission",
+                  "severity": "major",
+                  "explanation": "자기 자신에게 알려져 있지 않다는 문장의 핵심 술어는 중복을 고칠 때도 한 번은 반드시 보존해야 한다."
+                }
+              ],
+              "forbidden_translation_fragments": [
+                {
+                  "text": "우리 자신에게 우리 스스로가",
+                  "category": "korean_readability",
+                  "severity": "major",
+                  "explanation": "독일어 어순을 그대로 복사한 한국어 문장 파편이므로 재귀 강조의 관계를 자연스러운 한국어 어순으로 재구성해야 한다."
+                },
+                {
+                  "text": "낯선 존재",
+                  "category": "terminology",
+                  "severity": "minor",
+                  "explanation": "이 문맥의 unbekannt는 친소 관계의 ‘낯선’보다 자기 자신에게 알려지지 않은 ‘미지’의 의미로 옮겨야 한다."
+                },
+                {
+                  "text": "우리 스스로가 우리 자신에게 알려져 있지 않으며",
+                  "category": "syntax_or_scope",
+                  "severity": "major",
+                  "explanation": "재귀 강조를 별도의 첫 번째 서술로 만들면 원문의 압축된 재확인 구조가 중복된 병렬문으로 바뀐다."
+                },
+                {
+                  "text": "우리 스스로가 우리 자신에게 미지",
+                  "category": "korean_readability",
+                  "severity": "major",
+                  "explanation": "앞에서 이미 옮긴 unbekannt의 의미를 다시 서술하지 말고 ‘그러하다’처럼 재확인 관계를 보존한다."
+                }
+              ]
+            }
+          }
         }
       ]
     },
@@ -207,6 +300,292 @@
               "explanation": "LSCD 평가에 따라 ‘파일명의 일부로 체계적으로’처럼 번역투를 줄인다."
             }
           ]
+        }
+      ]
+    },
+    {
+      "profile_id": "kierkegaard-ba-lshd-v1",
+      "corpus_id": "kierkegaard",
+      "work_id": "ba",
+      "variant_id": "text",
+      "approval_state": "approved",
+      "approved_by": "LSHD",
+      "approved_at": "2026-09-30T15:35:03+09:00",
+      "source_case_ids": [
+        "expansion-20260909-k02",
+        "heldout-kierkegaard-11-boundary-v2"
+      ],
+      "terminology": [],
+      "style_notes": [],
+      "sentence_rules": [
+        {
+          "sentence_id": "sks-0047.s007",
+          "variant_id": "text",
+          "sentence_text_sha256": "360807eddde1ee6d6d8728a4db0868fd369a4b34f213fd28080abc07f145e36a",
+          "approved_by": "LSHD",
+          "approved_at": "2026-09-30T15:35:03+09:00",
+          "source_case_id": "expansion-20260909-k02",
+          "guidance": [
+            "이 문장의 Frihedens Virkelighed som Mulighed for Muligheden은 ‘가능성의 가능성으로서의 자유의 현실성’으로 옮긴다. 가능성 사이의 양상적 관계를 목적 관계로 바꾸지 않는다.",
+            "jeg maa derfor gjøre opmærksom paa는 ‘지적해 두어야 한다’처럼 필연·당위 양태를 보존한다. 불필요한 주목·말하기의 중첩 술어와 인과표현 중복을 피한다."
+          ],
+          "allowed_translation_fragments": [
+            "심리학에서는 불안이라는 개념이 다루어지는 것을 거의 볼 수 없다. 따라서 나는 불안이 어떤 특정한 것을 대상으로 하는 공포 및 그와 유사한 개념들과는 전적으로 다르다는 점을 지적해 두어야 한다. 그에 반해 불안은 가능성의 가능성으로서의 자유의 현실성이다."
+          ],
+          "forbidden_translation_fragments": [
+            {
+              "text": "가능성을 위한 가능성",
+              "category": "semantic_substitution",
+              "severity": "major",
+              "explanation": "LSHD가 확인한 양상적 관계를 목적 관계로 바꾼 오역이다. 이 문장에서는 ‘가능성의 가능성’을 보존한다."
+            },
+            {
+              "text": "자유의 실재",
+              "category": "terminology",
+              "severity": "major",
+              "explanation": "이 문장의 Virkelighed는 LSHD 승인에 따라 ‘현실성’으로 옮겨야 한다."
+            },
+            {
+              "text": "주목해야 한다고 말해야",
+              "category": "korean_readability",
+              "severity": "minor",
+              "explanation": "한 번의 주의 환기 행위를 주목·말하기의 중첩 술어로 늘리지 않는다."
+            },
+            {
+              "text": "주의를 환기해야겠다",
+              "category": "negation_or_modality",
+              "severity": "minor",
+              "explanation": "maa의 필연·당위 양태를 ‘지적해 두어야 한다’처럼 보존하고 의지·추측으로 흐리지 않는다."
+            }
+          ]
+        },
+        {
+          "sentence_id": "sks-0034.s001",
+          "variant_id": "text",
+          "sentence_text_sha256": "7d11ad1ce41c442558dc68305c08d2525b74b2e2dcce40977136d61c7d8dd347",
+          "approved_by": "LSHD",
+          "source_case_id": "heldout-kierkegaard-11-boundary-v2",
+          "guidance": [
+            "이 문장의 주어는 Denne Modsigelse(이 모순)이고 den eneste dialektisk consequente는 계사 er 뒤의 서술보어이다. 번역과 번역 노트에서 이를 주어부나 추상 명사 ‘일관성’으로 설명하지 않는다.",
+            "baade magter Springet og Immanentsen은 도약과 내재성을 모두 다루거나 감당할 수 있다는 뜻이다. magter를 두 계기를 가능하게 만들거나 성립시키는 인과관계로 바꾸지 않는다.",
+            "괄호는 내재성을 부연한다. den senere Immanents는 상대적으로 뒤따르는 ‘이후의 내재성’으로 옮기며 ɔ:와 det vil sige는 ‘즉’ 한 번으로 처리한다. ‘후기적’은 특정 시대나 단계의 명칭으로 읽힐 여지가 있지만 중대 누락으로 분류하지 않는다."
+          ],
+          "allowed_translation_fragments": [
+            "이 모순만이 변증법적으로 일관되며, 도약과 내재성(즉, 이후의 내재성)을 모두 다룰 수 있다."
+          ],
+          "required_translation_fragments": [
+            {
+              "source_span": "baade magter Springet og Immanentsen",
+              "alternatives": [
+                "다루",
+                "다룰",
+                "감당"
+              ],
+              "category": "semantic_substitution",
+              "severity": "major",
+              "explanation": "LSHD가 확인한 magter의 ‘다루다·감당하다’라는 관계를 보존한다. 두 계기를 가능하게 만드는 인과관계로 바꾸지 않는다."
+            }
+          ],
+          "forbidden_translation_fragments": [
+            {
+              "text": "가능하게 하",
+              "category": "semantic_substitution",
+              "severity": "major",
+              "explanation": "이 문장의 magter는 도약과 내재성을 다루거나 감당하는 뜻이며, 가능하게 하는 뜻으로 옮기지 않는다."
+            },
+            {
+              "text": "가능하게 만",
+              "category": "semantic_substitution",
+              "severity": "major",
+              "explanation": "이 문장의 magter를 두 계기를 가능하게 만드는 인과관계로 바꾸지 않는다."
+            }
+          ]
+        }
+      ],
+      "amendment_history": [
+        {
+          "amended_date": "2026-10-02",
+          "authorized_by": "LSHD",
+          "evaluator_as_submitted": "LSHD",
+          "source_review": "R23",
+          "candidate_record_id": "4fa59735-378f-45f1-97e2-69893a5c42f2",
+          "change": "복구된 원문 해시에 한정해 이미 채택된 번역·노트 기준을 재생성 규칙에 연결한다. 기존 K02 규칙과 평가 점수는 유지한다.",
+          "previous_source_case_ids": [
+            "expansion-20260909-k02"
+          ]
+        }
+      ]
+    },
+    {
+      "profile_id": "nietzsche-jgb-lshd-v1",
+      "corpus_id": "nietzsche",
+      "work_id": "JGB",
+      "variant_id": "",
+      "approval_state": "approved",
+      "approved_by": "LSHD",
+      "approved_at": "2026-09-30T15:35:03+09:00",
+      "source_case_ids": [
+        "expansion-20260909-n01"
+      ],
+      "terminology": [],
+      "style_notes": [],
+      "sentence_rules": [
+        {
+          "sentence_id": "p-0004.s002",
+          "variant_id": "",
+          "sentence_text_sha256": "30b61fb55936824c8f8713b28f1c8fc4297199cfe53597ea0496da590e2ce25d",
+          "approved_by": "LSHD",
+          "approved_at": "2026-09-30T15:35:03+09:00",
+          "source_case_id": "expansion-20260909-n01",
+          "guidance": [
+            "ist der Verdacht nicht gegründet?는 의심에 근거가 있다는 쪽으로 이끄는 ‘의심이 근거 있는 것이 아닌가?’ 방향의 수사적 의문문이다. 부정의 방향을 역전하거나 모호하게 만들지 않는다.",
+            "sich auf etwas verstehen는 이해·지식·능숙함의 관계이다. ‘여자에 대해서는 서툴렀다’나 ‘여자를 잘 알지 못했다’처럼 범위를 보존하고 다루기·조종의 행위를 추가하지 않는다.",
+            "이 문장의 Dogmatiker는 ‘독단론자’로 옮긴다. sofern의 한정은 ‘독단론자였던 한에서/한에서는’처럼 보존한다."
+          ],
+          "allowed_translation_fragments": [
+            "모든 철학자들은, 독단론자였던 한에서, 여자에 대해서는 영 서툴렀다는 의심이 근거 있는 것이 아닌가?"
+          ],
+          "forbidden_translation_fragments": [
+            {
+              "text": "근거가 없는 것은 아닌가",
+              "category": "negation_or_modality",
+              "severity": "major",
+              "explanation": "LSHD가 지적한 부정 의문문의 역전 또는 심한 모호성이다. 의심에 근거가 있다는 방향을 보존한다."
+            },
+            {
+              "text": "근거 없는 것인가",
+              "category": "negation_or_modality",
+              "severity": "major",
+              "explanation": "의심에 근거가 있다는 원문의 수사적 질문을 근거 없음에 대한 질문으로 바꾸지 않는다."
+            },
+            {
+              "text": "근거가 없는 것인가",
+              "category": "negation_or_modality",
+              "severity": "major",
+              "explanation": "의심에 근거가 있다는 원문의 수사적 질문을 근거 없음에 대한 질문으로 바꾸지 않는다."
+            },
+            {
+              "text": "다루는 데",
+              "category": "semantic_substitution",
+              "severity": "major",
+              "explanation": "LSHD가 확인한 이해·지식·능숙함 관계를 여자들을 다루는 행위로 확대하지 않는다."
+            },
+            {
+              "text": "교조주의자",
+              "category": "terminology",
+              "severity": "minor",
+              "explanation": "LSHD의 해당 문장 용어 승인에 따라 Dogmatiker는 ‘독단론자’로 옮긴다."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile_id": "wittgenstein-group-items-in-english-lshd-v1",
+      "corpus_id": "wittgenstein",
+      "work_id": "Group_ItemsInEnglish",
+      "variant_id": "idp_transcription_linear",
+      "approval_state": "approved",
+      "approved_by": "LSHD",
+      "approved_at": "2026-09-30T15:35:03+09:00",
+      "source_case_ids": [
+        "expansion-20260909-w03"
+      ],
+      "terminology": [],
+      "style_notes": [],
+      "sentence_rules": [
+        {
+          "sentence_id": "p-0001.s002",
+          "variant_id": "idp_transcription_linear",
+          "sentence_text_sha256": "ed0a7344152615e45f2664356d87ec90b9f5074ef80c0b14e18db1254105fa9c",
+          "approved_by": "LSHD",
+          "approved_at": "2026-09-30T15:35:03+09:00",
+          "source_case_id": "expansion-20260909-w03",
+          "guidance": [
+            "첫 only는 주어인 고유명을 포함하는 기호들을 한정한다. ‘기호들만이 복합적이라면’이나 그와 동등한 주어 한정 구조를 보존하고 술어의 ‘복합적이기만’으로 옮기지 않는다.",
+            "이 문맥의 proper names는 ‘고유명’을 우선한다. ‘고유 명사’는 의미 자체의 오류가 아니라 문맥에 따른 용어 선호의 차이이다.",
+            "apparent variables는 이 문맥에서 양화에 의해 묶이는 변수다. 속박변수를 우선하되 겉보기 변수, 외견상 변수, 외견적 변수라는 기존 번역도 허용한다. containing nothing but의 한정 범위를 보존한다.",
+            "WAB 교정 전사의 th[e|o]se는 these를 those로 고친 흔적이다. 읽기용 번역은 교정 후 독법에 따라 고유명을 포함하는 기호들 또는 저 기호들로 옮길 수 있다. 이 || 저를 남긴 기존 전사 보존 번역도 허용한다. 출력에 ||를 사용하는 경우에만 양쪽 독법을 함께 표기한다."
+          ],
+          "allowed_translation_fragments": [
+            "고유명을 포함하는 이 || 저 기호들만이 복합적이라면, 겉보기 변수만을 포함하는 명제들은 단순할 것이다.",
+            "고유명을 포함하는 기호들만이 복합적이라면, 속박변수만을 포함하는 명제들은 단순할 것이다."
+          ],
+          "required_translation_fragments": [
+            {
+              "source_span": "these || those",
+              "alternatives": [
+                "이 || 저",
+                "이||저",
+                "이 ||저",
+                "이|| 저"
+              ],
+              "category": "omission",
+              "severity": "major",
+              "explanation": "출력에 ||를 사용한 전사 보존 번역은 이 || 저 두 요소를 함께 표기한다. 구분자 없는 교정 후 읽기용 번역에서는 이를 누락으로 지적하지 않는다.",
+              "when_translation_contains": "||"
+            }
+          ],
+          "forbidden_translation_fragments": [
+            {
+              "text": "복합적이기만",
+              "category": "syntax_or_scope",
+              "severity": "major",
+              "explanation": "LSHD가 확인한 주어의 only를 술어 complex로 옮긴 오역이다. 고유명을 포함하는 기호들만을 한정해야 한다."
+            }
+          ]
+        }
+      ],
+      "amendment_history": [
+        {
+          "amended_date": "2026-10-02",
+          "authorized_by": "LSHD",
+          "evaluator_as_submitted": "LSHD",
+          "source_review": "R41",
+          "candidate_record_id": "3d6d9c8f-e9a3-4b67-a873-de3de1e51334",
+          "evidence_urls": [
+            "https://wab.uib.no/sample/201a-1.htm",
+            "https://www.gutenberg.org/files/78050/78050-src/78050-src.htm"
+          ],
+          "previous_sentence_rule": {
+            "sentence_id": "p-0001.s002",
+            "variant_id": "idp_transcription_linear",
+            "sentence_text_sha256": "ed0a7344152615e45f2664356d87ec90b9f5074ef80c0b14e18db1254105fa9c",
+            "approved_by": "LSHD",
+            "approved_at": "2026-09-30T15:35:03+09:00",
+            "source_case_id": "expansion-20260909-w03",
+            "guidance": [
+              "첫 only는 주어인 고유명을 포함하는 기호들을 한정한다. ‘기호들만이 복합적이라면’이나 그와 동등한 주어 한정 구조를 보존하고 술어의 ‘복합적이기만’으로 옮기지 않는다.",
+              "이 문맥의 proper names는 ‘고유명’을 우선한다. ‘고유 명사’는 의미 자체의 오류가 아니라 문맥에 따른 용어 선호의 차이이다.",
+              "apparent variables는 ‘겉보기 변수’, ‘외견상 변수’, ‘외견적 변수’를 허용한다. containing nothing but는 그 변수만을 포함한다는 범위를 보존한다.",
+              "이 판본의 these || those는 ‘이 || 저’라는 대안 독법이다. 한쪽만 선택하지 말고 두 독법과 || 표기를 번역에 보존한다."
+            ],
+            "allowed_translation_fragments": [
+              "고유명을 포함하는 이 || 저 기호들만이 복합적이라면, 겉보기 변수만을 포함하는 명제들은 단순할 것이다."
+            ],
+            "required_translation_fragments": [
+              {
+                "source_span": "these || those",
+                "alternatives": [
+                  "이 || 저",
+                  "이||저",
+                  "이 ||저",
+                  "이|| 저"
+                ],
+                "category": "omission",
+                "severity": "major",
+                "explanation": "이 판본과 LSHD 확정문은 these와 those 두 대안 독법을 ‘이 || 저’로 보존한다. 구분자만 남기거나 한 독법만 선택하지 않아야 한다."
+              }
+            ],
+            "forbidden_translation_fragments": [
+              {
+                "text": "복합적이기만",
+                "category": "syntax_or_scope",
+                "severity": "major",
+                "explanation": "LSHD가 확인한 주어의 only를 술어 complex로 옮긴 오역이다. 고유명을 포함하는 기호들만을 한정해야 한다."
+              }
+            ]
+          }
         }
       ]
     }

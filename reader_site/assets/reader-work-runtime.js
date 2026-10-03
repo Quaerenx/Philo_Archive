@@ -281,6 +281,7 @@ function applySentenceTranslationState(item, flash = false) {
     recordId: cleanText(item.record_id || item.id || ""),
     updatedAt: cleanText(item.updated_at || item.reviewed_at || item.generated_at || "")
   };
+  state.humanConfirmed = Boolean(item.human_confirmed || item.human_translation);
   translationSentenceStates.set(sentenceId, state);
   const node = sentenceNodeById.get(sentenceId) || document.getElementById(sentenceId);
   if (node && node.classList.contains("reader-sentence")) {
@@ -291,7 +292,7 @@ function applySentenceTranslationState(item, flash = false) {
 
 function applySentenceTranslationVisualState(node, state, flash = false) {
   const reviewState = normalizedTranslationReviewState(state.reviewState);
-  const label = TRANSLATION_STATE_LABELS[reviewState];
+  const label = state.humanConfirmed ? "사람 확정 번역" : TRANSLATION_STATE_LABELS[reviewState];
   if (!Object.prototype.hasOwnProperty.call(node.dataset, "originalTitle")) {
     node.dataset.originalTitle = node.getAttribute("title") || "";
   }
@@ -363,10 +364,14 @@ function updateStudySessionExportLink(noteCount, translationCount) {
     : "아직 이 기록에 노트나 번역이 없습니다";
 }
 
+let studySessionSummaryRequest = 0;
+let translationSummaryRequest = 0;
+
 function studySessionExportUrl(format = "json") {
   const params = new URLSearchParams({
     corpus_id: researchData.corpus_id || researchData.author_id || "",
     work_id: researchData.work_id || "",
+    variant_id: researchData.variant_id || "",
     notes_review_state: "reviewed",
     translation_review_state: "reviewed",
     format
@@ -376,9 +381,13 @@ function studySessionExportUrl(format = "json") {
 
 async function loadStudySessionSummary() {
   if (!studySessionSummary) return;
+  const requestId = ++studySessionSummaryRequest;
+  const url = studySessionExportUrl("json");
+  const current = () => requestId === studySessionSummaryRequest && url === studySessionExportUrl("json");
   try {
-    const response = await fetch(studySessionExportUrl("json"));
+    const response = await fetch(url);
     const payload = await response.json().catch(() => ({}));
+    if (!current()) return;
     if (!response.ok || !payload.ok) {
       throw new Error(payload.error || "학습 기록을 사용할 수 없습니다");
     }
@@ -395,6 +404,7 @@ async function loadStudySessionSummary() {
     );
     updateStudySessionExportLink(noteCount, translationCount);
   } catch (error) {
+    if (!current()) return;
     setStudySessionSummary("학습 기록을 사용할 수 없습니다.", "unavailable");
     updateStudySessionExportLink(0, 0);
   }
@@ -402,13 +412,20 @@ async function loadStudySessionSummary() {
 
 async function loadTranslationRecordsSummary() {
   if (!translationRecordsSummary) return;
+  const requestId = ++translationSummaryRequest;
+  const scope = () => [researchData.corpus_id || researchData.author_id || "", researchData.work_id || "", researchData.variant_id || ""].join("|");
+  const requestedScope = scope();
+  const current = () => requestId === translationSummaryRequest && requestedScope === scope();
   const params = new URLSearchParams({
     corpus_id: researchData.corpus_id || researchData.author_id || "",
-    work_id: researchData.work_id || ""
+    work_id: researchData.work_id || "",
+    variant_id: researchData.variant_id || "",
+    current_sentences: "1"
   });
   try {
     const response = await fetch(`/api/sentence-translations/summary?${params}`);
     const payload = await response.json().catch(() => ({}));
+    if (!current()) return;
     if (!response.ok || !payload.ok) {
       throw new Error(payload.error || "번역 기록을 사용할 수 없습니다");
     }
@@ -429,6 +446,7 @@ async function loadTranslationRecordsSummary() {
     );
     updateTranslationExportLinks(total, reviewed);
   } catch (error) {
+    if (!current()) return;
     clearSentenceTranslationStates(false);
     setTranslationRecordsSummary("번역 기록을 사용할 수 없습니다.", "unavailable");
     updateTranslationExportLinks(0, 0);

@@ -108,10 +108,10 @@ const TRANSLATION_REVIEW_CHIP_LABELS = {
   rejected: "제외됨"
 };
 const TRANSLATION_QUALITY_LABELS = {
-  critic_pass: "자동 검증 통과",
-  critic_pass_after_revision: "자동 수정 후 통과",
-  needs_human_review: "자동 검증: 확인 필요",
-  critic_error: "자동 검증 실패"
+  critic_pass: "자동 검토 완료",
+  critic_pass_after_revision: "자동 수정됨",
+  needs_human_review: "검토 필요",
+  critic_error: "검토 필요"
 };
 const TRANSLATION_REVIEW_CHIP_HINTS = {
   generated: "검토할 번역",
@@ -209,15 +209,23 @@ function syncConceptReturnLinks() {
   });
 }
 
-function rememberRecentWork() {
-  readerWorkStorage.storeRecentWork({
-    href: currentWorkHref(),
+function recentWorkRecord(node = null) {
+  const sentenceId = node?.dataset.sentenceId || node?.id || "";
+  return {
+    href: sentenceId ? `${location.pathname}${location.search}#${encodeURIComponent(sentenceId)}` : currentWorkHref(),
     title: cleanText(researchData.title || document.title || researchData.work_id || "현재 문서"),
     corpus_id: cleanText(researchData.corpus_id || researchData.author_id || ""),
     corpus_title: cleanText(researchData.corpus_title || ""),
     work_id: cleanText(researchData.work_id || ""),
+    variant_id: cleanText(researchData.variant_id || ""),
+    position_label: sentenceId ? sentencePositionText(sentenceId) : "",
     updated_at: new Date().toISOString()
-  });
+  };
+}
+
+function rememberRecentWork() {
+  resetRecentWorkPositionTracking();
+  readerWorkStorage.storeRecentWork(recentWorkRecord(selectedSentenceNode()));
 }
 
 function escapeHtml(value) {

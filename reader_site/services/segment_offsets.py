@@ -18,7 +18,7 @@ SEGMENT_FILES = {
 }
 
 SEGMENT_OFFSET_INDEX = DATA / "segment_offset_index.sqlite"
-INDEX_SCHEMA_VERSION = 2
+INDEX_SCHEMA_VERSION = 3  # Sentence counts use abbreviation-aware units with legacy anchor aliases.
 BUILD_COMMAND = r"python .\scripts\build_segment_offset_index.py"
 
 
@@ -98,6 +98,32 @@ def _validated_source_metadata(
     if current_size != int(source_size) or current_mtime_ns != int(source_mtime_ns):
         raise _index_error(f"segment offset index is stale for {corpus_id}")
     return current_size, current_mtime_ns
+
+
+def probe_segment_offset_index(
+    index_path: Path = SEGMENT_OFFSET_INDEX,
+    segment_files: Mapping[str, Path] | None = None,
+) -> dict[str, Any]:
+    """Bounded readiness check; full row/hash verification remains a maintenance check."""
+    sources = dict(segment_files or SEGMENT_FILES)
+    connection = _open_read_only(index_path)
+    try:
+        rows = connection.execute("SELECT corpus_id, record_count FROM index_sources").fetchall()
+        counts = {str(corpus): int(count) for corpus, count in rows}
+        if set(counts) != set(sources) or any(count <= 0 for count in counts.values()):
+            raise _index_error("segment offset index corpus coverage is invalid")
+        for corpus, source in sources.items():
+            _validated_source_metadata(connection, corpus, source)
+        sample = connection.execute(
+            "SELECT byte_offset, byte_length, record_order, sentence_count, text_chars FROM segment_offsets LIMIT 1"
+        ).fetchone()
+        if sample is None:
+            raise _index_error("segment offset index has no targets")
+        return {"ready": True, "records": sum(counts.values())}
+    except (sqlite3.DatabaseError, TypeError, ValueError) as error:
+        raise _index_error("segment offset index schema is invalid") from error
+    finally:
+        connection.close()
 
 
 def validate_segment_offset_index(

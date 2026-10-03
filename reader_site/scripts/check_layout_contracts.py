@@ -39,9 +39,16 @@ READER_WORK_CSS_FILES = [
     "assets/reader-work-notes.css",
     "assets/reader-work-source.css",
     "assets/reader-work-responsive.css",
+    "assets/reader-presentation.css",
+    "assets/reader-work-preferences.css",
+    "assets/reader-usability.css",
 ]
 READER_WORK_JS_FILES = [
     "assets/reader-work.js",
+    "assets/reader-work-navigation.js",
+    "assets/reader-work-recent.js",
+    "assets/reader-work-preferences.js",
+    "assets/reader-work-terms.js",
     "assets/reader-work-panel.js",
     "assets/reader-work-runtime.js",
     "assets/reader-work-sentences.js",
@@ -123,11 +130,15 @@ def check_tokens() -> None:
         "--mobile-portrait-spacer-height": "112px",
         "--archive-ui-font-size": "12px",
         "--archive-mobile-control-height": "44px",
+        "--archive-control-height": "44px",
     }
     for name, value in expected_tokens.items():
         require_contains(tokens, f"{name}: {value};", TOKEN_FILE)
     for needle in [
         '"Pretendard Variable", Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic"',
+        "scrollbar-gutter: stable;",
+        "@supports not (scrollbar-gutter: stable)",
+        "overflow-y: scroll;",
         "body.category-nietzsche",
         "body.nietzsche-work",
         '--header-portrait-image: url("/assets/nietzsche-header-left.png?v=1882");',
@@ -170,11 +181,12 @@ def check_corpus_display_policy() -> None:
 def check_html_entrypoints() -> None:
     for relative_path in HTML_ENTRYPOINTS:
         html = read_site_file(relative_path)
-        require_contains(html, "/assets/design-tokens.css?v=frame5", relative_path)
+        token_version = "frame7"
+        require_contains(html, f"/assets/design-tokens.css?v={token_version}", relative_path)
         require_contains(html, 'class="page"', relative_path)
         if relative_path == "index.html":
-            require_contains(html, "/styles.css?v=home14", relative_path)
-            require_contains(html, "/app.js?v=home19", relative_path)
+            require_contains(html, "/styles.css?v=home15", relative_path)
+            require_contains(html, "/app.js?v=home21", relative_path)
             require('class="site-tools"' not in html, "index.html should not expose the retired tool navigation")
             for retired_link in ['href="/search"', 'href="/notes"', 'href="/study"', 'href="/translations"']:
                 require(retired_link not in html, f"index.html should not expose retired home tool link {retired_link!r}")
@@ -417,8 +429,8 @@ def check_search_ui() -> None:
     script = read_site_file("assets/search.js")
     css = read_site_file("assets/search.css")
     for needle in [
-        "/assets/search.css?v=phase34",
-        "/assets/search.js?v=phase48",
+        "/assets/search.css?v=phase35",
+        "/assets/search.js?v=phase50",
         'href="/search" aria-current="page">검색</a>',
         'href="/translations"',
         "본문 찾기",
@@ -538,7 +550,7 @@ def check_search_ui() -> None:
         ".reader-header",
         '.toolbar a[aria-current="page"]',
         ".toolbar a:hover",
-        "gap: 4px 10px",
+        "gap: 8px 10px",
         "min-height: var(--archive-mobile-control-height, 44px)",
         "margin-bottom: 16px",
         "padding-bottom: 10px",
@@ -556,7 +568,7 @@ def check_search_ui() -> None:
         ".search-pagination button",
         ".search-pagination button:active",
         ".filter-chip",
-        "min-height: 28px",
+        "min-height: 44px",
         ".result-summary-nav",
         ".result-summary-link",
         ".result-group-header",
@@ -836,7 +848,7 @@ def check_translations_ui() -> None:
     for needle in [
         "/assets/notes.css?v=notes29",
         "/assets/translations.css?v=trans37",
-        "/assets/translations.js?v=trans93",
+        "/assets/translations.js?v=usability6",
         "<title>번역 목록 / Personal Archive of Literature</title>",
         '<h1 id="translationsPageTitle">번역 목록</h1>',
         'aria-label="번역 이동"',
@@ -875,6 +887,11 @@ def check_translations_ui() -> None:
     ]:
         require_contains(html, needle, "translations.html")
     require('href="/notes"' not in html and 'href="/study"' not in html, "translations navigation should hide notes and study")
+    require_ordered_markers(html, [
+        "/assets/translation-workflow.js?v=workflow2",
+        "/assets/translation-editor-drafts.js?v=drafts2",
+        "/assets/translations.js?v=usability6",
+    ], "translations.html workflow and draft dependency order")
     require_ordered_markers(
         html,
         [
@@ -1006,16 +1023,16 @@ def check_translations_ui() -> None:
         'rejected: "제외한 번역"',
         "translation-record-title",
         "translation-record-footer",
-        "aria-label=\"해설\"",
-        "<summary>해설</summary>",
+        "aria-label=\"번역 노트\"",
+        "<summary>번역 노트</summary>",
         "선택 문장</summary>",
         "sourceAction",
         "원문 읽기",
         "aria-label=\"원문 읽기:",
         "function generatedRecords",
         "function updateReviewQueueButton",
-        "reviewQueueButton.hidden = generatedCount === 0 || isReviewQueueOnlyView()",
-        'reviewQueueButton.textContent = "검토할 번역"',
+        "reviewQueueButton.hidden = generatedCount === 0 && !priorityQueueActive",
+        '우선 검토 ·',
         "개 검토 대기",
         "reviewQueueButton.setAttribute",
         "검토할 번역",
@@ -1044,7 +1061,11 @@ def check_translations_ui() -> None:
         "모든 번역을 검토했습니다.",
         "function updateRecordReview",
         "function updateHumanTranslation",
-        "const humanTranslation = textarea.value.trim()",
+        "const humanTranslation = draftSnapshot.text",
+        "translationDrafts.snapshot(humanForm)",
+        "expected_translation: expectedTranslation",
+        "translationWorkflow.compareCurrent(left, right)",
+        "translationWorkflow.queue(queryMatched)",
         "data-human-translation-form",
         "사람 확정 번역",
         "모델 원본",
@@ -1459,15 +1480,17 @@ def check_study_ui() -> None:
 
 
 def check_work_source_bundle_ui() -> None:
+    from rendering.documents import strip_inert_markdown_links, strip_markdown_links
+    for label in ("Title", "Title (with parentheses)", "1[2]"):
+        for marked in (f"[{label}](javascript:;)", f"[[{label}]](javascript:;)"):
+            require(strip_markdown_links(marked) == label, "reader must preserve Markdown link labels")
+            require(strip_inert_markdown_links(marked) == label, "source view must unwrap inert links")
+    require(strip_inert_markdown_links("[Source](https://example.org)") == "[Source](https://example.org)", "source view must retain real source links")
     documents = read_site_file("rendering/documents.py")
     for needle in [
         "def strip_markdown_links",
         "def strip_inert_markdown_links",
         "def clean_source_markdown_display",
-        r"\[\[([^\n()]+?)\]\]\([^)]*\)",
-        r"\[([^\n()]+)\]\([^)]*\)",
-        r"\[\[([^\n()]+?)\]\]\(javascript:;\)",
-        r"\[([^\n()]+)\]\(javascript:;\)",
         "def clean_reading_inline",
         "value = strip_markdown_links(value)",
         r"\d+\[\d+\]",
@@ -1727,9 +1750,9 @@ def check_work_source_bundle_ui() -> None:
         "review_state\", \"all\"",
         "renderTranslationPending",
         "translation-pending-commentary",
-        "해설 준비 중",
+        "번역 노트 준비 중",
         "다시 생성 중",
-        "setTranslationStatus(regenerate ? \"다시 생성 중\" : \"번역 중\", true)",
+        "setTranslationStatus(cacheOnly ? \"저장된 번역 확인 중\" : regenerate ? \"다시 생성 중\" : \"번역 중\", true)",
         "이미 번역 중입니다.",
         "renderTranslationError",
         "GEMMA_RUNTIME_COMMAND",
@@ -1772,7 +1795,7 @@ def check_work_source_bundle_ui() -> None:
         "취소</button>",
         "노트를 저장하지 못했습니다.",
         "renderCommentary",
-        "<h3>해설</h3>",
+        "<h3>번역 노트</h3>",
         "optionalCautions",
         "translation-cautions translation-extra",
         "<summary>주의</summary>",
@@ -1840,7 +1863,7 @@ def check_work_source_bundle_ui() -> None:
         "노트 보기",
         "인용 보기",
         "개념 보기",
-        "해설 보기",
+        "번역 노트 보기",
         "const action = expanded ? \"본문 보기\" : collapsedStudyPanelAction()",
         "prefersReducedMotion",
         "sentenceScrollBlock",
@@ -1849,7 +1872,7 @@ def check_work_source_bundle_ui() -> None:
         "pendingTranslationRegenerate",
         "selectedTranslationTargetKey",
         "이미 번역 중입니다.",
-        "activeTranslationController.abort()",
+        "await cancelTranslationRequest()",
         "signal: controller.signal",
         'error.name === "AbortError"',
         "ACTION_CONFIRM_MS",
@@ -2000,11 +2023,16 @@ def check_work_source_bundle_ui() -> None:
         "function focusNextSentenceAction",
         "nextAction.focus({ preventScroll: true })",
         "translation-reading-actions",
+        "translation-sentence-navigation",
+        'role="group" aria-label="문장 이동"',
         "translation-secondary-actions",
         "translation-secondary-actions-body",
         "<summary>저장 · 메모</summary>",
         "data-translation-quick-action=\"next-sentence\"",
-        "다음 문장을 선택하고 번역",
+        "data-translation-quick-action=\"previous-sentence\"",
+        "이전 문장 탐색",
+        ">이전 문장</button>",
+        "다음 문장 탐색",
         ">다음 문장</button>",
         "번역 저장",
         "번역으로 메모 추가",
@@ -2112,7 +2140,7 @@ def check_work_source_bundle_ui() -> None:
         ("renderTranslationCancelled", '<section class="translation-section translation-commentary"', "translation-recovery-panel"),
         (
             "renderTranslationRecord",
-            "${renderCommentary(record.commentary || record.interpretation || \"\")}",
+            '${renderCommentary(record)}',
             "${translationResultToolbar(record, cached, reviewState)}",
         ),
     ]:
@@ -2154,15 +2182,21 @@ def check_work_source_bundle_ui() -> None:
     require_ordered_markers(
         template,
         [
-            "/assets/reader-work-storage.js?v=storage1",
+            "/assets/reader-work-storage.js?v=storage3",
+            "/assets/translation-workflow.js?v=workflow2",
+            "/assets/translation-comparison.js?v=comparison2",
             "/assets/reader-work-virtual.js?v=virtual1",
-            "/assets/reader-work.js?v=common197",
-            "/assets/reader-work-panel.js?v=panel1",
-            "/assets/reader-work-runtime.js?v=runtime1",
-            "/assets/reader-work-sentences.js?v=sentences2",
-            "/assets/reader-work-translation.js?v=translation3",
-            "/assets/reader-work-notes.js?v=notes2",
-            "/assets/reader-work-app.js?v=app1",
+            "/assets/reader-work.js?v=common200",
+            "/assets/reader-work-navigation.js?v=navigation2",
+            "/assets/reader-work-recent.js?v=recent2",
+            "/assets/reader-work-preferences.js?v=preferences1",
+            "/assets/reader-work-terms.js?v=terms2",
+            "/assets/reader-work-panel.js?v=panel2",
+            "/assets/reader-work-runtime.js?v=runtime4",
+            "/assets/reader-work-sentences.js?v=sentences6",
+            "/assets/reader-work-translation.js?v=translation13",
+            "/assets/reader-work-notes.js?v=notes5",
+            "/assets/reader-work-app.js?v=app5",
         ],
         "templates/work.html reader script dependency order",
     )
@@ -2170,13 +2204,13 @@ def check_work_source_bundle_ui() -> None:
         template,
         [
             "/assets/reader-work-document.css?v=document2",
-            "/assets/reader-work.css?v=common152",
-            "/assets/reader-work-study.css?v=study2",
-            "/assets/reader-work-controls.css?v=controls2",
-            "/assets/reader-work-translation.css?v=translation2",
+            "/assets/reader-work.css?v=common154",
+            "/assets/reader-work-study.css?v=study3",
+            "/assets/reader-work-controls.css?v=controls4",
+            "/assets/reader-work-translation.css?v=translation4",
             "/assets/reader-work-notes.css?v=notes2",
             "/assets/reader-work-source.css?v=source2",
-            "/assets/reader-work-responsive.css?v=responsive3",
+            "/assets/reader-work-responsive.css?v=responsive5",
         ],
         "templates/work.html reader stylesheet dependency order",
     )
@@ -2225,7 +2259,7 @@ def check_work_source_bundle_ui() -> None:
         "학습 기록",
         "studySessionSummary",
         'id="studySessionSummary" class="study-session-summary" data-session-state="empty" role="status" aria-live="polite" aria-atomic="true" hidden></div>',
-        "aria-label=\"해설 보기. 문장 선택\"",
+        "aria-label=\"번역 노트 보기. 문장 선택\"",
         'aria-controls="studyCompanionPanel"',
         'aria-labelledby="translationCardTitle"',
         'id="translationCardTitle"',
@@ -2282,7 +2316,7 @@ def check_work_source_bundle_ui() -> None:
         "읽기 설정",
         "translation-utility-group",
         "translation-utility-group-label",
-        'class="translation-utility-group-label visually-hidden"',
+        'class="translation-utility-group-label"',
         "보기와 번역기",
         "설정",
         "번역 표시 방식",
@@ -2418,19 +2452,19 @@ def check_work_source_bundle_ui() -> None:
         ".translation-card.reading-mode[data-review-state]",
         ".translation-card.review-state-changed",
         ".translation-utility",
-        ".translation-utility summary",
-        ".translation-utility summary::-webkit-details-marker",
-        ".translation-utility summary::after",
-        ".translation-utility[open] summary::after",
+        ".translation-utility > summary",
+        ".translation-utility > summary::-webkit-details-marker",
+        ".translation-utility > summary::after",
+        ".translation-utility[open] > summary::after",
         ".translation-card.reading-mode .translation-utility",
         "border-top-color: transparent;",
         ".translation-card.reading-mode .translation-utility:not([open])",
         ".translation-card.reading-mode .translation-utility:not([open]):focus-within",
-        ".translation-card.reading-mode .translation-utility summary",
+        ".translation-card.reading-mode .translation-utility > summary",
         "width: max-content;",
-        ".translation-card.reading-mode .translation-utility summary span",
+        ".translation-card.reading-mode .translation-utility > summary span",
         ".translation-card.reading-mode .translation-utility[open]",
-        ".translation-card.reading-mode .translation-utility[open] summary",
+        ".translation-card.reading-mode .translation-utility[open] > summary",
         ".translation-utility-body",
         ".translation-utility-group",
         ".translation-utility-group + .translation-utility-group",
@@ -2462,7 +2496,7 @@ def check_work_source_bundle_ui() -> None:
         "#nextUnstudiedSentence",
         "#nextReviewSentence",
         ".study-tabs",
-        "grid-template-columns: minmax(0, 1.55fr) minmax(0, 1.1fr) repeat(2, minmax(34px, max-content))",
+        "grid-template-columns: minmax(44px, 1.55fr) minmax(44px, 1.1fr) repeat(2, minmax(44px, max-content))",
         "align-items: center",
         ".study-tab:focus-visible",
         ".study-tab.active::after",
@@ -2528,6 +2562,8 @@ def check_work_source_bundle_ui() -> None:
         ".translation-empty-state .translation-section h3",
         ".translation-output .translation-empty-copy",
         ".translation-reading-actions",
+        ".translation-sentence-navigation",
+        "width: min(100%, 320px)",
         ".translation-output.reading-mode .translation-reading-actions",
         "justify-items: center",
         "border-top: 0",
@@ -2751,6 +2787,15 @@ def check_work_source_bundle_ui() -> None:
         "@media (prefers-reduced-motion: reduce)",
     ]:
         require_contains(css, needle, "assets/reader-work.css")
+    secondary_tabs = css_rule_block(css, ".study-tab-secondary {", "reader secondary study tabs")
+    for needle in ["min-height: var(--archive-control-height, 44px)", "font-size: 12px"]:
+        require_contains(secondary_tabs, needle, "reader secondary study tabs target size")
+    utility_body = css_rule_block(css, ".translation-utility-body {", "reader utility groups")
+    utility_group = css_rule_block(css, ".translation-utility-group {", "reader utility groups")
+    require_contains(utility_body, "gap: 16px", "reader space between utility groups")
+    require_contains(utility_group, "gap: 8px", "reader space within utility groups")
+    require('translation-utility-group-label visually-hidden' not in template, "reader utility groups should show their purpose labels when opened")
+    require_contains(js_function_body(script, "renderTranslationQuality"), '"모델 원본: "', "reader distinguishes model evaluation from human translation")
     require(".concept-list small" not in css, "assets/reader-work.css should not style visible concept descriptions")
     note_item_recent_block = css_rule_block(css, ".note-item.is-recent", "assets/reader-work.css recent note item marker")
     require_contains(note_item_recent_block, "box-shadow: inset 3px 0 0 #b00000", "assets/reader-work.css recent note item marker")
@@ -2777,6 +2822,9 @@ def check_work_source_bundle_ui() -> None:
 def check_reader_asset_modules() -> None:
     js_markers = {
         "assets/reader-work.js": "function initializeVirtualWork",
+        "assets/reader-work-preferences.js": "function initializeReaderPreferences",
+        "assets/reader-work-terms.js": "function termsForSentence",
+        "assets/translation-comparison.js": "function difference",
         "assets/reader-work-panel.js": "function setStudyPanel",
         "assets/reader-work-runtime.js": "async function checkGemmaRuntimeStatus",
         "assets/reader-work-sentences.js": "function selectSentence",
@@ -2792,6 +2840,8 @@ def check_reader_asset_modules() -> None:
         "assets/reader-work-notes.css": ".citation-preview,",
         "assets/reader-work-source.css": ".toc {",
         "assets/reader-work-responsive.css": "@media (prefers-reduced-motion: reduce)",
+        "assets/reader-work-preferences.css": ".reading-preference-fields {",
+        "assets/reader-presentation.css": ".translation-comparison {",
     }
     for relative_path, marker in {**js_markers, **css_markers}.items():
         source = read_site_file(relative_path)

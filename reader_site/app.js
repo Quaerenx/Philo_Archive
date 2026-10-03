@@ -39,6 +39,13 @@ const ROOT_LINK_LABELS = {
   wittgenstein: "비트겐슈타인 / Wittgenstein",
 };
 
+const CORPUS_PROFILES = {
+  nietzsche: { image: "nietzsche", born: "1844-10-15", died: "1900-08-25", region: "프로이센 왕국" },
+  bible: { image: "bible", period: "히브리어 성경 · 그리스어 신약", region: "칠십인역 · 제2경전" },
+  kierkegaard: { image: "kierkegaard", born: "1813-05-05", died: "1855-11-11", region: "덴마크 · 코펜하겐" },
+  wittgenstein: { image: "wittgenstein", born: "1889-04-26", died: "1951-04-29", region: "오스트리아 · 빈" },
+};
+
 const CATEGORY_SUBTITLES = {
   nietzsche: "출간 저작과 독서 경로",
   bible: "히브리어 성경, 그리스어 신약, 칠십인역",
@@ -95,15 +102,21 @@ function storedRecentWork() {
 }
 
 function recentWorkMarkup() {
-  const recent = storedRecentWork();
+  const records = window.ReaderWorkStorage?.readRecentWorks() || [storedRecentWork()].filter(Boolean);
+  const recent = records[0];
   if (!recent) return "";
-  const meta = recent.meta ? `<span class="recent-work-meta">${escapeHtml(recent.meta)}</span>` : "";
+  const metadata = (record) => [record.corpus_title || ROOT_LINK_LABELS[record.corpus_id] || record.meta, record.position_label].filter(Boolean).join(" · ");
+  const meta = metadata(recent) ? `<span class="recent-work-meta">${escapeHtml(metadata(recent))}</span>` : "";
+  const older = records.slice(1);
+  const history = older.length ? `<details class="recent-work-history"><summary>최근 읽은 문서 · ${older.length}개 더 보기</summary><ul>${older.map((record) =>
+    `<li><a class="recent-work-link" href="${escapeHtml(record.href)}" aria-label="이어 읽기: ${escapeHtml(record.title)}">${escapeHtml(record.title)}</a><span class="recent-work-meta">${escapeHtml(metadata(record))}</span></li>`).join("")}</ul></details>` : "";
   return `<section class="recent-work">
     <a class="recent-work-link" href="${escapeHtml(recent.href)}" aria-label="이어 읽기: ${escapeHtml(recent.title)}">
       <span class="recent-work-label">이어 읽기</span>
       <span class="recent-work-title">${escapeHtml(recent.title)}</span>
     </a>
     ${meta}
+    ${history}
   </section>`;
 }
 
@@ -423,6 +436,22 @@ function rootLinkLabel(corpus) {
   return ROOT_LINK_LABELS[corpus.id] || corpus.title;
 }
 
+function corpusRowMarkup(corpus) {
+  const label = rootLinkLabel(corpus);
+  const profile = CORPUS_PROFILES[corpus.id];
+  const period = profile?.born
+    ? `<span class="corpus-period" aria-label="생몰일"><time datetime="${profile.born}">${profile.born.replaceAll("-", ".")}</time><span>~</span><time datetime="${profile.died}">${profile.died.replaceAll("-", ".")}</time></span>`
+    : profile ? `<span class="corpus-period">${escapeHtml(profile.period)}</span>` : "";
+  return `<a class="root-link${profile ? " has-portrait" : ""}" href="/category/${encodeURIComponent(corpus.id)}" aria-label="${escapeHtml(label)} Corpus 열기">
+    ${profile ? `<img class="corpus-image" src="/assets/corpus-portraits/${profile.image}.png?v=1" width="1254" height="1254" alt="" decoding="async">` : ""}
+    <span class="corpus-info">
+      <span class="corpus-name">${escapeHtml(label)}</span>
+      ${period}
+      ${profile ? `<span class="corpus-region">${escapeHtml(profile.region)}</span>` : ""}
+    </span>
+  </a>`;
+}
+
 function categorySubtitle(corpus) {
   return CATEGORY_SUBTITLES[corpus.id] || corpus.subtitle || corpus.id;
 }
@@ -461,13 +490,13 @@ function renderArchive() {
   }
 
   el.archiveLinks.innerHTML = [
-    recentWorkMarkup(),
+    `<div id="recentWorks">${recentWorkMarkup()}</div>`,
     `<section class="root-links" aria-label="Corpus 목록">
       <h2>Corpus 목록</h2>
       ${homeSearchMarkup()}
       <div class="root-link-list">
         ${visibleCorpora
-          .map((corpus) => `<a class="root-link" href="/category/${encodeURIComponent(corpus.id)}">${escapeHtml(rootLinkLabel(corpus))}</a>`)
+          .map(corpusRowMarkup)
           .join("")}
       </div>
     </section>`
@@ -603,4 +632,12 @@ async function init() {
   }
 }
 
+function refreshRecentWorks() {
+  const recent = document.getElementById("recentWorks");
+  if (recent) recent.innerHTML = recentWorkMarkup();
+}
+window.addEventListener("pageshow", refreshRecentWorks);
+window.addEventListener("storage", (event) => {
+  if (["philo.reader.recentWork", "philo.reader.recentWorks.v2"].includes(event.key)) refreshRecentWorks();
+});
 init();

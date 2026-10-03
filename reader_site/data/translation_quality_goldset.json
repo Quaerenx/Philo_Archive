@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "description": "코퍼스별 번역 품질을 사람이 평가하기 위한 초기 표본입니다. pending 항목은 아직 골드 판정이 아닙니다.",
+  "description": "네 코퍼스의 번역 품질을 사람이 평가하기 위한 목적 표집입니다. 기존 평가 4건과 2026-09-09 확장 표본 16건을 포함하며, pending 항목은 아직 사람 평가 또는 합격 판정이 아닙니다.",
   "rubric": {
     "scale": {
       "min": 1,
@@ -69,20 +69,39 @@
       "segment_id": "p-0004",
       "sentence_id": "p-0004.s001",
       "source_text": "Wir sind uns unbekannt, wir Erkennenden, wir selbst uns selbst:",
-      "candidate_translation": "우리 인식하는 자들은 우리 스스로가 우리 자신에게 알려져 있지 않으며, 우리 스스로가 우리 자신에게 미지입니다.",
-      "reference_translation": "우리 인식하는 자들은 우리 자신에게 미지의 존재다, 우리 스스로가 우리 자신에게 그러하다:",
+      "candidate_translation": "우리 인식하는 자들은 우리 자신에게 미지이며, 우리 스스로가 우리 자신에게 그러하다:",
+      "reference_translation": "우리 인식하는 자들은 우리 자신에게 미지이며, 우리 스스로가 우리 자신에게 그러하다:",
       "human_evaluation": {
         "status": "evaluated",
         "evaluator": "LSCD",
-        "evaluated_at": "2026-09-04T17:10:10+09:00",
+        "evaluated_at": "2026-09-09T02:13:40+09:00",
         "scores": {
-          "fidelity": 3,
+          "fidelity": 5,
           "completeness": 5,
-          "terminology": 4,
-          "korean_readability": 3
+          "terminology": 5,
+          "korean_readability": 4
         },
-        "notes": "‘wir Erkennenden’을 ‘우리 인식하는 자들’로, ‘unbekannt’를 ‘알려져 있지 않다/미지이다’로 이해한 점은 적절하다. 그러나 원문의 ‘wir selbst uns selbst’는 앞의 명제를 강조하고 재확인하는 구조인데, 현재 후보는 ‘알려져 있지 않으며’와 ‘미지입니다’를 별개의 두 서술로 병렬화하여 동일한 의미를 불필요하게 중복한다. 그 결과 니체 특유의 압축적이고 강조적인 문장 구조가 흐려지고 한국어도 장황해졌다."
-      }
+        "notes": "Wir sind uns unbekannt의 핵심은 “우리가 우리 자신에게 알려져 있지 않다/미지이다”라는 자기 인식의 부재이며, 후속 문맥의 “우리는 한 번도 우리 자신을 찾아본 적이 없다”와도 정확히 연결된다. 따라서 unbekannt를 “미지”로 옮긴 것은 문맥상 적절하다. wir Erkennenden의 “우리 인식하는 자들”도 원문의 역설적 표현을 충실하게 보존한다. 또한 wir selbst uns selbst는 앞선 진술을 강조하여 “바로 우리 자신이 우리 자신에게” 미지라는 점을 되짚는 표현인데, “우리 스스로가 우리 자신에게 그러하다”는 이 반복과 강조를 근거 없는 의미 추가 없이 잘 살린다. 누락된 의미 요소도 없다. 다만 “우리 자신에게 미지이며”와 “우리 스스로가 우리 자신에게 그러하다”는 일반적인 한국어 문장으로는 다소 낯설고 철학적 번역투가 있으므로 가독성은 4점으로 평가한다. 마지막 콜론 역시 후속 문장으로 이어지는 원문의 구조를 적절히 보존한다."
+      },
+      "evaluation_history": [
+        {
+          "candidate_translation": "우리 인식하는 자들은 우리 스스로가 우리 자신에게 알려져 있지 않으며, 우리 스스로가 우리 자신에게 미지입니다.",
+          "reference_translation": "우리 인식하는 자들은 우리 자신에게 미지의 존재다, 우리 스스로가 우리 자신에게 그러하다:",
+          "human_evaluation": {
+            "status": "evaluated",
+            "evaluator": "LSCD",
+            "evaluated_at": "2026-09-04T17:10:10+09:00",
+            "scores": {
+              "fidelity": 3,
+              "completeness": 5,
+              "terminology": 4,
+              "korean_readability": 3
+            },
+            "notes": "‘wir Erkennenden’을 ‘우리 인식하는 자들’로, ‘unbekannt’를 ‘알려져 있지 않다/미지이다’로 이해한 점은 적절하다. 그러나 원문의 ‘wir selbst uns selbst’는 앞의 명제를 강조하고 재확인하는 구조인데, 현재 후보는 ‘알려져 있지 않으며’와 ‘미지입니다’를 별개의 두 서술로 병렬화하여 동일한 의미를 불필요하게 중복한다. 그 결과 니체 특유의 압축적이고 강조적인 문장 구조가 흐려지고 한국어도 장황해졌다."
+          }
+        }
+      ],
+      "candidate_record_id": "7fd1367c-37de-4659-afd7-77318fed12f7"
     },
     {
       "id": "wittgenstein-10-7-10-p-0001-s001",
@@ -112,6 +131,530 @@
           "korean_readability": 4
         },
         "notes": "추가 문맥에 따라 term을 대학의 ‘학기’로 해석한 것은 정확하며, 원문의 각 의미 요소도 빠짐없이 보존되어 있다. 다만 후보의 ‘어느 학기의 것인지’와 ‘파일명 일부로서 체계적인 방식으로 제공된다’는 표현은 의미상 문제는 없지만 다소 번역투이므로, ‘어느 학기에 해당하는지’, ‘파일명의 일부로 체계적으로 제공된다’로 다듬으면 더 자연스럽다."
+      }
+    },
+    {
+      "id": "expansion-20260909-b01",
+      "corpus_id": "bible",
+      "work_id": "oshb.Exod",
+      "variant_id": "oshb_morphhb",
+      "segment_id": "Exod.20.13",
+      "sentence_id": "Exod.20.13.s001",
+      "sampling_reason": "율법의 짧은 금지문: 부정과 행위 범위",
+      "sample_label": "B01",
+      "source_text": "לֹ֖א תִּרְצָֽח׃ס",
+      "candidate_translation": "살인하지 말라.",
+      "candidate_record_id": "1d620930-0780-41cf-9b23-f1e1c17ebe30",
+      "reference_translation": "살인하지 말라.",
+      "human_evaluation": {
+        "status": "evaluated",
+        "evaluator": "LSCD",
+        "evaluated_at": "2026-09-09T01:20:17.486Z",
+        "scores": {
+          "fidelity": 5,
+          "completeness": 5,
+          "terminology": 5,
+          "korean_readability": 5
+        },
+        "notes": "`לֹא תִּרְצָח`의 금지 명령을 “살인하지 말라”로 정확하고 간결하게 옮겼다. 의미의 누락이나 근거 없는 추가가 없고, `רצח`의 의미에도 적합하며 한국어 명령문으로 자연스럽다."
+      }
+    },
+    {
+      "id": "expansion-20260909-b02",
+      "corpus_id": "bible",
+      "work_id": "oshb.Ps",
+      "variant_id": "oshb_morphhb",
+      "segment_id": "Ps.23.4",
+      "sentence_id": "Ps.23.4.s001",
+      "sampling_reason": "시편의 비유와 긴 문장: 두려움·이유·위로 관계",
+      "sample_label": "B02",
+      "source_text": "גַּ֤ם כִּֽי־אֵלֵ֨ךְ בְּ/גֵ֪יא צַלְמָ֡וֶת לֹא־אִ֘ירָ֤א רָ֗ע כִּי־אַתָּ֥ה עִמָּדִ֑/י שִׁבְטְ/ךָ֥ וּ֝/מִשְׁעַנְתֶּ֗/ךָ הֵ֣מָּה יְנַֽחֲמֻֽ/נִי׃",
+      "candidate_translation": "내가 사망의 음침한 골짜기를 걸을지라도 나는 악을 두려워하지 않나니, 주께서 나와 함께 계심이라. 주의 지팡이와 막대기가 나를 안위하리이다.",
+      "candidate_record_id": "bafb1eba-dcae-4037-8ba6-84565fbcb71e",
+      "reference_translation": "내가 사망의 음침한 골짜기를 걸을지라도 나는 악을 두려워하지 않나니, 주께서 나와 함께 계심이라. 주의 지팡이와 막대기가 나를 안위하리이다.",
+      "human_evaluation": {
+        "status": "evaluated",
+        "evaluator": "LSCD",
+        "evaluated_at": "2026-09-09T01:20:17.486Z",
+        "scores": {
+          "fidelity": 5,
+          "completeness": 5,
+          "terminology": 4,
+          "korean_readability": 5
+        },
+        "notes": "원문의 골짜기를 걷는 상황, 악을 두려워하지 않는 이유, 하나님이 함께 계심, 지팡이와 막대기가 위안을 준다는 의미를 모두 보존한다. 다만 `צַלְמָוֶת`은 전통적으로 “사망의 그늘”로 번역되어 왔지만 “깊은 어둠”으로 이해될 수도 있어, “사망의 음침한”은 가능한 전통적 번역이면서도 어휘 의미를 하나로 확정한 표현이라는 점에서 용어 정확성만 4점으로 판정한다."
+      }
+    },
+    {
+      "id": "expansion-20260909-b03",
+      "corpus_id": "bible",
+      "work_id": "sblgnt.John",
+      "variant_id": "sblgnt",
+      "segment_id": "John.1.1",
+      "sentence_id": "John.1.1.s001",
+      "sampling_reason": "그리스어 복음서: logos와 반복되는 술어",
+      "sample_label": "B03",
+      "source_text": "Ἐν ἀρχῇ ἦν ὁ λόγος, καὶ ὁ λόγος ἦν πρὸς τὸν θεόν, καὶ θεὸς ἦν ὁ λόγος.",
+      "candidate_translation": "태초에 말씀이 계셨고, 그 말씀은 하나님과 함께 계셨으며, 그 말씀은 하나님이셨다.",
+      "candidate_record_id": "1cf0a1b3-8ca9-478f-b1a5-e13a7e07795f",
+      "reference_translation": "태초에 말씀이 계셨고, 그 말씀은 하나님과 함께 계셨으며, 그 말씀은 하나님이셨다.",
+      "human_evaluation": {
+        "status": "evaluated",
+        "evaluator": "LSCD",
+        "evaluated_at": "2026-09-09T01:20:17.486Z",
+        "scores": {
+          "fidelity": 5,
+          "completeness": 5,
+          "terminology": 5,
+          "korean_readability": 5
+        },
+        "notes": "`Ἐν ἀρχῇ`, `ὁ λόγος`, `πρὸς τὸν θεόν`, `θεὸς ἦν ὁ λόγος`의 세 절을 각각 “태초에”, “말씀”, “하나님과 함께”, “말씀은 하나님이셨다”로 정확히 대응시킨다. 의미 요소의 누락·추가가 없으며 한국어 성경 문체로도 자연스럽다."
+      }
+    },
+    {
+      "id": "expansion-20260909-b04",
+      "corpus_id": "bible",
+      "work_id": "sblgnt.Rom",
+      "variant_id": "sblgnt",
+      "segment_id": "Rom.8.1",
+      "sentence_id": "Rom.8.1.s001",
+      "sampling_reason": "그리스어 서신: 부정의 범위와 한정 구절",
+      "sample_label": "B04",
+      "source_text": "Οὐδὲν ἄρα νῦν κατάκριμα τοῖς ἐν Χριστῷ Ἰησοῦ·",
+      "candidate_translation": "그러므로 이제 그리스도 예수 안에 있는 자들에게는 결코 정죄함이 없습니다.",
+      "candidate_record_id": "cf1654b8-a6c2-4533-bc2d-64ab88b3f841",
+      "reference_translation": "그러므로 이제 그리스도 예수 안에 있는 자들에게는 결코 정죄함이 없습니다.",
+      "human_evaluation": {
+        "status": "evaluated",
+        "evaluator": "LSCD",
+        "evaluated_at": "2026-09-09T01:20:17.486Z",
+        "scores": {
+          "fidelity": 5,
+          "completeness": 5,
+          "terminology": 5,
+          "korean_readability": 5
+        },
+        "notes": "`Οὐδὲν ... κατάκριμα`을 “결코 정죄함이 없습니다”로, `τοῖς ἐν Χριστῷ Ἰησοῦ`를 “그리스도 예수 안에 있는 자들에게는”으로 충실하게 옮겼다. `ἄρα νῦν`의 “그러므로 이제”도 보존되어 있으며 누락이나 부당한 의미 추가가 없다."
+      }
+    },
+    {
+      "id": "expansion-20260909-k01",
+      "corpus_id": "kierkegaard",
+      "work_id": "sd",
+      "variant_id": "text",
+      "segment_id": "sks-0007",
+      "sentence_id": "sks-0007.s002",
+      "sampling_reason": "철학 본문: 자기·관계·재귀 표현의 구별",
+      "sample_label": "K01",
+      "source_text": "Selvet er ikke Forholdet, men at Forholdet forholder sig til sig selv.",
+      "candidate_translation": "자아는 그 관계 자체가 아니라, 관계가 자기 자신과 관계를 맺고 있음이다.",
+      "candidate_record_id": "c1515067-c0b7-40bb-8948-f2fe2399fa8f",
+      "reference_translation": "자아는 관계 자체가 아니라, 그 관계가 자기 자신과 관계를 맺는 것이다.",
+      "human_evaluation": {
+        "status": "evaluated",
+        "evaluator": "LSCD",
+        "evaluated_at": "2026-09-09T02:44:10.884Z",
+        "scores": {
+          "fidelity": 5,
+          "completeness": 5,
+          "terminology": 5,
+          "korean_readability": 4
+        },
+        "notes": "`Selvet`을 “자아”, `Forholdet`을 “관계”로 정확하게 대응시켰고, 핵심 명제인 “자아는 관계 자체가 아니라 관계가 자기 자신과 관계 맺는 데 있다”는 의미도 빠짐없이 보존했다. 후보의 “관계가 자기 자신과 관계를 맺고 있음이다”는 의미상 정확하지만 명사화가 겹쳐 한국어로 다소 경직되어 있으므로 가독성만 4점으로 평가한다."
+      }
+    },
+    {
+      "id": "expansion-20260909-k02",
+      "corpus_id": "kierkegaard",
+      "work_id": "ba",
+      "variant_id": "text",
+      "segment_id": "sks-0047",
+      "sentence_id": "sks-0047.s007",
+      "sampling_reason": "긴 개념 구별: 불안·두려움·가능성",
+      "sample_label": "K02",
+      "source_text": "Begrebet Angest seer man næsten aldrig behandlet i Psychologien, jeg maa derfor gjøre opmærksom paa, at det er aldeles forskjelligt fra Frygt og lignende Begreber, der referere sig til noget bestemt, medens Angest er Frihedens Virkelighed som Mulighed for Muligheden .",
+      "candidate_translation": "심리학에서는 불안이라는 개념이 다루어지는 것을 거의 볼 수 없다. 따라서 나는 불안이 어떤 특정한 것을 대상으로 하는 공포 및 그와 유사한 개념들과는 전적으로 다르다는 점을 지적해 두어야 한다. 그에 반해 불안은 가능성의 가능성으로서의 자유의 현실성이다.",
+      "candidate_record_id": "923e0db6-e9a6-4d69-b3ce-bae64b365a5a",
+      "reference_translation": "심리학에서는 불안이라는 개념이 다루어지는 것을 거의 볼 수 없다. 따라서 나는 불안이 어떤 특정한 것을 대상으로 하는 공포 및 그와 유사한 개념들과는 전적으로 다르다는 점을 지적해 두어야 한다. 그에 반해 불안은 가능성의 가능성으로서의 자유의 현실성이다.",
+      "human_evaluation": {
+        "status": "evaluated",
+        "evaluator": "LSHD",
+        "evaluated_at": "2026-09-30T17:29:40+09:00",
+        "scores": {
+          "fidelity": 5,
+          "completeness": 5,
+          "terminology": 5,
+          "korean_readability": 4
+        },
+        "notes": "원문의 핵심 대립인 Angest(불안)와 Frygt(공포)의 구별이 정확히 보존되어 있다. “der referere sig til noget bestemt”를 “어떤 특정한 것을 대상으로 하는”으로 옮긴 것도 의미상 적절하다. “jeg maa derfor gjøre opmærksom paa”의 maa가 지닌 필요·당위의 양태도 “지적해 두어야 한다”에 충분히 반영되어 있다. 핵심 구절 “Frihedens Virkelighed som Mulighed for Muligheden” 역시 “가능성의 가능성으로서의 자유의 현실성”으로 옮긴 것이 개념 관계를 잘 보존한다. 원문에서도 이 문구는 자유가 가능성으로 현전한다는 맥락에서 사용된다. :chatgpt-content-reference{index=\"0\"} “현실성”은 이 문맥의 Virkelighed에 적합하다. 다만 마지막 문장은 개념어가 연속되어 한국어 독해 난도가 높으므로 가독성은 4점으로 평가한다. 이는 상당 부분 원문의 철학적 압축성 자체에서 비롯된다."
+      },
+      "evaluation_history": [
+        {
+          "candidate_record_id": "fcced1f1-682b-47c7-a83a-9bd952f4c2df",
+          "candidate_translation": "불안이라는 개념은 심리학에서 거의 다루어지는 법이 없으므로, 나는 따라서 이것이 특정한 무언가를 지칭하는 공포나 그와 유사한 개념들과는 완전히 다르며, 반면 불안은 가능성을 위한 가능성으로서의 자유의 실재라는 점에 주목해야 한다고 말해야겠다.",
+          "reference_translation": "불안이라는 개념은 심리학에서 거의 다루어지지 않는다. 따라서 나는 불안이 어떤 특정한 것을 대상으로 하는 두려움과 그와 유사한 개념들과는 전혀 다르다는 점을 지적해야 한다. 반면 불안은 가능성의 가능성으로서 자유의 현실성이다.",
+          "human_evaluation": {
+            "status": "evaluated",
+            "evaluator": "LSCD",
+            "evaluated_at": "2026-09-09T02:44:10.884Z",
+            "scores": {
+              "fidelity": 4,
+              "completeness": 5,
+              "terminology": 4,
+              "korean_readability": 3
+            },
+            "notes": "`Angest`와 특정한 대상을 갖는 `Frygt`를 구별하는 핵심 논리와 `Frihedens Virkelighed som Mulighed for Muligheden`이라는 결론은 모두 포함되어 있다. 다만 후보의 “특정한 무언가를 지칭하는 공포”는 `referere sig til noget bestemt`를 다소 부자연스럽게 옮겼고, “나는 따라서 … 주목해야 한다고 말해야겠다”는 `jeg maa derfor gjøre opmærksom paa`의 단순한 “따라서 지적해야 한다”보다 장황하다. 또한 `Virkelighed`는 이 철학적 문맥에서 “실재”보다 “현실성”으로 옮기는 편이 더 정확하며, “가능성을 위한 가능성”도 원문의 개념 구조가 불분명하게 읽혀 교정이 필요하다."
+          }
+        },
+        {
+          "candidate_record_id": "1079276d-3a2a-4e27-af7a-4e151228beb0",
+          "candidate_translation": "심리학에서 불안이라는 개념이 다루어지는 것은 거의 볼 수 없으므로, 나는 따라서 불안이 특정한 무언가를 지칭하는 공포나 그와 유사한 개념들과는 완전히 다르며, 반면 불안은 가능성을 위한 가능성으로서의 자유의 실재라는 점에 주의를 환기해야겠다.",
+          "reference_translation": "심리학에서는 불안이라는 개념이 다루어지는 것을 거의 볼 수 없다. 따라서 나는 불안이 어떤 특정한 것을 대상으로 하는 공포 및 그와 유사한 개념들과는 전적으로 다르다는 점을 지적해 두어야 한다. 그에 반해 불안은 가능성의 가능성으로서의 자유의 현실성이다.",
+          "human_evaluation": {
+            "status": "evaluated",
+            "evaluator": "LSHD",
+            "evaluated_at": "2026-09-30T15:35:03+09:00",
+            "scores": {
+              "fidelity": 3,
+              "completeness": 5,
+              "terminology": 3,
+              "korean_readability": 3
+            },
+            "notes": "`Angest`와 `Frygt`의 기본적인 대비는 잘 보존되어 있고 누락도 없다. 다만 핵심 개념구인 `Frihedens Virkelighed som Mulighed for Muligheden`에서 문제가 크다. 통상적인 영역 번역에서도 이 구절은 “freedom's actuality as the possibility of possibility”로 옮겨지며, `Mulighed for Muligheden`은 목적을 나타내는 **‘가능성을 위한 가능성’**이라기보다 **‘가능성의 가능성’**이라는 양상적 관계를 나타낸다. [The Ted K Archive](https://www.thetedkarchive.com/library/howard-v-hong-and-edna-h-hong-the-essential-kierkegaard?utm_source=chatgpt.com) `Virkelighed` 역시 여기서는 존재론적 ‘실재’보다는 actuality에 해당하는 **‘현실성’**이 더 정확하다. 실제 키르케고르 연구에서도 이 표현을 자유의 `actuality`와 가능성의 관계로 해석한다. [CiteSeerX](https://citeseerx.ist.psu.edu/document?doi=6b551482a2af6223325df5ceafea62efa3fbac0a&repid=rep1&type=pdf&utm_source=chatgpt.com) 또한 `jeg maa derfor gjøre opmærksom paa`는 “나는 따라서 … 주의를 환기해야겠다”보다 **“따라서 … 지적해 두어야 한다”**가 `maa`의 필연·당위 양태를 더 안정적으로 살린다. 후보문의 “~므로, 나는 따라서”도 인과표현이 중복되어 한국어 문장이 다소 무겁다."
+          }
+        }
+      ]
+    },
+    {
+      "id": "expansion-20260909-k03",
+      "corpus_id": "kierkegaard",
+      "work_id": "fb",
+      "variant_id": "text",
+      "segment_id": "sks-0006",
+      "sentence_id": "sks-0006.s009",
+      "sampling_reason": "서사적 철학 문장: 아브라함·이삭·슬픔의 의인화",
+      "sample_label": "K03",
+      "source_text": "Hans Attraa var at følge med de 3 Dages Reise, da Abraham reed med Sorgen foran sig og Isaak ved sin Side.",
+      "candidate_translation": "그는 아브라함이 슬픔을 앞세우고 이삭을 곁에 둔 채 말을 타고 가던 그 3일간의 여정에 동행하고 싶어 했다.",
+      "candidate_record_id": "eb015a0e-38e0-4061-9710-5376ab86b5d5",
+      "reference_translation": "그의 열망은 아브라함이 슬픔을 앞에 두고 이삭을 곁에 둔 채 갔던 그 사흘간의 여정에 동행하는 것이었다.",
+      "human_evaluation": {
+        "status": "evaluated",
+        "evaluator": "LSCD",
+        "evaluated_at": "2026-09-09T02:44:10.884Z",
+        "scores": {
+          "fidelity": 4,
+          "completeness": 4,
+          "terminology": 5,
+          "korean_readability": 5
+        },
+        "notes": "`Attraa`의 열망, 사흘간의 여정, 아브라함의 슬픔, 곁에 있는 이삭이라는 핵심 요소는 모두 잘 전달된다. 그러나 원문의 `reed`는 단지 “타고 갔다”는 동작을 나타낼 뿐 여기서 “말”을 명시하지 않는다. 주변 문맥에는 오히려 나귀들을 준비했다는 내용이 있으므로 후보의 “말을 타고”는 원문에 없는 구체적 정보를 추가한 표현이다. 이 점 때문에 충실성과 완전성을 각각 4점으로 평가한다."
+      }
+    },
+    {
+      "id": "expansion-20260909-k04",
+      "corpus_id": "kierkegaard",
+      "work_id": "2t43",
+      "variant_id": "text",
+      "segment_id": "sks-0006",
+      "sentence_id": "sks-0006.s011",
+      "sampling_reason": "강화의 조건·이유·반복 구조",
+      "sample_label": "K04",
+      "source_text": "Hvis saa var, da blev det jo uforklarligt, at der paa disse hellige Steder altid ene og alene tales om Troen, at den atter og atter lovprises og berømmes.",
+      "candidate_translation": "만약 그러하다면, 이 거룩한 곳들에서 언제나 오로지 믿음에 대해서만 이야기되고, 믿음이 거듭 찬양받고 칭송된다는 것은 참으로 설명할 수 없는 일이 될 것입니다.",
+      "candidate_record_id": "fe562c15-ef3a-4a5a-840e-5096a098d581",
+      "reference_translation": "만약 그러하다면, 이 거룩한 곳들에서 언제나 오로지 믿음에 대해서만 이야기되고, 믿음이 거듭 찬양받고 칭송된다는 것은 참으로 설명할 수 없는 일이 될 것입니다.",
+      "human_evaluation": {
+        "status": "evaluated",
+        "evaluator": "LSCD",
+        "evaluated_at": "2026-09-09T02:44:10.884Z",
+        "scores": {
+          "fidelity": 5,
+          "completeness": 5,
+          "terminology": 5,
+          "korean_readability": 5
+        },
+        "notes": "조건절 `Hvis saa var`와 그 귀결인 `uforklarligt`의 관계가 정확히 보존되어 있으며, `ene og alene`의 강조도 “언제나 오로지 … 만”으로 충분히 전달된다. `Troen`을 “믿음”으로, `atter og atter lovprises og berømmes`를 “거듭 찬양받고 칭송된다”로 옮긴 것도 의미와 강조를 정확하게 살린다. 누락이나 근거 없는 추가가 없고 한국어 문장도 자연스럽다."
+      }
+    },
+    {
+      "id": "expansion-20260909-n01",
+      "corpus_id": "nietzsche",
+      "work_id": "JGB",
+      "variant_id": "",
+      "segment_id": "p-0004",
+      "sentence_id": "p-0004.s002",
+      "sampling_reason": "수사적 질문과 조건절, 철학자·독단가의 범위",
+      "sample_label": "N01",
+      "source_text": "ist der Verdacht nicht gegründet, dass alle Philosophen, sofern sie Dogmatiker waren, sich schlecht auf Weiber verstanden?",
+      "candidate_translation": "모든 철학자들은, 독단론자였던 한에서, 여자에 대해서는 영 서툴렀다는 의심이 근거 있는 것이 아닌가?",
+      "candidate_record_id": "8fa3c975-298f-4041-9b04-6984604c7e75",
+      "reference_translation": "모든 철학자는, 독단론자였던 한에서는, 여자를 잘 알지 못했다는 의심에 근거가 있지 않은가?",
+      "human_evaluation": {
+        "status": "evaluated",
+        "evaluator": "LSHD",
+        "evaluated_at": "2026-09-30T17:29:40+09:00",
+        "scores": {
+          "fidelity": 4,
+          "completeness": 5,
+          "terminology": 5,
+          "korean_readability": 4
+        },
+        "notes": "후보는 “ist der Verdacht nicht gegründet”의 수사적 방향을 올바르게 잡았다. 즉 “그 의심에는 근거가 있지 않은가?”라는 의미이며, 실제 문맥에서도 이어지는 문장들이 독단론자들의 서투름을 풍자하는 방향으로 전개된다. :chatgpt-content-reference{index=\"1\"} 다만 “sich schlecht auf Weiber verstehen”는 단순히 사람을 ‘다루는 기술’이라기보다 무엇에 정통하지 못하다, 잘 알지 못한다는 뜻에 가깝다. 따라서 “여자에 대해서는 영 서툴렀다”도 문맥상 가능하지만 “여자를 잘 알지 못했다”가 관용구의 의미를 조금 더 직접적으로 보존한다. 또한 “독단론자였던 한에서”보다 “독단론자였던 한에서는”이 한국어 문장으로 자연스럽다. Dogmatiker를 “독단론자”로 옮긴 선택은 이 철학적 문맥에 적절하다."
+      },
+      "evaluation_history": [
+        {
+          "candidate_record_id": "7e18d6a8-e373-47bb-a8ba-a32b84eeba55",
+          "candidate_translation": "진리가 여인이라는 전제하에—의심이 근거 없는 것인가, 모든 철학자들이, 그들이 독단주의자였던 한, 여인을 다루는 데 서툴렀다는 의심이?",
+          "reference_translation": "모든 철학자들이, 그들이 독단주의자였던 한, 여자에 대해서는 잘 알지 못했다는 의심은 근거 있는 것이 아닌가?",
+          "human_evaluation": {
+            "status": "evaluated",
+            "evaluator": "LSCD",
+            "evaluated_at": "2026-09-09T04:00:44.884Z",
+            "scores": {
+              "fidelity": 3,
+              "completeness": 3,
+              "terminology": 4,
+              "korean_readability": 3
+            },
+            "notes": "평가 대상은 `ist der Verdacht ...?`부터인데, 후보는 바로 앞 문장의 `Vorausgesetzt, dass die Wahrheit ein Weib ist`를 “진리가 여인이라는 전제하에”라는 형태로 끌어와 평가 대상에 없는 내용을 추가했다. 또한 `sich schlecht auf Weiber verstehen`은 “여인을 다루는 데 서툴다”보다는 “여자에 대해 잘 알지 못하다/여자를 잘 이해하지 못하다”에 가깝다. 전체 의문문의 한국어 어순도 상당히 경직되어 있다."
+          }
+        },
+        {
+          "candidate_record_id": "6ea5ce15-3362-4db0-b56e-a6ed16eb020d",
+          "candidate_translation": "모든 철학자들이, 그들이 교조주의자였던 한, 여인들을 다루는 데 서툴렀다는 의심이 근거가 없는 것은 아닌가?",
+          "reference_translation": "모든 철학자들은, 독단론자였던 한에서, 여자에 대해서는 영 서툴렀다는 의심이 근거 있는 것이 아닌가?",
+          "human_evaluation": {
+            "status": "evaluated",
+            "evaluator": "LSHD",
+            "evaluated_at": "2026-09-30T15:35:03+09:00",
+            "scores": {
+              "fidelity": 2,
+              "completeness": 5,
+              "terminology": 3,
+              "korean_readability": 3
+            },
+            "notes": "가장 중요한 문제는 부정 의문문의 방향이다. `ist der Verdacht nicht gegründet?`는 **“그 의심은 근거 있는 것이 아닌가?”**, 즉 의심에 근거가 있다는 쪽으로 독자를 이끄는 수사적 의문이다. 원문 자체도 그대로 `nicht gegründet`라고 되어 있다. [Projekt Gutenberg](https://projekt-gutenberg.org/authors/friedrich-wilhelm-nietzsche/books/jenseits-von-gut-und-boese/chapter/2/?utm_source=chatgpt.com) 후보의 **“근거가 없는 것은 아닌가?”**는 자연스러운 한국어에서는 “근거가 없는 것 아닌가?”로 읽힐 가능성이 커서 의미가 반대로 뒤집히거나 최소한 심하게 모호해진다.\n\n또한 `sich auf etwas verstehen`는 어떤 것에 **정통하다·능숙하다·잘 알다**라는 관용구이다. 사전적으로도 특별한 지식이나 능력을 지닌다는 뜻으로 설명된다. [Duden](https://www.duden.de/rechtschreibung/weghaben?utm_source=chatgpt.com) 따라서 `sich schlecht auf Weiber verstanden`는 “여자들을 다루는 데 서툴렀다”보다 **“여자에 대해서는 서툴렀다”**, “여자를 잘 알지 못했다” 정도가 원문의 범위를 덜 넘어간다. 실제 영어 번역·논의에서도 “understood women badly”, “little understanding of women”과 같은 방향으로 옮겨진다. [Scribd](https://www.scribd.com/document/472516601/AP-David-PLato-Theatetus-and-the-Indeterminate-Dyad?utm_source=chatgpt.com) `Dogmatiker`는 이 철학적 문맥에서는 ‘교조주의자’보다 **‘독단론자’**가 적절하다. `sofern`도 “그들이 …였던 한”보다는 **“독단론자였던 한에서/한에서는”**가 자연스럽다."
+          }
+        }
+      ]
+    },
+    {
+      "id": "expansion-20260909-n02",
+      "corpus_id": "nietzsche",
+      "work_id": "FW",
+      "variant_id": "",
+      "segment_id": "p-0003",
+      "sentence_id": "p-0003.s001",
+      "sampling_reason": "시구와 다중 부정, 자기 풍자의 대상",
+      "sample_label": "N02",
+      "source_text": "Ich wohne in meinem eignen Haus, Hab Niemandem nie nichts nachgemacht Und — lachte noch jeden Meister aus, Der nicht sich selber ausgelacht.",
+      "candidate_translation": "나는 나만의 집에 거주하며, 누구도 결코 아무것도 따라 하지 않았고, 그리고—자신을 비웃지 못하는 모든 스승을 비웃기까지 했다.",
+      "candidate_record_id": "5b363631-37ff-4344-b1eb-d96a761ae6d9",
+      "reference_translation": "나는 내 집에 살며, 누구도 아무것도 흉내 낸 적 없고—스스로를 비웃지 않은 모든 스승을 나 또한 비웃었다.",
+      "human_evaluation": {
+        "status": "evaluated",
+        "evaluator": "LSCD",
+        "evaluated_at": "2026-09-09T04:00:44.884Z",
+        "scores": {
+          "fidelity": 4,
+          "completeness": 5,
+          "terminology": 4,
+          "korean_readability": 4
+        },
+        "notes": "`Niemandem nie nichts nachgemacht`의 강한 부정과 전체적인 자립의 의미는 잘 전달된다. 다만 후보의 “거주하며”는 시적 문구에 비해 지나치게 행정적인 표현이다. 더 중요한 것은 `Der nicht sich selber ausgelacht`가 “스스로를 비웃지 않은”이라는 사실을 말하는데, 후보의 “비웃지 못하는”은 능력이나 가능성의 부재로 의미를 바꾼다는 점이다. 핵심 내용의 누락은 없다."
+      }
+    },
+    {
+      "id": "expansion-20260909-n03",
+      "corpus_id": "nietzsche",
+      "work_id": "GM",
+      "variant_id": "",
+      "segment_id": "p-0004",
+      "sentence_id": "p-0004.s007",
+      "sampling_reason": "정신·꿀벌·귀환의 확장 비유",
+      "sample_label": "N03",
+      "source_text": "Wir sind immer dazu unterwegs, als geborne Flügelthiere und Honigsammler des Geistes, wir kümmern uns von Herzen eigentlich nur um Eins — Etwas „heimzubringen“.",
+      "candidate_translation": "우리는 타고난 날개 달린 짐승이자 정신의 꿀을 모으는 자들로서, 언제나 단 한 가지, 즉 어떤 것을 '집으로 가져오는' 일만을 향해 나아가고 있습니다.",
+      "candidate_record_id": "fc68ca57-9374-4ae1-80e1-55087cf491fa",
+      "reference_translation": "우리는 타고난 날짐승이자 정신의 꿀을 모으는 자들로서 언제나 그것을 위해 길을 나선다. 우리가 마음 깊이 실제로 관심을 두는 것은 오직 한 가지—무언가를 ‘집으로 가져오는’ 일뿐이다.",
+      "human_evaluation": {
+        "status": "evaluated",
+        "evaluator": "LSCD",
+        "evaluated_at": "2026-09-09T04:00:44.884Z",
+        "scores": {
+          "fidelity": 4,
+          "completeness": 4,
+          "terminology": 4,
+          "korean_readability": 4
+        },
+        "notes": "벌과 꿀의 비유, `Etwas „heimzubringen“`이라는 핵심 이미지와 “오직 한 가지”에 몰두한다는 의미는 보존되어 있다. 다만 원문은 `Wir sind immer dazu unterwegs`와 `wir kümmern uns von Herzen eigentlich nur um Eins`라는 두 층의 진술을 병치하는데, 후보는 이를 “단 한 가지 … 일만을 향해 나아간다”로 합쳐 구조와 `von Herzen eigentlich`의 강조를 다소 약화시켰다. “어떤 것을 집으로 가져오는”보다는 “무언가를 집으로 가져오는”이 자연스럽다."
+      }
+    },
+    {
+      "id": "expansion-20260909-n04",
+      "corpus_id": "nietzsche",
+      "work_id": "MA-I",
+      "variant_id": "",
+      "segment_id": "p-0021",
+      "sentence_id": "p-0021.s003",
+      "sampling_reason": "긴 열거와 대립 개념의 대응",
+      "sample_label": "N04",
+      "source_text": "wie kann Etwas aus seinem Gegensatz entstehen, zum Beispiel Vernünftiges aus Vernunftlosem, Empfindendes aus Todtem, Logik aus Unlogik, interesseloses Anschauen aus begehrlichem Wollen, Leben für Andere aus Egoismus, Wahrheit aus Irrthümern?",
+      "candidate_translation": "어떻게 어떤 것이 그 반대되는 것에서 생겨날 수 있는가, 예를 들어 이성 없는 것에서 이성적인 것이, 죽은 것에서 느끼는 것이, 비논리에서 논리가, 욕구하는 의지에서 사심 없는 관조가, 이기주의에서 타인을 위한 삶이, 오류들에서 진리가 그러한가?",
+      "candidate_record_id": "fc8ed041-73b4-491c-86ce-6cb5315af079",
+      "reference_translation": "어떻게 어떤 것이 그 반대되는 것에서 생겨날 수 있는가? 예를 들어 이성 없는 것에서 이성적인 것이, 죽은 것에서 느끼는 것이, 비논리에서 논리가, 욕구하는 의지에서 사심 없는 관조가, 이기주의에서 타인을 위한 삶이, 오류들에서 진리가 생겨날 수 있는가?",
+      "human_evaluation": {
+        "status": "evaluated",
+        "evaluator": "LSCD",
+        "evaluated_at": "2026-09-09T04:00:44.884Z",
+        "scores": {
+          "fidelity": 5,
+          "completeness": 5,
+          "terminology": 5,
+          "korean_readability": 4
+        },
+        "notes": "원문이 열거하는 대립쌍 `Vernünftiges/Vernunftloses`, `Empfindendes/Todtes`, `Logik/Unlogik`, `interesseloses Anschauen/begehrliches Wollen`, `Leben für Andere/Egoismus`, `Wahrheit/Irrthümer`를 빠짐없이 정확하게 대응시킨다. 후보의 실질적인 문제는 문장 끝의 “진리가 그러한가?”가 앞의 `entstehen`을 자연스럽게 받아주지 못한다는 점이다. 마지막에 “진리가 생겨날 수 있는가?”를 명시하면 한국어 문장 구조가 훨씬 선명해진다."
+      }
+    },
+    {
+      "id": "expansion-20260909-w01",
+      "corpus_id": "wittgenstein",
+      "work_id": "Group_BrownBookCorpus",
+      "variant_id": "idp_transcription_linear",
+      "segment_id": "p-0001",
+      "sentence_id": "p-0001.s011",
+      "sampling_reason": "독일어 언어철학: 조건과 의사소통 체계",
+      "sample_label": "W01",
+      "source_text": "Es ist aber wichtig, daß wir uns eine Sprache (System der Verständigung) denken können, für die Augustins Beschreibung gilt.",
+      "candidate_translation": "하지만 우리가 아우구스티누스의 설명이 적용되는 하나의 언어(의사소통 체계)를 생각할 수 있다는 점은 중요합니다.",
+      "candidate_record_id": "882f1fd3-9050-4af4-913f-2fa7a3242ae9",
+      "reference_translation": "하지만 우리가 아우구스티누스의 설명이 적용되는 하나의 언어(의사소통 체계)를 생각할 수 있다는 점은 중요합니다.",
+      "human_evaluation": {
+        "status": "evaluated",
+        "evaluator": "LSCD",
+        "evaluated_at": "2026-09-09T04:12:13.416Z",
+        "scores": {
+          "fidelity": 5,
+          "completeness": 5,
+          "terminology": 5,
+          "korean_readability": 5
+        },
+        "notes": "`eine Sprache (System der Verständigung)`를 “하나의 언어(의사소통 체계)”로 정확하게 옮겼고, `für die Augustins Beschreibung gilt` 역시 “아우구스티누스의 설명이 적용되는”으로 의미가 충분히 보존되어 있다. `uns ... denken können`의 가능성 표현과 문장의 핵심 강조점인 `wichtig`도 빠짐없이 전달되며 한국어도 자연스럽다."
+      }
+    },
+    {
+      "id": "expansion-20260909-w02",
+      "corpus_id": "wittgenstein",
+      "work_id": "Group_BigTypescriptCorpus",
+      "variant_id": "idp_transcription_linear",
+      "segment_id": "p-0006",
+      "sentence_id": "p-0006.s008",
+      "sampling_reason": "독일어 원고 전사: 부정·조건·유의미성 및 문헌 표식",
+      "sample_label": "W02",
+      "source_text": "Ms-105,15 Hat der Mord gar nicht stattgefunden so bleibt der erste Satz doch sinnvoll.",
+      "candidate_translation": "그 살인이 전혀 일어나지 않았더라도 첫 번째 문장은 여전히 의미가 있다.",
+      "candidate_record_id": "432f5655-f4c6-461e-9f6b-39d0a50882de",
+      "reference_translation": "그 살인이 전혀 일어나지 않았더라도 첫 번째 문장은 여전히 의미가 있다.",
+      "human_evaluation": {
+        "status": "evaluated",
+        "evaluator": "LSCD",
+        "evaluated_at": "2026-09-09T04:12:13.416Z",
+        "scores": {
+          "fidelity": 5,
+          "completeness": 5,
+          "terminology": 4,
+          "korean_readability": 5
+        },
+        "notes": "살인이 실제로 발생하지 않았다는 조건과, 그럼에도 첫 번째 문장이 `sinnvoll`하다는 논리적 관계를 정확히 전달한다. 다만 비트겐슈타인의 논리철학적 문맥에서 `sinnvoll`은 전문적으로 “유의미하다”라고 옮길 수도 있으므로 “의미가 있다”는 정확하지만 다소 일반화된 번역이다. 의미상의 실질적인 오류나 누락은 없다."
+      }
+    },
+    {
+      "id": "expansion-20260909-w03",
+      "corpus_id": "wittgenstein",
+      "work_id": "Group_ItemsInEnglish",
+      "variant_id": "idp_transcription_linear",
+      "segment_id": "p-0001",
+      "sentence_id": "p-0001.s002",
+      "sampling_reason": "영어 논리학: 고유명·변항·복합/단순 명제",
+      "sample_label": "W03",
+      "source_text": "If only these || those signs which contain proper names were complex then propositions containing nothing but apparent variables would be simple.",
+      "candidate_translation": "고유명을 포함하는 이 || 저 기호들만이 복합적이라면, 겉보기 변수만을 포함하는 명제들은 단순할 것이다.",
+      "candidate_record_id": "e005362f-6d0e-456b-bcdd-c8c2f493c287",
+      "reference_translation": "고유명을 포함하는 이 || 저 기호들만이 복합적이라면, 겉보기 변수만을 포함하는 명제들은 단순할 것이다.",
+      "human_evaluation": {
+        "status": "evaluated",
+        "evaluator": "LSHD",
+        "evaluated_at": "2026-09-30T17:29:40+09:00",
+        "scores": {
+          "fidelity": 5,
+          "completeness": 5,
+          "terminology": 5,
+          "korean_readability": 5
+        },
+        "notes": "첫 번째 only의 범위가 정확히 반영되어 있다. 즉 조건은 “그 기호들이 단지 복합적이기만 하다면”이 아니라 “고유명을 포함하는 기호들만이 복합적이라면”이다. 『Notes on Logic』의 해당 문장도 이 구조를 명확히 보여 준다. :chatgpt-content-reference{index=\"2\"} “proper names”를 철학·논리학 용어인 “고유명”으로 옮긴 것도 적절하며, proper noun인 “고유명사”와 구별된다는 점에서도 좋다. 한국어 학술 용례에서도 proper name에는 “고유명”이 사용된다. :chatgpt-content-reference{index=\"3\"} “apparent variables”의 “겉보기 변수”도 원문의 기술적 대비를 무리 없이 전달한다. 문장의 논리 구조와 조건-귀결 관계도 자연스럽게 보존되어 있어 수정할 필요가 없다."
+      },
+      "evaluation_history": [
+        {
+          "candidate_record_id": "e21136de-7c46-47d7-bad9-3977acfb045f",
+          "candidate_translation": "고유 명사를 포함하는 기호들이 복합적이기만 하다면, 겉보기 변수들 외에는 아무것도 포함하지 않는 명제들은 단순할 것입니다.",
+          "reference_translation": "만일 고유명을 포함하는 기호들만 복합적이라면, 겉보기 변수들만을 포함하는 명제들은 단순할 것이다.",
+          "human_evaluation": {
+            "status": "evaluated",
+            "evaluator": "LSCD",
+            "evaluated_at": "2026-09-09T04:12:13.416Z",
+            "scores": {
+              "fidelity": 3,
+              "completeness": 5,
+              "terminology": 4,
+              "korean_readability": 4
+            },
+            "notes": "핵심 문제는 첫 번째 `only`의 수식 범위이다. 원문의 `If only ... signs which contain proper names were complex`는 “고유명을 포함하는 기호들**만** 복합적이라면”이라는 뜻인데, 후보의 “기호들이 복합적이기**만** 하다면”은 `only`를 `complex` 쪽에 붙여 조건문의 의미를 바꾼다. `nothing but apparent variables`는 “겉보기 변수들 외에는 아무것도 포함하지 않는”으로 의미상 잘 옮겼다. 또한 논리학 문맥에서는 `proper names`를 “고유 명사”보다 “고유명”으로 쓰는 편이 더 적절하다."
+          }
+        },
+        {
+          "candidate_record_id": "6b6996b9-6467-4dcb-9ca7-7328afc583e7",
+          "candidate_translation": "고유 명사를 포함하는 이 또는 저 기호들이 복합적이기만 하다면, 외견상 변수들뿐인 명제들은 단순할 것이다.",
+          "reference_translation": "고유명을 포함하는 이 || 저 기호들만이 복합적이라면, 겉보기 변수만을 포함하는 명제들은 단순할 것이다.",
+          "human_evaluation": {
+            "status": "evaluated",
+            "evaluator": "LSHD",
+            "evaluated_at": "2026-09-30T15:35:03+09:00",
+            "scores": {
+              "fidelity": 3,
+              "completeness": 5,
+              "terminology": 4,
+              "korean_readability": 4
+            },
+            "notes": "핵심 오류는 첫 번째 `only`의 수식 범위다. 원문은 실제 『Notes on Logic』에서 **“If only those signs which contain proper names were complex then …”**로 확인되며, 조건절의 논리적 구조는 **“고유명을 포함하는 기호들만 복합적이라면”**이다. [Wesleyan University](https://sshieh.web.wesleyan.edu/wescourses/etexts/390/Wittgenstein/Wittgenstein%20Notes%20on%20Logic.pdf?utm_source=chatgpt.com) 후보의 **“복합적이기만 하다면”**은 `only`를 `complex` 쪽에 붙여 “그 기호들이 단지 복합적이기만 하면”이라는 조건으로 바꾸므로 논리적 범위가 달라진다.\n\n`proper names`의 ‘고유 명사’는 뜻 자체가 틀리지는 않지만 초기 분석철학·논리학 문맥에서는 **‘고유명’**이 더 적합하다. `apparent variables`의 ‘외견상 변수’ 역시 허용 가능한 번역이며, ‘겉보기 변수’ 또는 ‘외견적 변수’도 가능하다. 후반의 `containing nothing but apparent variables`는 후보의 “외견상 변수들뿐인 명제”도 의미 전달은 되지만 **“겉보기 변수만을 포함하는 명제”**라고 하면 원문의 `containing` 구조까지 더 명확하게 보존된다."
+          }
+        }
+      ]
+    },
+    {
+      "id": "expansion-20260909-w04",
+      "corpus_id": "wittgenstein",
+      "work_id": "Group_ItemsInEnglish",
+      "variant_id": "idp_transcription_linear",
+      "segment_id": "p-0001",
+      "sentence_id": "p-0001.s006",
+      "sampling_reason": "영어 원고 이형 표기와 추론·정당화의 구별",
+      "sample_label": "W04",
+      "source_text": "The deductions || D eductions only proceed according to the laws of deduction , but these laws cannot justify the deduction.",
+      "candidate_translation": "연역은 오직 연역의 법칙에 따라서만 진행되지만, 이 법칙들이 그 연역을 정당화할 수는 없다.",
+      "candidate_record_id": "0020ee0f-3990-4c08-a152-82f8b2a8a2d7",
+      "reference_translation": "연역은 오직 연역의 법칙에 따라서만 진행되지만, 이 법칙들이 그 연역을 정당화할 수는 없다.",
+      "human_evaluation": {
+        "status": "evaluated",
+        "evaluator": "LSCD",
+        "evaluated_at": "2026-09-09T04:12:13.416Z",
+        "scores": {
+          "fidelity": 5,
+          "completeness": 5,
+          "terminology": 5,
+          "korean_readability": 5
+        },
+        "notes": "`deduction`, `laws of deduction`, `justify`를 각각 “연역”, “연역의 법칙”, “정당화하다”로 정확하게 대응시켰다. 연역이 그러한 법칙에 따라 진행된다는 사실과 그 법칙 자체가 연역을 정당화하지는 못한다는 대조 구조도 그대로 보존되어 있다. 누락이나 부당한 의미 추가가 없고 한국어 문장도 명료하다."
       }
     }
   ]

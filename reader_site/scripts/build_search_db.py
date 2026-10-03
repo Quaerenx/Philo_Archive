@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sqlite3
+import tempfile
 from pathlib import Path
 
 
@@ -27,9 +29,11 @@ def iter_records():
 def build_database() -> int:
     if not JSONL.exists():
         raise SystemExit("missing data/search_index.jsonl; run build_search_index.py first")
-    if OUTPUT.exists():
-        OUTPUT.unlink()
-    connection = sqlite3.connect(OUTPUT)
+    OUTPUT.parent.mkdir(parents=True, exist_ok=True)
+    descriptor, temporary_name = tempfile.mkstemp(prefix=f".{OUTPUT.name}.", suffix=".tmp", dir=OUTPUT.parent)
+    os.close(descriptor)
+    temporary_path = Path(temporary_name)
+    connection = sqlite3.connect(temporary_path)
     try:
         connection.execute("PRAGMA journal_mode=OFF")
         connection.execute("PRAGMA synchronous=OFF")
@@ -84,7 +88,7 @@ def build_database() -> int:
                     record.get("label", ""),
                     record.get("title", ""),
                     record.get("url", ""),
-                    record.get("text_preview", ""),
+                    record.get("text", "") or record.get("text_preview", ""),
                     search_text,
                 )
             )
@@ -118,9 +122,20 @@ def build_database() -> int:
             """
         )
         connection.commit()
+        if connection.execute("PRAGMA integrity_check").fetchone()[0] != "ok":
+            raise ValueError("rebuilt search database failed integrity_check")
+        connection.execute("INSERT INTO search_segments_fts(search_segments_fts) VALUES ('integrity-check')")
+        if count == 0 or connection.execute("SELECT COUNT(*) FROM search_segments").fetchone()[0] != count:
+            raise ValueError("rebuilt search database has an invalid record count")
+        connection.commit()
+        connection.close()
+        with temporary_path.open("r+b") as handle:
+            os.fsync(handle.fileno())
+        os.replace(temporary_path, OUTPUT)
         return count
     finally:
         connection.close()
+        temporary_path.unlink(missing_ok=True)
 
 
 def main() -> None:

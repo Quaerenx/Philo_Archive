@@ -211,6 +211,9 @@ def main() -> None:
         repo = base / "synthetic_repo"
         repo.mkdir()
         build_repo(repo)
+        ai_root = repo / "reader_site" / "data" / "ai"
+        write(ai_root / ".bible_sentence_translations.jsonl.lock", b"\0")
+        write(ai_root / ".bible_sentence_translations.jsonl.append.fixture.tmp", b"orphan temporary bytes")
         model = base / "synthetic-model.gguf"
         model.write_bytes(b"synthetic model bytes\n")
         before = source_fingerprints(repo)
@@ -224,7 +227,19 @@ def main() -> None:
         preflight = base / "manifest-preflight"
         run_tool(create_args(repo, preflight, model, "preflight"))
         check_manifest_contract(preflight, "preflight")
+        require(
+            not any(snapshot.is_jsonl_auxiliary(Path(record["path"])) for record in records_from(preflight)),
+            "private JSONL storage auxiliaries entered the backup manifest",
+        )
         require(source_fingerprints(repo) == before, "preflight create modified the source repository")
+
+        pending = ai_root / ".bible_sentence_translations.jsonl.append-journal"
+        write(pending, b"pending append intent")
+        failure = run_tool(create_args(repo, base / "pending-append", model, "preflight"), expect_success=False)
+        require("Pending JSONL append recovery" in failure.stderr, "backup accepted a pending append")
+        require(pending.read_bytes() == b"pending append intent", "backup modified the recovery journal")
+        pending.unlink()
+        require(source_fingerprints(repo) == before, "pending-recovery backup modified source files")
 
         strict_malformed = run_tool(
             create_args(repo, base / "strict-malformed", model, "reader_quiesced"),

@@ -89,6 +89,10 @@ def read_translation_profiles(path: Path = TRANSLATION_PROFILE_FILE) -> list[dic
             require(clean_text(term.get("source")), f"translation profile {index} term {term_index} missing source")
             require(clean_text(term.get("target")), f"translation profile {index} term {term_index} missing target")
             require(isinstance(term.get("note", ""), str), f"translation profile {index} term {term_index} has invalid note")
+            if "alternatives" in term:
+                alternatives = term["alternatives"]
+                require(isinstance(alternatives, list) and alternatives and all(isinstance(item, str) and clean_text(item) for item in alternatives), f"translation profile {index} term {term_index} has invalid alternatives")
+                require(len({clean_text(item) for item in alternatives}) == len(alternatives), f"translation profile {index} term {term_index} has duplicate alternatives")
         seen_sentence_ids: set[str] = set()
         for rule_index, rule in enumerate(sentence_rules):
             require(isinstance(rule, dict), f"translation profile {index} sentence rule {rule_index} must be an object")
@@ -96,6 +100,30 @@ def read_translation_profiles(path: Path = TRANSLATION_PROFILE_FILE) -> list[dic
             require(sentence_id, f"translation profile {index} sentence rule {rule_index} missing sentence_id")
             require(sentence_id not in seen_sentence_ids, f"translation profile {index} has duplicate sentence rule {sentence_id}")
             seen_sentence_ids.add(sentence_id)
+            if "variant_id" in rule:
+                require(isinstance(rule["variant_id"], str), f"translation profile {index} sentence rule {rule_index} has invalid variant_id")
+            if "sentence_text_sha256" in rule:
+                require(
+                    isinstance(rule["sentence_text_sha256"], str)
+                    and re.fullmatch(r"[0-9a-f]{64}", rule["sentence_text_sha256"]) is not None,
+                    f"translation profile {index} sentence rule {rule_index} has invalid sentence_text_sha256",
+                )
+            for field in ("approved_by", "source_case_id"):
+                if field in rule:
+                    require(isinstance(rule[field], str) and clean_text(rule[field]), f"translation profile {index} sentence rule {rule_index} has invalid {field}")
+            if "source_case_id" in rule:
+                require(rule["source_case_id"] in profile.get("source_case_ids", []), f"translation profile {index} sentence rule {rule_index} has unregistered source_case_id")
+            if "approved_at" in rule:
+                require(isinstance(rule["approved_at"], str) and clean_text(rule["approved_at"]), f"translation profile {index} sentence rule {rule_index} has invalid approved_at")
+                try:
+                    datetime.fromisoformat(rule["approved_at"].replace("Z", "+00:00"))
+                except ValueError as error:
+                    raise ValueError(f"translation profile {index} sentence rule {rule_index} has invalid approved_at") from error
+            guidance = rule.get("guidance", [])
+            require(
+                isinstance(guidance, list) and all(isinstance(note, str) and clean_text(note) for note in guidance),
+                f"translation profile {index} sentence rule {rule_index} has invalid guidance",
+            )
             forbidden = rule.get("forbidden_translation_fragments")
             allowed = rule.get("allowed_translation_fragments", [])
             required_fragments = rule.get("required_translation_fragments", [])
@@ -129,6 +157,9 @@ def read_translation_profiles(path: Path = TRANSLATION_PROFILE_FILE) -> list[dic
                 )
                 require(fragment["category"] in POLICY_ISSUE_CATEGORIES, f"{fragment_label} has invalid category")
                 require(fragment["severity"] in {"minor", "major"}, f"{fragment_label} has invalid severity")
+                if "when_translation_contains" in fragment:
+                    condition = fragment["when_translation_contains"]
+                    require(isinstance(condition, str) and clean_text(condition), f"{fragment_label} has invalid translation condition")
             for fragment_index, fragment in enumerate(forbidden):
                 fragment_label = f"translation profile {index} sentence rule {rule_index} fragment {fragment_index}"
                 require(isinstance(fragment, dict), f"{fragment_label} must be an object")
@@ -146,7 +177,14 @@ def translation_policy_bundle(
     variant_id: str = "",
     sentence_id: str = "",
     path: Path = TRANSLATION_PROFILE_FILE,
+    *,
+    sentence_text_sha256: str = "",
 ) -> dict[str, Any]:
+    require(
+        isinstance(sentence_text_sha256, str)
+        and (not sentence_text_sha256 or re.fullmatch(r"[0-9a-f]{64}", sentence_text_sha256) is not None),
+        "invalid sentence_text_sha256",
+    )
     candidates = [
         profile
         for profile in read_translation_profiles(path)
@@ -165,6 +203,8 @@ def translation_policy_bundle(
             rule
             for rule in profile.get("sentence_rules", [])
             if clean_text(rule.get("sentence_id")) == clean_text(sentence_id)
+            and ("variant_id" not in rule or rule["variant_id"] == variant_id)
+            and ("sentence_text_sha256" not in rule or rule["sentence_text_sha256"] == sentence_text_sha256)
         ] if profile and sentence_id else [],
     }
     canonical = json.dumps(snapshot, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
@@ -181,13 +221,15 @@ def render_translation_policy(policy: dict[str, Any]) -> str:
         for term in terminology:
             note = clean_text(term.get("note"))
             suffix = f" ({note})" if note else ""
-            lines.append(f"- {clean_text(term['source'])} -> {clean_text(term['target'])}{suffix}")
+            targets = [clean_text(term['target']), *(clean_text(item) for item in term.get("alternatives", []))]
+            lines.append(f"- {clean_text(term['source'])} -> {' / '.join(targets)}{suffix}")
     if style_notes:
         lines.append("Human-approved style notes:")
         lines.extend(f"- {clean_text(note)}" for note in style_notes)
     if sentence_rules:
         lines.append("Human-approved rules for this exact sentence:")
         for rule in sentence_rules:
+            lines.extend(f"- {clean_text(note)}" for note in rule.get("guidance", []))
             allowed = rule.get("allowed_translation_fragments", [])
             if allowed:
                 lines.append(
@@ -195,11 +237,13 @@ def render_translation_policy(policy: dict[str, Any]) -> str:
                     + ", ".join(f"‘{clean_text(fragment)}’" for fragment in allowed)
                 )
             for requirement in rule.get("required_translation_fragments", []):
+                condition = clean_text(requirement.get("when_translation_contains"))
+                prefix = f"Only when the translation contains ‘{condition}’: " if condition else ""
                 alternatives = ", ".join(
                     f"‘{clean_text(fragment)}’" for fragment in requirement.get("alternatives", [])
                 )
                 lines.append(
-                    f"- Preserve source meaning ‘{clean_text(requirement['source_span'])}’ by including at least one of "
+                    f"- {prefix}Preserve source meaning ‘{clean_text(requirement['source_span'])}’ by including at least one of "
                     f"these Korean fragments: {alternatives}. {clean_text(requirement['explanation'])}"
                 )
             for fragment in rule.get("forbidden_translation_fragments", []):

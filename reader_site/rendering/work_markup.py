@@ -5,6 +5,7 @@ import json
 from urllib.parse import quote, urlencode
 
 from corpora.display_policy import ordered_variants, variant_display_label
+from services.translation_profiles import translation_policy_bundle
 
 
 def work_href(corpus_id: str, work_id: str) -> str:
@@ -45,7 +46,9 @@ def concept_markup(concepts: list[dict], corpus_id: str = "") -> str:
         term = html.escape(term_text)
         if search_query:
             href = html.escape(concept_search_href(search_query, corpus_id), quote=True)
-            text = f'<strong><a class="concept-link" href="{href}" aria-label="관련 본문 찾기: {label}">{label}</a></strong>'
+            term_source = html.escape(search_query, quote=True)
+            term_note = html.escape(str(concept.get("description_ko") or ""), quote=True)
+            text = f'<strong><a class="concept-link" href="{href}" data-term-source="{term_source}" data-term-note="{term_note}" aria-label="관련 본문 찾기: {label}">{label}</a></strong>'
         else:
             text = f"<strong>{label}</strong>"
         if term and term_text != label_text:
@@ -106,7 +109,18 @@ def apply_template(template: str, values: dict[str, str]) -> str:
 
 
 def render_work_page_html(template: str, model: dict) -> str:
-    research_json = json.dumps(model["research"], ensure_ascii=False).replace("</", "<\\/")
+    research = dict(model["research"])
+    policy = translation_policy_bundle(
+        str(research.get("corpus_id") or research.get("author_id") or ""),
+        str(research.get("work_id") or ""), str(research.get("variant_id") or ""),
+    )
+    research["reading_terms"] = [
+        {"source": term["source"], "target": term["target"], "note": term.get("note", ""), "kind": "approved"}
+        for term in policy["terminology"]
+    ]
+    research_json = json.dumps(research, ensure_ascii=False)
+    for character, escaped in (("<", "\\u003c"), (">", "\\u003e"), ("&", "\\u0026")):
+        research_json = research_json.replace(character, escaped)
     toc_link = '<a href="#toc">목차</a>' if model.get("toc") else ""
     print_href = str(model.get("print_href") or "")
     print_link = (
@@ -137,6 +151,6 @@ def render_work_page_html(template: str, model: dict) -> str:
             "CONTENT": str(model.get("content", "")),
             "BODY_CLASS": html.escape(str(model.get("body_class", ""))),
             "TEXT_DIRECTION": html.escape(str(model.get("text_direction", "ltr"))),
-            "RESEARCH_JSON": html.escape(research_json, quote=False),
+            "RESEARCH_JSON": research_json,
         },
     )

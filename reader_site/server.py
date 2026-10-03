@@ -3,9 +3,13 @@ from __future__ import annotations
 import argparse
 import ipaddress
 import json
+import logging
 import re
+import select
+import socket
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from time import perf_counter
 from urllib.parse import parse_qs, unquote, urlparse
 
 from corpora.archive import archive_title_search_from_query, build_archive, build_archive_summary
@@ -44,6 +48,7 @@ from services.static_files import build_file_payload, resolve_static_file, stati
 from services.study_sessions import study_session_export_from_query
 from services.work_chunks import work_chunk_payload_from_query
 from services.work_pages import build_work_page_html
+from services.translation_jobs import TranslationBusy, TranslationCancelled, cancel_translation
 
 
 SITE = Path(__file__).resolve().parent
@@ -82,6 +87,76 @@ def first_value(value) -> str:
 
 class Handler(BaseHTTPRequestHandler):
     server_version = "PersonalArchiveReader/1.0"
+
+    def handle_one_request(self) -> None:
+        started = perf_counter()
+        self._response_status = None
+        try:
+            super().handle_one_request()
+        finally:
+            if getattr(self.server, "request_timings", False) and self._response_status is not None:
+                try:
+                    path = urlparse(getattr(self, "path", "")).path
+                except ValueError:
+                    path = ""
+                if path.startswith("/work/"):
+                    route = "/work/*/*"
+                elif path.startswith("/api/sentence-translations/") and path not in {
+                    "/api/sentence-translations/summary", "/api/sentence-translations/export",
+                }:
+                    route = "/api/sentence-translations/*"
+                elif path.startswith("/api/notes/") and path != "/api/notes/export":
+                    route = "/api/notes/*"
+                elif path in {
+                    "/", "/search", "/notes", "/study", "/translations", "/read", "/source",
+                    "/api/search", "/api/archive", "/api/archive/summary", "/api/archive/titles",
+                    "/api/health", "/api/health/gemma", "/api/artifacts", "/api/work-chunks",
+                    "/api/sentence-translation", "/api/sentence-translation/cancel", "/api/notes",
+                    "/api/sentence-translations/summary", "/api/sentence-translations/export",
+                    "/api/study", "/api/study/export", "/api/study-session/export", "/api/source-target",
+                }:
+                    route = path
+                else:
+                    route = "/assets/*" if path.startswith("/assets/") else "other"
+                method = self.command if self.command in {"GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"} else "OTHER"
+                logging.getLogger("reader.timings").info("%s %s status=%d elapsed_ms=%.2f", method, route, self._response_status, (perf_counter() - started) * 1000)
+
+    def send_response(self, code: int, message: str | None = None) -> None:
+        self._response_status = code
+        super().send_response(code, message)
+
+    def parse_request(self) -> bool:
+        if not super().parse_request():
+            return False
+        try:
+            hosts = self.headers.get_all("Host", [])
+            if len(hosts) != 1:
+                raise ValueError("a single local Host is required")
+            host = urlparse("//" + hosts[0])
+            allowed_hosts = {"localhost", str(self.server.server_address[0])}
+            if host.hostname not in allowed_hosts or (host.port or 80) != self.server.server_port:
+                raise ValueError("Host is outside this reader")
+            if host.username or host.password or host.path or host.query or host.fragment:
+                raise ValueError("invalid Host")
+            if self.command in {"POST", "PUT", "DELETE"}:
+                origins = self.headers.get_all("Origin", [])
+                if len(origins) > 1:
+                    raise ValueError("a single Origin is required")
+                if origins:
+                    origin = urlparse(origins[0])
+                    if (origin.scheme, origin.hostname, origin.port or 80) != ("http", host.hostname, host.port or 80):
+                        raise ValueError("cross-origin writes are not allowed")
+                    if origin.username or origin.password or origin.path or origin.query or origin.fragment:
+                        raise ValueError("invalid Origin")
+                if self.headers.get("Sec-Fetch-Site", "none") not in {"same-origin", "none"}:
+                    raise ValueError("cross-site writes are not allowed")
+                if self.command in {"POST", "PUT"} and self.headers.get_content_type() != "application/json":
+                    raise ValueError("application/json is required")
+        except ValueError as exc:
+            self.close_connection = True
+            self.send_error(403, str(exc))
+            return False
+        return True
 
     def do_HEAD(self) -> None:
         self.do_GET()
@@ -140,19 +215,19 @@ class Handler(BaseHTTPRequestHandler):
             self.handle_study_export_get(parse_qs(parsed.query))
             return
         if parsed.path == "/api/study-session/export":
-            self.handle_study_session_export_get(parse_qs(parsed.query))
+            self.handle_study_session_export_get(parse_qs(parsed.query, keep_blank_values=True))
             return
         if parsed.path == "/api/notes/export":
-            self.handle_notes_export_get(parse_qs(parsed.query))
+            self.handle_notes_export_get(parse_qs(parsed.query, keep_blank_values=True))
             return
         if parsed.path == "/api/sentence-translations/export":
-            self.handle_sentence_translations_export_get(parse_qs(parsed.query))
+            self.handle_sentence_translations_export_get(parse_qs(parsed.query, keep_blank_values=True))
             return
         if parsed.path == "/api/sentence-translations/summary":
-            self.handle_sentence_translations_summary_get(parse_qs(parsed.query))
+            self.handle_sentence_translations_summary_get(parse_qs(parsed.query, keep_blank_values=True))
             return
         if parsed.path == "/api/notes":
-            self.handle_notes_get(parse_qs(parsed.query))
+            self.handle_notes_get(parse_qs(parsed.query, keep_blank_values=True))
             return
         work_match = re.fullmatch(r"/work/([^/]+)/([^/]+)/?", parsed.path)
         if work_match:
@@ -168,6 +243,15 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:
         parsed = urlparse(self.path)
+        if parsed.path == "/api/sentence-translation/cancel":
+            try:
+                payload = self.read_json_payload(max_length=1024)
+                result = cancel_translation(str(payload.get("request_id") or ""))
+            except ValueError as exc:
+                self.send_json({"ok": False, "error": str(exc)}, status=400)
+                return
+            self.send_json(result)
+            return
         if parsed.path == "/api/notes":
             self.handle_notes_post()
             return
@@ -208,9 +292,12 @@ class Handler(BaseHTTPRequestHandler):
         if length <= 0 or length > max_length:
             raise ValueError("invalid json payload")
         try:
-            return json.loads(self.rfile.read(length).decode("utf-8"))
+            payload = json.loads(self.rfile.read(length).decode("utf-8"))
         except json.JSONDecodeError as exc:
             raise ValueError("invalid json") from exc
+        if not isinstance(payload, dict):
+            raise ValueError("json payload must be an object")
+        return payload
 
     def handle_notes_get(self, query: dict[str, list[str]]) -> None:
         self.send_json(notes_payload_from_query(query))
@@ -354,7 +441,14 @@ class Handler(BaseHTTPRequestHandler):
             self.send_error(400, str(exc))
             return
         try:
-            result = sentence_translation_from_payload(payload)
+            result = sentence_translation_from_payload(payload, disconnected=self.client_disconnected)
+        except TranslationCancelled as exc:
+            if not self.client_disconnected():
+                self.send_json({"ok": False, "cancelled": True, "error": str(exc)}, status=409)
+            return
+        except TranslationBusy as exc:
+            self.send_json({"ok": False, "error": str(exc)}, status=409)
+            return
         except ValueError as exc:
             self.send_json({"ok": False, "error": str(exc)}, status=400)
             return
@@ -368,6 +462,13 @@ class Handler(BaseHTTPRequestHandler):
             self.send_json({"ok": False, "error": str(exc)}, status=502)
             return
         self.send_json(result)
+
+    def client_disconnected(self) -> bool:
+        try:
+            readable, _, _ = select.select([self.connection], [], [], 0)
+            return bool(readable) and self.connection.recv(1, socket.MSG_PEEK) == b""
+        except (OSError, ValueError):
+            return True
 
     def handle_sentence_translation_review_put(self, record_id: str) -> None:
         try:
@@ -560,12 +661,16 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8793)
+    parser.add_argument("--timings", action="store_true", help="Log method, route template, status, and elapsed time without query strings or request bodies.")
     args = parser.parse_args()
     try:
         args.host = validate_reader_host(args.host)
     except ValueError as exc:
         parser.error(str(exc))
     server = LoopbackThreadingHTTPServer((args.host, args.port), Handler)
+    server.request_timings = args.timings
+    if args.timings:
+        logging.basicConfig(level=logging.INFO, format="%(message)s")
     print(f"Personal Archive of Literature reader running at http://{args.host}:{args.port}/")
     server.serve_forever()
 

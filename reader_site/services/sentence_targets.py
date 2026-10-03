@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from corpora.reading_policy import translation_unavailable_reason
 from sentence_units import normalized_inline_text, sentence_units
 from services.segment_offsets import indexed_work_segment_locations, read_indexed_segment_records
 from services.source_targets import resolve_segment_target, sha256_text
@@ -107,9 +108,11 @@ def structural_source_context(
         max_chars,
         sentence_index,
     )
+    target_truncated = len(normalized_inline_text(str(segment["text_raw"]))) + len(context_segment("target", "")) + len(TARGET_SENTENCE_OPEN) + len(TARGET_SENTENCE_CLOSE) > max_chars
     if len(current_block) >= max_chars:
         return {
             "source_context": current_block[:max_chars],
+            "source_context_truncated": target_truncated,
             "context_segments": [
                 {
                     "segment_id": segment["segment_id"],
@@ -254,6 +257,10 @@ def structural_source_context(
     require(source_context.count(TARGET_SENTENCE_OPEN) == 1, "translation context must contain one target marker")
     return {
         "source_context": source_context,
+        "source_context_truncated": target_truncated or any(
+            count == -1 or (count > 0 and count < len(partial_units[side]))
+            for side, count in partial_counts.items()
+        ),
         "context_segments": sorted(
             context_segments,
             key=lambda item: next(
@@ -276,10 +283,16 @@ def resolve_sentence_target(
         raise ValueError("sentence_id must belong to segment_id")
 
     segment = resolve_segment_target(corpus_id, work_id, segment_id, variant_id)
+    unavailable = translation_unavailable_reason(corpus_id, str(segment.get("variant_id") or variant_id))
+    if unavailable:
+        raise ValueError(unavailable)
+    if corpus_id == "kierkegaard" and segment.get("segment_type") == "section":
+        raise ValueError("source entry has a reference label but no sentence text")
     source_text = str(segment["text_raw"])
     for unit in sentence_units(segment_id, source_text):
-        if unit["sentence_id"] != sentence_id:
+        if unit["sentence_id"] != sentence_id and sentence_id not in unit["legacy_sentence_ids"]:
             continue
+        sentence_id = str(unit["sentence_id"])
         sentence_text = str(unit["text_raw"])
         target_url = str(segment["url"]).split("#", 1)[0] + f"#{sentence_id}"
         context = structural_source_context(segment, sentence_text, sentence_index=int(unit["sentence_index"]))
@@ -299,6 +312,7 @@ def resolve_sentence_target(
             "sentence_text": sentence_text,
             "source_context": source_context,
             "source_context_chars": len(source_context),
+            "source_context_truncated": bool(context.get("source_context_truncated", False)),
             "source_context_sha256": sha256_text(source_context),
             "context_segments": context["context_segments"],
             "source_text_preview": segment.get("text_preview", source_text[:220]),

@@ -6,6 +6,8 @@ import re
 import sqlite3
 import threading
 import unicodedata
+from collections import OrderedDict
+from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
 from types import MappingProxyType
@@ -20,6 +22,11 @@ SEARCH_INDEX = DATA / "search_index.jsonl"
 SEARCH_DB = DATA / "search_index.sqlite"
 SQLITE_FTS_RERANK_WINDOW = 500
 SQLITE_LIKE_RERANK_WINDOW = 1200
+SEARCH_WINDOW_CACHE_SIZE = 32
+MAX_REQUEST_JSONL_BYTES = 32 * 1024 * 1024
+_SEARCH_WINDOW_CACHE: OrderedDict[tuple, tuple[int, tuple[dict, ...]]] = OrderedDict()
+_SEARCH_WINDOW_PENDING: dict[tuple, threading.Event] = {}
+_SEARCH_WINDOW_LOCK = threading.Lock()
 BIBLE_METADATA = DATA / "bible_metadata.json"
 METADATA_FILES = {
     "nietzsche": DATA / "nietzsche_metadata.json",
@@ -752,6 +759,24 @@ def score_jsonl_segment_record(record: dict, text: str, title: str, label: str, 
     return score
 
 
+def rank_sqlite_rows(rows: list[sqlite3.Row], terms: list[str]) -> list[dict]:
+    """Keep identical source passages stable across differently titled representations."""
+    first_positions: dict[tuple, int] = {}
+    ranked = []
+    for index, row in enumerate(rows):
+        base_score = score_search_result(row["search_text"], row["title"], row["label"], terms)
+        base_score += segment_type_boost(row["segment_type"], row["title"], row["label"], terms)
+        text = re.sub(r"\s+", " ", row["snippet"]).strip()
+        complete_text = bool(text) and row["search_text"] == normalize_search_text(f'{row["title"]} {row["label"]} {text}')
+        identity = (row["corpus_id"], row["work_id"], row["variant_id"], row["segment_id"])
+        # Older DB previews are truncated; never infer equivalence from a shared prefix.
+        group_key = (text if complete_text else identity, base_score)
+        position = first_positions.setdefault(group_key, index)
+        score = base_score + max(0, 20 - position)
+        ranked.append(((-score, position, *identity), search_result_from_row(row, terms, score)))
+    return [item[1] for item in sorted(ranked, key=lambda item: item[0])]
+
+
 def direct_bible_result_from_row(row: sqlite3.Row, score: int) -> dict:
     return {
         "corpus_id": row["corpus_id"],
@@ -854,6 +879,90 @@ def search_records_sqlite_direct_bible(
     }
 
 
+def ranked_fts_rows(connection: sqlite3.Connection, where: str, params: list[str], limit: int, offset: int = 0) -> list[sqlite3.Row]:
+    """Use FTS rank traversal, preserving the existing row-ID order within ties."""
+    end = offset + limit
+    candidates: list[tuple[float, int]] = []
+    cursor = connection.execute(
+        f"""
+        SELECT search_segments_fts.rank, search_segments_fts.rowid
+        FROM search_segments_fts
+        JOIN search_segments AS s ON s.id = search_segments_fts.rowid
+        WHERE {where}
+        ORDER BY search_segments_fts.rank
+        """,
+        params,
+    )
+    try:
+        for row in cursor:
+            rank, identifier = float(row[0]), int(row[1])
+            if len(candidates) >= end and rank != candidates[-1][0]:
+                break
+            candidates.append((rank, identifier))
+    finally:
+        cursor.close()
+    identifiers = [identifier for _rank, identifier in sorted(candidates)[offset:end]]
+    if not identifiers:
+        return []
+    placeholders = ",".join("?" for _ in identifiers)
+    rows = connection.execute(
+        f"""
+        SELECT id, corpus_id, work_id, variant_id, segment_id, segment_type,
+               label, title, url, snippet, search_text
+        FROM search_segments WHERE id IN ({placeholders})
+        """,
+        identifiers,
+    ).fetchall()
+    by_id = {int(row["id"]): row for row in rows}
+    return [by_id[identifier] for identifier in identifiers]
+
+
+def search_window_signature(connection: sqlite3.Connection) -> tuple | None:
+    database = next((row[2] for row in connection.execute("PRAGMA database_list") if row[1] == "main"), "")
+    if not database:
+        return None
+    info = Path(database).stat()
+    return database, info.st_size, info.st_mtime_ns, info.st_ctime_ns, info.st_ino
+
+
+def fts_search_window(connection: sqlite3.Connection, terms: list[str], where: str, params: list[str], filtered: bool) -> tuple[int, tuple[dict, ...]]:
+    signature = search_window_signature(connection)
+    key = (signature, tuple(terms), where, tuple(params)) if signature is not None else None
+    if key is not None:
+        while True:
+            with _SEARCH_WINDOW_LOCK:
+                cached = _SEARCH_WINDOW_CACHE.get(key)
+                if cached is not None:
+                    _SEARCH_WINDOW_CACHE.move_to_end(key)
+                    return cached
+                pending = _SEARCH_WINDOW_PENDING.get(key)
+                if pending is None:
+                    _SEARCH_WINDOW_PENDING[key] = threading.Event()
+                    break
+            pending.wait()
+    try:
+        if filtered:
+            total = connection.execute(
+                f"SELECT COUNT(*) FROM search_segments_fts JOIN search_segments AS s ON s.id = search_segments_fts.rowid WHERE {where}", params,
+            ).fetchone()[0]
+        else:
+            total = connection.execute("SELECT COUNT(*) FROM search_segments_fts WHERE search_segments_fts MATCH ?", params).fetchone()[0]
+        count = min(total, SQLITE_FTS_RERANK_WINDOW)
+        ordered = tuple(rank_sqlite_rows(ranked_fts_rows(connection, where, params, count), terms)) if count else ()
+        window = total, ordered
+        if key is not None and search_window_signature(connection) == signature:
+            with _SEARCH_WINDOW_LOCK:
+                _SEARCH_WINDOW_CACHE[key] = window
+                _SEARCH_WINDOW_CACHE.move_to_end(key)
+                while len(_SEARCH_WINDOW_CACHE) > SEARCH_WINDOW_CACHE_SIZE:
+                    _SEARCH_WINDOW_CACHE.popitem(last=False)
+        return window
+    finally:
+        if key is not None:
+            with _SEARCH_WINDOW_LOCK:
+                _SEARCH_WINDOW_PENDING.pop(key).set()
+
+
 def search_records_sqlite_fts(
     connection: sqlite3.Connection,
     terms: list[str],
@@ -875,58 +984,18 @@ def search_records_sqlite_fts(
         clauses.append("s.variant_id = ?")
         params.append(variant_id)
     where = " AND ".join(clauses)
-    total = connection.execute(
-        f"""
-        SELECT COUNT(*)
-        FROM search_segments_fts
-        JOIN search_segments AS s ON s.id = search_segments_fts.rowid
-        WHERE {where}
-        """,
-        params,
-    ).fetchone()[0]
+    total, ordered = fts_search_window(connection, terms, where, params, bool(corpus_id or work_id or variant_id))
     # Use one fixed re-ranking head for every page. A page-dependent candidate
     # window changes the global ordering and can repeat or omit results.
     rerank_count = min(total, SQLITE_FTS_RERANK_WINDOW)
     results: list[dict] = []
     if offset < rerank_count:
-        rows = connection.execute(
-            f"""
-            SELECT
-              s.corpus_id, s.work_id, s.variant_id, s.segment_id, s.segment_type,
-              s.label, s.title, s.url, s.snippet, s.search_text,
-              bm25(search_segments_fts) AS rank
-            FROM search_segments_fts
-            JOIN search_segments AS s ON s.id = search_segments_fts.rowid
-            WHERE {where}
-            ORDER BY rank, s.id
-            LIMIT ?
-            """,
-            [*params, rerank_count],
-        ).fetchall()
-        ranked = []
-        for index, row in enumerate(rows):
-            score = score_sqlite_segment_row(row, terms, index)
-            ranked.append((score, -index, search_result_from_row(row, terms, score)))
-        ordered = [item[2] for item in sorted(ranked, reverse=True)]
-        results.extend(ordered[offset:min(offset + limit, rerank_count)])
+        results.extend(deepcopy(ordered[offset:min(offset + limit, rerank_count)]))
 
     tail_offset = max(offset, rerank_count)
     tail_limit = limit - len(results)
     if tail_limit > 0 and tail_offset < total:
-        tail_rows = connection.execute(
-            f"""
-            SELECT
-              s.corpus_id, s.work_id, s.variant_id, s.segment_id, s.segment_type,
-              s.label, s.title, s.url, s.snippet, s.search_text,
-              bm25(search_segments_fts) AS rank
-            FROM search_segments_fts
-            JOIN search_segments AS s ON s.id = search_segments_fts.rowid
-            WHERE {where}
-            ORDER BY rank, s.id
-            LIMIT ? OFFSET ?
-            """,
-            [*params, tail_limit, tail_offset],
-        ).fetchall()
+        tail_rows = ranked_fts_rows(connection, where, params, tail_limit, tail_offset)
         for index, row in enumerate(tail_rows, start=tail_offset):
             score = score_sqlite_segment_row(row, terms, index)
             results.append(search_result_from_row(row, terms, score))
@@ -1008,7 +1077,7 @@ def search_records_sqlite(
     terms = [term for term in normalize_search_text(query).split(" ") if term]
     if not terms:
         return {"query": normalize_search_text(query), "count": 0, "results": []}
-    connection = sqlite3.connect(SEARCH_DB)
+    connection = sqlite3.connect(SEARCH_DB.resolve().as_uri() + "?mode=ro", uri=True)
     connection.row_factory = sqlite3.Row
     try:
         direct_result = search_records_sqlite_direct_bible(
@@ -1108,6 +1177,11 @@ def safe_search_slug(value: str) -> str:
     return re.sub(r"[^A-Za-z0-9_.-]+", "", str(value).strip())
 
 
+def search_database_stale(database: Path, source_index: Path) -> bool:
+    # A skipped DB rebuild must not silently serve a previous artifact generation.
+    return source_index.is_file() and database.is_file() and source_index.stat().st_mtime_ns > database.stat().st_mtime_ns
+
+
 def search_payload_from_query(query: dict[str, list[str]]) -> dict:
     try:
         limit = int(first_query_value(query, "limit", "30"))
@@ -1163,7 +1237,12 @@ def search_records(
 
     def load_segment_page(current_offset: int) -> dict:
         if SEARCH_DB.exists():
-            return search_records_sqlite(query, corpus_id, work_id, variant_id, limit, current_offset)
+            try:
+                if search_database_stale(SEARCH_DB, SEARCH_INDEX):
+                    return {"query": query, "count": 0, "results": [], "error": "검색 DB가 현재 인덱스보다 오래되었습니다. python .\\scripts\\build_search_db.py를 실행하세요."}
+                return search_records_sqlite(query, corpus_id, work_id, variant_id, limit, current_offset)
+            except (sqlite3.Error, OSError):
+                return {"query": query, "count": 0, "results": [], "error": "검색 DB를 읽을 수 없습니다. python .\\scripts\\build_search_db.py로 다시 생성하세요."}
         if not SEARCH_INDEX.exists():
             return {
                 "query": query,
@@ -1171,6 +1250,8 @@ def search_records(
                 "results": [],
                 "error": "search index not found",
             }
+        if SEARCH_INDEX.stat().st_size > MAX_REQUEST_JSONL_BYTES:
+            return {"query": query, "count": 0, "results": [], "error": "대용량 검색에는 검색 DB가 필요합니다. python .\\scripts\\build_search_db.py를 실행하세요."}
         return search_records_jsonl(query, terms, corpus_id, work_id, variant_id, limit, current_offset)
 
     payload = load_segment_page(offset)

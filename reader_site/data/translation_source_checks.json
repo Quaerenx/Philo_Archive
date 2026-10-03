@@ -1,0 +1,897 @@
+{
+  "schema_version": 1,
+  "rules": [
+    {
+      "rule_id": "k03-riding-meaning",
+      "corpus_id": "kierkegaard",
+      "work_id": "fb",
+      "variant_id": "text",
+      "sentence_id": "sks-0006.s009",
+      "sentence_text_sha256": "90fc16adac586bff4100339e4aca7637305926fe4fc6283aed9ab7e5e7469bfa",
+      "references": [
+        {
+          "source_span": "Attraa",
+          "url": "https://ordnet.dk/ods/ordbog/attraa_2",
+          "sense": "noun: desire, longing; not a proper name"
+        },
+        {
+          "source_span": "reed",
+          "url": "https://ny.ordnet.dk/ods/ordbog/ride",
+          "sense": "historical spelling of ride; movement on a riding animal, sense 1"
+        }
+      ],
+      "lexical_evidence": [
+        "Attraa is a Danish noun for desire or longing. In Hans Attraa, Hans is the possessive pronoun his, not a personal name. Rendering this noun as 열망 or 갈망 does not add a psychological state absent from the source.",
+        "In this exact Abraham travelling sentence, reed denotes riding, not merely going. Preserve riding in Korean. The target sentence does not name the riding animal, so this lexical evidence must not require an invented animal species or be generalized to figurative or nautical uses in other sentences."
+      ],
+      "meaning_checks": [
+        {
+          "source_span": "reed",
+          "korean_alternatives": [
+            "말을 타",
+            "말을 탄",
+            "말 타",
+            "말에 올라",
+            "말에 몸을 싣",
+            "승마",
+            "기마",
+            "타고",
+            "탄 채",
+            "탄채",
+            "등에 올라",
+            "등에 몸을 싣"
+          ],
+          "explanation": "검토 필요: 이 문장의 reed는 타고 이동하는 동작을 나타냅니다. 단순히 ‘갔다’로 옮기면 이동 방식이 드러나지 않아 재검토가 필요합니다."
+        }
+      ]
+    },
+    {
+      "rule_id": "r02-paternal-obligation-ellipsis",
+      "corpus_id": "kierkegaard",
+      "work_id": "fb",
+      "variant_id": "text",
+      "sentence_id": "sks-0027.s001",
+      "sentence_text_sha256": "5dca1c4f46b6034bb53dd5d7862e3823615f7c084b19e50c61e551a3a1a2429e",
+      "primary_text_evidence": true,
+      "references": [
+        {
+          "source_span": "den høieste og helligste",
+          "url": "https://tekstnet.dk/books/kierkegaard-s_frygt-og-baeven/016/",
+          "sense": "Grammar inference from the primary passage: the definite adjectives resume ethisk Forpligtelse; the father has the highest and holiest obligation toward his son."
+        }
+      ],
+      "lexical_evidence": [
+        "In this exact sentence, den høieste og helligste resumes the noun Forpligtelse from the first clause. These adjectives qualify the father's obligation to his son, not the father himself. Make the obligation explicit in the second Korean clause.",
+        "The sentence contrasts having no ethical obligation toward money with a father's highest and holiest obligation toward his son. Keep the contrast and the causal thi; do not turn the second clause into a claim that the father is the highest and holiest person.",
+        "In the note use the intact Korean word 의무 for Forpligtelse; do not reproduce corrupted mixed-letter Korean."
+      ],
+      "meaning_checks": [
+        {
+          "source_span": "mod Sønnen har Faderen den høieste og helligste",
+          "korean_patterns": [
+            "(?:아버지|부친|아비)[^.!?。]*(?:의무|책무|책임)",
+            "(?:가장|최고|지극히|더없이)[^.!?。]*(?:의무|책무|책임)"
+          ],
+          "category": "syntax_or_scope",
+          "explanation": "검토 필요: 가장 높고 신성한 것은 아버지의 의무입니다. 아버지 자신의 속성으로 옮기거나 후반의 의무를 빠뜨리지 않아야 합니다."
+        }
+      ],
+      "note_checks": [
+        {
+          "source_span": "den høieste og helligste",
+          "forbidden_note_assertions": [
+            "원문의 형용사가 '의무(Forpligtelse)'를 수식하도록 번역문에서 '가장 높고 거룩한 의ub의'로 명확히 연결됨."
+          ],
+          "explanation": "번역 노트 검토 필요: 설명의 의ub의는 손상된 표기이며 의무로 바로잡아야 합니다.",
+          "forbidden_note_patterns": [
+            "원문의 형용사가 ['‘“]의무\\(Forpligtelse\\)['’”]를 수식하도록 번역문에서 ['‘“][^'’”\\n]*의ub의[^'’”\\n]*['’”]로 (?:명시적 관계를 설정함|명확히 연결됨)\\.?"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "r18-face-and-sweat",
+      "corpus_id": "nietzsche",
+      "work_id": "FW",
+      "variant_id": "",
+      "sentence_id": "p-0186.s001",
+      "sentence_text_sha256": "ce7a6d25087c6b8bef0d8acb5d133eda58aa4c6398976a7358a03e998f65b9fb",
+      "primary_text_evidence": true,
+      "references": [
+        {
+          "source_span": "unsres Angesichts",
+          "url": "https://www.duden.de/rechtschreibung/Angesicht",
+          "sense": "Angesicht is the noun face; Angesichts is its genitive form, not a spatial expression meaning in someone's presence."
+        },
+        {
+          "source_span": "Im Schweisse unsres Angesichts",
+          "url": "https://api.pageplace.de/preview/DT0400.9783787324323_A24483512/preview-9783787324323_A24483512.pdf",
+          "sense": "Nietzsche, Die fröhliche Wissenschaft, Vorspiel 39, Im Sommer. The selected line names sweat and our face; the wine clause belongs to the next line."
+        }
+      ],
+      "lexical_evidence": [
+        "Angesicht is the noun face. In unsres Angesichts it is a possessed genitive: our face. Do not confuse this construction with the prepositional idiom im Angesicht or translate it as 면전.",
+        "Preserve the sweat and face image in the selected line. The summer poem plays on eating bread versus drinking wine in the surrounding lines. Do not insert those next-line actions, or an assertion of labor, into this short selected line."
+      ],
+      "meaning_checks": [
+        {
+          "source_span": "unsres Angesichts",
+          "korean_alternatives": [
+            "얼굴",
+            "안면",
+            "낯",
+            "이마"
+          ],
+          "forbidden_korean_fragments": [
+            "면전"
+          ],
+          "category": "terminology",
+          "explanation": "검토 필요: 이 구절의 Angesichts는 우리의 얼굴을 뜻합니다. 누군가의 앞이라는 ‘면전’으로 바꾸지 않아야 합니다."
+        },
+        {
+          "source_span": "Im Schweisse",
+          "korean_alternatives": [
+            "땀"
+          ],
+          "explanation": "검토 필요: 선택한 행의 땀 이미지를 누락하지 않아야 합니다."
+        }
+      ]
+    },
+    {
+      "rule_id": "r19-contending-with-god",
+      "corpus_id": "kierkegaard",
+      "work_id": "fb",
+      "variant_id": "text",
+      "sentence_id": "sks-0014.s001",
+      "sentence_text_sha256": "cecdb21e741cdf2d31ec3b52d9461bf388078838e016bde7675a23e16ddf71c0",
+      "primary_text_evidence": true,
+      "references": [
+        {
+          "source_span": "stred",
+          "url": "https://ordnet.dk/ods/ordbog/stred",
+          "sense": "Regular historical Danish preterite of stride. The fighting/contending sense is attested, including a biblical example with God."
+        },
+        {
+          "source_span": "stred med Gud",
+          "url": "https://tekstnet.dk/books/kierkegaard-s_frygt-og-baeven/014/",
+          "sense": "The primary passage parallels contending with the world, with oneself, and with God; it is not walking together."
+        }
+      ],
+      "lexical_evidence": [
+        "stred is the Danish past tense of stride, not an English word, mixed-language error, or typo. In this passage it means fought or contended; stred med Gud describes contending with God, not walking alongside God.",
+        "The preceding clauses repeat stred med Verden and stred med sig selv. Preserve that parallel struggle in the selected clause and the contrasting men. In a translation note, explain the actual Danish past tense rather than inventing a language-mixing or typo hypothesis."
+      ],
+      "meaning_checks": [
+        {
+          "source_span": "stred med Gud",
+          "korean_alternatives": [
+            "겨루",
+            "겨룬",
+            "겨뤘",
+            "겨룸",
+            "싸우",
+            "싸운",
+            "싸웠",
+            "싸움",
+            "다투",
+            "다툰",
+            "다퉜",
+            "다툼",
+            "맞서",
+            "맞섰",
+            "대결",
+            "투쟁",
+            "씨름"
+          ],
+          "forbidden_korean_fragments": [
+            "함께 걷",
+            "같이 걷",
+            "동행"
+          ],
+          "category": "semantic_substitution",
+          "explanation": "검토 필요: stred med Gud는 하나님과 싸우거나 겨룬다는 뜻입니다. 함께 걷거나 동행하는 행동으로 바꾸지 않아야 합니다."
+        },
+        {
+          "source_span": "men",
+          "korean_alternatives": [
+            "그러나",
+            "하지만",
+            "반면",
+            "허나",
+            "그런데",
+            "이와 달리",
+            "오히려"
+          ],
+          "severity": "minor",
+          "explanation": "검토 필요: 앞의 병렬 진술에 이어지는 men의 대조 관계를 드러내야 합니다."
+        }
+      ],
+      "note_checks": [
+        {
+          "source_span": "stred",
+          "forbidden_note_assertions": [
+            "독일어/덴마크어 혼용 또는 오타가 포함된 것으로 보이는 원문(stred)을 '하나님과 함께 걷는 자'로 해석하여 의미를 전달함."
+          ],
+          "explanation": "번역 노트 검토 필요: stred는 덴마크어 과거형입니다. 언어 혼용이나 오탈자로 설명하지 않아야 합니다."
+        }
+      ]
+    },
+    {
+      "rule_id": "r03-zipporah-subject-and-flint",
+      "corpus_id": "bible",
+      "work_id": "oshb.Exod",
+      "variant_id": "oshb_morphhb",
+      "sentence_id": "Exod.4.25.s001",
+      "sentence_text_sha256": "f8f9ec86f380d59f483be004760b0a7d8ed9849a78a48bd09090e22f7f241bea",
+      "primary_text_evidence": true,
+      "references": [
+        {
+          "source_span": "צִפֹּרָ֜ה צֹ֗ר",
+          "url": "https://classic.net.bible.org/bible.php?book=Exo&chapter=4",
+          "sense": "Exodus 4:25: Zipporah is the subject who takes flint and cuts her son's foreskin. Do not make Zipporah the object taken or omit the flint tool. Korean transliterations may vary. Hebrew says his feet; the pronoun's referent is debated, so do not require a named person or resolve that ambiguity solely from the NET's explanatory rendering."
+        }
+      ],
+      "lexical_evidence": [
+        "Exodus 4:25: Zipporah is the subject who takes flint and cuts her son's foreskin. Do not make Zipporah the object taken or omit the flint tool. Korean transliterations may vary. Hebrew says his feet; the pronoun's referent is debated, so do not require a named person or resolve that ambiguity solely from the NET's explanatory rendering."
+      ],
+      "meaning_checks": [
+        {
+          "source_span": "צֹ֗ר",
+          "explanation": "검토 필요: 십보라가 가져온 부싯돌 도구를 누락하지 않아야 합니다.",
+          "category": "omission",
+          "severity": "major",
+          "korean_alternatives": [
+            "부싯돌",
+            "부시돌",
+            "돌칼",
+            "돌 칼",
+            "날카로운 돌",
+            "돌로 만든 칼"
+          ]
+        },
+        {
+          "source_span": "צִפֹּרָ֜ה",
+          "explanation": "검토 필요: 십보라는 행동의 주어이며 가져온 대상이 아닙니다.",
+          "category": "syntax_or_scope",
+          "severity": "major",
+          "forbidden_korean_fragments": [
+            "츠포라를 가져",
+            "십보라를 가져",
+            "지포라를 가져"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "r06-counterfactual-causal-clause",
+      "corpus_id": "kierkegaard",
+      "work_id": "aas",
+      "variant_id": "text",
+      "sentence_id": "sks-0003.s001",
+      "sentence_text_sha256": "7060a252b35b18623418a1dd1206989890f01851b33af997266dba633087ada2",
+      "primary_text_evidence": true,
+      "references": [
+        {
+          "source_span": "thi din Virksomhed vilde have gjort det uforglemmeligt",
+          "url": "https://tekster.kb.dk/text/sks-aas-txt-root",
+          "sense": "Grammar inference from the locally preserved SKS Aabenbart Skriftemaal text and preceding unrealized authorship scenario: the repeated vilde ... have/become clauses remain counterfactual, including the causal thi clause. Do not assert that the activity actually made the life unforgettable. The two maaskee qualify recording and the possible publication venue; the final statement about what would have been said is not itself qualified by maaskee. The live KB page was inaccessible during verification; the local primary text and its source hash were checked."
+        }
+      ],
+      "lexical_evidence": [
+        "Grammar inference from the locally preserved SKS Aabenbart Skriftemaal text and preceding unrealized authorship scenario: the repeated vilde ... have/become clauses remain counterfactual, including the causal thi clause. Do not assert that the activity actually made the life unforgettable. The two maaskee qualify recording and the possible publication venue; the final statement about what would have been said is not itself qualified by maaskee. The live KB page was inaccessible during verification; the local primary text and its source hash were checked."
+      ],
+      "meaning_checks": [
+        {
+          "source_span": "vilde have gjort",
+          "explanation": "검토 필요: 인과절도 실제 사실이 아니라 반사실적 가정의 결과입니다.",
+          "category": "syntax_or_scope",
+          "severity": "major",
+          "forbidden_korean_fragments": [
+            "만들었기 때문",
+            "만들었기 때문입니다"
+          ]
+        },
+        {
+          "source_span": "det vilde være blevet sagt om Dig",
+          "explanation": "검토 필요: maaskee의 범위를 마지막 발언 절로 옮기지 않아야 합니다.",
+          "category": "syntax_or_scope",
+          "severity": "minor",
+          "forbidden_korean_fragments": [
+            "아마도 당신에 대해",
+            "어쩌면 당신에 대해",
+            "아마도 당신을 두고"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "r07-pharaoh-chooses-time-nile",
+      "corpus_id": "bible",
+      "work_id": "oshb.Exod",
+      "variant_id": "oshb_morphhb",
+      "sentence_id": "Exod.8.5.s001",
+      "sentence_text_sha256": "4aab26bb1a9e208c551d48f7ce9c092c5806799e8a43526b7eecd4fcb0a8c75b",
+      "primary_text_evidence": true,
+      "references": [
+        {
+          "source_span": "הִתְפָּאֵ֣ר עָלַ/י֒",
+          "url": "https://classic.net.bible.org/bible.php?book=Exo&chapter=8",
+          "sense": "Hebrew Exodus 8:5 corresponds to English 8:9. NET translator note 17 explains that Moses gives Pharaoh the honor/advantage of choosing when the frogs are removed, not that Pharaoh praises Moses. The river in this Egyptian setting is the Nile, not the Jordan. Do not add tomorrow, which belongs to the next verse."
+        },
+        {
+          "source_span": "וּ/מִ/בָּתֶּ֑י/ךָ",
+          "url": "https://classic.net.bible.org/bible.php?book=Exo&chapter=8",
+          "sense": "Hebrew Exodus 8:5 / English 8:9 explicitly includes removal from your houses as well as from you. Preserve this location rather than omitting the houses."
+        },
+        {
+          "source_span": "אַעְתִּ֣יר לְ/ךָ֗",
+          "url": "https://classic.net.bible.org/bible.php?book=Exo&chapter=8",
+          "sense": "NET English Exodus 8:9 (Hebrew 8:5) renders this as praying for Pharaoh, his servants and his people. Translator note 13 identifies the prayer verb as supplication addressed to God. The lamed here marks the beneficiaries of the prayer, not Pharaoh as the recipient of the supplication; the latter identification is a grammatical inference corroborated by the translation and chapter context."
+        }
+      ],
+      "lexical_evidence": [
+        "Hebrew Exodus 8:5 corresponds to English 8:9. NET translator note 17 explains that Moses gives Pharaoh the honor/advantage of choosing when the frogs are removed, not that Pharaoh praises Moses. The river in this Egyptian setting is the Nile, not the Jordan. Do not add tomorrow, which belongs to the next verse.",
+        "The source explicitly says from you and from your houses. Preserve the houses in the removal request; restoring the timing idiom or the Nile alone does not restore this omitted location.",
+        "In אַעְתִּיר לְךָ, Pharaoh, his servants and his people benefit from the supplication; Moses is not praying to Pharaoh. Keep the for/to distinction. The God-directed recipient is implicit in this source clause and established by the chapter context, so Korean need not add an explicit divine name if it preserves praying for the beneficiaries. Do not confuse the separate honor given to Pharaoh with the recipient of the prayer."
+      ],
+      "meaning_checks": [
+        {
+          "source_span": "בַּ/יְאֹ֖ר",
+          "explanation": "검토 필요: 이집트 문맥의 강을 요르단강으로 바꾸지 않아야 합니다.",
+          "category": "terminology",
+          "severity": "major",
+          "forbidden_korean_fragments": [
+            "요르단",
+            "요단"
+          ]
+        },
+        {
+          "source_span": "הִתְפָּאֵ֣ר עָלַ/י֒",
+          "explanation": "검토 필요: 모세를 칭찬한다는 뜻으로 바꾸지 않아야 합니다. 바로가 시점을 정하는 관계입니다.",
+          "category": "semantic_substitution",
+          "severity": "major",
+          "forbidden_korean_fragments": [
+            "나를 대단하게",
+            "나를 높이",
+            "나를 자랑"
+          ],
+          "forbidden_korean_patterns": [
+            "나를\\s*높(?:이|여)"
+          ]
+        },
+        {
+          "source_span": "וּ/מִ/בָּתֶּ֑י/ךָ",
+          "korean_patterns": [
+            "(?:집|가옥|거처|처소|주택|주거지|가정|왕궁|궁전)(?:들)?(?:에서|으로부터|로부터|에|을|를)"
+          ],
+          "category": "omission",
+          "severity": "major",
+          "explanation": "검토 필요: 개구리들이 당신의 집들에서도 없어져야 한다는 장소 표현이 누락됐습니다."
+        },
+        {
+          "source_span": "אַעְתִּ֣יר לְ/ךָ֗",
+          "forbidden_korean_patterns": [
+            "(?:당신|그대|너|바로|파라오)(?:에게|한테|께)\\s*(?:간청|간구|기도)(?:하(?:겠|는|고|여|며|기|면|다)|드리|를\\s*(?:드리|하))"
+          ],
+          "category": "syntax_or_scope",
+          "severity": "major",
+          "explanation": "검토 필요: 모세가 바로를 위해 간구하는 관계를 바로에게 간청하는 관계로 바꾸었습니다. 기도의 수혜자와 기도를 받는 대상을 구별해야 합니다."
+        }
+      ],
+      "note_checks": [
+        {
+          "source_span": "לְ/מָתַ֣י׀ אַעְתִּ֣יר לְ/ךָ֗",
+          "forbidden_note_assertions": [
+            "원문은 바로에게(לְךָ) 간청하는 시점을 묻는 구조임."
+          ],
+          "explanation": "번역 노트 검토 필요: לְךָ의 수혜자인 바로를 기도를 받는 대상으로 설명했습니다. 바로를 위해 간구하는 관계를 보존해야 합니다."
+        }
+      ]
+    },
+    {
+      "rule_id": "r13-water-diviner-context",
+      "corpus_id": "wittgenstein",
+      "work_id": "Group_ItemsInEnglish",
+      "variant_id": "idp_transcription_linear",
+      "sentence_id": "p-0159.s001",
+      "sentence_text_sha256": "158732dd5bbbeacb7d285dc387277ba64d716eb4b3fc8c4b9840be4df8e2e4ec",
+      "primary_text_evidence": true,
+      "references": [
+        {
+          "source_span": "diviner's answer",
+          "url": "https://wittgensteinproject.org/w/index.php/Blue_Book",
+          "sense": "Blue Book, Ts-309,14-17: the diviner holds a rod and claims to feel the depth of underground water. In this exact passage identify the water diviner/dowser as 수맥 탐지자 or a comparable water-detection term rather than a generic fortune-teller. Do not generalize this contextual sense to all uses of diviner or add the surrounding depth measurements to the selected sentence."
+        }
+      ],
+      "lexical_evidence": [
+        "Blue Book, Ts-309,14-17: the diviner holds a rod and claims to feel the depth of underground water. In this exact passage identify the water diviner/dowser as 수맥 탐지자 or a comparable water-detection term rather than a generic fortune-teller. Do not generalize this contextual sense to all uses of diviner or add the surrounding depth measurements to the selected sentence.",
+        "The clause if only we assert remains inside we often think. A note must explain the belief that a mere assertion gives meaning, not endorse mere assertion as an actual sufficient condition of meaningfulness."
+      ],
+      "meaning_checks": [
+        {
+          "source_span": "diviner",
+          "explanation": "검토 필요: 이 문맥의 diviner는 지하의 물을 찾는 사람입니다.",
+          "category": "terminology",
+          "severity": "major",
+          "korean_alternatives": [
+            "수맥",
+            "수원 탐지",
+            "물 탐지",
+            "지하수 탐지",
+            "물을 찾",
+            "물 찾",
+            "다우저"
+          ]
+        }
+      ],
+      "note_checks": [
+        {
+          "source_span": "if only we assert",
+          "forbidden_note_assertions": [
+            "조건절의 'if only'가 '단언하는 것만으로도'로 번역되어, 단언이라는 행위가 의미 부여의 충분조건임을 나타내는 범위를 적절히 반영함."
+          ],
+          "explanation": "번역 노트 검토 필요: 단언만으로 의미가 주어진다는 저자의 주장으로 바꾸지 않아야 합니다. 그런 식으로 의미를 주었다고 흔히 생각한다는 문장입니다."
+        }
+      ]
+    },
+    {
+      "rule_id": "r14-difficulty-resolved-not-raised",
+      "corpus_id": "kierkegaard",
+      "work_id": "ba",
+      "variant_id": "text",
+      "sentence_id": "sks-0017.s001",
+      "sentence_text_sha256": "996c712c5eb3e1621ac3a3a0e01e5f6e2f317f65c13418a8144b07c8d2c27f38",
+      "primary_text_evidence": true,
+      "references": [
+        {
+          "source_span": "hæver Vanskeligheden",
+          "url": "https://ny.ordnet.dk/ods/ordbog/h%C3%A6ve",
+          "sense": "ODS hæve sense 5.1 concerns removing a difficulty or obstacle. In hæver Vanskeligheden translate resolving/removing the difficulty, not raising or increasing it. The means is dogmatics, explicitly contrasted with help from ethics. Do not impose a further philosophical doctrine or a specialized Hegelian interpretation not established by this clause."
+        }
+      ],
+      "lexical_evidence": [
+        "ODS hæve sense 5.1 concerns removing a difficulty or obstacle. In hæver Vanskeligheden translate resolving/removing the difficulty, not raising or increasing it. The means is dogmatics, explicitly contrasted with help from ethics. Do not impose a further philosophical doctrine or a specialized Hegelian interpretation not established by this clause.",
+        "The exact clause dog ikke ved Ethikens Hjælp, men ved Dogmatikens assigns the resolving help to dogmatics and explicitly excludes help from ethics. Resolving the difficulty alone does not preserve this contrast if the roles of ethics and dogmatics are exchanged. Korean may state the dogmatics side first; word order alone is not a semantic error."
+      ],
+      "meaning_checks": [
+        {
+          "source_span": "hæver Vanskeligheden",
+          "explanation": "검토 필요: hæver는 이 어려움을 높이는 것이 아니라 해소하는 뜻입니다.",
+          "category": "semantic_substitution",
+          "severity": "major",
+          "korean_alternatives": [
+            "해소",
+            "해결",
+            "제거",
+            "없애",
+            "없앤",
+            "풀어",
+            "푼다",
+            "극복",
+            "지양"
+          ],
+          "forbidden_korean_fragments": [
+            "어려움을 높",
+            "어려움을 올"
+          ]
+        },
+        {
+          "source_span": "dog ikke ved Ethikens Hjælp, men ved Dogmatikens",
+          "forbidden_korean_patterns": [
+            "교의학(?:의)?\\s*도움[^,;.!?。:–—]{0,30}(?:아니라|아닌|대신|없이)[^,;.!?。:–—]{0,50}윤리학(?:의)?\\s*도움",
+            "윤리학(?:의)?\\s*도움(?:으로|에\\s*의해)[^,;.!?。:–—]{0,40}교의학(?:의)?\\s*도움[^,;.!?。:–—]{0,30}(?:아니|않|없이)"
+          ],
+          "category": "syntax_or_scope",
+          "severity": "major",
+          "explanation": "검토 필요: 윤리학의 도움이 아니라 교의학의 도움으로 어려움을 해소한다는 대조가 뒤집혔습니다."
+        }
+      ]
+    },
+    {
+      "rule_id": "r15-small-prick-suffices-to-burst",
+      "corpus_id": "nietzsche",
+      "work_id": "FW",
+      "variant_id": "",
+      "sentence_id": "p-0089.s001",
+      "sentence_text_sha256": "97e276165e729f8c83872eb678d643eb92694296021beadfd193ef5e6a7e6f29",
+      "primary_text_evidence": true,
+      "references": [
+        {
+          "source_span": "Zum Platzen schon ein kleiner Stich",
+          "url": "https://www.textlog.de/nietzsche/schriften/froehliche-wissenschaft/gegen-die-hoffahrt",
+          "sense": "Die fröhliche Wissenschaft, Vorspiel 21: the preceding line contains bringet dich, completed by this selected line. A small prick is already sufficient to make the addressed person burst; the prick is not itself about to burst. Preserve schon's sufficiency, the small prick, and the bursting consequence. Do not add independent narrative actions from the neighbouring poem."
+        }
+      ],
+      "lexical_evidence": [
+        "Die fröhliche Wissenschaft, Vorspiel 21: the preceding line contains bringet dich, completed by this selected line. A small prick is already sufficient to make the addressed person burst; the prick is not itself about to burst. Preserve schon's sufficiency, the small prick, and the bursting consequence. Do not add independent narrative actions from the neighbouring poem."
+      ],
+      "meaning_checks": [
+        {
+          "source_span": "schon ein kleiner Stich",
+          "explanation": "검토 필요: 작은 찌름 하나로도 터진다는 충분조건을 보존해야 합니다.",
+          "category": "syntax_or_scope",
+          "severity": "major",
+          "korean_alternatives": [
+            "만으로",
+            "하나로도",
+            "한 번으로도",
+            "한번으로도",
+            "하나면",
+            "한 번이면",
+            "한번이면",
+            "한 번만",
+            "한번만",
+            "하나만",
+            "충분",
+            "만 있어도"
+          ],
+          "forbidden_korean_fragments": [
+            "터질 듯한 작은 찌름"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "r17-blessedness-reminder-not-omitted",
+      "corpus_id": "kierkegaard",
+      "work_id": "sd",
+      "variant_id": "text",
+      "sentence_id": "sks-0030.s001",
+      "sentence_text_sha256": "19c370639b8c75e2eed8d243f7261fe514d5b359fbfd38660d4b75eda997e2ce",
+      "primary_text_evidence": true,
+      "references": [
+        {
+          "source_span": "men aldrig minder dem om denne Salighed",
+          "url": "https://ordnet.dk/ods/ordbog/bedrage",
+          "sense": "ODS bedrage sense 2, bedrage en for noget: deprive someone of something by deception, not be deceived by/from a thought. Grammar inference from the locally preserved SKS Sygdommen til Døden passage: retain the entire clause men aldrig minder dem om denne Salighed (never remind them of this blessedness). afgive Kræfterne is to supply forces, not necessarily exhaust them. The highest/only thing is what is worth living for and sufficient to live in for an eternity; eternity is not a new independent object to be lived for. The crowding-versus-separating contrast in the current candidate is already present; do not invent a new reversal there."
+        },
+        {
+          "source_span": "afgive Kræfterne",
+          "url": "https://ordnet.dk/ods/ordbog?query=afgive",
+          "sense": "ODS afgive senses 1 / 1.2 cover handing over or supplying a contribution, including manpower; sense 3.3 covers serving or providing. In this preserved SKS sentence, afgive Kræfterne supplies forces to the play of life. Exhausting or depleting the forces is not stated by this verb; that contrast is a contextual inference corroborated by the dictionary, not an approved human translation."
+        },
+        {
+          "source_span": "aldrig",
+          "url": "https://ordnet.dk/ods/ordbog?query=aldrig",
+          "sense": "ODS aldrig sense 1 means not at any time / never. In men aldrig minder dem om denne Salighed, the negative applies to reminding them of this blessedness. A negative in another coordinated clause does not restore this predicate polarity; that attachment is a grammatical inference from the preserved primary sentence."
+        }
+      ],
+      "lexical_evidence": [
+        "ODS bedrage sense 2, bedrage en for noget: deprive someone of something by deception, not be deceived by/from a thought. Grammar inference from the locally preserved SKS Sygdommen til Døden passage: retain the entire clause men aldrig minder dem om denne Salighed (never remind them of this blessedness). afgive Kræfterne is to supply forces, not necessarily exhaust them. The highest/only thing is what is worth living for and sufficient to live in for an eternity; eternity is not a new independent object to be lived for. The crowding-versus-separating contrast in the current candidate is already present; do not invent a new reversal there.",
+        "ODS afgive (give over, supply; including personnel in sense 1.2) corroborates the contextual reading of afgive Kræfterne as supplying their forces to the play of life. Do not substitute an assertion that their strength is exhausted, depleted or squandered. Preserve both this contribution and the separately stated never-remind clause.",
+        "ODS aldrig means never. In men aldrig minder dem om denne Salighed, preserve the negative predicate never remind them of this blessedness, not merely the presence of blessedness and remind vocabulary. A negative on gathering or deceiving in a different clause cannot supply the missing negation of reminding. Korean can reverse the order of the reminder and its object if the same negative relation remains."
+      ],
+      "meaning_checks": [
+        {
+          "source_span": "men aldrig minder dem om denne Salighed",
+          "explanation": "검토 필요: 이 복됨을 결코 일깨우지 않는다는 절 전체를 보존해야 합니다.",
+          "category": "omission",
+          "severity": "major",
+          "korean_patterns": [
+            "(?:복됨|복된|복되|행복|지복|축복|복락)[^.!?。]*(?:일깨|상기|기억|떠올|깨우|알려|생각나)"
+          ]
+        },
+        {
+          "source_span": "afgive Kræfterne",
+          "forbidden_korean_patterns": [
+            "(?:기력|힘|에너지|역량)(?:을|를)\\s*(?:소진|고갈|탕진)(?:하(?:도록|게|여|면서|고|는|기)|시키|시켜|시킴)"
+          ],
+          "category": "semantic_substitution",
+          "severity": "major",
+          "explanation": "검토 필요: 삶이라는 연극에 힘을 제공한다는 표현을 기력의 소진·고갈로 바꾸었습니다. afgive 자체는 힘을 다 써버린다는 뜻이 아닙니다."
+        },
+        {
+          "source_span": "men aldrig minder dem om denne Salighed",
+          "korean_patterns": [
+            "(?:복됨|복된|복되|행복|지복|축복|복락)[^,;.!?。:–—]{0,100}(?:일깨|상기|기억|떠올|깨우|알려|생각나)(?:(?!(?:며|면서(?:도)?|지만|고(?:도)?|는데)\\s)[^,;.!?。:–—]){0,60}(?:않|없|아니|못|커녕)",
+            "(?:일깨|상기|기억|떠올|깨우|알려|생각나)(?:(?!(?:며|면서(?:도)?|지만|고(?:도)?|는데)\\s)[^,;.!?。:–—]){0,60}(?:않|없|아니|못|커녕)[^,;.!?。:–—]{0,60}(?:복됨|복된|복되|행복|지복|축복|복락)"
+          ],
+          "category": "syntax_or_scope",
+          "severity": "major",
+          "explanation": "검토 필요: 이 복됨을 일깨우는 술어의 부정이 보존돼야 합니다. 다른 절의 부정 표현으로 이 관계를 대신할 수 없습니다."
+        }
+      ]
+    },
+    {
+      "rule_id": "r21-concessive-balance-of-benefits",
+      "corpus_id": "nietzsche",
+      "work_id": "MA-I",
+      "variant_id": "",
+      "sentence_id": "p-0057.s002",
+      "sentence_text_sha256": "d40cd977d84cfed5555361d76db3615d93a4506e0f199ded70cd8e7c43bc06a2",
+      "primary_text_evidence": true,
+      "references": [
+        {
+          "source_span": "Rechnung und Gegenrechnung",
+          "url": "https://www.gutenberg.org/cache/epub/7207/pg7207-images.html",
+          "sense": "Menschliches, Allzumenschliches I §§35-38 discuss benefits and objections to psychological observation. §37 is headed Trotzdem; §38 leaves the balance of benefit and harm undecided while asserting scientific necessity. Grammar/context inference: Wie ... verhalte reserves that balance (however it may stand), not an independent question-topic ending in 'about'. Rechnung und Gegenrechnung is the weighing of opposing accounts in this context, not an unexplained technical 'counter-calculation'. Preserve the open fragment/colon and do not import the next clause's necessity into it."
+        }
+      ],
+      "lexical_evidence": [
+        "Menschliches, Allzumenschliches I §§35-38 discuss benefits and objections to psychological observation. §37 is headed Trotzdem; §38 leaves the balance of benefit and harm undecided while asserting scientific necessity. Grammar/context inference: Wie ... verhalte reserves that balance (however it may stand), not an independent question-topic ending in 'about'. Rechnung und Gegenrechnung is the weighing of opposing accounts in this context, not an unexplained technical 'counter-calculation'. Preserve the open fragment/colon and do not import the next clause's necessity into it."
+      ],
+      "meaning_checks": [
+        {
+          "source_span": "Wie es sich nun",
+          "explanation": "검토 필요: 득실의 결산이 어떻든 이어지는 주장이라는 양보 관계를 드러내야 합니다.",
+          "category": "syntax_or_scope",
+          "severity": "major",
+          "korean_alternatives": [
+            "든 간",
+            "든지",
+            "든:",
+            "든 :",
+            "든—",
+            "든 —",
+            "더라도",
+            "지라도",
+            "어쨌든",
+            "어떠하든",
+            "어떻든",
+            "어찌 되었든"
+          ],
+          "forbidden_korean_fragments": [
+            "어떠한 상태인지에 대하여"
+          ]
+        }
+      ],
+      "note_checks": [
+        {
+          "source_span": "Wie es sich nun",
+          "forbidden_note_assertions": [
+            "원문의 접속사 'Wie'로 시작하는 의문형 구조를 '~어떠한 상태인지에 대하여'로 번역하여 문장의 도입부 역할을 유지함."
+          ],
+          "explanation": "번역 노트 검토 필요: Wie절은 득실의 판단을 유보하는 양보 관계이며 독립된 의문 주제 도입이 아닙니다."
+        }
+      ]
+    },
+    {
+      "rule_id": "r24-required-manner-of-worship",
+      "corpus_id": "bible",
+      "work_id": "sblgnt.John",
+      "variant_id": "sblgnt",
+      "sentence_id": "John.4.24.s001",
+      "sentence_text_sha256": "84f1f4d9aa6b74651139a3636bc2c8b9ddc0662308a0f7e74f86d1e12c4f3929",
+      "primary_text_evidence": true,
+      "references": [
+        {
+          "source_span": "ἐν πνεύματι καὶ ἀληθείᾳ δεῖ προσκυνεῖν",
+          "url": "https://classic.net.bible.org/bible.php?book=Joh&chapter=4",
+          "sense": "John 4:24: those who worship God must worship in spirit and truth. Grammar inference corroborated by the NET translation: in spirit and truth is the required manner of worship in the infinitive construction governed by dei, not a restrictive description selecting worshippers who already satisfy it and then merely requiring them to worship. Preserve that scope. Do not settle whether spirit denotes human spirit or the Holy Spirit on the basis of this scope check."
+        }
+      ],
+      "lexical_evidence": [
+        "John 4:24: those who worship God must worship in spirit and truth. Grammar inference corroborated by the NET translation: in spirit and truth is the required manner of worship in the infinitive construction governed by dei, not a restrictive description selecting worshippers who already satisfy it and then merely requiring them to worship. Preserve that scope. Do not settle whether spirit denotes human spirit or the Holy Spirit on the basis of this scope check.",
+        "The people worshipping God are the logical subject of the required worship. Preserve that relationship, whether Korean uses a worshipper noun, a worship-if construction or an equivalent impersonal formulation. A self-predication such as worshipping is a manner in which one must worship replaces that relationship and is not an equivalent formulation."
+      ],
+      "meaning_checks": [
+        {
+          "source_span": "ἐν πνεύματι καὶ ἀληθείᾳ δεῖ προσκυνεῖν",
+          "explanation": "검토 필요: 영과 진리는 예배자를 골라내는 조건이 아니라 예배해야 하는 방식입니다.",
+          "category": "syntax_or_scope",
+          "severity": "major",
+          "forbidden_korean_fragments": [
+            "영과 진리 안에서 그분을 예배하는 자들은",
+            "영과 진리로 그분을 예배하는 자들은"
+          ]
+        },
+        {
+          "source_span": "τοὺς προσκυνοῦντας αὐτὸν",
+          "forbidden_korean_patterns": [
+            "(?:예배(?:드리|하)는|예배를\\s*드리는)\\s*것(?:은|이)\\s*(?:반드시\\s*)?(?:예배(?:드려|해)야|예배를\\s*드려야)\\s*(?:하(?:는|할)\\s*)?방식"
+          ],
+          "category": "syntax_or_scope",
+          "severity": "major",
+          "explanation": "검토 필요: 예배하는 사람들이 영과 진리로 예배해야 한다는 관계를, 예배하는 것 자체가 예배 방식이라는 서술로 바꾸었습니다."
+        }
+      ]
+    },
+    {
+      "rule_id": "r34-hypothetical-not-obligation",
+      "corpus_id": "kierkegaard",
+      "work_id": "sd",
+      "variant_id": "text",
+      "sentence_id": "sks-0015.s001",
+      "sentence_text_sha256": "cff5e432fb623c94390d263e1d71e3b4425098076e3be8972acf7709336d7336",
+      "primary_text_evidence": true,
+      "references": [
+        {
+          "source_span": "Skulde et Menneske døe af Fortvivlelse",
+          "url": "https://ny.ordnet.dk/ods/ordbog/skulle",
+          "sense": "ODS skulle 5.2 records hypothetical skulde. In the locally preserved SKS sentence, the antecedent supposes dying of despair as one dies of illness, and the next sentence denies the possibility. Do not add an obligation to die in the antecedent. The consequent maatte ... kunne retains its conditional logical necessity: the eternal self would have to be able to die in that same sense. This does not license removing necessity from the consequent. Notes must distinguish these two modalities and retain the valid apposition det Evige i ham, Selvet."
+        }
+      ],
+      "lexical_evidence": [
+        "ODS skulle 5.2 records hypothetical skulde. In the locally preserved SKS sentence, the antecedent supposes dying of despair as one dies of illness, and the next sentence denies the possibility. Do not add an obligation to die in the antecedent. The consequent maatte ... kunne retains its conditional logical necessity: the eternal self would have to be able to die in that same sense. This does not license removing necessity from the consequent. Notes must distinguish these two modalities and retain the valid apposition det Evige i ham, Selvet."
+      ],
+      "meaning_checks": [
+        {
+          "source_span": "Skulde et Menneske døe af Fortvivlelse",
+          "explanation": "검토 필요: 앞의 조건절은 죽어야 한다는 의무가 아니라 죽는다고 가정하는 절입니다.",
+          "category": "syntax_or_scope",
+          "severity": "major",
+          "forbidden_korean_fragments": [
+            "절망으로 죽어야 한다면",
+            "절망으로 죽어야만 한다면"
+          ]
+        }
+      ],
+      "note_checks": [
+        {
+          "source_span": "Skulde",
+          "forbidden_note_assertions": [
+            "조건절(Skulde...)과 비교절(som...)의 관계를 '질병으로 죽는 것처럼 절망으로 죽어야 한다면'으로 적절히 대응시킴."
+          ],
+          "explanation": "번역 노트 검토 필요: 조건절의 가정을 죽어야 한다는 의무로 설명하지 않아야 합니다."
+        }
+      ]
+    },
+    {
+      "rule_id": "r37-indicative-perfect-note",
+      "corpus_id": "wittgenstein",
+      "work_id": "Group_BigTypescriptCorpus",
+      "variant_id": "idp_transcription_linear",
+      "sentence_id": "p-0006.s008",
+      "sentence_text_sha256": "37e3b1c41fe5d9c5d112564c6c28b3acc6fc02696d748c2bb868a9ebb38dcdf6",
+      "primary_text_evidence": true,
+      "references": [
+        {
+          "source_span": "Hat der Mord gar nicht stattgefunden",
+          "url": "https://grammis.ids-mannheim.de/systematische-grammatik/2101",
+          "sense": "IDS grammis describes verb-first conditional clauses. Grammar inference from this selected German text: hat ... stattgefunden is indicative perfect, not Konjunktiv II (the corresponding auxiliary would be hätte). The verb-first protasis and so ... doch allow a conditional/concessive Korean rendering without changing the original morphological mood. Ms-105,15 is an archival identifier, not a phrase to translate. Keep the valid existing Korean meaning; do not invent a subjunctive form to justify it."
+        }
+      ],
+      "lexical_evidence": [
+        "IDS grammis describes verb-first conditional clauses. Grammar inference from this selected German text: hat ... stattgefunden is indicative perfect, not Konjunktiv II (the corresponding auxiliary would be hätte). The verb-first protasis and so ... doch allow a conditional/concessive Korean rendering without changing the original morphological mood. Ms-105,15 is an archival identifier, not a phrase to translate. Keep the valid existing Korean meaning; do not invent a subjunctive form to justify it.",
+        "In this exact verb-first conditional, Korean '-다면' and '-더라도' express the conditional/concessive relation; they do not assert that the German auxiliary is Konjunktiv II or replace an asserted fact with a hypothesis. For example, '살인이 전혀 일어나지 않았다면 첫 번째 문장은 여전히 의미가 있다' preserves the condition. Changing it to '살인이 일어나지 않았으므로' introduces a causal assertion and must still be audited."
+      ],
+      "meaning_checks": [],
+      "note_checks": [
+        {
+          "source_span": "Hat der Mord gar nicht stattgefunden",
+          "forbidden_note_assertions": [
+            "독어의 가정법(Konjunktiv II) 형태를 한국어의 '설령 ~않았더라도'라는 양보 가정 표현으로 적절히 번역함."
+          ],
+          "explanation": "번역 노트 검토 필요: hat ... stattgefunden은 직설법 완료이며 접속법 II가 아닙니다."
+        }
+      ]
+    },
+    {
+      "rule_id": "r38-future-as-occasion",
+      "corpus_id": "kierkegaard",
+      "work_id": "2t43",
+      "variant_id": "text",
+      "sentence_id": "sks-0006.s001",
+      "sentence_text_sha256": "edacb6ba0f3744fa14022913d50da2186f33b0d19bde2a3561c746ede9857b5e",
+      "primary_text_evidence": true,
+      "references": [
+        {
+          "source_span": "det Tilkommende, saaledes som dette jo var Anledningen",
+          "url": "https://tekster.kb.dk/text/sks-2t43-txt-root",
+          "sense": "Context/antecedent inference from the locally preserved SKS To opbyggelige Taler, 1843: the preceding paragraphs repeatedly discuss the future as the occasion for wishing on this day. In this clause dette resumes det Tilkommende; making the wish itself its own occasion loses that link. Make the future connection clear, while retaining the fragment's relation to the preceding wish-list. This is contextual disambiguation, not a general ban on Korean demonstratives. The live KB page was inaccessible; the preserved original, three previous paragraphs, and source hash were checked."
+        }
+      ],
+      "lexical_evidence": [
+        "Context/antecedent inference from the locally preserved SKS To opbyggelige Taler, 1843: the preceding paragraphs repeatedly discuss the future as the occasion for wishing on this day. In this clause dette resumes det Tilkommende; making the wish itself its own occasion loses that link. Make the future connection clear, while retaining the fragment's relation to the preceding wish-list. This is contextual disambiguation, not a general ban on Korean demonstratives. The live KB page was inaccessible; the preserved original, three previous paragraphs, and source hash were checked."
+      ],
+      "meaning_checks": [
+        {
+          "source_span": "dette jo var Anledningen",
+          "explanation": "검토 필요: 소망의 계기가 미래였다는 지시 관계를 명확히 할 부분입니다.",
+          "category": "syntax_or_scope",
+          "severity": "minor",
+          "forbidden_korean_fragments": [
+            "바로 이것이 그가 소망하게 된 계기",
+            "소망이 그가 소망하게 된 계기"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "r44-religiosity-singular-subject",
+      "corpus_id": "nietzsche",
+      "work_id": "JGB",
+      "variant_id": "",
+      "sentence_id": "p-0060.s001",
+      "sentence_text_sha256": "9f2049cf8492e2f639e229c35a1bf5341e89edd6d03ce58ad337b5abe8de49d6",
+      "primary_text_evidence": true,
+      "references": [
+        {
+          "source_span": "welche sie ausströmt",
+          "url": "https://www.gutenberg.org/cache/epub/7204/pg7204-images.html",
+          "sense": "Jenseits von Gut und Böse §49. Grammar inference: singular ausströmt agrees with singular sie referring to Religiosität, not plural Griechen (which would require ausströmen). welche is the object resuming Fülle. The religiosity pours forth the abundance of gratitude. Preserve the subject instead of claiming 'they/Greeks pour forth'. Notes should explain that singular agreement and not endorse the plural-subject rendering."
+        }
+      ],
+      "lexical_evidence": [
+        "Jenseits von Gut und Böse §49. Grammar inference: singular ausströmt agrees with singular sie referring to Religiosität, not plural Griechen (which would require ausströmen). welche is the object resuming Fülle. The religiosity pours forth the abundance of gratitude. Preserve the subject instead of claiming 'they/Greeks pour forth'. Notes should explain that singular agreement and not endorse the plural-subject rendering.",
+        "Finite verb agreement is with the nominative subject sie (Religiosität), not with Fülle, which is the antecedent of the object welche. A note claiming that ausströmt agrees with Fülle is wrong even though both forms happen to be singular. The Korean '그 종교성이 뿜어내는' and '그 종교성으로부터 흘러나오는' preserve the same source of gratitude; a change of Korean sentence construction alone is not a semantic error. Still reject '그들이 뿜어내는' when it transfers the action to the plural Greeks."
+      ],
+      "meaning_checks": [
+        {
+          "source_span": "welche sie ausströmt",
+          "explanation": "검토 필요: 감사를 뿜어내는 주체는 복수의 그들이 아니라 단수의 종교성입니다.",
+          "category": "syntax_or_scope",
+          "severity": "major",
+          "forbidden_korean_fragments": [
+            "그들이 뿜어",
+            "그들이 발산",
+            "그리스인들이 뿜어",
+            "그리스인들이 발산"
+          ]
+        }
+      ],
+      "note_checks": [
+        {
+          "source_span": "welche sie ausströmt",
+          "forbidden_note_assertions": [
+            "관계절 'welche sie ausströmt'의 내용을 '그들이 뿜어내는'으로 적절히 수식 구조로 변환함.",
+            "독일어 단수 동사 ausströmt는 선행사 Fülle(풍요)에 일치하며, 관계대명사 welche는 이를 받습니다. 초안은 이를 '그 종교성이 뿜어내는'으로 번역하여 주체 관계를 명확히 유지했습니다.",
+            "독일어 단수 동사 ausströmt는 선행사 Fülle(풍요로움)와 일치하며, sie은 Religiosität(종교성)를 지칭하므로, 번역문에서 '종교성으로부터 흘러나오는'으로 관계절의 의미를 적절히 구현함."
+          ],
+          "explanation": "번역 노트 검토 필요: 단수 동사에 호응하는 sie는 종교성을 가리키며 그들이 아닙니다."
+        }
+      ]
+    },
+    {
+      "rule_id": "r47-result-clause-note",
+      "corpus_id": "wittgenstein",
+      "work_id": "Group_ItemsInEnglish",
+      "variant_id": "idp_transcription_linear",
+      "sentence_id": "p-0080.s001",
+      "sentence_text_sha256": "afbe2f2d38d167a84e7435411676a3c99b6e74db1c736e6cf486f70248d8ab65",
+      "primary_text_evidence": true,
+      "references": [
+        {
+          "source_span": "so that they are all connected only in an irrelevant manner",
+          "url": "https://wittgensteinproject.org/w/index.php/Notes_Dictated_to_G.E._Moore_in_Norway",
+          "sense": "Grammar inference from Notes Dictated to G.E. Moore in Norway: so that introduces the result of connections paralysing or destroying one another. In the existing Korean, the result is carried by 그러한 상태여서; the final 다는 것이다 closes the opening What happens in it is that frame and is not by itself a translation of the result conjunction. A note must not assign the result to that nominalizing ending. The English transcription has editorial variants (connections/connexions and an/some); this evidence does not force replacing the local transcription."
+        }
+      ],
+      "lexical_evidence": [
+        "Grammar inference from Notes Dictated to G.E. Moore in Norway: so that introduces the result of connections paralysing or destroying one another. In the existing Korean, the result is carried by 그러한 상태여서; the final 다는 것이다 closes the opening What happens in it is that frame and is not by itself a translation of the result conjunction. A note must not assign the result to that nominalizing ending. The English transcription has editorial variants (connections/connexions and an/some); this evidence does not force replacing the local transcription.",
+        "In 'connected only in an irrelevant manner', the exclusive in-phrase specifies the sole manner in which the parts are connected. Korean '무관한 방식으로만 연결되어 있다' or '단지 무관한 방식으로만 연결되게 하는' preserves that restriction. Do not claim that attaching 만 to 방식 necessarily misplaces only: the way of connection is exactly what the phrase restricts. Preserve the preceding paralysis/destruction and the resulting connection. Replacing 무관한 with 관련 있는 reverses the source adjective and remains a real semantic error. Repetition of 단지 and 만, or a cumbersome frame, may be a readability issue without a false scope allegation.",
+        "The selected sentence asserts three relationships: all simple parts have meaning; their connections paralyse or destroy one another despite that; consequently the parts are connected only in an irrelevant way. Korean '의미를 갖는다는 것이지만 ... 서로를 마비시키거나 파괴하여 ... 무관한 방식으로만 연결되게 하는 그러한 상태라는 것이다' still states those same relationships and the contrast/result. The count of main clauses versus complement clauses or a nominalized frame alone does not change those claims. A cumbersome frame and opaque 그것 pronouns can deserve Korean readability criticism, but do not invent a major logical-coordination error when the contrasting claims and the result are both preserved.",
+        "Preserving the three claims does not make the heavy Korean draft fluent. The frame '그 안에서 일어나는 일은 ...라는 것이지만, 그것은 ... 그러한 상태라는 것이다' and repeated opaque 그것 pronouns make its contrast/result hard to follow. For that wording, a Korean readability issue with a specific span is warranted; improve the frame or split sentences while retaining the same logical claims. Classify this actual readability problem as korean_readability rather than inventing a limiter-scope or coordination error."
+      ],
+      "meaning_checks": [],
+      "note_checks": [
+        {
+          "source_span": "so that",
+          "forbidden_note_assertions": [
+            "부사절 'so that'의 결과를 '~라는 것이다'로 종결하여 문장 전체의 구조를 완성함."
+          ],
+          "explanation": "번역 노트 검토 필요: 결과 연결을 다는 것이다라는 전체 문장의 종결어미에 대응시키지 않아야 합니다."
+        }
+      ]
+    },
+    {
+      "rule_id": "r50-optative-not-imperative-note",
+      "corpus_id": "bible",
+      "work_id": "sblgnt.Rom",
+      "variant_id": "sblgnt",
+      "sentence_id": "Rom.3.6.s001",
+      "sentence_text_sha256": "6548b8e9c9e57700997e185205c7da5bcf07476f485a81c39e4e17b52a8c7f03",
+      "primary_text_evidence": true,
+      "references": [
+        {
+          "source_span": "μὴ γένοιτο",
+          "url": "https://ugg.readthedocs.io/en/latest/mood_optative.html",
+          "sense": "unfoldingWord Greek Grammar describes me genoito as a negative wish expressing emphatic rejection. The grammatical form of genoito is aorist middle optative, third-person singular, not an imperative. Keep the valid rejection in Korean. SIL Translator's Notes on Romans 3:6 (https://tips.translation.bible/tip_term/sil-translators-notes-on-romans-36/) explains epei here as for/otherwise/if that were so in the rhetorical argument supporting the rejection of divine injustice; the existing conditional Korean connection is defensible and need not be corrected as an error."
+        }
+      ],
+      "lexical_evidence": [
+        "unfoldingWord Greek Grammar describes me genoito as a negative wish expressing emphatic rejection. The grammatical form of genoito is aorist middle optative, third-person singular, not an imperative. Keep the valid rejection in Korean. SIL Translator's Notes on Romans 3:6 (https://tips.translation.bible/tip_term/sil-translators-notes-on-romans-36/) explains epei here as for/otherwise/if that were so in the rhetorical argument supporting the rejection of divine injustice; the existing conditional Korean connection is defensible and need not be corrected as an error."
+      ],
+      "meaning_checks": [],
+      "note_checks": [
+        {
+          "source_span": "μὴ γένοιτο",
+          "forbidden_note_assertions": [
+            "부정 명령형/기원법으로 '결코 그럴 수 없다'는 강한 부정의 의미를 나타냄."
+          ],
+          "explanation": "번역 노트 검토 필요: γένοιτο는 기원법이며 명령형으로 분류하지 않아야 합니다."
+        }
+      ]
+    }
+  ]
+}

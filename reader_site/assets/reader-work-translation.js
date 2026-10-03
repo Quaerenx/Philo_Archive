@@ -1,4 +1,5 @@
 // Reader translation rendering, requests, and review actions.
+let translationReviewSequence = 0;
 function renderList(values) {
   if (!Array.isArray(values) || !values.length) return "";
   return `<ul>${values.map((value) => `<li>${escapeHtml(cleanText(value))}</li>`).join("")}</ul>`;
@@ -13,11 +14,12 @@ function optionalCautions(record) {
     </details>`;
 }
 
-function renderCommentary(commentary) {
-  const text = cleanText(commentary || "");
+function renderCommentary(record) {
+  const text = record.commentary_status === "current" ? cleanText(record.commentary || "") : "";
+  if (!text) return "";
   return `
     <section class="translation-section translation-commentary" data-translation-section="commentary">
-      <h3>해설</h3>
+      <h3>번역 노트</h3>
       <p>${escapeHtml(text)}</p>
     </section>`;
 }
@@ -27,7 +29,8 @@ function renderTranslationQuality(record) {
   if (!qualityState || !TRANSLATION_QUALITY_LABELS[qualityState]) return "";
   const revisionCount = Number(record.revision_count || 0);
   const revisionLabel = revisionCount > 0 ? ` · 자동 수정 ${revisionCount}회` : "";
-  const label = `${TRANSLATION_QUALITY_LABELS[qualityState]}${revisionLabel}`;
+  const modelLabel = record.human_translation ? "모델 원본: " : "";
+  const label = `${modelLabel}${TRANSLATION_QUALITY_LABELS[qualityState]}${revisionLabel}`;
   return `<p class="translation-quality-summary" data-quality-state="${escapeHtml(qualityState)}">${escapeHtml(label)}</p>`;
 }
 
@@ -42,16 +45,16 @@ function renderTranslationEmptyState() {
     <div class="translation-result translation-empty-state" role="note">
       <section class="translation-section translation-section-primary" data-translation-section="translation">
         <h3>번역</h3>
-        <p class="translation-primary translation-empty-copy">문장을 누르면 번역됩니다.</p>
+        <p class="translation-primary translation-empty-copy">${escapeHtml(researchData.translation_available === false ? researchData.translation_unavailable_reason : "문장을 누르면 번역됩니다.")}</p>
       </section>
     </div>`;
 }
 
 function translationJumpNav(record) {
-  const hasCommentary = Boolean(cleanText(record.commentary || record.interpretation || ""));
+  const hasCommentary = record.commentary_status === "current" && Boolean(cleanText(record.commentary || ""));
   const buttons = [
     ["translation", "번역"],
-    hasCommentary ? ["commentary", "해설"] : null
+    hasCommentary ? ["commentary", "번역 노트"] : null
   ].filter(Boolean);
   return `<div class="translation-jump-nav" aria-label="번역 결과 구역">
     <button type="button" data-selected-source-jump aria-keyshortcuts="S">원문</button>
@@ -95,11 +98,15 @@ function translationQuickActions(reviewState) {
     ? '<span class="translation-quick-state" data-review-state="reviewed" title="저장된 번역" aria-label="저장된 번역">저장됨</span>'
     : '<button type="button" data-translation-quick-action="mark-reviewed" title="번역 저장" aria-label="번역 저장">저장</button>';
   const selectedIndex = selectedSentence ? sentenceIndex(selectedSentence.sentenceId) : -1;
+  const previousSentenceDisabled = selectedIndex <= 0 ? " disabled" : "";
   const nextSentenceDisabled = selectedIndex < 0 || selectedIndex >= totalSentenceCount() - 1
     ? " disabled"
     : "";
   return `<div class="translation-reading-actions" aria-label="학습 동작">
-      <button type="button" data-translation-quick-action="next-sentence" title="다음 문장을 선택하고 번역" aria-label="다음 문장을 선택하고 번역"${nextSentenceDisabled}>다음 문장</button>
+      <div class="translation-sentence-navigation" role="group" aria-label="문장 이동">
+      <button type="button" data-translation-quick-action="previous-sentence" title="이전 문장 탐색" aria-label="이전 문장 탐색"${previousSentenceDisabled}>이전 문장</button>
+      <button type="button" data-translation-quick-action="next-sentence" title="다음 문장 탐색" aria-label="다음 문장 탐색"${nextSentenceDisabled}>다음 문장</button>
+      </div>
       <details class="translation-secondary-actions" aria-label="번역 저장 또는 메모">
         <summary>저장 · 메모</summary>
         <div class="translation-secondary-actions-body">
@@ -200,7 +207,7 @@ function scrollTranslationSectionIntoView(sectionName) {
   window.setTimeout(() => section.classList.remove("is-jump-target"), prefersReducedMotion() ? 0 : 900);
 }
 
-function renderTranslationPending(regenerate = false) {
+function renderTranslationPending(regenerate = false, cacheOnly = false) {
   selectedTranslationRecord = null;
   pendingTranslationRegenerate = Boolean(regenerate);
   setTranslationReviewVisualState("");
@@ -210,8 +217,8 @@ function renderTranslationPending(regenerate = false) {
   translationOutput.classList.toggle("study-mode", translationMode === "study");
   setTranslationBusy(true);
   resetTranslationOutputScroll();
-  const actionLabel = regenerate ? "다시 생성 중" : "번역 중";
-  const commentaryLabel = regenerate ? "해설 다시 준비 중" : "해설 준비 중";
+  const actionLabel = cacheOnly ? "저장된 번역 확인 중" : regenerate ? "다시 생성 중" : "번역 중";
+  const commentaryLabel = cacheOnly ? "저장된 번역 노트 확인 중" : regenerate ? "번역 노트 다시 준비 중" : "번역 노트 준비 중";
   translationOutput.innerHTML = `
     <div class="translation-result translation-pending-result" role="status" aria-live="polite" aria-label="${escapeHtml(actionLabel)}">
       <section class="translation-section translation-section-primary" data-translation-section="translation">
@@ -219,7 +226,7 @@ function renderTranslationPending(regenerate = false) {
         <p class="translation-primary translation-pending-copy">${escapeHtml(actionLabel)}</p>
       </section>
       <section class="translation-section translation-commentary translation-pending-commentary" data-translation-section="commentary">
-        <h3>해설</h3>
+        <h3>번역 노트</h3>
         <p class="translation-unavailable-copy">${escapeHtml(commentaryLabel)}</p>
       </section>
       <div class="translation-loading-actions">
@@ -300,7 +307,7 @@ function renderTranslationError(message) {
         <p class="translation-primary translation-unavailable-copy">번역 준비가 필요합니다.</p>
       </section>
       <section class="translation-section translation-commentary" data-translation-section="commentary">
-        <h3>해설</h3>
+        <h3>번역 노트</h3>
         <p class="translation-unavailable-copy">${escapeHtml(displayMessage)}</p>
       </section>
       <div class="translation-recovery-panel">
@@ -335,7 +342,7 @@ function renderTranslationCancelled(message = "번역 요청이 취소되었습�
         <p class="translation-primary translation-unavailable-copy">번역이 취소되었습니다.</p>
       </section>
       <section class="translation-section translation-commentary" data-translation-section="commentary">
-        <h3>해설</h3>
+        <h3>번역 노트</h3>
         <p class="translation-unavailable-copy">${escapeHtml(cleanText(message))} ${escapeHtml(position)}에는 번역을 저장하지 않았습니다.</p>
       </section>
       <div class="translation-recovery-panel translation-error-actions">
@@ -387,12 +394,13 @@ function sessionPreviewItems(items, kind) {
         ? (item.note || item.quote || "")
         : (item.human_translation || item.translation || item.commentary || item.source_text_excerpt || ""));
       const targetId = sessionPreviewTargetId(item);
+      const targetUrl = sessionPreviewTargetUrl(item);
       return `<li${index >= 3 ? ' class="session-preview-extra"' : ""}>
         <div>
           <strong>${escapeHtml(label)}</strong>
           <span>${escapeHtml(body || "저장된 학습 항목")}</span>
         </div>
-        ${targetId ? `<button type="button" data-session-preview-target="${escapeHtml(targetId)}">열기</button>` : ""}
+        ${targetId && targetUrl ? `<button type="button" data-session-preview-target="${escapeHtml(targetId)}" data-session-preview-url="${escapeHtml(targetUrl)}">열기</button>` : ""}
       </li>`;
     }).join("")}
     </ol>
@@ -401,16 +409,44 @@ function sessionPreviewItems(items, kind) {
 }
 
 function sessionPreviewTargetId(item) {
-  const directId = cleanText(item && (item.sentence_id || item.target_id || ""));
+  const directId = String(item && (item.sentence_id || item.target_id || "") || "").trim();
   if (directId) return directId;
-  const url = cleanText(item && (item.target_url || item.url || ""));
+  const url = String(item && (item.target_url || item.url || "") || "").trim();
   const hashIndex = url.indexOf("#");
   if (hashIndex === -1 || hashIndex === url.length - 1) return "";
   return decodeURIComponent(url.slice(hashIndex + 1));
 }
 
-async function openSessionPreviewTarget(targetId) {
-  const id = cleanText(targetId);
+function sessionPreviewTargetUrl(item) {
+  const raw = String(item.target_url || item.url || "").trim();
+  const corpusId = item.corpus_id || researchData.corpus_id || researchData.author_id || "";
+  const workId = item.work_id || researchData.work_id || "";
+  try {
+    const url = new URL(raw || `/work/${encodeURIComponent(corpusId)}/${encodeURIComponent(workId)}`, location.origin);
+    if (url.origin !== location.origin || !/^\/work\/[^/]+\/[^/]+\/?$/.test(url.pathname)) return "";
+    if (!url.searchParams.has("variant") && item.variant_id) url.searchParams.set("variant", item.variant_id);
+    if (!url.hash) url.hash = sessionPreviewTargetId(item);
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch (error) {
+    return "";
+  }
+}
+
+async function openSessionPreviewTarget(targetId, targetUrl = "") {
+  if (targetUrl) {
+    let destination;
+    try {
+      destination = new URL(targetUrl, location.origin);
+      if (destination.origin !== location.origin || !/^\/work\/[^/]+\/[^/]+\/?$/.test(destination.pathname)) return;
+    } catch (error) {
+      return;
+    }
+    if (destination.pathname !== location.pathname || (destination.searchParams.get("variant") || "") !== (researchData.variant_id || "")) {
+      location.assign(destination.href);
+      return;
+    }
+  }
+  const id = String(targetId || "").trim();
   let node = id ? document.getElementById(id) : null;
   if (!node && virtualDocument) {
     try {
@@ -419,6 +455,7 @@ async function openSessionPreviewTarget(targetId) {
       node = null;
     }
   }
+  if (node && node.dataset.sentenceAlias) node = node.closest(".reader-sentence, .reader-reference");
   if (!node) {
     setTranslationStatus("이 페이지에서 해당 원문 위치를 찾을 수 없습니다.", true);
     return;
@@ -429,7 +466,7 @@ async function openSessionPreviewTarget(targetId) {
     setStudyPanel("translation");
     setStudyPanelExpanded(true);
     keepSentenceAboveStudyPanel(node);
-    requestSentenceTranslation(false);
+    requestSelectedTranslation();
     return;
   }
   history.replaceState(null, "", `${location.pathname}${location.search}#${encodeURIComponent(id)}`);
@@ -558,9 +595,8 @@ function renderTranslationRecord(record, cached, reviewFlashState = "") {
   const modelTranslation = cleanText(record.translation || "");
   const humanTranslation = cleanText(record.human_translation || "");
   const displayedTranslation = humanTranslation || modelTranslation;
-  const modelOriginal = humanTranslation && modelTranslation && humanTranslation !== modelTranslation
-    ? `<details class="translation-model-original"><summary>모델 원본</summary><p>${escapeHtml(modelTranslation)}</p></details>`
-    : "";
+  const comparison = window.TranslationComparison.render(record, selectedSentence?.text || "");
+  const currentState = window.TranslationWorkflow.state(record);
   setTranslationBusy(false);
   setTranslationReviewVisualState(reviewState);
   setTranslationUtilityVisible(true);
@@ -570,18 +606,23 @@ function renderTranslationRecord(record, cached, reviewFlashState = "") {
   resetTranslationOutputScroll();
   translationOutput.innerHTML = `
     <div class="translation-result">
+      <p class="translation-current-status" data-current-state="${escapeHtml(currentState.kind)}">현재 표시: ${escapeHtml(currentState.label)}</p>
       <section class="translation-section translation-section-primary" data-translation-section="translation">
         <h3>${humanTranslation ? "확정 번역" : "번역"}</h3>
         <p class="translation-primary">${escapeHtml(displayedTranslation)}</p>
-        ${modelOriginal}
+        ${comparison}
         ${renderTranslationQuality(record)}
       </section>
-      ${renderCommentary(record.commentary || record.interpretation || "")}
+      ${renderCommentary(record)}
+      ${record.commentary_status === "translation_changed" ? '<p class="translation-unavailable-copy">확정 번역에 맞는 번역 노트가 아직 없습니다.</p>' : ""}
+      ${record.current_translation_issues?.length ? `<p class="translation-unavailable-copy">${escapeHtml(record.current_translation_issues.map(issue => issue.explanation).join(" "))}</p>` : ""}
+      ${record.current_note_issues?.length ? `<p class="translation-unavailable-copy">${escapeHtml(record.current_note_issues.map(issue => issue.explanation).join(" "))}</p>` : ""}
       ${translationQuickActions(reviewState)}
       ${optionalCautions(record)}
       ${translationResultToolbar(record, cached, reviewState)}
     </div>
   `;
+  updateReaderTerms(record);
   applySentenceTranslationState(record, Boolean(reviewFlashState));
   if (reviewFlashState) {
     flashTranslationReviewState(reviewFlashState);
@@ -629,7 +670,7 @@ function flashSentenceReviewState(node, reviewState) {
   }, prefersReducedMotion() ? 0 : 1600);
 }
 
-function cancelTranslationRequest() {
+async function cancelTranslationRequest() {
   if (!activeTranslationController) {
     setTranslationStatus("실행 중인 번역 요청이 없습니다.");
     return;
@@ -643,12 +684,41 @@ function cancelTranslationRequest() {
   if (sentenceNode) {
     sentenceNode.classList.remove("loading");
   }
-  renderTranslationCancelled();
-  setTranslationStatus("번역 요청을 취소했습니다.");
+  const cancellationRequest = activeTranslationRequest;
+  if (controller.cacheOnly) {
+    renderTranslationCancelled("저장된 번역 확인을 중단했습니다."); updateSentenceControls(); return;
+  }
+  setTranslationStatus("취소 요청 중...");
+  try {
+    const response = await fetch("/api/sentence-translation/cancel", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ request_id: controller.translationJobId })
+    });
+    const payload = await response.json();
+    if (!response.ok || !payload.ok) throw new Error("cancellation failed");
+    loadTranslationRecordsSummary();
+    if (cancellationRequest !== activeTranslationRequest) return;
+    renderTranslationCancelled();
+    setTranslationStatus(payload.state === "cancelling" ? "취소를 접수했습니다. 진행 중인 번역을 정리하고 있습니다." : (payload.cancelled ? "번역 요청을 취소했습니다." : "번역이 이미 저장되었습니다."));
+  } catch (error) {
+    if (cancellationRequest === activeTranslationRequest) {
+      const message = "화면 요청을 중단했습니다. 서버의 취소 여부를 확인하지 못했습니다.";
+      renderTranslationError(message);
+      setTranslationStatus(message, true);
+    }
+  } finally {
+    updateSentenceControls();
+  }
 }
 
-async function requestSentenceTranslation(regenerate = false) {
+async function requestSentenceTranslation(regenerate = false, cacheOnly = false) {
+  const measurementStarted = typeof consumeReaderTranslationAction === "function" ? consumeReaderTranslationAction() : null;
   clearActionConfirmations();
+  if (researchData.translation_available === false) {
+    setTranslationStatus(researchData.translation_unavailable_reason || "이 판본에는 번역할 본문이 없습니다.", true);
+    return;
+  }
   if (!selectedSentence) {
     setTranslationStatus("문장을 먼저 선택하세요.", true);
     return;
@@ -659,16 +729,21 @@ async function requestSentenceTranslation(regenerate = false) {
     return;
   }
   if (activeTranslationController) {
-    activeTranslationController.abort();
+    const cancellationSequence = activeTranslationRequest + 1;
+    await cancelTranslationRequest();
+    if (activeTranslationRequest !== cancellationSequence || targetKey !== selectedTranslationTargetKey()) return;
   }
   const requestId = activeTranslationRequest + 1;
   activeTranslationRequest = requestId;
   const controller = new AbortController();
+  controller.cacheOnly = cacheOnly;
+  pendingTranslationCacheOnly = cacheOnly;
+  controller.translationJobId = crypto.randomUUID();
   activeTranslationController = controller;
   activeTranslationTargetKey = targetKey;
   const sentenceNode = document.getElementById(selectedSentence.sentenceId);
-  setTranslationStatus(regenerate ? "다시 생성 중" : "번역 중", true);
-  renderTranslationPending(regenerate);
+  setTranslationStatus(cacheOnly ? "저장된 번역 확인 중" : regenerate ? "다시 생성 중" : "번역 중", true);
+  renderTranslationPending(regenerate, cacheOnly);
   regenerateSentenceButton.disabled = true;
   if (sentenceNode) {
     sentenceNode.classList.add("loading");
@@ -683,12 +758,14 @@ async function requestSentenceTranslation(regenerate = false) {
         variant_id: researchData.variant_id || "",
         segment_id: selectedSentence.segmentId,
         sentence_id: selectedSentence.sentenceId,
-        regenerate
+        request_id: controller.translationJobId,
+        regenerate,
+        cache_only: cacheOnly
       }),
       signal: controller.signal
     });
     const payload = await response.json().catch(() => ({}));
-    if (requestId !== activeTranslationRequest) return;
+    if (requestId !== activeTranslationRequest || targetKey !== selectedTranslationTargetKey()) return;
     if (!response.ok || !payload.ok) {
       const message = cleanText(payload.error || "번역 준비가 필요합니다.");
       if (translationErrorIsRuntime(message)) {
@@ -698,10 +775,16 @@ async function requestSentenceTranslation(regenerate = false) {
       renderTranslationError(message);
       return;
     }
+    if (payload.requires_generation) {
+      renderTranslationAwaitingAction(); setTranslationStatus("문장 선택됨 · 새 번역은 버튼으로 생성하세요."); return;
+    }
     if (!payload.cached) {
       setGemmaRuntimeIndicator("ready", "번역기 준비됨", "번역 서비스가 이 요청에 응답했습니다.");
     }
     renderTranslationRecord(payload.record, payload.cached);
+    if (typeof recordTranslationRender === "function") {
+      recordTranslationRender(measurementStarted, payload, () => requestId === activeTranslationRequest && targetKey === selectedTranslationTargetKey());
+    }
     if (!payload.cached) {
       loadTranslationRecordsSummary();
     }
@@ -710,7 +793,7 @@ async function requestSentenceTranslation(regenerate = false) {
     if (error && error.name === "AbortError") {
       return;
     }
-    if (requestId === activeTranslationRequest) {
+    if (requestId === activeTranslationRequest && targetKey === selectedTranslationTargetKey()) {
       const message = cleanText(error && error.message ? error.message : "번역 준비가 필요합니다.");
       if (translationErrorIsRuntime(message)) {
         reflectTranslationRuntimeFailure();
@@ -736,6 +819,10 @@ async function updateTranslationReview(reviewState, triggerButton = null) {
     return;
   }
   clearActionConfirmations();
+  const recordId = selectedTranslationRecord.id;
+  const targetKey = selectedTranslationTargetKey();
+  const reviewSequence = ++translationReviewSequence;
+  const stillSelected = () => reviewSequence === translationReviewSequence && selectedTranslationTargetKey() === targetKey && selectedTranslationRecord && selectedTranslationRecord.id === recordId;
   const actionButton = reviewState === "reviewed" ? markTranslationReviewedButton : rejectTranslationButton;
   setActionButtonBusy(actionButton, true);
   if (triggerButton && triggerButton !== actionButton) {
@@ -743,7 +830,7 @@ async function updateTranslationReview(reviewState, triggerButton = null) {
   }
   setTranslationStatus(reviewState === "reviewed" ? "저장 중..." : "업데이트 중...", true);
   try {
-    const response = await fetch(`/api/sentence-translations/${encodeURIComponent(selectedTranslationRecord.id)}`, {
+    const response = await fetch(`/api/sentence-translations/${encodeURIComponent(recordId)}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -753,19 +840,20 @@ async function updateTranslationReview(reviewState, triggerButton = null) {
     });
     const payload = await response.json().catch(() => ({}));
     if (!response.ok || !payload.ok) {
-      setTranslationStatus(payload.error || "번역을 저장하지 못했습니다.", true);
+      if (stillSelected()) setTranslationStatus(payload.error || "번역을 저장하지 못했습니다.", true);
       return;
     }
-    renderTranslationRecord(payload.record, true, reviewState);
     loadTranslationRecordsSummary();
     loadStudySessionSummary();
+    if (!stillSelected()) return;
+    renderTranslationRecord(payload.record, true, reviewState);
     setTranslationStatus(reviewState === "reviewed" ? "저장했습니다." : "제외했습니다.");
     if (reviewState === "reviewed") {
       focusNextSentenceAction();
     }
   } catch (error) {
     const message = error && error.message ? error.message : "번역을 저장하지 못했습니다.";
-    setTranslationStatus(message, true);
+    if (stillSelected()) setTranslationStatus(message, true);
   } finally {
     setActionButtonBusy(actionButton, false);
     if (triggerButton && triggerButton !== actionButton) {

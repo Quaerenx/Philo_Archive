@@ -1,0 +1,120 @@
+/* Shared translation comparison and readable UI metadata. */
+.translation-comparison {
+  margin-top: 12px;
+  border-top: 1px solid #dedede;
+}
+
+.translation-comparison > summary {
+  min-height: 44px;
+  padding: 10px 0;
+  color: #444;
+  font: 600 13px/1.6 var(--archive-font);
+  cursor: pointer;
+}
+
+.translation-comparison > summary:focus-visible,
+.reader-term:focus-visible {
+  outline: 2px solid #b00000;
+  outline-offset: 3px;
+}
+
+.comparison-body {
+  container-type: inline-size;
+  padding-bottom: 12px;
+}
+
+.comparison-body h3 {
+  margin: 0 0 8px;
+  color: #333;
+  font: 600 13px/1.5 var(--archive-font);
+}
+
+.comparison-body p {
+  margin: 0;
+  color: #222;
+  font: 15px/1.8 var(--archive-font);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.comparison-source {
+  margin-bottom: 12px;
+  padding: 12px;
+  background: #f6f6f6;
+}
+
+.comparison-body .comparison-help {
+  margin: 10px 0 14px;
+  color: #555;
+  font-size: 13px;
+}
+
+.comparison-columns {
+  display: grid;
+  gap: 20px;
+}
+
+.comparison-columns section {
+  min-width: 0;
+}
+
+.comparison-removed {
+  color: #513d00;
+  background: #fff0b8;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+}
+
+.comparison-added {
+  color: #17422b;
+  background: #dbf0df;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@container (min-width: 560px) {
+  .comparison-columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.study-page :is(button, summary, label, .translation-quality-summary, .translation-result-target,
+  .translation-target-label, .translation-target-status, .translation-result-kicker,
+  .translation-review-state, .sentence-context-label, .study-progress, .translation-status,
+  .translation-records-summary, .runtime-status-text, .study-session-summary,
+  .translation-utility-group-label, .reading-position-label, .translation-unavailable-copy,
+  .translation-quick-state, .concept-term) {
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.study-page :is(.translation-target-status, .runtime-status-text, .translation-utility-group-label,
+  .translation-result-kicker, .translation-quick-state, .translation-unavailable-copy) {
+  color: #555;
+}
+
+.study-page .translation-section h3 {
+  font-size: 13px;
+}
+
+.study-page .study-tab,
+.study-page .study-tab-secondary:not(.active) {
+  min-height: 44px;
+}
+
+.study-page .translation-review-state {
+  padding: 3px 7px;
+}
+
+.reader :is(.toolbar, .meta-line, .variant-tabs, .toc summary) {
+  font-size: 13px;
+}
+
+.reader ::selection {
+  color: #281f00;
+  background: #f8e8ad;
+}
+
+.reader :is(input, textarea) {
+  caret-color: #b00000;
+}

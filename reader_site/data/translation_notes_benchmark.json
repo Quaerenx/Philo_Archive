@@ -1,0 +1,922 @@
+{
+  "schema_version": 1,
+  "benchmark_id": "translation-and-notes-50-20261001",
+  "sampling_method": "고정 목적·위치 층화 표집. 기존 20개 문장은 calibration, 결과를 생성하기 전에 선택한 새 문장 30개는 held_out. 전체 코퍼스의 무작위 대표 표본이나 통계적 품질 추정치가 아니다.",
+  "rubric": {
+    "scale": {
+      "min": 1,
+      "max": 5
+    },
+    "dimensions": {
+      "omission_addition": "의미 요소의 누락·추가가 없는가",
+      "logic": "부정·양태·조건·비교·한정 범위가 보존되는가",
+      "terminology": "핵심 용어와 고유명이 일관적인가",
+      "korean_readability": "완성되고 자연스러운 한국어인가",
+      "note_accuracy": "번역 노트가 인용한 원문과 현재 번역에 근거하며 설명이 정확한가"
+    }
+  },
+  "human_review_policy": "이전 번역 평가 기록은 변경하지 않는다. 새 5영역 평가는 모두 pending이며 모델 통과를 사람 합격으로 세지 않는다.",
+  "cases": [
+    {
+      "id": "bible-oshb-gen-1-1-s001",
+      "split": "calibration",
+      "corpus_id": "bible",
+      "work_id": "oshb.Gen",
+      "variant_id": "oshb_morphhb",
+      "segment_id": "Gen.1.1",
+      "sentence_id": "Gen.1.1.s001",
+      "source_text": "בְּ/רֵאשִׁ֖ית בָּרָ֣א אֱלֹהִ֑ים אֵ֥ת הַ/שָּׁמַ֖יִם וְ/אֵ֥ת הָ/אָֽרֶץ׃",
+      "source_text_sha256": "b62c3e84da224b1581b4eb4cfef72397bc097da23caa25671456d126ca7deee2",
+      "policy_exposure": "none",
+      "historical_reference": "태초에 하나님이 천지를 창조하시니라.",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "kierkegaard-aas-sks-0003-s001",
+      "split": "calibration",
+      "corpus_id": "kierkegaard",
+      "work_id": "aas",
+      "variant_id": "text",
+      "segment_id": "sks-0003",
+      "sentence_id": "sks-0003.s001",
+      "source_text": "Dit Liv vilde da ei være blevet overgivet til fortient Glemsel, thi din Virksomhed vilde have gjort det uforglemmeligt, og ei blot dette, men det vilde maaskee være blevet beskrevet, opstillet som Mønster, maaskee i »Folkebladet« eller i »Naturen, Mennesket og Borgeren;« det vilde være blevet sagt om Dig:",
+      "source_text_sha256": "7060a252b35b18623418a1dd1206989890f01851b33af997266dba633087ada2",
+      "policy_exposure": "exact_sentence",
+      "historical_reference": "그렇다면 당신의 삶은 마땅한 망각에 내맡겨지지 않았을 것입니다. 당신의 활동이 그 삶을 잊을 수 없는 것으로 만들었을 것이기 때문입니다. 그뿐만 아니라, 그 삶은 아마도 『Folkebladet』나 『Naturen, Mennesket og Borgeren』에서 묘사되어 하나의 본보기로 제시되었을지도 모릅니다. 당신에 대해서는 다음과 같이 말해졌을 것입니다:",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "nietzsche-gm-p-0004-s001",
+      "split": "calibration",
+      "corpus_id": "nietzsche",
+      "work_id": "GM",
+      "variant_id": "",
+      "segment_id": "p-0004",
+      "sentence_id": "p-0004.s001",
+      "source_text": "Wir sind uns unbekannt, wir Erkennenden, wir selbst uns selbst:",
+      "source_text_sha256": "e5426a1abd8f8da1636e561356883d08d8bceacd24102a56ad07140f47e37d8c",
+      "policy_exposure": "exact_sentence",
+      "historical_reference": "우리 인식하는 자들은 우리 자신에게 미지이며, 우리 스스로가 우리 자신에게 그러하다:",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "wittgenstein-10-7-10-p-0001-s001",
+      "split": "calibration",
+      "corpus_id": "wittgenstein",
+      "work_id": "10.7.10",
+      "variant_id": "source_metadata",
+      "segment_id": "p-0001",
+      "sentence_id": "p-0001.s001",
+      "source_text": "Archival note F Information about the term covered on each page of notes is provided in a systematic way as part of the filename for each facsimile.",
+      "source_text_sha256": "0727614657f621e24fd6659be3a5c5b1676fdab0aaf1c9b09d604646252d0be7",
+      "policy_exposure": "exact_sentence",
+      "historical_reference": "아카이브 주석 F: 각 노트 페이지가 어느 학기에 해당하는지에 관한 정보는 각 팩시밀리 파일명의 일부로 체계적으로 제공된다.",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "expansion-20260909-b01",
+      "split": "calibration",
+      "corpus_id": "bible",
+      "work_id": "oshb.Exod",
+      "variant_id": "oshb_morphhb",
+      "segment_id": "Exod.20.13",
+      "sentence_id": "Exod.20.13.s001",
+      "source_text": "לֹ֖א תִּרְצָֽח׃ס",
+      "source_text_sha256": "423ac84c0baf8f0e54ad825fba6c67de91c5d5d84df91752e328ed97d34dae59",
+      "policy_exposure": "none",
+      "historical_reference": "살인하지 말라.",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "expansion-20260909-b02",
+      "split": "calibration",
+      "corpus_id": "bible",
+      "work_id": "oshb.Ps",
+      "variant_id": "oshb_morphhb",
+      "segment_id": "Ps.23.4",
+      "sentence_id": "Ps.23.4.s001",
+      "source_text": "גַּ֤ם כִּֽי־אֵלֵ֨ךְ בְּ/גֵ֪יא צַלְמָ֡וֶת לֹא־אִ֘ירָ֤א רָ֗ע כִּי־אַתָּ֥ה עִמָּדִ֑/י שִׁבְטְ/ךָ֥ וּ֝/מִשְׁעַנְתֶּ֗/ךָ הֵ֣מָּה יְנַֽחֲמֻֽ/נִי׃",
+      "source_text_sha256": "31b7765177f6602ae7385c19cb3fce1664514a00b450ab8ac33366f350d2c36c",
+      "policy_exposure": "none",
+      "historical_reference": "내가 사망의 음침한 골짜기를 걸을지라도 나는 악을 두려워하지 않나니, 주께서 나와 함께 계심이라. 주의 지팡이와 막대기가 나를 안위하리이다.",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "expansion-20260909-b03",
+      "split": "calibration",
+      "corpus_id": "bible",
+      "work_id": "sblgnt.John",
+      "variant_id": "sblgnt",
+      "segment_id": "John.1.1",
+      "sentence_id": "John.1.1.s001",
+      "source_text": "Ἐν ἀρχῇ ἦν ὁ λόγος, καὶ ὁ λόγος ἦν πρὸς τὸν θεόν, καὶ θεὸς ἦν ὁ λόγος.",
+      "source_text_sha256": "f42e63fa66f17d29d79bce669214735f419c3e259f7eeeffb3d0158aceaed177",
+      "policy_exposure": "none",
+      "historical_reference": "태초에 말씀이 계셨고, 그 말씀은 하나님과 함께 계셨으며, 그 말씀은 하나님이셨다.",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "expansion-20260909-b04",
+      "split": "calibration",
+      "corpus_id": "bible",
+      "work_id": "sblgnt.Rom",
+      "variant_id": "sblgnt",
+      "segment_id": "Rom.8.1",
+      "sentence_id": "Rom.8.1.s001",
+      "source_text": "Οὐδὲν ἄρα νῦν κατάκριμα τοῖς ἐν Χριστῷ Ἰησοῦ·",
+      "source_text_sha256": "007779bcb1c9df21348fe972b73b02adb28e606252e5f485d656d41aeac70761",
+      "policy_exposure": "none",
+      "historical_reference": "그러므로 이제 그리스도 예수 안에 있는 자들에게는 결코 정죄함이 없습니다.",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "expansion-20260909-k01",
+      "split": "calibration",
+      "corpus_id": "kierkegaard",
+      "work_id": "sd",
+      "variant_id": "text",
+      "segment_id": "sks-0007",
+      "sentence_id": "sks-0007.s002",
+      "source_text": "Selvet er ikke Forholdet, men at Forholdet forholder sig til sig selv.",
+      "source_text_sha256": "884af1fe12077eff84d51e01c615f80b944e13cb1fbb90a21688998df0384d86",
+      "policy_exposure": "none",
+      "historical_reference": "자아는 관계 자체가 아니라, 그 관계가 자기 자신과 관계를 맺는 것이다.",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "expansion-20260909-k02",
+      "split": "calibration",
+      "corpus_id": "kierkegaard",
+      "work_id": "ba",
+      "variant_id": "text",
+      "segment_id": "sks-0047",
+      "sentence_id": "sks-0047.s007",
+      "source_text": "Begrebet Angest seer man næsten aldrig behandlet i Psychologien, jeg maa derfor gjøre opmærksom paa, at det er aldeles forskjelligt fra Frygt og lignende Begreber, der referere sig til noget bestemt, medens Angest er Frihedens Virkelighed som Mulighed for Muligheden .",
+      "source_text_sha256": "360807eddde1ee6d6d8728a4db0868fd369a4b34f213fd28080abc07f145e36a",
+      "policy_exposure": "exact_sentence",
+      "historical_reference": "심리학에서는 불안이라는 개념이 다루어지는 것을 거의 볼 수 없다. 따라서 나는 불안이 어떤 특정한 것을 대상으로 하는 공포 및 그와 유사한 개념들과는 전적으로 다르다는 점을 지적해 두어야 한다. 그에 반해 불안은 가능성의 가능성으로서의 자유의 현실성이다.",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "expansion-20260909-k03",
+      "split": "calibration",
+      "corpus_id": "kierkegaard",
+      "work_id": "fb",
+      "variant_id": "text",
+      "segment_id": "sks-0006",
+      "sentence_id": "sks-0006.s009",
+      "source_text": "Hans Attraa var at følge med de 3 Dages Reise, da Abraham reed med Sorgen foran sig og Isaak ved sin Side.",
+      "source_text_sha256": "90fc16adac586bff4100339e4aca7637305926fe4fc6283aed9ab7e5e7469bfa",
+      "policy_exposure": "none",
+      "historical_reference": "그의 열망은 아브라함이 슬픔을 앞에 두고 이삭을 곁에 둔 채 갔던 그 사흘간의 여정에 동행하는 것이었다.",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      },
+      "review_focus": "승마 동작(reed) 누락을 재검토한다. 기존 확정본은 자동 변경하지 않는다."
+    },
+    {
+      "id": "expansion-20260909-k04",
+      "split": "calibration",
+      "corpus_id": "kierkegaard",
+      "work_id": "2t43",
+      "variant_id": "text",
+      "segment_id": "sks-0006",
+      "sentence_id": "sks-0006.s011",
+      "source_text": "Hvis saa var, da blev det jo uforklarligt, at der paa disse hellige Steder altid ene og alene tales om Troen, at den atter og atter lovprises og berømmes.",
+      "source_text_sha256": "1e35f31b80c0060c83149f17de81017171f74a771449fb70f9f75e3c23b7f098",
+      "policy_exposure": "none",
+      "historical_reference": "만약 그러하다면, 이 거룩한 곳들에서 언제나 오로지 믿음에 대해서만 이야기되고, 믿음이 거듭 찬양받고 칭송된다는 것은 참으로 설명할 수 없는 일이 될 것입니다.",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "expansion-20260909-n01",
+      "split": "calibration",
+      "corpus_id": "nietzsche",
+      "work_id": "JGB",
+      "variant_id": "",
+      "segment_id": "p-0004",
+      "sentence_id": "p-0004.s002",
+      "source_text": "ist der Verdacht nicht gegründet, dass alle Philosophen, sofern sie Dogmatiker waren, sich schlecht auf Weiber verstanden?",
+      "source_text_sha256": "30b61fb55936824c8f8713b28f1c8fc4297199cfe53597ea0496da590e2ce25d",
+      "policy_exposure": "exact_sentence",
+      "historical_reference": "모든 철학자는, 독단론자였던 한에서는, 여자를 잘 알지 못했다는 의심에 근거가 있지 않은가?",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "expansion-20260909-n02",
+      "split": "calibration",
+      "corpus_id": "nietzsche",
+      "work_id": "FW",
+      "variant_id": "",
+      "segment_id": "p-0003",
+      "sentence_id": "p-0003.s001",
+      "source_text": "Ich wohne in meinem eignen Haus, Hab Niemandem nie nichts nachgemacht Und — lachte noch jeden Meister aus, Der nicht sich selber ausgelacht.",
+      "source_text_sha256": "e4750018ab6e23923bb1b6efda9ed5720bf894f138b548280b33a8e28753e733",
+      "policy_exposure": "none",
+      "historical_reference": "나는 내 집에 살며, 누구도 아무것도 흉내 낸 적 없고—스스로를 비웃지 않은 모든 스승을 나 또한 비웃었다.",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "expansion-20260909-n03",
+      "split": "calibration",
+      "corpus_id": "nietzsche",
+      "work_id": "GM",
+      "variant_id": "",
+      "segment_id": "p-0004",
+      "sentence_id": "p-0004.s007",
+      "source_text": "Wir sind immer dazu unterwegs, als geborne Flügelthiere und Honigsammler des Geistes, wir kümmern uns von Herzen eigentlich nur um Eins — Etwas „heimzubringen“.",
+      "source_text_sha256": "e9bac9a928beda64a7ce3a5fc6128014da51dc027f64d06f883a5808f8234f18",
+      "policy_exposure": "work_policy",
+      "historical_reference": "우리는 타고난 날짐승이자 정신의 꿀을 모으는 자들로서 언제나 그것을 위해 길을 나선다. 우리가 마음 깊이 실제로 관심을 두는 것은 오직 한 가지—무언가를 ‘집으로 가져오는’ 일뿐이다.",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "expansion-20260909-n04",
+      "split": "calibration",
+      "corpus_id": "nietzsche",
+      "work_id": "MA-I",
+      "variant_id": "",
+      "segment_id": "p-0021",
+      "sentence_id": "p-0021.s003",
+      "source_text": "wie kann Etwas aus seinem Gegensatz entstehen, zum Beispiel Vernünftiges aus Vernunftlosem, Empfindendes aus Todtem, Logik aus Unlogik, interesseloses Anschauen aus begehrlichem Wollen, Leben für Andere aus Egoismus, Wahrheit aus Irrthümern?",
+      "source_text_sha256": "99d7e47e0041d1f3b593e00cdba316a703f26aa74e779279ee9e57d4cf2bc5eb",
+      "policy_exposure": "none",
+      "historical_reference": "어떻게 어떤 것이 그 반대되는 것에서 생겨날 수 있는가? 예를 들어 이성 없는 것에서 이성적인 것이, 죽은 것에서 느끼는 것이, 비논리에서 논리가, 욕구하는 의지에서 사심 없는 관조가, 이기주의에서 타인을 위한 삶이, 오류들에서 진리가 생겨날 수 있는가?",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "expansion-20260909-w01",
+      "split": "calibration",
+      "corpus_id": "wittgenstein",
+      "work_id": "Group_BrownBookCorpus",
+      "variant_id": "idp_transcription_linear",
+      "segment_id": "p-0001",
+      "sentence_id": "p-0001.s011",
+      "source_text": "Es ist aber wichtig, daß wir uns eine Sprache (System der Verständigung) denken können, für die Augustins Beschreibung gilt.",
+      "source_text_sha256": "d1cf853e67a2bbfa7e825d95060736817f3ff6bc176540723b65295e4ae69d50",
+      "policy_exposure": "none",
+      "historical_reference": "하지만 우리가 아우구스티누스의 설명이 적용되는 하나의 언어(의사소통 체계)를 생각할 수 있다는 점은 중요합니다.",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "expansion-20260909-w02",
+      "split": "calibration",
+      "corpus_id": "wittgenstein",
+      "work_id": "Group_BigTypescriptCorpus",
+      "variant_id": "idp_transcription_linear",
+      "segment_id": "p-0006",
+      "sentence_id": "p-0006.s008",
+      "source_text": "Ms-105,15 Hat der Mord gar nicht stattgefunden so bleibt der erste Satz doch sinnvoll.",
+      "source_text_sha256": "37e3b1c41fe5d9c5d112564c6c28b3acc6fc02696d748c2bb868a9ebb38dcdf6",
+      "policy_exposure": "none",
+      "historical_reference": "그 살인이 전혀 일어나지 않았더라도 첫 번째 문장은 여전히 의미가 있다.",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "expansion-20260909-w03",
+      "split": "calibration",
+      "corpus_id": "wittgenstein",
+      "work_id": "Group_ItemsInEnglish",
+      "variant_id": "idp_transcription_linear",
+      "segment_id": "p-0001",
+      "sentence_id": "p-0001.s002",
+      "source_text": "If only these || those signs which contain proper names were complex then propositions containing nothing but apparent variables would be simple.",
+      "source_text_sha256": "ed0a7344152615e45f2664356d87ec90b9f5074ef80c0b14e18db1254105fa9c",
+      "policy_exposure": "exact_sentence",
+      "historical_reference": "고유명을 포함하는 이 || 저 기호들만이 복합적이라면, 겉보기 변수만을 포함하는 명제들은 단순할 것이다.",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "expansion-20260909-w04",
+      "split": "calibration",
+      "corpus_id": "wittgenstein",
+      "work_id": "Group_ItemsInEnglish",
+      "variant_id": "idp_transcription_linear",
+      "segment_id": "p-0001",
+      "sentence_id": "p-0001.s006",
+      "source_text": "The deductions || D eductions only proceed according to the laws of deduction , but these laws cannot justify the deduction.",
+      "source_text_sha256": "ac95572059b00b7a09c422e4b5e878bae7c65bebfed3e3cec0a8108bc8774f72",
+      "policy_exposure": "work_policy",
+      "historical_reference": "연역은 오직 연역의 법칙에 따라서만 진행되지만, 이 법칙들이 그 연역을 정당화할 수는 없다.",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "heldout-bible-06",
+      "split": "held_out",
+      "corpus_id": "bible",
+      "work_id": "oshb.Exod",
+      "variant_id": "oshb_morphhb",
+      "segment_id": "Exod.4.25",
+      "sentence_id": "Exod.4.25.s001",
+      "source_text": "וַ/תִּקַּ֨ח צִפֹּרָ֜ה צֹ֗ר וַ/תִּכְרֹת֙ אֶת־עָרְלַ֣ת בְּנָ֔/הּ וַ/תַּגַּ֖ע לְ/רַגְלָ֑י/ו וַ/תֹּ֕אמֶר כִּ֧י חֲתַן־דָּמִ֛ים אַתָּ֖ה לִֽ/י׃",
+      "source_text_sha256": "f8f9ec86f380d59f483be004760b0a7d8ed9849a78a48bd09090e22f7f241bea",
+      "policy_exposure": "none",
+      "historical_reference": "",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "heldout-bible-07",
+      "split": "held_out",
+      "corpus_id": "bible",
+      "work_id": "oshb.Ps",
+      "variant_id": "oshb_morphhb",
+      "segment_id": "Ps.18.8",
+      "sentence_id": "Ps.18.8.s001",
+      "source_text": "וַ/תִּגְעַ֬שׁ וַ/תִּרְעַ֨שׁ׀ הָ/אָ֗רֶץ וּ/מוֹסְדֵ֣י הָרִ֣ים יִרְגָּ֑זוּ וַ֝/יִּתְגָּֽעֲשׁ֗וּ כִּי־חָ֥רָה לֽ/וֹ׃",
+      "source_text_sha256": "a3ff104a0258feb60338d8dc8ec11c72aeb6a5ef1ca0eedb9242295dc7605efd",
+      "policy_exposure": "none",
+      "historical_reference": "",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "heldout-bible-08",
+      "split": "held_out",
+      "corpus_id": "bible",
+      "work_id": "sblgnt.John",
+      "variant_id": "sblgnt",
+      "segment_id": "John.2.17",
+      "sentence_id": "John.2.17.s001",
+      "source_text": "ἐμνήσθησαν οἱ μαθηταὶ αὐτοῦ ὅτι γεγραμμένον ἐστίν· Ὁ ζῆλος τοῦ οἴκου σου καταφάγεταί με.",
+      "source_text_sha256": "16228b746e0e75373d5aebec195ff8c071d94e1ade8c9bd0e793b61a059b53c4",
+      "policy_exposure": "none",
+      "historical_reference": "",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "heldout-bible-09",
+      "split": "held_out",
+      "corpus_id": "bible",
+      "work_id": "sblgnt.Rom",
+      "variant_id": "sblgnt",
+      "segment_id": "Rom.2.2",
+      "sentence_id": "Rom.2.2.s001",
+      "source_text": "οἴδαμεν δὲ ὅτι τὸ κρίμα τοῦ θεοῦ ἐστιν κατὰ ἀλήθειαν ἐπὶ τοὺς τὰ τοιαῦτα πράσσοντας.",
+      "source_text_sha256": "8b4f6601743a3121d18223a0b2750dab69d802039d5148dcb115c9d83d91a195",
+      "policy_exposure": "none",
+      "historical_reference": "",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "heldout-bible-10",
+      "split": "held_out",
+      "corpus_id": "bible",
+      "work_id": "oshb.Exod",
+      "variant_id": "oshb_morphhb",
+      "segment_id": "Exod.8.5",
+      "sentence_id": "Exod.8.5.s001",
+      "source_text": "וַ/יֹּ֣אמֶר מֹשֶׁ֣ה לְ/פַרְעֹה֮ הִתְפָּאֵ֣ר עָלַ/י֒ לְ/מָתַ֣י׀ אַעְתִּ֣יר לְ/ךָ֗ וְ/לַ/עֲבָדֶ֨י/ךָ֙ וּֽ/לְ/עַמְּ/ךָ֔ לְ/הַכְרִית֙ הַֽ/צֲפַרְדְּעִ֔ים מִמְּ/ךָ֖ וּ/מִ/בָּתֶּ֑י/ךָ רַ֥ק בַּ/יְאֹ֖ר תִּשָּׁאַֽרְנָה׃",
+      "source_text_sha256": "4aab26bb1a9e208c551d48f7ce9c092c5806799e8a43526b7eecd4fcb0a8c75b",
+      "policy_exposure": "none",
+      "historical_reference": "",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "heldout-bible-11",
+      "split": "held_out",
+      "corpus_id": "bible",
+      "work_id": "oshb.Ps",
+      "variant_id": "oshb_morphhb",
+      "segment_id": "Ps.29.7",
+      "sentence_id": "Ps.29.7.s001",
+      "source_text": "קוֹל־יְהוָ֥ה חֹצֵ֗ב לַהֲב֥וֹת אֵֽשׁ׃",
+      "source_text_sha256": "e493fe63153324a8df741091b7fe58dfd3db8dced3223c097ab2bce7d5f35fe6",
+      "policy_exposure": "none",
+      "historical_reference": "",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "heldout-bible-12",
+      "split": "held_out",
+      "corpus_id": "bible",
+      "work_id": "sblgnt.John",
+      "variant_id": "sblgnt",
+      "segment_id": "John.4.24",
+      "sentence_id": "John.4.24.s001",
+      "source_text": "πνεῦμα ὁ θεός, καὶ τοὺς προσκυνοῦντας αὐτὸν ἐν πνεύματι καὶ ἀληθείᾳ δεῖ προσκυνεῖν.",
+      "source_text_sha256": "84f1f4d9aa6b74651139a3636bc2c8b9ddc0662308a0f7e74f86d1e12c4f3929",
+      "policy_exposure": "none",
+      "historical_reference": "",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "heldout-bible-13",
+      "split": "held_out",
+      "corpus_id": "bible",
+      "work_id": "sblgnt.Rom",
+      "variant_id": "sblgnt",
+      "segment_id": "Rom.3.6",
+      "sentence_id": "Rom.3.6.s001",
+      "source_text": "μὴ γένοιτο· ἐπεὶ πῶς κρινεῖ ὁ θεὸς τὸν κόσμον;",
+      "source_text_sha256": "6548b8e9c9e57700997e185205c7da5bcf07476f485a81c39e4e17b52a8c7f03",
+      "policy_exposure": "none",
+      "historical_reference": "",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "heldout-kierkegaard-06",
+      "split": "held_out",
+      "corpus_id": "kierkegaard",
+      "work_id": "sd",
+      "variant_id": "text",
+      "segment_id": "sks-0015",
+      "sentence_id": "sks-0015.s001",
+      "source_text": "Skulde et Menneske døe af Fortvivlelse, som man døer af en Sygdom, saa maatte det Evige i ham, Selvet, kunne døe i samme Forstand som Legemet døer af Sygdommen.",
+      "source_text_sha256": "cff5e432fb623c94390d263e1d71e3b4425098076e3be8972acf7709336d7336",
+      "policy_exposure": "none",
+      "historical_reference": "",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "heldout-kierkegaard-07",
+      "split": "held_out",
+      "corpus_id": "kierkegaard",
+      "work_id": "ba",
+      "variant_id": "text",
+      "segment_id": "sks-0017",
+      "sentence_id": "sks-0017.s001",
+      "source_text": "det vil sige hæver Vanskeligheden, dog ikke ved Ethikens Hjælp, men ved Dogmatikens.",
+      "source_text_sha256": "996c712c5eb3e1621ac3a3a0e01e5f6e2f317f65c13418a8144b07c8d2c27f38",
+      "policy_exposure": "work_policy",
+      "historical_reference": "",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "heldout-kierkegaard-08",
+      "split": "held_out",
+      "corpus_id": "kierkegaard",
+      "work_id": "fb",
+      "variant_id": "text",
+      "segment_id": "sks-0014",
+      "sentence_id": "sks-0014.s001",
+      "source_text": "men den, der stred med Gud , blev større end Alle.",
+      "source_text_sha256": "cecdb21e741cdf2d31ec3b52d9461bf388078838e016bde7675a23e16ddf71c0",
+      "policy_exposure": "none",
+      "historical_reference": "",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "heldout-kierkegaard-09",
+      "split": "held_out",
+      "corpus_id": "kierkegaard",
+      "work_id": "2t43",
+      "variant_id": "text",
+      "segment_id": "sks-0006",
+      "sentence_id": "sks-0006.s001",
+      "source_text": "et Ønske, der ikke angik det Nærværende, men passede for det Tilkommende, saaledes som dette jo var Anledningen til at han ønskede.",
+      "source_text_sha256": "edacb6ba0f3744fa14022913d50da2186f33b0d19bde2a3561c746ede9857b5e",
+      "policy_exposure": "none",
+      "historical_reference": "",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "heldout-kierkegaard-10",
+      "split": "held_out",
+      "corpus_id": "kierkegaard",
+      "work_id": "sd",
+      "variant_id": "text",
+      "segment_id": "sks-0030",
+      "sentence_id": "sks-0030.s001",
+      "source_text": "Ak, og denne Elendighed, at der leve saa Mange saaledes hen, bedragne for den saligste af alle Tanker, denne Elendighed, at man beskjæftiger sig, eller i Forhold til Menneskenes Mængde beskjæftiger dem med alt Andet, bruger dem til at afgive Kræfterne i Livets Skuespil, men aldrig minder dem om denne Salighed, at man sammenhober dem – og bedrager dem, istedetfor at splitte dem ad, at hver Enkelt maa vinde det Høieste, det Eneste, der er værd at leve for, og nok for en Evighed at leve i:",
+      "source_text_sha256": "19c370639b8c75e2eed8d243f7261fe514d5b359fbfd38660d4b75eda997e2ce",
+      "policy_exposure": "none",
+      "historical_reference": "",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "heldout-kierkegaard-11",
+      "split": "held_out",
+      "corpus_id": "kierkegaard",
+      "work_id": "ba",
+      "variant_id": "text",
+      "segment_id": "sks-0034",
+      "sentence_id": "sks-0034.s001",
+      "source_text": "Denne Modsigelse er den eneste dialektisk consequente, der baade magter Springet og Immanentsen ( ɔ:",
+      "source_text_sha256": "7acbdaae101a2278c57adaca0e1388339ee3b5f9eea3862d845da724d6b279ef",
+      "policy_exposure": "work_policy",
+      "historical_reference": "",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "heldout-kierkegaard-12",
+      "split": "held_out",
+      "corpus_id": "kierkegaard",
+      "work_id": "fb",
+      "variant_id": "text",
+      "segment_id": "sks-0027",
+      "sentence_id": "sks-0027.s001",
+      "source_text": "thi mod Penge har jeg ingen ethisk Forpligtelse, men mod Sønnen har Faderen den høieste og helligste.",
+      "source_text_sha256": "5dca1c4f46b6034bb53dd5d7862e3823615f7c084b19e50c61e551a3a1a2429e",
+      "policy_exposure": "none",
+      "historical_reference": "",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "heldout-kierkegaard-13",
+      "split": "held_out",
+      "corpus_id": "kierkegaard",
+      "work_id": "2t43",
+      "variant_id": "text",
+      "segment_id": "sks-0011",
+      "sentence_id": "sks-0011.s001",
+      "source_text": "Et Menneske kan gjøre Meget for et andet, men give ham Troen kan det ikke.",
+      "source_text_sha256": "a8b0100a12d820a84dc76bde3a2231cfa30afe7129eefbbaced087ec75f62809",
+      "policy_exposure": "none",
+      "historical_reference": "",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "heldout-nietzsche-06",
+      "split": "held_out",
+      "corpus_id": "nietzsche",
+      "work_id": "JGB",
+      "variant_id": "",
+      "segment_id": "p-0033",
+      "sentence_id": "p-0033.s001",
+      "source_text": "Man vergebe es mir als einem alten Philologen, der von der Bosheit nicht lassen kann, auf schlechte Interpretations-Künste den Finger zu legen:",
+      "source_text_sha256": "5b3aa8a39cf3c5cc2df96043c24d41f30ba3a1ce303c42b2233291d64e7f59ca",
+      "policy_exposure": "work_policy",
+      "historical_reference": "",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "heldout-nietzsche-07",
+      "split": "held_out",
+      "corpus_id": "nietzsche",
+      "work_id": "FW",
+      "variant_id": "",
+      "segment_id": "p-0089",
+      "sentence_id": "p-0089.s001",
+      "source_text": "Zum Platzen schon ein kleiner Stich.",
+      "source_text_sha256": "97e276165e729f8c83872eb678d643eb92694296021beadfd193ef5e6a7e6f29",
+      "policy_exposure": "none",
+      "historical_reference": "",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "heldout-nietzsche-08",
+      "split": "held_out",
+      "corpus_id": "nietzsche",
+      "work_id": "GM",
+      "variant_id": "",
+      "segment_id": "p-0008",
+      "sentence_id": "p-0008.s001",
+      "source_text": "Im Grunde lag mir gerade damals etwas viel Wichtigeres am Herzen als eignes oder fremdes Hypothesenwesen über den Ursprung der Moral (oder, genauer:",
+      "source_text_sha256": "743e1e9d5e4c37a4cd13cf017daaacd0ca0843a9ba5e6ce88eb45f34034abdd3",
+      "policy_exposure": "work_policy",
+      "historical_reference": "",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "heldout-nietzsche-09",
+      "split": "held_out",
+      "corpus_id": "nietzsche",
+      "work_id": "MA-I",
+      "variant_id": "",
+      "segment_id": "p-0057",
+      "sentence_id": "p-0057.s002",
+      "source_text": "— Wie es sich nun mit Rechnung und Gegenrechnung verhalte:",
+      "source_text_sha256": "d40cd977d84cfed5555361d76db3615d93a4506e0f199ded70cd8e7c43bc06a2",
+      "policy_exposure": "none",
+      "historical_reference": "",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "heldout-nietzsche-10",
+      "split": "held_out",
+      "corpus_id": "nietzsche",
+      "work_id": "JGB",
+      "variant_id": "",
+      "segment_id": "p-0060",
+      "sentence_id": "p-0060.s001",
+      "source_text": "Das, was an der Religiosität der alten Griechen staunen macht, ist die unbändige Fülle von Dankbarkeit, welche sie ausströmt:",
+      "source_text_sha256": "9f2049cf8492e2f639e229c35a1bf5341e89edd6d03ce58ad337b5abe8de49d6",
+      "policy_exposure": "work_policy",
+      "historical_reference": "",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "heldout-nietzsche-11",
+      "split": "held_out",
+      "corpus_id": "nietzsche",
+      "work_id": "FW",
+      "variant_id": "",
+      "segment_id": "p-0186",
+      "sentence_id": "p-0186.s001",
+      "source_text": "Im Schweisse unsres Angesichts",
+      "source_text_sha256": "ce7a6d25087c6b8bef0d8acb5d133eda58aa4c6398976a7358a03e998f65b9fb",
+      "policy_exposure": "none",
+      "historical_reference": "",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "heldout-nietzsche-12",
+      "split": "held_out",
+      "corpus_id": "nietzsche",
+      "work_id": "GM",
+      "variant_id": "",
+      "segment_id": "p-0016",
+      "sentence_id": "p-0016.s002",
+      "source_text": "ganz abgesehen von der historischen Unhaltbarkeit jener Hypothese über die Herkunft des Werthurtheils „gut“, krankt sie an einem psychologischen Widersinn in sich selbst.",
+      "source_text_sha256": "3f47b2a80b2db5dd25f2299ca7528878d85881252e7800254ad50f66b0ce11f7",
+      "policy_exposure": "work_policy",
+      "historical_reference": "",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "heldout-wittgenstein-06",
+      "split": "held_out",
+      "corpus_id": "wittgenstein",
+      "work_id": "Group_BrownBookCorpus",
+      "variant_id": "idp_transcription_linear",
+      "segment_id": "p-0057",
+      "sentence_id": "p-0057.s001",
+      "source_text": "But here again I don't mean to say that I recognize this atmosphere rather I notice it when in philosophizing I read a line.",
+      "source_text_sha256": "f7403a6baf8acc913a85f2ef7e843859bf50a7e033dfd73114a2e5ef8d42c392",
+      "policy_exposure": "none",
+      "historical_reference": "",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "heldout-wittgenstein-07",
+      "split": "held_out",
+      "corpus_id": "wittgenstein",
+      "work_id": "Group_BigTypescriptCorpus",
+      "variant_id": "idp_transcription_linear",
+      "segment_id": "p-0508",
+      "sentence_id": "p-0508.s001",
+      "source_text": "das Modell muß in seinem Wesen die Beziehung auf die Welt haben in der wir leben & zwar gleichgültig ob es richtig oder falsch ist .",
+      "source_text_sha256": "1dfdd299928453ad4ce46822c71a7af0bb705a0c8cc63174a2e4d8675a0809bc",
+      "policy_exposure": "none",
+      "historical_reference": "",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "heldout-wittgenstein-08",
+      "split": "held_out",
+      "corpus_id": "wittgenstein",
+      "work_id": "Group_ItemsInEnglish",
+      "variant_id": "idp_transcription_linear",
+      "segment_id": "p-0080",
+      "sentence_id": "p-0080.s001",
+      "source_text": "What happens in it is that all its simple parts have meaning, but it is such that the connections between these paralyse or destroy one another, so that they are all connected only in an irrelevant manner.",
+      "source_text_sha256": "afbe2f2d38d167a84e7435411676a3c99b6e74db1c736e6cf486f70248d8ab65",
+      "policy_exposure": "work_policy",
+      "historical_reference": "",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "heldout-wittgenstein-09",
+      "split": "held_out",
+      "corpus_id": "wittgenstein",
+      "work_id": "Group_BrownBookCorpus",
+      "variant_id": "idp_transcription_linear",
+      "segment_id": "p-0114",
+      "sentence_id": "p-0114.s001",
+      "source_text": "U nd es ist leicht zu je zwei unähnlichen eine Reihe von Z wischengliedern zu erfinden .",
+      "source_text_sha256": "f49eb4cbe3c8d5079cf67d02bec27bfe16e91ab232b840b4bea979dc6c746d0f",
+      "policy_exposure": "none",
+      "historical_reference": "",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "heldout-wittgenstein-10",
+      "split": "held_out",
+      "corpus_id": "wittgenstein",
+      "work_id": "Group_BigTypescriptCorpus",
+      "variant_id": "idp_transcription_linear",
+      "segment_id": "p-1016",
+      "sentence_id": "p-1016.s001",
+      "source_text": "2) There is an arrow pointing right, probably indicating that the indentation shall be increased.",
+      "source_text_sha256": "28b7f0983c037af35f00ba597e2b633b8fc88d9b6346e8ee5b049794943e1212",
+      "policy_exposure": "none",
+      "historical_reference": "",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "heldout-wittgenstein-11",
+      "split": "held_out",
+      "corpus_id": "wittgenstein",
+      "work_id": "Group_ItemsInEnglish",
+      "variant_id": "idp_transcription_linear",
+      "segment_id": "p-0159",
+      "sentence_id": "p-0159.s001",
+      "source_text": "The importance of investigating the diviner's answer lies in the fact that we often think we have given a meaning to a statement P if only we assert “I feel (or I believe) that P is the case.”",
+      "source_text_sha256": "158732dd5bbbeacb7d285dc387277ba64d716eb4b3fc8c4b9840be4df8e2e4ec",
+      "policy_exposure": "work_policy",
+      "historical_reference": "",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    },
+    {
+      "id": "heldout-wittgenstein-12",
+      "split": "held_out",
+      "corpus_id": "wittgenstein",
+      "work_id": "Group_BrownBookCorpus",
+      "variant_id": "idp_transcription_linear",
+      "segment_id": "p-0170",
+      "sentence_id": "p-0170.s003",
+      "source_text": "a) Someone says, “I whistled … (whistling a tune) „ || ”",
+      "source_text_sha256": "e182efac5988a8c9546630031b54a8b206e5a7249d051e31fc0403d1ddc1da50",
+      "policy_exposure": "none",
+      "historical_reference": "",
+      "human_evaluation": {
+        "status": "pending",
+        "scores": {},
+        "evaluator": ""
+      }
+    }
+  ]
+}

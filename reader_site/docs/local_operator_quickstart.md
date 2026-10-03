@@ -32,6 +32,8 @@ What starts:
 
 The launcher starts the Reader and ensures the shared Local AI runtime is available in parallel. Open the Reader as soon as it prints `Reader ready`; the work-page status changes from `번역기 시작 중` to `번역기 준비됨` without a browser refresh. Reading, search, and notes remain available while the model loads. The shared runtime remains running when the Reader stops unless `-StopGemmaWithReader` is explicitly supplied.
 
+New sidecar processes use `-GemmaCacheRamMiB 0 -GemmaContextCheckpoints 0`. This avoids measured host-RAM prompt-cache transfer delays and a b9371 Vulkan checkpoint-restore failure. Existing listening processes retain their settings when reused. To select the previous runtime defaults for a new process, pass `-GemmaCacheRamMiB 8192 -GemmaContextCheckpoints 32`. Manage an existing shared process only after checking its owner and active requests. Translation-record caching, human confirmations, prompts, token limits, and source context are unchanged by these runtime options.
+
 The Reader and shared Local AI runtime are intentionally loopback-only. The reader APIs can read source material and modify personal notes, so unauthenticated LAN binding is rejected. Remote-device access requires a future authenticated deployment layer rather than `-ReaderHost 0.0.0.0`.
 
 ## Reader Only

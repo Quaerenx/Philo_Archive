@@ -83,7 +83,7 @@ function collapsedStudyPanelAction() {
   if (name === "notes") return "노트 보기";
   if (name === "citation") return "인용 보기";
   if (name === "concepts") return "개념 보기";
-  return "해설 보기";
+  return "번역 노트 보기";
 }
 
 function updateStudyPanelToggleLabel() {

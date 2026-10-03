@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 import re
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from rendering.inline_markup import strip_links  # noqa: E402
 
 
 def clean_reading_inline(value: str) -> str:
-    value = re.sub(r"\[\[([^\]]+)\]\]\([^)]*\)", r"\1", value)
-    value = re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", value)
+    value = strip_links(value)
     value = value.replace("*Erratum:*", "Erratum:")
     value = value.replace("*lies:*", "lies:")
     value = re.sub(r"\s{2,}", " ", value)

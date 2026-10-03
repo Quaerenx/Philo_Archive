@@ -8,6 +8,10 @@ from pathlib import Path
 
 
 SITE = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(SITE))
+
+from path_config import ROOT  # noqa: E402
+from services.rebuild_transaction import preflight_registered_sources, preserve_artifacts  # noqa: E402
 
 
 @dataclass(frozen=True)
@@ -15,6 +19,7 @@ class Step:
     label: str
     script: str
     optional_args: tuple[str, ...] = ()
+    requires_search_db: bool = False
 
 
 BUILD_STEPS = [
@@ -33,6 +38,7 @@ BUILD_STEPS = [
 ]
 
 CHECK_STEPS = [
+    Step("Review regression checks", "check_review_regressions.py"),
     Step("Server boundary contracts", "check_server_boundary.py"),
     Step("Clean clone contracts", "check_clean_clone_contracts.py"),
     Step("CI contracts", "check_ci_contracts.py"),
@@ -48,11 +54,11 @@ CHECK_STEPS = [
     Step("Segment offset contracts", "check_segment_offset_contracts.py"),
     Step("Large work chunk contracts", "check_work_chunk_contracts.py"),
     Step("Source target contracts", "check_source_target_contracts.py"),
-    Step("Restore readiness contracts", "check_restore_readiness.py"),
+    Step("Restore readiness contracts", "check_restore_readiness.py", requires_search_db=True),
     Step("Runtime API contracts", "check_api_contracts.py"),
-    Step("Search contracts", "check_search_contracts.py"),
-    Step("Search relevance contracts", "check_search_relevance.py"),
-    Step("Search artifact integrity", "check_search_artifact_integrity.py"),
+    Step("Search contracts", "check_search_contracts.py", requires_search_db=True),
+    Step("Search relevance contracts", "check_search_relevance.py", requires_search_db=True),
+    Step("Search artifact integrity", "check_search_artifact_integrity.py", requires_search_db=True),
     Step("Notes contracts", "check_notes_contracts.py"),
     Step("Note target integrity", "check_note_target_integrity.py"),
     Step("AI record contracts", "check_ai_records_contracts.py"),
@@ -80,6 +86,13 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
+    preflight_registered_sources(SITE / "data", ROOT)
+    with preserve_artifacts(SITE / "data"):
+        rebuild(args)
+    print("\nrebuild complete")
+
+
+def rebuild(args: argparse.Namespace) -> None:
     for step in BUILD_STEPS:
         if args.skip_search_db and step.script == "build_search_db.py":
             print(f"\n==> {step.label} skipped")
@@ -92,12 +105,10 @@ def main() -> None:
 
     if not args.no_checks:
         for step in CHECK_STEPS:
-            if args.skip_search_db and step.script == "check_restore_readiness.py":
-                print(f"\n==> {step.label} skipped")
+            if args.skip_search_db and step.requires_search_db:
+                print(f"\n==> {step.label} skipped (search database rebuild disabled)")
                 continue
             run_step(step)
-
-    print("\nrebuild complete")
 
 
 if __name__ == "__main__":

@@ -57,13 +57,14 @@ def check_manifest_and_boundaries() -> None:
     manifest = work_chunk_manifest(CORPUS_ID, WORK_ID, VARIANT_ID)
     require(manifest["virtualized"] is True, "largest Wittgenstein work should be virtualized")
     require(manifest["segment_count"] >= VIRTUAL_WORK_MIN_SEGMENTS, "large work segment count is too small")
-    require(manifest["sentence_count"] == 108_891, "large work sentence count changed unexpectedly")
+    # Version 3 joins abbreviation fragments while retaining their old anchor aliases.
+    require(manifest["sentence_count"] == 106_183, "large work sentence count changed unexpectedly")
     require(len(manifest["chunks"]) > 1, "large work should contain multiple chunks")
     require(anchor_segment_id(MIDDLE_ANCHOR) == "p-3301", "sentence anchor should resolve to its segment")
 
     expected_chunks = {
         FIRST_ANCHOR: 0,
-        MIDDLE_ANCHOR: 158,
+        MIDDLE_ANCHOR: 154,
         LAST_ANCHOR: len(manifest["chunks"]) - 1,
     }
     for anchor, expected_chunk in expected_chunks.items():
@@ -160,11 +161,31 @@ def check_errors() -> None:
             raise AssertionError(f"invalid work chunk query should raise {expected_exception.__name__}")
 
 
+def check_cross_corpus_large_views() -> None:
+    for corpus, work, variant in (("kierkegaard", "ae", "text"), ("nietzsche", "MA-I", "")):
+        manifest = work_chunk_manifest(corpus, work, variant)
+        require(manifest["virtualized"], f"{corpus}/{work} should use sentence-count virtualization")
+        first = manifest["chunks"][0]["first_segment_id"]
+        middle = manifest["chunks"][len(manifest["chunks"]) // 2]["first_segment_id"]
+        last = manifest["chunks"][-1]["last_segment_id"]
+        page = build_work_page_html(corpus, work, variant)
+        require("virtual-work" in page and "전체 인쇄 보기" in page, f"{corpus}/{work} lacks virtual/print controls")
+        require(len(page.encode("utf-8")) < 512 * 1024, f"{corpus}/{work} eagerly rendered too much HTML")
+        payload = work_chunk_payload_from_query(query(corpus_id=corpus, work_id=work, variant_id=variant, anchor=middle + ".s001"))
+        require(middle + ".s001" in payload["chunk"]["html"], f"{corpus}/{work} lost its middle sentence anchor")
+        print_page = build_work_page_html(corpus, work, variant, view="print")
+        require('id="' + first + '"' in print_page and 'id="' + last + '"' in print_page, f"{corpus}/{work} print view is incomplete")
+        require("print-work" in print_page and "virtual-work" not in print_page, f"{corpus}/{work} print view contains placeholders")
+        real_sentences = len(re.findall(r'class="reader-sentence"', print_page))
+        require(real_sentences == manifest["sentence_count"], f"{corpus}/{work} sentence positions include non-selectable headings")
+
+
 def main() -> None:
     check_manifest_and_boundaries()
     check_initial_and_print_views()
     check_unicode_and_bounded_source_reads()
     check_errors()
+    check_cross_corpus_large_views()
     print("work chunk contracts ok")
 
 

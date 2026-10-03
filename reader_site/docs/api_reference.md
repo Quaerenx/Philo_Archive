@@ -127,6 +127,8 @@ Each `corpora[]` entry contains only `id`, `title`, and `subtitle`. Use `/api/ar
 
 The HTTP health response is intentionally redacted. It contains readiness fields only; absolute paths, local model names, personal-note state, raw backend errors, byte counts, timestamps, and detailed file inventory are excluded.
 
+`reader_ready` reports core source, metadata, segment-index and search readiness separately from HTTP reachability. `translation_ready` additionally requires a loaded local model. `source_index.ready` checks the offset-index schema, corpus coverage and source size/mtime signatures using bounded metadata queries. `check_local_runtime.py` exits nonzero for core readiness failures or an unavailable model; an HTTP 200 alone is insufficient.
+
 ```json
 {
   "status": "ok",
@@ -379,7 +381,7 @@ Notes:
 
 ## `GET /api/search`
 
-Cross-corpus segment search. Backed by `data/search_index.sqlite` when available, with JSONL fallback.
+Cross-corpus segment search. Backed by `data/search_index.sqlite` when available, with JSONL fallback only for indexes up to 32 MiB. A missing database for a larger index, an unreadable database, or a database older than the regenerated JSONL returns an empty result payload with `error` containing the rebuild command. Query/filter counts and the fixed FTS re-ranking head are cached against the database file signature; ranking ties and pagination remain stable.
 
 Query parameters:
 
@@ -487,13 +489,15 @@ Work alias ranking rules:
 
 Returns one rendered chunk for a work that exceeds the server's large-work virtualization thresholds. The reader uses this endpoint internally; existing work URLs, paragraph IDs, sentence IDs, translation targets, and note targets remain unchanged.
 
+Virtualization applies across corpora at 4,000 selectable sentences, or both 2,000 segments and 2 MiB of source text. Bible chapter anchors and Hebrew text direction are preserved; Nietzsche headings and quotations do not contribute selectable sentence positions. Each virtual work exposes a complete `view=print` page.
+
 Query parameters:
 
 ```text
 corpus_id=wittgenstein
 work_id=Group_BigTypescriptCorpus
 variant_id=idp_transcription_linear
-chunk=158
+chunk=154
 ```
 
 Use `anchor=p-3301.s001` instead of `chunk` to resolve a deep link to the chunk that contains that paragraph or sentence. The response contains stable first/last segment IDs, one-based global sentence positions, counts, an estimated placeholder height, and rendered HTML for only the requested chunk. Missing fields and works below the virtualization thresholds return `400`; unknown chunks and anchors return `404`.
@@ -545,6 +549,8 @@ Work pages expose this boundary through the Citation panel's `Copy source bundle
 
 Generates or loads a local cached Gemma study translation for one clicked sentence. The endpoint does not accept arbitrary source text or free-form prompts; it resolves the sentence from existing local segment records.
 
+Write requests require the reader's local `Host` and port. Browser requests must come from the same `Origin`; POST and PUT bodies must use `Content-Type: application/json` and contain a JSON object. Local scripts may omit `Origin`. Invalid origin, host, or content type returns `403`; an invalid JSON payload returns `400`.
+
 Request:
 
 ```json
@@ -554,6 +560,7 @@ Request:
   "variant_id": "",
   "segment_id": "p-0023",
   "sentence_id": "p-0023.s001",
+  "request_id": "17331330-e417-4d6d-b94e-48c7cd051553",
   "regenerate": false
 }
 ```
@@ -585,7 +592,7 @@ Response:
     "translation_policy_sha256": "64-char sha256",
     "request_contract_sha256": "64-char sha256",
     "pipeline_contract_sha256": "64-char sha256",
-    "quality_pipeline_version": 6,
+    "quality_pipeline_version": 8,
     "quality_state": "critic_pass",
     "revision_count": 0,
     "max_revision_count": 1,
@@ -597,11 +604,29 @@ Response:
 }
 ```
 
-The server supplies the selected structural segment plus adjacent source units, up to 6,000 characters, and marks the selected sentence inside that context. When a unit must be shortened, complete sentences are preferred over arbitrary character cuts. llama.cpp first receives a strict JSON Schema requiring `translation` and `commentary` strings plus a string-array `cautions`; a non-empty commentary without Korean text is rejected. A fresh critic request then receives only the exact marked sentence, approved policy, and draft translation—but neither translator commentary nor adjacent context—and returns a strict `pass`/`revise` issue report. Translation and revision retain bounded context for disambiguation. The v6 pipeline checks semantic fidelity, marked-target boundaries, and material Korean readability defects such as opaque referents, source-order fragments, literal-calque redundancy, and claims imported from adjacent context; smoother wording alone is not an issue. Human-approved terminology, sentence-specific required meaning fragments, and forbidden fragments are then checked deterministically. A form-only complaint against all or part of an exact evaluator-approved fragment can be suppressed only while that full fragment is present; an exact unsupported-addition complaint can also be suppressed for that approved mapping alone. Unrelated semantic issues remain active, and a source-final continuation colon cannot be silently replaced by closing punctuation. Major issues trigger at most one schema-constrained revision and one final critic; minor-only issues do not trigger an automatic rewrite. Therefore an uncached request normally uses two model calls and a major-error repair uses four. Invalid translator output is rejected with `502` and is not saved; critic or revision failure is saved explicitly as `quality_state: "critic_error"` with a caution. Automatically flagged records are not cache hits unless human-reviewed.
+The server supplies the selected structural segment plus adjacent source units, up to 6,000 characters, and marks the selected sentence inside that context. When a unit must be shortened, complete sentences are preferred over arbitrary character cuts. llama.cpp first receives a strict JSON Schema requiring `translation` and `commentary` strings plus a string-array `cautions`; a non-empty commentary without Korean text is rejected. A fresh critic request then receives only the exact marked sentence, approved policy, and draft translation—but neither translator commentary nor adjacent context—and returns a strict `pass`/`revise` issue report. The initial translation retains bounded context for disambiguation, while revision receives only the exact marked target so it cannot defend an adjacent premise as repair evidence. The v7 pipeline checks semantic fidelity, marked-target boundaries, and material Korean readability defects such as opaque referents, source-order fragments, literal-calque redundancy, and claims imported from adjacent context; smoother wording alone is not an issue. Human-approved terminology, sentence-specific required meaning fragments, and forbidden fragments are then checked deterministically. A form-only complaint against all or part of an exact evaluator-approved fragment can be suppressed only while that full fragment is present; an exact unsupported-addition complaint can also be suppressed for that approved mapping alone. Unrelated semantic issues remain active, and a source-final continuation colon cannot be silently replaced by closing punctuation. Major issues and material korean_readability defects, even when minor, trigger at most one schema-constrained revision and one final critic; other minor-only findings stay for human review. A limiter must remain attached to the same source constituent, while splitting a source sentence into complete Korean clauses cannot add adjacent claims. A major syntax_or_scope finding remains active even when its span overlaps an approved fragment. Therefore an uncached request normally uses two model calls and a repair uses four, with no second revision. Invalid translator output is rejected with `502` and is not saved; critic or revision failure is saved explicitly as `quality_state: "critic_error"` with a caution. Automatically flagged records are not cache hits unless human-reviewed.
 
 `quality_state` is one of `critic_pass`, `critic_pass_after_revision`, `needs_human_review`, or `critic_error`. It is automated evidence and remains separate from the human-owned `review_state` (`generated`, `reviewed`, or `rejected`). The `pipeline_contract_sha256` changes when any translator, critic, or revision contract changes, so records from an older quality pipeline cannot silently satisfy the current cache. Citation hashes have distinct meanings: `source_text_sha256` hashes the exact selected source segment, `sentence_text_sha256` hashes the clicked sentence, and `source_context_sha256` hashes the bounded context sent to the model.
 
-If the shared llama.cpp runtime is not running at `127.0.0.1:9999`, the endpoint returns `503` with `{"ok": false, "error": "번역 준비가 필요합니다."}`. Generated JSONL files under `data/ai/` are local-only and ignored by Git.
+Before building a model prompt, the endpoint looks for reviewed records matching the exact corpus, work, variant, sentence ID and sentence text hash. Records with a non-empty human correction take precedence over reviewed model output; the latest approval timestamp chooses between records in the same class. It returns that saved record with `cached: true` even if the model settings or prompt have changed. `regenerate: true` explicitly bypasses saved approvals and model caches; old records remain stored. Unreviewed model-cache reuse for generation continues to require matching prompt and pipeline hashes.
+
+The optional boolean `cache_only: true` reads stored translations without preparing prompts, scheduling a generation, calling the model, or writing records. It cannot be combined with `regenerate: true`. This is the Reader's default sentence-navigation request. It first returns an exact-source reviewed record using the precedence above; otherwise it may show the latest non-rejected model record with its existing warnings, even from an older prompt or pipeline. This browsing result does not certify model quality. A hit returns `cached: true`, `requires_generation: false`, and the record. A miss returns `cached: false`, `requires_generation: true`, and `record: null`. Both return current-request metrics with zero model calls. A missing model runtime does not prevent this lookup.
+
+`request_id` is optional and must be a fresh UUID when supplied. Keep it to cancel an active request. Only one model pipeline runs at a time. One replacement request may wait for a cancelled or disconnected active request to release its execution slot; it remains cancellable while waiting. Unrelated overlapping requests, additional waiters and cancelled requests return `409`. Replacement waiting is bounded to 210 seconds. Abbreviation fragments from older sentence links resolve to the merged sentence's canonical ID and full text. Reference-only Kierkegaard sections and Wittgenstein `.index` variants cannot be translated and return `400`; index pages preserve reference anchors without clickable translation spans.
+
+If the shared llama.cpp runtime is not running at `127.0.0.1:9999`, the endpoint returns `503` with `{"ok": false, "error": "번역 준비가 필요합니다."}`. Generated JSONL files under `data/ai/` are local-only and ignored by Git. A malformed stored JSONL line blocks reads and writes instead of silently discarding records; repair it from a verified backup before retrying.
+
+Local note and translation appends serialize only the new record, using a private fsynced intent journal and a process file lock instead of copying the entire history. An exception or process interruption restores the uncommitted append before a cooperating read or write. Unexpected external changes block recovery and preserve both files. Updates and deletions still replace a complete snapshot atomically. The JSONL schema and HTTP/export payloads are unchanged; direct file copies or edits require a stopped Reader or the storage lock described in the README. Backup manifest inspection remains read-only and rejects a pending recovery journal.
+
+## `POST /api/sentence-translation/cancel`
+
+Cancels a generation by its UUID. This endpoint can acknowledge cancellation before the generation reaches the server.
+
+```json
+{"request_id": "17331330-e417-4d6d-b94e-48c7cd051553"}
+```
+
+The response includes `ok`, `cancelled`, `state` and `execution_released`. For an active call, cancellation is acknowledged with `cancelled: true`, `state: "cancelling"` and `execution_released: false` until its execution slot is released. The model connection is shut down even while waiting for response headers or a response body; subsequent stages and storage are blocked. Early or queued cancellations use `state: "cancelled"` and `execution_released: true`. Already saved results return `cancelled: false` and `state: "completed"`. Cancellation and commit use the same lock, so an acknowledged cancellation cannot be followed by a new write from that request. Client disconnection is checked during model I/O at 100 ms intervals as well as while queued, between model calls and immediately before storage. The runtime is responsible for reacting to the closed model connection; an immediate GPU stop is not guaranteed. Cancellation IDs are remembered for the latest 256 finished or cancelled requests in this server process.
 
 ## `PUT /api/sentence-translations/<record_id>`
 
@@ -627,6 +652,8 @@ To save a direct human correction, send `review_state: "reviewed"` with a non-em
   "human_translation": "사람이 직접 교정하고 확정한 번역"
 }
 ```
+
+The optional string `expected_translation` protects a human correction from concurrent edits. Send the effective translation shown when editing started (the existing human correction, or the model translation when there is no human correction). The service compares trimmed text under the same storage lock as the update. A mismatch returns `400` with `error: "translation_changed_since_editing"` and does not write anything. The browser retains its draft, reloads the current text, and requires an explicit comparison/rebase before saving again. Omitting the field preserves compatibility with earlier clients; it does not enable this guard.
 
 ## `DELETE /api/sentence-translations/<record_id>`
 
@@ -664,6 +691,10 @@ Query parameters:
 
 - `corpus_id`: required corpus id.
 - `work_id`: optional work id filter.
+- `variant_id`: optional exact variant filter, including an explicitly empty value.
+- `current_sentences=1`: emit sentence states only when the saved sentence ID and text hash match a current canonical sentence. Historical record counts remain available.
+
+`sentence_states` identifies each variant separately and includes the additive boolean `human_confirmed`. Its current record uses the same human-correction precedence as the Reader, with normalized approval timestamps. Historical record counts remain unchanged. The reader uses the current-sentence filter so an older abbreviation-fragment translation is retained in history without marking the merged sentence as studied.
 
 Response:
 
@@ -685,6 +716,8 @@ Response:
 
 Exports local sentence translation records for study review.
 
+An optional `variant_id` filters the exact variant, including an explicitly empty value. Omitting it retains the work-wide export behavior.
+
 Query parameters:
 
 - `corpus_id`: optional corpus id; omit it to export all corpora.
@@ -692,6 +725,7 @@ Query parameters:
 - `q`: optional text filter matching corpus/work ids, source excerpts, translations, and commentary.
 - `review_state`: `reviewed` by default; also accepts `generated`, `rejected`, or `all`.
 - `format`: `markdown` by default; `json` returns structured records.
+- `include_source_state=1`: optionally annotate returned records with `source_current`: `true` for an exact current canonical sentence/hash match, `false` for a changed/missing sentence or missing stored hash, and `null` when the source cannot be checked. Lookup is reused per distinct source segment. This read-only annotation is not stored. The translation list requests it to distinguish historical approvals from current-source confirmations.
 
 Bible direct lookup:
 
@@ -740,6 +774,8 @@ Notes:
 ## `GET /api/notes`
 
 Reads personal notes from `data/notes/<corpus_id>_notes.jsonl`.
+
+The optional `variant_id` parameter filters an exact variant, including an empty value. The same filter is supported by the notes export endpoint.
 
 Query parameters:
 
@@ -961,6 +997,8 @@ format=markdown|json
 
 Exports one work-level study session by combining personal notes and generated Gemma sentence translations. By default this is a reviewed-study bundle: reviewed notes plus reviewed translations.
 
+Use `variant_id` to constrain both notes and translations to one exact variant, including an empty value. Reader pages include their active variant. Without this parameter, all variants remain available; each item must be opened with its complete source URL so equal sentence IDs in different variants cannot resolve to the wrong text.
+
 Query parameters:
 
 ```text
@@ -972,3 +1010,15 @@ format=markdown|json
 ```
 
 `format=markdown` returns a single study document with separate Notes and Generated Translation & Commentary sections. The generated translation section is explicitly labeled as AI output and not source text.
+
+## Translation-note binding and diagnostics (2026-10-01)
+
+Sentence-translation records remain backward-readable through schema 6. `commentary` remains a string; public responses set it to an empty string when it is unbound, ungrounded, or refers to a different translation. `commentary_status` includes `current`, `none`, `legacy_unverified`, `translation_changed`, `source_changed`, `translation_review_required`, and `notes_review_required`; `translation_notes` contains only currently publishable `{source_span, note}` entries. Original model commentary is retained in the local record and is never silently relabelled as a note for a human edit.
+
+`current_translation_issues` reports current sentence-specific meaning checks. The additive `current_note_issues` field reports independently documented false note assertions, bound to the corpus, work, variant, sentence ID and source SHA-256. When a current note matches one of those assertions, the public API and Markdown export hide its explanation and report `notes_review_required`; the stored original is preserved. These checks reject recorded whole assertions after whitespace normalization, not every possible paraphrase or a grammar term mentioned in a correction. An empty issue list does not certify linguistic accuracy or human approval.
+
+`POST /api/sentence-translation` also returns `metrics`: current-request `model_calls`, allowlisted `model_usage` (stage, requested output tokens, actual prompt/completion tokens, context limit, available context, transport completion), and `context_truncated`. Cache hits return zero calls and an empty usage list. Unknown token/context values are null, not estimates or zero. New saved records retain generation metrics for the generation that created them; a cache hit does not reinterpret those historical calls as new work. No prompt, generated text, credential, local path, or target identity is included in these metrics.
+
+Pipeline v10 adds `current_translation_issues` for dictionary-backed checks scoped to an exact sentence hash. These warnings apply to the currently displayed human/model translation without rewriting historical approval or model verdicts. A current note with a detected meaning issue is withheld as `translation_review_required`. Markdown exports retain the warning. The curated source-check hash is part of the pipeline contract.
+
+A changed saved note-source hash is withheld as `source_changed`. Source-span presence alone cannot override the selected-sentence checksum.

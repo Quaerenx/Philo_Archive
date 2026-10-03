@@ -59,7 +59,7 @@ VISUAL_TRANSLATION_SEED = [
         "target_url": "/work/nietzsche/GM#p-9001.s001",
         "source_text_excerpt": "Ältere visuelle Prüffassung.",
         "translation": "이전 번역",
-        "commentary": "이전 생성본 해설입니다.",
+        "commentary": "이전 생성본 번역 노트입니다.",
         "quality_state": "critic_pass",
         "revision_count": 0,
         "review_state": "generated",
@@ -277,7 +277,7 @@ def seed_visual_translations(ai_dir: Path) -> None:
             },
             quality_state="critic_pass",
             revision_count=0,
-            initial_critic={"verdict": "pass", "issues": []},
+            initial_critic={"verdict": "pass", "issues": [], "translation_notes": [{"source_span": selected_target["sentence_text"], "note": "원문을 근거로 선택 문장의 번역 노트를 재현합니다."}]},
             final_critic=None,
             initial_critic_prompt_sha256="visual-smoke",
         ),
@@ -357,7 +357,7 @@ def check_route_markup(route: str, html: str) -> None:
             require(noisy_text not in html, f"{route} should avoid static source header text {noisy_text!r}")
         require("javascript:;" not in html, f"{route} should avoid inert markdown javascript links")
     if route == "/":
-        require("app.js?v=home19" in html, f"{route} missing current home script")
+        require("app.js?v=home20" in html, f"{route} missing current home script")
         require('class="site-tools"' not in html, f"{route} should not expose the retired tool navigation")
         for retired_link in ['href="/search"', 'href="/notes"', 'href="/study"', 'href="/translations"']:
             require(retired_link not in html, f"{route} should not expose retired home tool link {retired_link!r}")
@@ -429,8 +429,8 @@ def check_route_markup(route: str, html: str) -> None:
             "searchActiveFilters",
             "searchStatus",
             "aria-busy=\"false\"",
-            "search.css?v=phase34",
-            "search.js?v=phase48",
+            "search.css?v=phase35",
+            "search.js?v=phase50",
             'href="/search" aria-current="page">검색</a>',
             "번역",
             "filter-panel",
@@ -501,22 +501,22 @@ def check_route_markup(route: str, html: str) -> None:
             "translation-output",
             "reader-sentence",
             "reader-work-document.css?v=document2",
-            "reader-work.css?v=common152",
-            "reader-work-study.css?v=study2",
-            "reader-work-controls.css?v=controls2",
-            "reader-work-translation.css?v=translation2",
+            "reader-work.css?v=common154",
+            "reader-work-study.css?v=study3",
+            "reader-work-controls.css?v=controls4",
+            "reader-work-translation.css?v=translation4",
             "reader-work-notes.css?v=notes2",
             "reader-work-source.css?v=source2",
-            "reader-work-responsive.css?v=responsive3",
+            "reader-work-responsive.css?v=responsive5",
             "reader-work-storage.js?v=storage1",
             "reader-work-virtual.js?v=virtual1",
             "reader-work.js?v=common197",
             "reader-work-panel.js?v=panel1",
-            "reader-work-runtime.js?v=runtime1",
-            "reader-work-sentences.js?v=sentences2",
-            "reader-work-translation.js?v=translation3",
-            "reader-work-notes.js?v=notes2",
-            "reader-work-app.js?v=app1",
+            "reader-work-runtime.js?v=runtime3",
+            "reader-work-sentences.js?v=sentences4",
+            "reader-work-translation.js?v=translation7",
+            "reader-work-notes.js?v=notes3",
+            "reader-work-app.js?v=app3",
         ]:
             require(needle in html, f"{route} missing visual smoke marker {needle!r}")
         require("Contents (" not in html, f"{route} should not expose TOC inventory counts")
@@ -661,6 +661,10 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
   const parsed = new URL(url);
   if (parsed.pathname === '/') {
     await page.waitForSelector('#archiveLinks .root-link', { timeout: 5000 }).catch(() => {});
+    await page.waitForFunction(() => {
+      const images = Array.from(document.querySelectorAll('.root-link .corpus-image'));
+      return images.length === 4 && images.every(image => image.complete);
+    }, { timeout: 10000 });
     const homeState = await page.evaluate(() => {
       const section = document.querySelector('#archiveLinks .root-links');
       const heading = section?.querySelector('h2');
@@ -682,7 +686,25 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         gridColumns: (gridStyle?.gridTemplateColumns || '').trim().split(/\s+/).filter(Boolean).length,
         gridTop: gridBox?.top || 0,
         navColumnTop: navColumnBox?.top || 0,
-        firstLinkHeight: firstLinkBox?.height || 0
+        firstLinkHeight: firstLinkBox?.height || 0,
+        portraits: links.map(link => {
+          const image = link.querySelector('.corpus-image');
+          const info = link.querySelector('.corpus-info');
+          const imageBox = image?.getBoundingClientRect();
+          const infoBox = info?.getBoundingClientRect();
+          const rowBox = link.getBoundingClientRect();
+          return {
+            naturalWidth: image?.naturalWidth || 0,
+            naturalHeight: image?.naturalHeight || 0,
+            width: imageBox?.width || 0,
+            height: imageBox?.height || 0,
+            objectFit: image ? getComputedStyle(image).objectFit : '',
+            imageInsideRow: Boolean(imageBox && imageBox.left >= rowBox.left && imageBox.right <= rowBox.right && imageBox.top >= rowBox.top && imageBox.bottom <= rowBox.bottom),
+            infoBesideImage: Boolean(imageBox && infoBox && infoBox.left > imageBox.right && infoBox.right <= rowBox.right && infoBox.top >= rowBox.top && infoBox.bottom <= rowBox.bottom),
+            top: rowBox.top,
+            bottom: rowBox.bottom
+          };
+        })
       };
     });
     if (homeState.heading !== 'Corpus 목록' || homeState.label !== 'Corpus 목록') {
@@ -700,8 +722,16 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (Number(widthText) <= 420 && homeState.navColumnTop > 110) {
       throw new Error(`mobile home should not spend the first screen on empty masthead space: ${JSON.stringify(homeState)}`);
     }
-    if (Number(widthText) > 420 && homeState.gridColumns < 2) {
-      throw new Error(`desktop home root links should scan as a compact grid: ${JSON.stringify(homeState)}`);
+    if (homeState.gridColumns !== 1) {
+      throw new Error(`home Corpus entries should form one column of portrait rows: ${JSON.stringify(homeState)}`);
+    }
+    for (const [index, portrait] of homeState.portraits.entries()) {
+      if (portrait.width < 64 || Math.abs(portrait.width - portrait.height) > 1 || portrait.width !== homeState.portraits[0].width || portrait.naturalWidth < portrait.width * 2 || portrait.naturalHeight < portrait.height * 2 || portrait.objectFit !== 'contain') {
+        throw new Error(`Corpus portraits should load sharply in consistent square boxes without cropping: ${JSON.stringify(portrait)}`);
+      }
+      if (!portrait.imageInsideRow || !portrait.infoBesideImage || (index > 0 && portrait.top <= homeState.portraits[index - 1].bottom)) {
+        throw new Error(`Corpus images and information should stay aligned inside separate rows: ${JSON.stringify(homeState.portraits)}`);
+      }
     }
     const waitForTitleSearch = () => page.waitForFunction(() => {
       const status = document.querySelector('#corpusSearchStatus')?.textContent || '';
@@ -1051,11 +1081,18 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         linkCount: links.length,
         linksDisplay: linksContainerStyle?.display || '',
         firstLinkDisplay: firstLinkStyle?.display || '',
+        firstLinkWidth: firstLinkBox?.width || 0,
         firstLinkHeight: firstLinkBox?.height || 0
       };
       if (details) {
         details.open = false;
       }
+      state.closedLinksDisplay = linksContainer ? window.getComputedStyle(linksContainer).display : '';
+      state.closedVisibleLinkCount = links.filter((node) => {
+        if (typeof node.checkVisibility === 'function') return node.checkVisibility();
+        const box = node.getBoundingClientRect();
+        return box.width > 0 && box.height > 0;
+      }).length;
       return state;
     });
     if (readerToolsState.summary !== '읽기 메뉴') {
@@ -1070,11 +1107,17 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (readerToolsState.linkCount !== 3 || !['flex', 'inline-flex'].includes(readerToolsState.firstLinkDisplay)) {
       throw new Error(`reader tools menu should expose three readable link targets: ${JSON.stringify(readerToolsState)}`);
     }
+    if (readerToolsState.closedVisibleLinkCount !== 0) {
+      throw new Error(`closed reader tools menu should hide secondary links: ${JSON.stringify(readerToolsState)}`);
+    }
+    if (readerToolsState.firstLinkWidth < 44 || readerToolsState.firstLinkHeight < 44) {
+      throw new Error(`reader tools links should provide 44px targets on desktop and mobile: ${JSON.stringify(readerToolsState)}`);
+    }
     if (Number(widthText) <= 420) {
-      if (readerToolsState.linksDisplay !== 'grid' || readerToolsState.firstLinkHeight < 32) {
+      if (readerToolsState.linksDisplay !== 'grid') {
         throw new Error(`mobile reader tools menu should use touch-friendly grid targets: ${JSON.stringify(readerToolsState)}`);
       }
-    } else if (readerToolsState.linksDisplay !== 'flex' || readerToolsState.firstLinkHeight < 24) {
+    } else if (readerToolsState.linksDisplay !== 'flex') {
       throw new Error(`desktop reader tools menu should keep readable open targets: ${JSON.stringify(readerToolsState)}`);
     }
     if (!parsed.hash) {
@@ -1152,7 +1195,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (!runtimeOfflineState.selectedSentence || runtimeOfflineState.outputHidden) {
         throw new Error(`runtime offline fixture should keep a selected source and visible translation panel: ${JSON.stringify(runtimeOfflineState)}`);
       }
-      if (runtimeOfflineState.translationHeading !== '번역' || runtimeOfflineState.commentaryHeading !== '해설') {
+      if (runtimeOfflineState.translationHeading !== '번역' || runtimeOfflineState.commentaryHeading !== '번역 노트') {
         throw new Error(`runtime offline fixture should keep the reader-facing translation/commentary structure: ${JSON.stringify(runtimeOfflineState)}`);
       }
       if (runtimeOfflineState.primaryCopy !== '번역 준비가 필요합니다.' || runtimeOfflineState.commentaryCopy !== '번역기를 켜면 이 문장을 이어서 번역할 수 있습니다.') {
@@ -1318,7 +1361,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (searchPageState.activeFilterText && searchPageState.activeFilterLabel !== '활성 검색 조건') {
       throw new Error(`search active filters should expose condition wording accessibly: ${JSON.stringify(searchPageState)}`);
     }
-    if (searchPageState.activeFilterText && (searchPageState.filterChipHeights.some((height) => height < 28) || !searchPageState.filterChipCloseText.includes('×'))) {
+    if (searchPageState.activeFilterText && (searchPageState.filterChipHeights.some((height) => height < 44) || !searchPageState.filterChipCloseText.includes('×'))) {
       throw new Error(`search filter chips should be easy to remove on touch screens: ${JSON.stringify(searchPageState)}`);
     }
     if (outputPath.includes('concept-search')) {
@@ -1853,7 +1896,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (translationsPageState.sourceDisclosureCount !== 0) {
         throw new Error(`default translations list should hide repeated source disclosures: ${JSON.stringify(translationsPageState)}`);
       }
-      if (translationsPageState.openCommentaryCount !== 0 || translationsPageState.commentarySummaryTexts.some((text) => text !== '해설')) {
+      if (translationsPageState.openCommentaryCount !== 0 || translationsPageState.commentarySummaryTexts.some((text) => text !== '번역 노트')) {
         throw new Error(`default translations list should keep commentary collapsed behind a concise label: ${JSON.stringify(translationsPageState)}`);
       }
       if (translationsPageState.headingText !== '번역 목록' || !translationsPageState.documentTitle.startsWith('번역 목록 /')) {
@@ -1961,7 +2004,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (!savedState.firstCommentaryOpen || savedState.openCommentaryCount < 1) {
         throw new Error(`saved translations page should open the first commentary for reading review: ${JSON.stringify(savedState)}`);
       }
-      if (savedState.commentarySummaryTexts.some((text) => text !== '해설')) {
+      if (savedState.commentarySummaryTexts.some((text) => text !== '번역 노트')) {
         throw new Error(`saved translations commentary labels should stay concise: ${JSON.stringify(savedState)}`);
       }
       for (const noisyText of ['Literal gloss', 'Key terms', 'source_text_sha256', 'prompt_sha256']) {
@@ -2009,6 +2052,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         };
       });
       const readingNext = document.querySelector('[data-translation-quick-action="next-sentence"]');
+      const readingPrevious = document.querySelector('[data-translation-quick-action="previous-sentence"]');
+      const sentenceNavigation = document.querySelector('.translation-sentence-navigation');
       const readingSave = document.querySelector('[data-translation-quick-action="mark-reviewed"], .translation-quick-state[data-review-state="reviewed"]');
       const readingNote = document.querySelector('[data-translation-quick-action="draft-note"]');
       const readingActionsNode = document.querySelector('.translation-reading-actions');
@@ -2028,7 +2073,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       const commentaryHeadingBox = commentaryHeading?.getBoundingClientRect();
       const commentaryBody = document.querySelector('#translationOutput .translation-commentary p');
       const commentaryBodyStyle = commentaryBody ? window.getComputedStyle(commentaryBody) : null;
-      const readingActions = Array.from(document.querySelectorAll('.translation-reading-actions > button, .translation-reading-actions > details > summary'))
+      const readingActions = Array.from(document.querySelectorAll('.translation-sentence-navigation > button, .translation-reading-actions > details > summary'))
         .filter((node) => {
           const box = node.getBoundingClientRect();
           const style = window.getComputedStyle(node);
@@ -2036,6 +2081,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         })
         .map((node) => node.textContent.trim());
       const readingNextBox = readingNext?.getBoundingClientRect();
+      const readingPreviousBox = readingPrevious?.getBoundingClientRect();
       const readingNoteBox = readingNote?.getBoundingClientRect();
       const readingSaveBox = readingSave?.getBoundingClientRect();
       const visibleExtras = Array.from(document.querySelectorAll('#translationOutput .translation-extra'))
@@ -2071,6 +2117,15 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
         readingNextLabel: readingNext ? readingNext.getAttribute('aria-label') || '' : '',
         readingNextBorderColor: readingNext ? window.getComputedStyle(readingNext).borderColor : '',
         readingNextWidth: readingNextBox?.width || 0,
+        readingNextHeight: readingNextBox?.height || 0,
+        readingPreviousVisible: Boolean(readingPreviousBox && readingPreviousBox.width > 0 && readingPreviousBox.height > 0),
+        readingPreviousText: readingPrevious?.textContent.trim() || '',
+        readingPreviousLabel: readingPrevious?.getAttribute('aria-label') || '',
+        readingPreviousWidth: readingPreviousBox?.width || 0,
+        readingPreviousHeight: readingPreviousBox?.height || 0,
+        sentenceNavigationRole: sentenceNavigation?.getAttribute('role') || '',
+        sentenceNavigationLabel: sentenceNavigation?.getAttribute('aria-label') || '',
+        sentenceNavigationGap: sentenceNavigation ? window.getComputedStyle(sentenceNavigation).columnGap : '',
         readingNoteWidth: readingNoteBox?.width || 0,
         readingSaveWidth: readingSaveBox?.width || 0,
         readingNoteVisible: /메모 추가/.test(outputVisibleText),
@@ -2152,11 +2207,20 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (state.readingNextLabel !== '다음 문장을 선택하고 번역') {
       throw new Error(`reading mode next action should keep a clear accessible label: ${JSON.stringify(state)}`);
     }
+    if (!state.readingPreviousVisible || state.readingPreviousText !== '이전 문장' || state.readingPreviousLabel !== '이전 문장을 선택하고 번역') {
+      throw new Error(`reading mode should expose a labeled previous sentence action: ${JSON.stringify(state)}`);
+    }
+    if (state.sentenceNavigationRole !== 'group' || state.sentenceNavigationLabel !== '문장 이동' || parseFloat(state.sentenceNavigationGap || '0') < 8) {
+      throw new Error(`sentence navigation should group previous and next with distinct hit targets: ${JSON.stringify(state)}`);
+    }
+    if ([state.readingNextWidth, state.readingNextHeight, state.readingPreviousWidth, state.readingPreviousHeight].some((size) => size < 44)) {
+      throw new Error(`previous and next sentence actions should provide 44px targets: ${JSON.stringify(state)}`);
+    }
     if (state.readingNextBorderColor !== 'rgb(176, 0, 0)') {
       throw new Error(`reading mode next action should be visually primary: ${JSON.stringify(state)}`);
     }
     if (state.readingNextWidth <= 0 || state.readingNoteVisible || state.readingSaveVisible) {
-      throw new Error(`reading mode should keep only Next sentence translation as the immediate visible action: ${JSON.stringify(state)}`);
+      throw new Error(`reading mode should keep note and save actions behind the tools menu: ${JSON.stringify(state)}`);
     }
     if (state.markerSampleFound && Number.parseFloat(state.quietMarkerOpacity || '1') > 0.4) {
       throw new Error(`translation state markers should stay quiet in the source text: ${JSON.stringify(state)}`);
@@ -2185,7 +2249,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (state.commentaryHeadingWidth <= 2 || state.commentaryHeadingHeight <= 2) {
       throw new Error(`reading mode should keep the commentary heading visible: ${JSON.stringify(state)}`);
     }
-    if (state.commentaryHeadingText !== '해설') {
+    if (state.commentaryHeadingText !== '번역 노트') {
       throw new Error(`reading mode should label commentary in the reader language: ${JSON.stringify(state)}`);
     }
     if (parseFloat(state.translationBodyFontSize || '0') < 17 || parseFloat(state.translationBodyLineHeight || '0') < 29) {
@@ -2214,16 +2278,15 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (state.secondaryActionsDisplay !== 'none' || state.secondaryActionsWidth > 0 || state.secondaryActionsHeight > 0) {
       throw new Error(`reading mode should move note/save actions out of the immediate reading card: ${JSON.stringify(state)}`);
     }
-    const firstAction = state.readingActions[0] || '';
-    if (firstAction !== '다음 문장' || state.readingActions.length !== 1) {
-      throw new Error(`reading mode should show only Next sentence translation as the immediate action: ${JSON.stringify(state)}`);
+    if (state.readingActions.join(' / ') !== '이전 문장 / 다음 문장') {
+      throw new Error(`reading mode should show previous and next in conventional order: ${JSON.stringify(state)}`);
     }
     if (state.visibleExtraCount !== 0) throw new Error(`reading mode exposed study-only translation extras: ${JSON.stringify(state)}`);
     if (state.activeTab !== '번역') throw new Error(`selected work route did not keep Translation tab active: ${JSON.stringify(state)}`);
     if (state.inactiveSecondaryTabs.length !== 2 || state.inactiveSecondaryTabs.some((tab) => tab.background !== 'rgba(0, 0, 0, 0)' || tab.border !== 'rgba(0, 0, 0, 0)')) {
       throw new Error(`secondary study tabs should stay visually quieter than translation and notes: ${JSON.stringify(state)}`);
     }
-    if (state.inactiveSecondaryTabs.some((tab) => tab.fontSize !== '11px' || tab.justifySelf !== 'end')) {
+    if (state.inactiveSecondaryTabs.some((tab) => tab.fontSize !== '12px' || tab.justifySelf !== 'end' || tab.width < 44 || tab.height < 44)) {
       throw new Error(`secondary study tabs should remain compact but Korean-readable utility links: ${JSON.stringify(state)}`);
     }
     if (state.isMobile) {
@@ -2239,7 +2302,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (/저장|노트|이동|번역기|진행/.test(state.studyToolsSummary)) {
       throw new Error(`study tools summary should not enumerate hidden management actions in reading mode: ${JSON.stringify(state)}`);
     }
-    if ((state.isMobile && (state.studyToolsSummaryHeight < 44 || state.studyToolsSummaryHeight > 48)) || (!state.isMobile && state.studyToolsSummaryHeight > 24) || state.studyToolsSummaryWidth > 64 || parseFloat(state.studyToolsSummaryFontSize || '99') > 10) {
+    if (state.studyToolsSummaryHeight < 44 || state.studyToolsSummaryHeight > 48 || state.studyToolsSummaryWidth < 44 || state.studyToolsSummaryWidth > 80 || state.studyToolsSummaryFontSize !== '12px') {
       throw new Error(`reading mode study tools summary should stay visually secondary with a touch-safe target: ${JSON.stringify(state)}`);
     }
     if (!['rgba(0, 0, 0, 0)', 'transparent'].includes(state.studyToolsBorderTopColor)) {
@@ -2301,8 +2364,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (utilityState.labels.slice(0, 3).map((label) => label.text).join(' / ') !== '문장 / 학습 / 설정') {
       throw new Error(`study tools should follow the reader workflow order: ${JSON.stringify(utilityState)}`);
     }
-    if (utilityState.labels.some((label) => label.width > 2 || label.height > 2)) {
-      throw new Error(`study tools utility labels should stay visually quiet: ${JSON.stringify(utilityState)}`);
+    if (utilityState.labels.some((label) => label.width <= 2 || label.height <= 2)) {
+      throw new Error(`opened study tools should show purpose labels above related controls: ${JSON.stringify(utilityState)}`);
     }
     if (utilityState.manageSummary !== '저장 · 내보내기') {
       throw new Error(`study action tools should have a concise summary: ${JSON.stringify(utilityState)}`);
@@ -2346,7 +2409,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (collapsedStudyState.expanded || !collapsedStudyState.scrimHidden || !collapsedStudyState.selectedVisible || collapsedStudyState.storedExpanded !== 'false') {
         throw new Error(`mobile body toggle should collapse the study panel and return to the selected source: ${JSON.stringify(collapsedStudyState)}`);
       }
-      if (collapsedStudyState.toggleAction !== '해설 보기') {
+      if (collapsedStudyState.toggleAction !== '번역 노트 보기') {
         throw new Error(`collapsed mobile study handle should name the active study panel: ${JSON.stringify(collapsedStudyState)}`);
       }
       await page.click('#studyPanelToggle');
@@ -2388,7 +2451,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (scrimCollapsedStudyState.expanded || !scrimCollapsedStudyState.scrimHidden || !scrimCollapsedStudyState.selectedVisible || scrimCollapsedStudyState.storedExpanded !== 'false') {
         throw new Error(`mobile scrim should collapse the study panel and return to the selected source: ${JSON.stringify(scrimCollapsedStudyState)}`);
       }
-      if (scrimCollapsedStudyState.toggleAction !== '해설 보기') {
+      if (scrimCollapsedStudyState.toggleAction !== '번역 노트 보기') {
         throw new Error(`mobile scrim collapse should leave a clear study handle: ${JSON.stringify(scrimCollapsedStudyState)}`);
       }
       await page.click('#studyPanelToggle');
@@ -2408,6 +2471,49 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     });
     if (!nextFocusState.ok || nextFocusState.activeAction !== 'next-sentence') {
       throw new Error(`saved review flow should focus the next sentence action: ${JSON.stringify(nextFocusState)}`);
+    }
+    const sentenceNavigationState = await page.evaluate(() => {
+      const deltas = [];
+      const originalNavigate = window.navigateSentence;
+      const originalSelected = selectedSentence;
+      const buttonStates = (sentenceId) => {
+        selectedSentence = sentenceId ? { sentenceId } : null;
+        const content = document.createElement('template');
+        content.innerHTML = window.translationQuickActions('generated');
+        return {
+          previousDisabled: content.content.querySelector('[data-translation-quick-action="previous-sentence"]')?.disabled,
+          nextDisabled: content.content.querySelector('[data-translation-quick-action="next-sentence"]')?.disabled
+        };
+      };
+      try {
+        window.navigateSentence = (delta) => deltas.push(delta);
+        document.querySelector('[data-translation-quick-action="previous-sentence"]')?.click();
+        document.querySelector('[data-translation-quick-action="next-sentence"]')?.click();
+        const entries = Array.from(sentenceIndexById.entries());
+        const firstId = entries.find((entry) => entry[1] === 0)?.[0] || '';
+        const lastId = entries.find((entry) => entry[1] === totalSentenceCount() - 1)?.[0] || '';
+        const qualityContent = document.createElement('template');
+        qualityContent.innerHTML = window.renderTranslationQuality({
+          human_translation: '확정 번역 검증', quality_state: 'needs_human_review', revision_count: 1
+        });
+        const quality = qualityContent.content.querySelector('.translation-quality-summary');
+        return {
+          deltas, firstId, lastId, first: buttonStates(firstId), last: buttonStates(lastId), empty: buttonStates(''),
+          qualityText: quality?.textContent || '', qualityState: quality?.dataset.qualityState || ''
+        };
+      } finally {
+        window.navigateSentence = originalNavigate;
+        selectedSentence = originalSelected;
+      }
+    });
+    if (sentenceNavigationState.deltas.join(',') !== '-1,1') {
+      throw new Error(`previous and next button clicks should dispatch opposite navigation directions: ${JSON.stringify(sentenceNavigationState)}`);
+    }
+    if (!sentenceNavigationState.firstId || !sentenceNavigationState.lastId || !sentenceNavigationState.first.previousDisabled || sentenceNavigationState.first.nextDisabled || sentenceNavigationState.last.previousDisabled || !sentenceNavigationState.last.nextDisabled || !sentenceNavigationState.empty.previousDisabled || !sentenceNavigationState.empty.nextDisabled) {
+      throw new Error(`sentence navigation should stop at source boundaries and require a selection: ${JSON.stringify(sentenceNavigationState)}`);
+    }
+    if (!sentenceNavigationState.qualityText.startsWith('모델 원본: ') || sentenceNavigationState.qualityState !== 'needs_human_review') {
+      throw new Error(`human translation should distinguish preserved model review status: ${JSON.stringify(sentenceNavigationState)}`);
     }
     await page.evaluate(() => {
       const utility = document.querySelector('.translation-utility');
@@ -2441,7 +2547,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
     if (draftState.activeTab !== '노트') {
       throw new Error(`Add note should switch to Notes tab: ${JSON.stringify(draftState)}`);
     }
-    for (const expectedText of ['번역', '해설']) {
+    for (const expectedText of ['번역', '번역 노트']) {
       if (!draftState.note.includes(expectedText)) {
         throw new Error(`Add note should draft concise ${expectedText} content: ${JSON.stringify(draftState)}`);
       }
@@ -2475,9 +2581,17 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       const notesState = await page.evaluate(() => {
         const targetTools = document.querySelector('.note-target-tools');
         if (targetTools) targetTools.open = false;
+        const noteEditor = document.querySelector('#noteText');
+        const noteLabel = Array.from(noteEditor?.labels || []).find((label) => label.control === noteEditor);
+        const noteLabelText = noteLabel?.querySelector(':scope > span');
+        const noteLabelBox = noteLabelText?.getBoundingClientRect();
         return {
         notePlaceholder: document.querySelector('#noteText')?.getAttribute('placeholder') || '',
-        noteLabelHidden: Boolean(document.querySelector('#noteText')?.closest('label')?.querySelector('.visually-hidden')),
+        noteLabelText: noteLabelText?.textContent.trim() || '',
+        noteLabelAssociated: Boolean(noteLabel && noteLabel.control === noteEditor),
+        noteLabelWidth: noteLabelBox?.width || 0,
+        noteLabelHeight: noteLabelBox?.height || 0,
+        noteLabelVisible: Boolean(noteLabelText && (typeof noteLabelText.checkVisibility === 'function' ? noteLabelText.checkVisibility() : window.getComputedStyle(noteLabelText).visibility !== 'hidden')),
         saveText: document.querySelector('#noteForm button[type="submit"]')?.textContent.trim() || '',
         saveLabel: document.querySelector('#noteForm button[type="submit"]')?.getAttribute('aria-label') || '',
         tagsSummary: document.querySelector('.note-options summary')?.textContent.trim() || '',
@@ -2501,8 +2615,8 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       lockTargetText: document.querySelector('#lockNoteTarget')?.textContent.trim() || ''
         };
       });
-    if (notesState.notePlaceholder !== '메모 작성...' || !notesState.noteLabelHidden) {
-      throw new Error(`notes tab should keep the editor quiet but accessible: ${JSON.stringify(notesState)}`);
+    if (notesState.notePlaceholder !== '메모 작성...' || notesState.noteLabelText !== '노트' || !notesState.noteLabelAssociated || !notesState.noteLabelVisible || notesState.noteLabelWidth <= 2 || notesState.noteLabelHeight <= 2) {
+      throw new Error(`notes tab should show a visible native label associated with the editor: ${JSON.stringify(notesState)}`);
     }
     if (notesState.saveText !== '저장' || notesState.saveLabel !== '노트 저장') {
       throw new Error(`notes tab save control should stay concise: ${JSON.stringify(notesState)}`);
@@ -2894,7 +3008,7 @@ const [url, outputPath, widthText, heightText, executablePath] = process.argv.sl
       if (reviewTargetState.statusText.includes('Next item')) {
         throw new Error(`review queue should avoid redundant next-item status text: ${JSON.stringify(reviewTargetState)}`);
       }
-      if (!reviewTargetState.commentaryOpen || reviewTargetState.openCommentaries !== 1 || reviewTargetState.commentarySummaryText !== '해설') {
+      if (!reviewTargetState.commentaryOpen || reviewTargetState.openCommentaries !== 1 || reviewTargetState.commentarySummaryText !== '번역 노트') {
         throw new Error(`review queue should open commentary only for the active review target: ${JSON.stringify(reviewTargetState)}`);
       }
       if (reviewTargetState.commentarySummaryHeight < 22 || reviewTargetState.commentarySummaryWidth <= 0) {

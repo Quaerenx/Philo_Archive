@@ -6,6 +6,10 @@ param(
     [int]$GemmaPort = 9999,
     [int]$ContextSize = 8192,
     [string]$GpuLayers = "auto",
+    [ValidateRange(-1, 1048576)]
+    [int]$GemmaCacheRamMiB = 0,
+    [ValidateRange(0, 65536)]
+    [int]$GemmaContextCheckpoints = 0,
     [switch]$StopGemmaWithReader
 )
 
@@ -188,7 +192,10 @@ function Test-ReaderReady {
             return $false
         }
         $payload = $response.Content | ConvertFrom-Json -ErrorAction Stop
-        return [bool]($payload.status -or $payload.site_root -or $payload.corpora)
+        if ($payload.PSObject.Properties.Name -contains "reader_ready") {
+            return [bool]$payload.reader_ready
+        }
+        return $payload.status -eq "ok"
     } catch {
         return $false
     }
@@ -381,7 +388,9 @@ try {
                 "--host", $GemmaHost,
                 "--port", [string]$GemmaPort,
                 "--ctx-size", [string]$ContextSize,
-                "--n-gpu-layers", $GpuLayers
+                "--n-gpu-layers", $GpuLayers,
+                "--cache-ram", [string]$GemmaCacheRamMiB,
+                "--ctx-checkpoints", [string]$GemmaContextCheckpoints
             )
             Write-Host "Starting Gemma runtime at ${GemmaBaseUrl}"
             try {

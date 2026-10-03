@@ -188,6 +188,7 @@ function updateReadingPosition(node) {
   }
   activeReadingCueNode = node;
   activeReadingCueNode.classList.add("reading-cue");
+  scheduleRecentWorkPosition(node);
   const sentenceId = node.dataset.sentenceId || node.id || "";
   const label = sentencePositionText(sentenceId);
   const isSelected = Boolean(selectedSentence && selectedSentence.sentenceId === sentenceId);
@@ -217,7 +218,7 @@ function studyReadingCueSentence() {
   setStudyPanelExpanded(true);
   keepSentenceAboveStudyPanel(node);
   if (!wasSelected || !selectedTranslationRecord) {
-    requestSentenceTranslation(false);
+    requestSelectedTranslation();
   }
 }
 
@@ -567,6 +568,7 @@ function selectSentence(node, updateHash = true) {
     selectedTranslationRecord = null;
     clearActionConfirmations();
   }
+  updateReaderTerms(selectedTranslationRecord);
   renderTranslationTarget();
   updateSentenceContext();
   updateSentenceControls();
@@ -598,6 +600,9 @@ async function selectSentenceFromHash() {
       setTranslationStatus("요청한 원문 위치를 불러오지 못했습니다.", true);
       return;
     }
+  }
+  if (node && node.dataset.sentenceAlias) {
+    node = node.closest(".reader-sentence, .reader-reference");
   }
   if (node && node.classList.contains("reader-sentence")) {
     selectSentence(node, false);
@@ -708,7 +713,7 @@ async function navigateSentence(delta) {
   setStudyPanelExpanded(true);
   keepSentenceAboveStudyPanel(nextNode);
   if (!wasSelected || !selectedTranslationRecord) {
-    requestSentenceTranslation(false);
+    requestSelectedTranslation();
   }
   virtualWork.warmChunks(virtualWork.chunkForNode(nextNode));
 }
@@ -720,7 +725,7 @@ function activateSentenceForStudy(node) {
   setStudyPanel("translation");
   setStudyPanelExpanded(true);
   keepSentenceAboveStudyPanel(node);
-  requestSentenceTranslation(false);
+  requestSelectedTranslation();
   return true;
 }
 
