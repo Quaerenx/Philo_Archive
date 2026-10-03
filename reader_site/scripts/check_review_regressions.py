@@ -924,9 +924,17 @@ with patch.object(Path, 'open', open_file): notes.append_jsonl(path, {'id':'new'
 
     def test_r23_reviewed_meaning_rejects_repeated_model_pass_without_changing_other_scopes(self):
         from services.translation_profiles import translation_policy_bundle, render_translation_policy
-        from check_translation_quality_regressions import load_cases, prepare_bad_case
-        case = next(case for case in load_cases() if case["case_id"] == "kierkegaard-ba-r23-magter-causal-substitution")
-        bundle, _ = prepare_bad_case(case)
+        import check_translation_quality_regressions as quality
+        from check_translation_notes_contracts import benchmark_sentence_target
+        case = next(case for case in quality.load_cases() if case["case_id"] == "kierkegaard-ba-r23-magter-causal-substitution")
+        # The frozen benchmark retains the old clipped sentence. This regression
+        # covers the completed source adopted by the later R23 review.
+        source = {**case,
+            "source_text": "Denne Modsigelse er den eneste dialektisk consequente, der baade magter Springet og Immanentsen ( ɔ: det vil sige den senere Immanents).",
+            "source_text_sha256": "7d11ad1ce41c442558dc68305c08d2525b74b2e2dcce40977136d61c7d8dd347",
+        }
+        with patch.object(quality, "sentence_target_bundle", return_value=benchmark_sentence_target(source)):
+            bundle, _ = quality.prepare_bad_case(case)
         false_pass = {"verdict": "pass", "issues": []}
         audit = translations.merge_approved_policy_audit(bundle, case["known_bad_translation"], false_pass)
         self.assertEqual(audit["verdict"], "revise")
