@@ -6,6 +6,7 @@ import tempfile
 import unittest
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from urllib.parse import quote, urlencode
 from unittest.mock import patch
 
 SITE = Path(__file__).resolve().parents[1]
@@ -16,6 +17,27 @@ from services.translation_metrics import capture_model_usage, begin_model_call, 
 from scripts.check_sentence_translation_contracts import synthetic_sentence_target, passing_pipeline_output, critic_issue
 from scripts.check_ai_records_contracts import validate_record
 from services.translation_source_checks import source_meaning_issues, source_evidence_text, source_note_issues
+
+
+def benchmark_sentence_target(case):
+    """Use committed excerpts here; source-aware regression checks validate restored corpora."""
+    source = case["source_text"]
+    fingerprint = translations.sha256_text(source)
+    if fingerprint != case["source_text_sha256"]:
+        raise AssertionError("benchmark source changed")
+    target_url = f"/work/{quote(case['corpus_id'], safe='')}/{quote(case['work_id'], safe='')}"
+    if case["variant_id"]:
+        target_url += "?" + urlencode({"variant": case["variant_id"]})
+    target_url += "#" + quote(case["sentence_id"], safe="")
+    return {
+        **synthetic_sentence_target(),
+        **{key: case[key] for key in ["corpus_id", "work_id", "variant_id", "segment_id", "sentence_id"]},
+        "target_id": case["sentence_id"], "target_url": target_url,
+        "label": case["sentence_id"], "work_title": case["work_id"],
+        "source_text": source, "sentence_text": source,
+        "source_text_preview": source[:220], "source_text_chars": len(source), "sentence_text_chars": len(source),
+        "source_text_sha256": fingerprint, "sentence_text_sha256": fingerprint,
+    }
 
 
 class TranslationNotesContracts(unittest.TestCase):
@@ -250,7 +272,6 @@ class TranslationNotesContracts(unittest.TestCase):
             self.assertEqual(source_meaning_issues(case, case["reference_translation"]), [])
 
     def test_source_evidence_reaches_translator_critic_and_revision_requests(self):
-        from services.sentence_targets import sentence_target_bundle
         from services.translation_source_checks import source_checks
         plan = json.loads((SITE / "data/translation_notes_benchmark.json").read_text(encoding="utf-8"))
         checked = 0
@@ -259,7 +280,7 @@ class TranslationNotesContracts(unittest.TestCase):
             rules = source_checks(target)
             if not rules:
                 continue
-            target = sentence_target_bundle(*(case[key] for key in ["corpus_id", "work_id", "segment_id", "sentence_id", "variant_id"]))
+            target = benchmark_sentence_target(case)
             bundle = translations.build_sentence_prompt_bundle(target)
             critic = translations.build_critic_prompt_bundle(bundle, "검토할 번역")
             revision = translations.build_revision_prompt_bundle(bundle, "검토할 번역", [critic_issue()])
@@ -273,13 +294,17 @@ class TranslationNotesContracts(unittest.TestCase):
     def test_semantic_controls_bind_to_source_and_preserve_real_audit_issues(self):
         from scripts import check_translation_quality_regressions as quality
         controls = quality.load_semantic_controls()
+        plan = json.loads((SITE / "data/translation_notes_benchmark.json").read_text(encoding="utf-8"))
         self.assertEqual(len(controls), 9)
         self.assertEqual(sum(control["expected_major_semantic_error"] for control in controls), 3)
         for control in controls:
-            bundle, critic = quality.prepare_semantic_control(control)
-            self.assertIn(control["translation"], critic["prompt"])
-            with self.assertRaisesRegex(AssertionError, "source changed"):
-                quality.prepare_semantic_control({**control, "sentence_text_sha256": "0" * 64})
+            case = next(case for case in plan["cases"] if all(case[key] == control[key]
+                for key in ["corpus_id", "work_id", "variant_id", "segment_id", "sentence_id"]))
+            with patch.object(quality, "sentence_target_bundle", return_value=benchmark_sentence_target(case)):
+                bundle, critic = quality.prepare_semantic_control(control)
+                self.assertIn(control["translation"], critic["prompt"])
+                with self.assertRaisesRegex(AssertionError, "source changed"):
+                    quality.prepare_semantic_control({**control, "sentence_text_sha256": "0" * 64})
             # Correct meanings do not grant an unconditional pass or hide a
             # critic's future legitimate semantic/readability objection.
             issue = {"source_span": "", "translation_span": control["translation"], "category": "syntax_or_scope",
